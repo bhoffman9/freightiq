@@ -3852,7 +3852,8 @@ If no per-row mapping is possible (e.g. a summary report), set mapping to {} and
 
   const text = await askClaudeForClassification(prompt);
   try {
-    return JSON.parse(text.replace(/\`\`\`json|\`\`\`/g, "").trim());
+    const cleaned = text.replace(/`/g, "").replace(/^json\s*/i, "").trim();
+    return JSON.parse(cleaned);
   } catch {
     return { type: "unknown", confidence: "low", mapping: {}, notes: "Failed to parse response — select type manually.", constants: {} };
   }
@@ -3874,28 +3875,6 @@ const REPORT_TYPES = {
   ce_east:        { label:"CE East",         icon:"🏦", color:"#ab47bc", desc:"CE East financials" },
   unknown:        { label:"Unknown",         icon:"❓", color:"#5a6370", desc:"Couldn't auto-detect" },
 };
-
-
-For mapping: each key is the target schema field, each value is the source column header that best matches.
-If the report contains summary/total values (like total labor cost, total fuel, total miles) rather than per-row data, put those in "constants" as key-value pairs using the constant names: LABOR, FUEL_TOT, GALLONS, MILES, INS_WEEK, TRUCK_TOT, TRAILER_TOT, TRUCK_MAINT, TRAIL_MAINT, STORAGE, UNIFORMS, TOTAL_HRS, FLEET_LOCAL, FLEET_REGIONAL, PERIOD.
-If no per-row mapping is possible (e.g. a summary report), set mapping to {} and put everything in constants.`;
-
-  const r = await fetch("/api/ai", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      max_tokens: 1000,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  const d = await r.json();
-  const text = d.content?.[0]?.text || "{}";
-  try {
-    return JSON.parse(text.replace(/```json|```/g, "").trim());
-  } catch {
-    return { type: "unknown", confidence: "low", mapping: {}, notes: "Failed to parse AI response", constants: {} };
-  }
-}
 
 function applyMappedData(type, mapping, rows, constants) {
   // Apply any constants first
