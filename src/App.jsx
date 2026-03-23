@@ -1641,13 +1641,13 @@ function FuelAnalysis() {
       <div className="g4" style={{ marginBottom: 14 }}>
         <div className="kpi">
           <div className="klbl">EFS Card Spend</div>
-          <div className="kval" style={{ color: "#f47820" }}>$144,424</div>
-          <div className="ksub">33,115 gal · $4.389/gal avg</div>
+          <div className="kval" style={{ color: "#f47820" }}>{fd(171999.62,0)}</div>
+          <div className="ksub">{fn(36450.66,0)} gal · $4.541/gal avg</div>
         </div>
         <div className="kpi">
           <div className="klbl">Mudflap Spend</div>
-          <div className="kval" style={{ color: "#f5c542" }}>$10,237</div>
-          <div className="ksub">2,799 gal · $931 savings</div>
+          <div className="kval" style={{ color: "#f5c542" }}>{fd(10603.84,0)}</div>
+          <div className="ksub">{fn(2799.19,0)} gal · $3.657/gal avg</div>
         </div>
         <div className="kpi">
           <div className="klbl">Combined Fuel</div>
