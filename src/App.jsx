@@ -49,38 +49,44 @@ let PAYROLL = [
 
 // ── FUEL DATA (EFS + Mudflap) ─────────────────────────────────
 let FUEL = {
-  "Alexander Christopher": { fuel: 4308.83, gallons: 786.33 },
-  "Allwine Brian A":       { fuel: 3046.59, gallons: 382.17 },
-  "Anderson Justin M":     { fuel: 600.83,  gallons: 126.00 },
-  "Brown Jr Marcellus":    { fuel: 1333.67, gallons: 307.66 },
+  // EFS + Mudflap combined, Jan 1 – Mar 22, 2026
+  // EFS groups by card number; shared cards split by transaction count
+  "Alexander Christopher": { fuel: 6189.30, gallons: 1064.81 },   // EFS 77409
+  "Allwine Brian A":       { fuel: 2700.00, gallons: 630.00 },    // EFS 07408 (5 Jan txns, shared w/ Ron)
+  "Anderson Justin M":     { fuel: 600.83,  gallons: 108.00 },    // EFS 07405 (1 txn, shared w/ Brandon)
+  "Brown Jr Marcellus":    { fuel: 1338.67, gallons: 307.66 },    // EFS 77462
   "Butler Richard":        { fuel: 0,       gallons: 0 },
-  "Clark Rettick":         { fuel: 1680.91, gallons: 400.24 },
-  "Cotton Kejlon":         { fuel: 801.50,  gallons: 161.98 },
-  "Davis Anthoni D":       { fuel: 18233.54,gallons: 3709.06 },
-  "Denman Samuel E":       { fuel: 12402.37,gallons: 2875.66 },
-  "Gutierrez Danny":       { fuel: 4127.15, gallons: 977.24 },
-  "Guzman Jose":           { fuel: 6311.64, gallons: 1397.59 },
+  "Christian Norman L":    { fuel: 821.90,  gallons: 149.01 },    // EFS 47402
+  "Clark Rettick":         { fuel: 2181.45, gallons: 480.59 },    // EFS 37405 (6 txns, shared w/ Robert)
+  "Cotton Kejlon":         { fuel: 485.00,  gallons: 87.00 },     // EFS 87401 (1 Feb txn, shared w/ Thorne)
+  "Davis Anthoni D":       { fuel: 19847.39,gallons: 3951.55 },   // EFS 27406
+  "Denman Samuel E":       { fuel: 12558.91,gallons: 2875.66 },   // EFS 47405
+  "Dotch Brandon C":       { fuel: 1694.42, gallons: 295.45 },    // EFS 07405 (3 txns, shared w/ Justin)
+  "Gutierrez Danny":       { fuel: 4479.37, gallons: 1035.58 },   // EFS 47404
+  "Guzman Jose":           { fuel: 6959.32, gallons: 1502.25 },   // EFS 77401 ($6,461.66) + Mudflap ($497.66)
   "Howell Lawrence":       { fuel: 0,       gallons: 0 },
-  "Ibarra Jose Pablo":     { fuel: 3446.50, gallons: 796.78 },
+  "Ibarra Jose Pablo":     { fuel: 3969.88, gallons: 925.79 },    // EFS 97409 ($2,991.78) + Mudflap ($978.10)
   "Juarez Angel":          { fuel: 0,       gallons: 0 },
-  "Kelly Kirk D":          { fuel: 11788.16,gallons: 2505.03 },
-  "Matthews Ron A":        { fuel: 3046.59, gallons: 382.17 },
-  "Mcclam Michael A":      { fuel: 953.89,  gallons: 174.72 },
-  "McNamara John":         { fuel: 10082.40,gallons: 2454.33 },
-  "Negrete Arturo":        { fuel: 6494.46, gallons: 1511.56 },
-  "Robinson Animashaun":   { fuel: 4261.56, gallons: 829.43 },
-  "Ronkov Martin P":       { fuel: 2247.65, gallons: 531.90 },
-  "Secrest Jermelle":      { fuel: 3208.09, gallons: 553.11 },
-  "Striplin Lamareh":      { fuel: 2610.49, gallons: 470.73 },
-  "Thorne Richard":        { fuel: 3624.97, gallons: 721.61 },
-  "Wainwright Michael W":  { fuel: 0,       gallons: 0 },
-  "Watkins Shawn":         { fuel: 3780.63, gallons: 734.57 },
-  "Watson Dahnifu S":      { fuel: 6873.60, gallons: 1732.00 },
-  "Whipple Wallace":       { fuel: 11190.11,gallons: 2690.06 },
-  "Williams Tadaryl C":    { fuel: 7020.64, gallons: 1591.81 },
-  "Williams Will":         { fuel: 2917.43, gallons: 538.70 },
-  "Willis Wali A":         { fuel: 3879.77, gallons: 887.76 },
-  "Wright Robert":         { fuel: 2521.36, gallons: 600.35 },
+  "Kelly Kirk D":          { fuel: 12712.88,gallons: 2654.03 },   // EFS 77402
+  "Matthews Ron A":        { fuel: 3673.11, gallons: 898.68 },    // EFS 07408 (8 Feb-Mar txns, shared w/ Brian)
+  "Mcclam Michael A":      { fuel: 1864.03, gallons: 304.73 },    // EFS 07407
+  "McNamara John":         { fuel: 10206.26,gallons: 2454.33 },   // EFS 17407
+  "Memolo Dominick":       { fuel: 0,       gallons: 0 },
+  "Negrete Arturo":        { fuel: 6513.21, gallons: 1511.56 },   // EFS 57404
+  "Robinson Animashaun":   { fuel: 0,       gallons: 0 },         // No fuel cards
+  "Ronkov Martin P":       { fuel: 2253.90, gallons: 531.90 },    // EFS 67403
+  "Secrest Jermelle":      { fuel: 4955.62, gallons: 812.08 },    // EFS 37404 ($4,282.32) + EFS 27404 Mell ($673.30)
+  "Striplin Lamareh":      { fuel: 3814.69, gallons: 752.72 },    // EFS 87407
+  "Thorne Richard":        { fuel: 6763.80, gallons: 1239.76 },   // EFS 67400 ($4,856.37) + EFS 87401 ($1,907.43)
+  "Wainwright Michael W":  { fuel: 14293.90,gallons: 3260.97 },   // EFS 67463 (Michael M)
+  "Watkins Shawn":         { fuel: 5780.28, gallons: 1069.24 },   // EFS 57401 ($2,456.84) + EFS 57464 ($3,323.44)
+  "Watson Dahnifu S":      { fuel: 12714.37,gallons: 2884.35 },   // EFS 97406 Shaq ($5,611.24) + Mudflap ($7,103.13)
+  "Whipple Wallace":       { fuel: 11215.11,gallons: 2690.06 },   // EFS 57403
+  "Williams Tadaryl C":    { fuel: 8261.75, gallons: 1805.71 },   // EFS 37402 ($7,655.93) + Mudflap ($605.82)
+  "Williams Will":         { fuel: 4323.59, gallons: 798.06 },    // EFS 27405
+  "Willis Wali A":         { fuel: 4532.83, gallons: 1001.74 },   // EFS 87400 ($3,113.70) + Mudflap ($1,419.13)
+  "Wright Robert":         { fuel: 2200.00, gallons: 520.00 },    // EFS 37405 (6 txns, shared w/ Rettick)
+  // Warehouse/non-driver cards: EFS 47465 ($588.02), 17408 Andres ($1,731.92), 67402 ($377.75) = $2,697.69 not assigned to drivers
 };
 
 // ── FLEET CONSTANTS (QuickBooks + EFS only — these drive CPM) ───
