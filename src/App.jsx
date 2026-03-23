@@ -1281,6 +1281,183 @@ function BasicCPM() {
         </div>
       </div>
 
+      {/* CPM Simulator */}
+      <CpmSimulator />
+
+    </div>
+  );
+}
+
+function CpmSimulator() {
+  const categories = [
+    { key:"labor",    label:"Labor (Payroll)",     val:LABOR,       color:"#f47820" },
+    { key:"fuel",     label:"Fuel (EFS + Mudflap)", val:FUEL_TOT,   color:"#f5c542" },
+    { key:"trucks",   label:"Truck Rentals",        val:TRUCK_TOT,  color:"#4fc3f7" },
+    { key:"trailers", label:"Trailer Rentals",      val:TRAILER_TOT,color:"#3ddc84" },
+    { key:"ins",      label:"Insurance",            val:INS_TOT,    color:"#b39ddb" },
+    { key:"tmaint",   label:"Truck Maintenance",    val:TRUCK_MAINT,color:"#ff8a65" },
+    { key:"rmaint",   label:"Trailer Maintenance",  val:TRAIL_MAINT,color:"#26a69a" },
+    { key:"storage",  label:"Storage / Parking",    val:STORAGE,    color:"#d97706" },
+    { key:"uniforms", label:"Uniforms",             val:UNIFORMS,   color:"#ec407a" },
+  ];
+
+  const [selected, setSelected] = useState(() => {
+    const init = {};
+    categories.forEach(c => { init[c.key] = true; });
+    return init;
+  });
+
+  const toggle = key => setSelected(prev => ({ ...prev, [key]: !prev[key] }));
+  const selectAll = () => { const s = {}; categories.forEach(c => { s[c.key] = true; }); setSelected(s); };
+  const selectNone = () => { const s = {}; categories.forEach(c => { s[c.key] = false; }); setSelected(s); };
+  const selectBasic = () => {
+    const s = {};
+    categories.forEach(c => { s[c.key] = ["labor","fuel","trucks","ins"].includes(c.key); });
+    setSelected(s);
+  };
+
+  const activeCats = categories.filter(c => selected[c.key]);
+  const totalCost = activeCats.reduce((s,c) => s + c.val, 0);
+  const cpm = MILES > 0 ? totalCost / MILES : 0;
+  const activeCount = activeCats.length;
+
+  return (
+    <div style={{
+      marginTop:14, padding:"24px", borderRadius:6,
+      background:"linear-gradient(135deg,#0f1118,#12151c)",
+      border:"2px solid #b39ddb40",
+    }}>
+      <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16 }}>
+        <div>
+          <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"#b39ddb" }}>
+            CPM Simulator
+          </div>
+          <div style={{ fontSize:10,color:"var(--mu)",marginTop:2 }}>Pick any combination of cost categories to see the CPM impact</div>
+        </div>
+        <div style={{ display:"flex",gap:6 }}>
+          {[
+            ["All (9)", selectAll],
+            ["Basic (4)", selectBasic],
+            ["None", selectNone],
+          ].map(([lbl, action]) => (
+            <button key={lbl} onClick={action} style={{
+              padding:"4px 12px",borderRadius:3,cursor:"pointer",
+              fontFamily:"var(--f2)",fontSize:11,fontWeight:700,
+              background:"transparent",color:"var(--mu)",
+              border:"1px solid var(--bd)",
+            }}>{lbl}</button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:20 }}>
+        {/* Left: checkboxes */}
+        <div>
+          {categories.map(c => {
+            const on = selected[c.key];
+            const pct = totalCost > 0 ? c.val / totalCost * 100 : 0;
+            return (
+              <div key={c.key} onClick={() => toggle(c.key)} style={{
+                display:"flex",alignItems:"center",gap:10,padding:"8px 10px",marginBottom:4,
+                borderRadius:3,cursor:"pointer",
+                background:on ? `${c.color}10` : "transparent",
+                border:`1px solid ${on ? c.color+"40" : "var(--bd)"}`,
+                opacity:on ? 1 : 0.4,
+                transition:"all .15s",
+              }}>
+                <div style={{
+                  width:18,height:18,borderRadius:3,flexShrink:0,
+                  background:on ? c.color : "transparent",
+                  border:`2px solid ${on ? c.color : "var(--mu)"}`,
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:11,color:"#fff",fontWeight:700,
+                }}>{on ? "✓" : ""}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:12,fontWeight:600,color:on ? "var(--tx)" : "var(--mu)" }}>{c.label}</div>
+                </div>
+                <div style={{ textAlign:"right" }}>
+                  <div style={{ fontFamily:"var(--f2)",fontSize:14,fontWeight:700,color:on ? c.color : "var(--mu)" }}>{fd(c.val,0)}</div>
+                  <div style={{ fontSize:9,color:"var(--mu)" }}>{fd(c.val/MILES,3)}/mi</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Right: result */}
+        <div>
+          {/* CPM hero */}
+          <div style={{
+            background:"rgba(0,0,0,.3)",border:"2px solid var(--or)",borderRadius:6,
+            padding:"28px",textAlign:"center",marginBottom:14,
+          }}>
+            <div style={{ fontSize:9,letterSpacing:4,textTransform:"uppercase",color:"var(--or)",marginBottom:6 }}>
+              Custom CPM — {activeCount} of 9
+            </div>
+            <div style={{ fontFamily:"var(--f2)",fontSize:72,fontWeight:900,color:cpmColor(cpm),lineHeight:1 }}>
+              {activeCount > 0 ? fd(cpm,3) : "—"}
+            </div>
+            <div style={{ fontSize:11,color:"var(--mu)",marginTop:8 }}>
+              {fd(totalCost,0)} / {fn(MILES,0)} mi
+            </div>
+          </div>
+
+          {/* Active categories stacked bar */}
+          {activeCount > 0 && (
+            <div style={{ marginBottom:14 }}>
+              <div style={{ fontSize:10,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase",marginBottom:6 }}>Cost Composition</div>
+              <div className="sbar" style={{ marginBottom:8 }}>
+                {activeCats.map(c => {
+                  const pct = c.val / totalCost * 100;
+                  return (
+                    <div key={c.key} className="sseg" style={{ width:`${pct}%`,background:c.color,fontSize:pct>8?9:0 }}>
+                      {pct > 8 ? `${c.label.split(" ")[0]} ${fp(pct)}` : ""}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Comparison vs full all-in */}
+          <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:10 }}>
+            <div style={{ background:"var(--bg)",border:"1px solid var(--bd)",borderRadius:3,padding:"12px",textAlign:"center" }}>
+              <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>vs Basic (4)</div>
+              <div style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:900,color:cpm>BASIC_CPM_V?"#ff5252":cpm<BASIC_CPM_V?"#3ddc84":"var(--mu)" }}>
+                {cpm > BASIC_CPM_V ? "+" : ""}{activeCount>0 ? fd(cpm-BASIC_CPM_V,3) : "—"}
+              </div>
+              <div style={{ fontSize:10,color:"var(--mu)" }}>Basic: {fd(BASIC_CPM_V,3)}</div>
+            </div>
+            <div style={{ background:"var(--bg)",border:"1px solid var(--bd)",borderRadius:3,padding:"12px",textAlign:"center" }}>
+              <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>vs All-In (9)</div>
+              <div style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:900,color:cpm>ALLIN_CPM_V?"#ff5252":cpm<ALLIN_CPM_V?"#3ddc84":"var(--mu)" }}>
+                {cpm > ALLIN_CPM_V ? "+" : ""}{activeCount>0 ? fd(cpm-ALLIN_CPM_V,3) : "—"}
+              </div>
+              <div style={{ fontSize:10,color:"var(--mu)" }}>All-In: {fd(ALLIN_CPM_V,3)}</div>
+            </div>
+          </div>
+
+          {/* Per-mile breakdown */}
+          {activeCount > 0 && (
+            <div style={{ marginTop:14 }}>
+              <div style={{ fontSize:10,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase",marginBottom:6 }}>Per-Mile Breakdown</div>
+              {activeCats.map(c => (
+                <div key={c.key} style={{ display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",borderBottom:"1px solid var(--bd)" }}>
+                  <div style={{ display:"flex",alignItems:"center",gap:6 }}>
+                    <div style={{ width:8,height:8,borderRadius:2,background:c.color }} />
+                    <span style={{ fontSize:11,color:"var(--tx)" }}>{c.label}</span>
+                  </div>
+                  <span style={{ fontFamily:"var(--f2)",fontSize:12,fontWeight:700,color:c.color }}>{fd(c.val/MILES,3)}</span>
+                </div>
+              ))}
+              <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:8 }}>
+                <span style={{ fontFamily:"var(--f2)",fontSize:12,fontWeight:800,color:"var(--or)" }}>TOTAL CPM</span>
+                <span style={{ fontFamily:"var(--f2)",fontSize:16,fontWeight:900,color:"var(--or)" }}>{fd(cpm,3)}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -3407,6 +3584,7 @@ const CustomTip = ({ active, payload, label }) => {
 function IncomeDashboard() {
   const [view, setView]           = useState("overview"); // overview | trend | yoy
   const [trendMode, setTrendMode] = useState("combined"); // combined | byco | monthly
+  const [simAmount, setSimAmount] = useState(300000);
 
   const gpMargin26 = INCOME_2026.grossProfit / INCOME_2026.total * 100;
   const gpMargin25 = INCOME_2025.grossProfit / INCOME_2025.total * 100;
@@ -3994,6 +4172,115 @@ function IncomeDashboard() {
           </div>
         </>
       )}
+
+      {/* Revenue Simulation */}
+      <div style={{
+        marginTop:14, padding:"24px", borderRadius:6,
+        background:"linear-gradient(135deg,#12151c,#181c26)",
+        border:"2px solid #4fc3f740",
+      }}>
+        <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16 }}>
+          <div>
+            <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"#4fc3f7" }}>
+              Revenue Simulator
+            </div>
+            <div style={{ fontSize:10,color:"var(--mu)",marginTop:2 }}>What if we add straight revenue? See the impact on net income.</div>
+          </div>
+          <div style={{ display:"flex",alignItems:"center",gap:8 }}>
+            <span style={{ color:"var(--mu)",fontSize:16 }}>$</span>
+            <input type="number" min={0} step={50000} value={simAmount}
+              onChange={e => setSimAmount(Math.max(0, +e.target.value || 0))}
+              style={{
+                width:140, fontFamily:"var(--f2)", fontSize:24, fontWeight:900, color:"#4fc3f7",
+                background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:3,
+                padding:"6px 10px", textAlign:"right", outline:"none",
+              }} />
+          </div>
+        </div>
+
+        <div style={{ display:"flex",gap:6,marginBottom:16,flexWrap:"wrap" }}>
+          {[100000,200000,300000,500000,1000000].map(amt => (
+            <button key={amt} onClick={() => setSimAmount(amt)} style={{
+              padding:"4px 12px",borderRadius:3,cursor:"pointer",
+              fontFamily:"var(--f2)",fontSize:11,fontWeight:700,
+              background:simAmount===amt?"#4fc3f7":"transparent",
+              color:simAmount===amt?"#000":"var(--mu)",
+              border:`1px solid ${simAmount===amt?"#4fc3f7":"var(--bd)"}`,
+            }}>{fd(amt,0)}</button>
+          ))}
+        </div>
+
+        {(() => {
+          const curRev = INCOME_2026.total;
+          const curGP = INCOME_2026.grossProfit;
+          const curExp = INCOME_2026.totalExp;
+          const curNet = INCOME_2026.netIncome;
+          const newRev = curRev + simAmount;
+          const newGP = curGP + simAmount; // straight revenue = 100% to GP
+          const newNet = curNet + simAmount;
+          const curNetMargin = curNet / curRev * 100;
+          const newNetMargin = newNet / newRev * 100;
+          return (
+            <div style={{ display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:20,alignItems:"start" }}>
+              {/* Current */}
+              <div>
+                <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase",marginBottom:10 }}>Current</div>
+                {[
+                  { label:"Revenue",     val:curRev, color:"#3ddc84" },
+                  { label:"Gross Profit", val:curGP,  color:"#f5c542" },
+                  { label:"Expenses",    val:curExp, color:"#ff5252" },
+                  { label:"Net Income",  val:curNet, color:curNet>=0?"#3ddc84":"#ff5252" },
+                  { label:"Net Margin",  val:null,   pct:curNetMargin, color:curNetMargin>=0?"#3ddc84":"#ff5252" },
+                ].map(r => (
+                  <div key={r.label} style={{ display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid var(--bd)" }}>
+                    <span style={{ fontSize:11,color:"var(--mu)" }}>{r.label}</span>
+                    <span style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:700,color:r.color }}>
+                      {r.val !== null ? fd(r.val,0) : fp(r.pct)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Arrow */}
+              <div style={{ display:"flex",alignItems:"center",paddingTop:40 }}>
+                <div style={{ fontFamily:"var(--f2)",fontSize:28,color:"#4fc3f7" }}>→</div>
+              </div>
+
+              {/* Simulated */}
+              <div>
+                <div style={{ fontSize:9,color:"#4fc3f7",letterSpacing:2,textTransform:"uppercase",marginBottom:10 }}>
+                  + {fd(simAmount,0)} Revenue
+                </div>
+                {[
+                  { label:"Revenue",     val:newRev, color:"#3ddc84" },
+                  { label:"Gross Profit", val:newGP,  color:"#f5c542" },
+                  { label:"Expenses",    val:curExp, color:"#ff5252" },
+                  { label:"Net Income",  val:newNet, color:newNet>=0?"#3ddc84":"#ff5252" },
+                  { label:"Net Margin",  val:null,   pct:newNetMargin, color:newNetMargin>=0?"#3ddc84":"#ff5252" },
+                ].map(r => (
+                  <div key={r.label} style={{ display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid var(--bd)" }}>
+                    <span style={{ fontSize:11,color:"var(--mu)" }}>{r.label}</span>
+                    <span style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:700,color:r.color }}>
+                      {r.val !== null ? fd(r.val,0) : fp(r.pct)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Net income delta */}
+        <div style={{ marginTop:16,padding:"14px",background:"rgba(61,220,132,.08)",border:"1px solid rgba(61,220,132,.2)",borderRadius:3,textAlign:"center" }}>
+          <div style={{ fontSize:9,color:"#3ddc84",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Net Income Impact</div>
+          <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:"#3ddc84" }}>
+            {fd(INCOME_2026.netIncome + simAmount,0)}
+          </div>
+          <div style={{ fontSize:11,color:"var(--mu)",marginTop:4 }}>
+            from {fd(INCOME_2026.netIncome,0)} → +{fd(simAmount,0)} straight revenue
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -6241,6 +6528,7 @@ function CashFlowDashboard() {
     </div>
   );
 }
+
 
 // ── WEEKLY/MONTHLY CHECKLIST ──────────────────────────────────
 function Checklist() {
