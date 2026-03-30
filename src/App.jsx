@@ -10,83 +10,80 @@ function useDataCtx() { return useContext(DataContext); }
 
 // ── PAYROLL DATA ──────────────────────────────────────────────
 let PAYROLL = [
-  { name: "Alexander Christopher", hours: 323.58, totalCost: 9414.58 },
+  { name: "Alexander Christopher", hours: 397.70, totalCost: 11771.94 },
   { name: "Allwine Brian A",       hours: 181.34, totalCost: 5043.53 },
   { name: "Anderson Justin M",     hours: 79.01,  totalCost: 2285.37 },
   { name: "Brown Jr Marcellus",    hours: 77.08,  totalCost: 2143.78 },
-  { name: "Butler Richard",        hours: 228.68, totalCost: 7064.56 },
-  { name: "Christian Norman L",    hours: 79.64,  totalCost: 2303.58 },
-  { name: "Clark Rettick",         hours: 198.32, totalCost: 5736.41 },
+  { name: "Butler Richard",        hours: 278.52, totalCost: 8504.74 },
+  { name: "Christian Norman L",    hours: 100.08, totalCost: 2894.81 },
+  { name: "Clark Rettick",         hours: 255.06, totalCost: 7377.62 },
   { name: "Cotton Kejlon",         hours: 320.32, totalCost: 11677.82 },
-  { name: "Davis Anthoni D",       hours: 845.16, totalCost: 28596.75 },
-  { name: "Denman Samuel E",       hours: 708.62, totalCost: 22445.48 },
-  { name: "Dotch Brandon C",       hours: 25.48,  totalCost: 737.00 },
-  { name: "Gutierrez Danny",       hours: 633.97, totalCost: 19719.21 },
-  { name: "Guzman Jose",           hours: 769.77, totalCost: 27555.36 },
+  { name: "Davis Anthoni D",       hours: 925.93, totalCost: 31266.60 },
+  { name: "Denman Samuel E",       hours: 763.33, totalCost: 24365.50 },
+  { name: "Dotch Brandon C",       hours: 86.82,  totalCost: 2511.26 },
+  { name: "Gutierrez Danny",       hours: 670.47, totalCost: 20850.04 },
+  { name: "Guzman Jose",           hours: 847.77, totalCost: 30288.96 },
   { name: "Howell Lawrence",       hours: 85.33,  totalCost: 2373.24 },
-  { name: "Ibarra Jose Pablo",     hours: 765.36, totalCost: 26873.29 },
-  { name: "Juarez Angel",          hours: 127.90, totalCost: 3699.50 },
-  { name: "Kelly Kirk D",          hours: 658.50, totalCost: 18696.37 },
-  { name: "Matthews Ron A",        hours: 424.93, totalCost: 11989.95 },
-  { name: "Mcclam Michael A",      hours: 182.73, totalCost: 5285.47 },
-  { name: "McNamara John",         hours: 754.44, totalCost: 24783.34 },
-  { name: "Memolo Dominick",       hours: 3.00,   totalCost: 86.78 },
+  { name: "Ibarra Jose Pablo",     hours: 837.20, totalCost: 29410.87 },
+  { name: "Juarez Angel",          hours: 202.29, totalCost: 5851.24 },
+  { name: "Kelly Kirk D",          hours: 713.41, totalCost: 20276.08 },
+  { name: "Matthews Ron A",        hours: 464.44, totalCost: 13126.62 },
+  { name: "Mcclam Michael A",      hours: 252.47, totalCost: 7302.70 },
+  { name: "McNamara John",         hours: 819.68, totalCost: 26877.68 },
   { name: "Negrete Arturo",        hours: 371.01, totalCost: 11053.06 },
-  { name: "Robinson Animashaun",   hours: 109.61, totalCost: 3170.47 },
-  { name: "Ronkov Martin P",       hours: 701.21, totalCost: 19640.78 },
-  { name: "Secrest Jermelle",      hours: 138.26, totalCost: 3999.17 },
-  { name: "Striplin Lamareh",      hours: 178.07, totalCost: 5958.67 },
-  { name: "Thorne Richard",        hours: 85.64,  totalCost: 2477.14 },
-  { name: "Wainwright Michael W",  hours: 635.03, totalCost: 19002.74 },
-  { name: "Watkins Shawn",         hours: 189.45, totalCost: 5479.83 },
-  { name: "Watson Dahnifu S",      hours: 659.26, totalCost: 18452.61 },
-  { name: "Whipple Wallace",       hours: 726.52, totalCost: 23189.98 },
-  { name: "Williams Tadaryl C",    hours: 679.26, totalCost: 19609.39 },
-  { name: "Williams Will",         hours: 175.30, totalCost: 5070.55 },
-  { name: "Willis Wali A",         hours: 790.07, totalCost: 26304.82 },
+  { name: "Robinson Animashaun",   hours: 163.79, totalCost: 4737.63 },
+  { name: "Ronkov Martin P",       hours: 768.31, totalCost: 21571.18 },
+  { name: "Secrest Jermelle",      hours: 196.14, totalCost: 5673.35 },
+  { name: "Striplin Lamareh",      hours: 242.22, totalCost: 7814.22 },
+  { name: "Thorne Richard",        hours: 134.04, totalCost: 3877.10 },
+  { name: "Wainwright Michael W",  hours: 687.22, totalCost: 20729.20 },
+  { name: "Watkins Shawn",         hours: 216.92, totalCost: 6274.42 },
+  { name: "Watson Dahnifu S",      hours: 721.65, totalCost: 20247.51 },
+  { name: "Whipple Wallace",       hours: 762.23, totalCost: 24326.35 },
+  { name: "Williams Tadaryl C",    hours: 724.41, totalCost: 20933.29 },
+  { name: "Williams Will",         hours: 261.51, totalCost: 7564.18 },
+  { name: "Willis Wali A",         hours: 859.05, totalCost: 28519.21 },
   { name: "Wright Robert",         hours: 260.66, totalCost: 9443.88 },
 ];
 
 // ── FUEL DATA (EFS + Mudflap) ─────────────────────────────────
 let FUEL = {
-  // EFS + Mudflap combined, Jan 1 – Mar 22, 2026
-  // EFS groups by card number; shared cards split by transaction count
-  "Alexander Christopher": { fuel: 6189.30, gallons: 1064.81 },   // EFS 77409
-  "Allwine Brian A":       { fuel: 2700.00, gallons: 630.00 },    // EFS 07408 (5 Jan txns, shared w/ Ron)
-  "Anderson Justin M":     { fuel: 600.83,  gallons: 108.00 },    // EFS 07405 (1 txn, shared w/ Brandon)
-  "Brown Jr Marcellus":    { fuel: 1338.67, gallons: 307.66 },    // EFS 77462
+  // EFS + Mudflap combined, Jan 1 – Mar 29, 2026
+  // EFS $194,459.16 (39,998 gal) + Mudflap $10,603.84 (2,799 gal) = $205,063.00
+  "Alexander Christopher": { fuel: 6189.30, gallons: 1064.81 },
+  "Allwine Brian A":       { fuel: 2700.00, gallons: 630.00 },
+  "Anderson Justin M":     { fuel: 600.83,  gallons: 108.00 },
+  "Brown Jr Marcellus":    { fuel: 1338.67, gallons: 307.66 },
   "Butler Richard":        { fuel: 0,       gallons: 0 },
-  "Christian Norman L":    { fuel: 821.90,  gallons: 149.01 },    // EFS 47402
-  "Clark Rettick":         { fuel: 2181.45, gallons: 480.59 },    // EFS 37405 (6 txns, shared w/ Robert)
-  "Cotton Kejlon":         { fuel: 485.00,  gallons: 87.00 },     // EFS 87401 (1 Feb txn, shared w/ Thorne)
-  "Davis Anthoni D":       { fuel: 19847.39,gallons: 3951.55 },   // EFS 27406
-  "Denman Samuel E":       { fuel: 12558.91,gallons: 2875.66 },   // EFS 47405
-  "Dotch Brandon C":       { fuel: 1694.42, gallons: 295.45 },    // EFS 07405 (3 txns, shared w/ Justin)
-  "Gutierrez Danny":       { fuel: 4479.37, gallons: 1035.58 },   // EFS 47404
-  "Guzman Jose":           { fuel: 6959.32, gallons: 1502.25 },   // EFS 77401 ($6,461.66) + Mudflap ($497.66)
+  "Christian Norman L":    { fuel: 821.90,  gallons: 149.01 },
+  "Clark Rettick":         { fuel: 2181.45, gallons: 480.59 },
+  "Cotton Kejlon":         { fuel: 485.00,  gallons: 87.00 },
+  "Davis Anthoni D":       { fuel: 21807.04,gallons: 4256.74 },
+  "Denman Samuel E":       { fuel: 13682.80,gallons: 3036.78 },
+  "Dotch Brandon C":       { fuel: 3417.84, gallons: 551.97 },
+  "Gutierrez Danny":       { fuel: 5067.49, gallons: 1136.61 },
+  "Guzman Jose":           { fuel: 6959.32, gallons: 1502.25 },
   "Howell Lawrence":       { fuel: 0,       gallons: 0 },
-  "Ibarra Jose Pablo":     { fuel: 3969.88, gallons: 925.79 },    // EFS 97409 ($2,991.78) + Mudflap ($978.10)
+  "Ibarra Jose Pablo":     { fuel: 3969.88, gallons: 925.79 },
   "Juarez Angel":          { fuel: 0,       gallons: 0 },
-  "Kelly Kirk D":          { fuel: 12712.88,gallons: 2654.03 },   // EFS 77402
-  "Matthews Ron A":        { fuel: 3673.11, gallons: 898.68 },    // EFS 07408 (8 Feb-Mar txns, shared w/ Brian)
-  "Mcclam Michael A":      { fuel: 1864.03, gallons: 304.73 },    // EFS 07407
-  "McNamara John":         { fuel: 10206.26,gallons: 2454.33 },   // EFS 17407
-  "Memolo Dominick":       { fuel: 0,       gallons: 0 },
-  "Negrete Arturo":        { fuel: 6513.21, gallons: 1511.56 },   // EFS 57404
-  "Robinson Animashaun":   { fuel: 0,       gallons: 0 },         // No fuel cards
-  "Ronkov Martin P":       { fuel: 2253.90, gallons: 531.90 },    // EFS 67403
-  "Secrest Jermelle":      { fuel: 4955.62, gallons: 812.08 },    // EFS 37404 ($4,282.32) + EFS 27404 Mell ($673.30)
-  "Striplin Lamareh":      { fuel: 3814.69, gallons: 752.72 },    // EFS 87407
-  "Thorne Richard":        { fuel: 6763.80, gallons: 1239.76 },   // EFS 67400 ($4,856.37) + EFS 87401 ($1,907.43)
-  "Wainwright Michael W":  { fuel: 14293.90,gallons: 3260.97 },   // EFS 67463 (Michael M)
-  "Watkins Shawn":         { fuel: 5780.28, gallons: 1069.24 },   // EFS 57401 ($2,456.84) + EFS 57464 ($3,323.44)
-  "Watson Dahnifu S":      { fuel: 12714.37,gallons: 2884.35 },   // EFS 97406 Shaq ($5,611.24) + Mudflap ($7,103.13)
-  "Whipple Wallace":       { fuel: 11215.11,gallons: 2690.06 },   // EFS 57403
-  "Williams Tadaryl C":    { fuel: 8261.75, gallons: 1805.71 },   // EFS 37402 ($7,655.93) + Mudflap ($605.82)
-  "Williams Will":         { fuel: 4323.59, gallons: 798.06 },    // EFS 27405
-  "Willis Wali A":         { fuel: 4532.83, gallons: 1001.74 },   // EFS 87400 ($3,113.70) + Mudflap ($1,419.13)
-  "Wright Robert":         { fuel: 2200.00, gallons: 520.00 },    // EFS 37405 (6 txns, shared w/ Rettick)
-  // Warehouse/non-driver cards: EFS 47465 ($588.02), 17408 Andres ($1,731.92), 67402 ($377.75) = $2,697.69 not assigned to drivers
+  "Kelly Kirk D":          { fuel: 12712.88,gallons: 2654.03 },
+  "Matthews Ron A":        { fuel: 3673.11, gallons: 898.68 },
+  "Mcclam Michael A":      { fuel: 3717.12, gallons: 589.58 },
+  "McNamara John":         { fuel: 10982.81,gallons: 2577.75 },
+  "Negrete Arturo":        { fuel: 6513.21, gallons: 1511.56 },
+  "Robinson Animashaun":   { fuel: 0,       gallons: 0 },
+  "Ronkov Martin P":       { fuel: 2253.90, gallons: 531.90 },
+  "Secrest Jermelle":      { fuel: 6827.35, gallons: 1100.82 },
+  "Striplin Lamareh":      { fuel: 3814.69, gallons: 752.72 },
+  "Thorne Richard":        { fuel: 9145.63, gallons: 1645.91 },
+  "Wainwright Michael W":  { fuel: 16262.53,gallons: 3566.01 },
+  "Watkins Shawn":         { fuel: 8488.66, gallons: 1511.40 },
+  "Watson Dahnifu S":      { fuel: 12714.37,gallons: 2884.35 },
+  "Whipple Wallace":       { fuel: 11885.47,gallons: 2801.60 },
+  "Williams Tadaryl C":    { fuel: 10492.83,gallons: 2179.98 },
+  "Williams Will":         { fuel: 5226.64, gallons: 954.02 },
+  "Willis Wali A":         { fuel: 5445.72, gallons: 1151.86 },
+  "Wright Robert":         { fuel: 2200.00, gallons: 520.00 },
 };
 
 // ── FLEET CONSTANTS (QuickBooks + EFS only — these drive CPM) ───
@@ -94,16 +91,16 @@ let FUEL = {
 // All other costs come from QuickBooks P&L.
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
-let LABOR     = 411364.46;  // QuickBooks: driver payroll thru Mar 20 — 35 drivers
-let FUEL_TOT  = 182603.46;  // EFS $171,999.62 + Mudflap $10,603.84 — thru Mar 22
-let GALLONS   = 39249.85;  // EFS 36,450.66 + Mudflap 2,799.19
+let LABOR     = 458964.98;  // QuickBooks: driver payroll thru Mar 30 — 35 drivers
+let FUEL_TOT  = 205063.00;  // EFS $194,459.16 + Mudflap $10,603.84 — thru Mar 29
+let GALLONS   = 42797.49;  // EFS 39,998.30 + Mudflap 2,799.19
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
-let MILES     = 236267.006;     // Samsara GPS actual, Jan 1 – Mar 21, 2026
-let TOTAL_HRS = 13172.51;  // Updated payroll hours — 35 drivers
+let MILES     = 260135.936;     // Samsara GPS actual, Jan 1 – Mar 28, 2026
+let TOTAL_HRS  = 14727.41;  // Updated payroll hours — 35 drivers
 let INS_WEEK  = 6375;
-let INS_TOT   = 70592.44;  // QuickBooks: SF Truck Insurance (thru Mar 22)
-let TRUCK_TOT  = 132919.70;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI) thru Mar 22
-let TRAILER_TOT = 63295.28;  // QuickBooks: Trailer Rentals (McKinney + Xtra + Utility + Premier + Boxwheel) thru Mar 22
+let INS_TOT    = 76967.44;   // QB actual thru Mar 30
+let TRUCK_TOT  = 177591.25;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI) thru Mar 30
+let TRAILER_TOT = 70829.65;  // QuickBooks: Trailer Rentals (McKinney + Xtra + Utility + Premier + Boxwheel) thru Mar 30
 let EQUIP_TOT   = TRUCK_TOT + TRAILER_TOT; // $174,600
 let TRUCK_MAINT  = 4048.81;   // Prime Wash, AutoForce, Titan Glass, Towing, Batteries, TZ Parts, eBay, SF Heavy Equipment
 let TRAIL_MAINT  = 4139.71;   // TravelCenters of America, MKD Express
@@ -116,7 +113,7 @@ let BASIC_CPM_V = BASIC_COST / MILES;
 // All-In CPM = everything tracked
 let ALLIN_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT + TRAILER_TOT + TRUCK_MAINT + TRAIL_MAINT + STORAGE + UNIFORMS;
 let ALLIN_CPM_V = ALLIN_COST / MILES;
-let PERIOD    = "Jan 1 - Mar 22, 2026";
+let PERIOD    = "Jan 1 - Mar 30, 2026";
 
 // Build merged driver rows
 let DRIVERS = PAYROLL.map(p => {
@@ -325,50 +322,51 @@ const TRUCK_TYPE = {
   "676":"Day Cab","589":"Day Cab",
   "189":"Box Truck",
   // New Samsara trucks — type TBD (update when confirmed)
-  "419":"Sleeper","462":"Sleeper","463":"Sleeper","496":"Sleeper",
+  "419":"Sleeper","462":"Sleeper","463":"Sleeper","496":"Sleeper","502":"Sleeper",
 };
 
-// ── SAMSARA MILEAGE DATA (Jan 1 – Mar 21, 2026) ──────────────
+// ── SAMSARA MILEAGE DATA (Jan 1 – Mar 28, 2026) ──────────────
 let TRUCK_MILES = [
-  { truck:"120",  local:1988.9,  regional:21422.2, miles:23411.101, states:{"CA":10312.9,"AZ":2068.6,"NV":1988.9,"TX":1638.4,"NM":1494.8,"OK":1259.1,"GA":1032.1,"AR":1017.5,"AL":991.4,"MS":663.7,"TN":407.8,"LA":399.3,"SC":136.6} },
-  { truck:"728",  local:2922.7,  regional:14438.8, miles:17361.486, states:{"CA":11505.6,"AZ":2933.2,"NV":2922.7} },
-  { truck:"738",  local:2516.6,  regional:14476.5, miles:16993.092, states:{"CA":13218.9,"NV":2516.6,"AZ":638.1,"UT":619.4} },
-  { truck:"951",  local:3371.7,  regional:13464.2, miles:16835.867, states:{"CA":12380.5,"NV":3371.7,"AZ":1083.7} },
-  { truck:"568",  local:4246.9,  regional:11762.2, miles:16009.108, states:{"CA":10323.8,"NV":4246.9,"AZ":1438.4} },
-  { truck:"731",  local:2750.3,  regional:11709.2, miles:14459.497, states:{"CA":10094.4,"NV":2750.3,"AZ":1614.8} },
-  { truck:"577",  local:3006.4,  regional:10952.3, miles:13958.744, states:{"CA":9825.6,"NV":3006.4,"AZ":1126.7} },
-  { truck:"574",  local:2977.8,  regional:10542.2, miles:13519.986, states:{"CA":10071.6,"NV":2977.8,"AZ":470.7} },
-  { truck:"730",  local:1904.9,  regional:9048.3,  miles:10953.283, states:{"CA":9048.4,"NV":1905.0} },
-  { truck:"149",  local:2047.2,  regional:8712.3,  miles:10759.501, states:{"CA":8712.3,"NV":2047.2} },
-  { truck:"476",  local:2831.8,  regional:6843.0,  miles:9674.790, states:{"CA":6270.1,"NV":2831.8,"AZ":572.9} },
-  { truck:"937",  local:168.4,   regional:8775.7,  miles:8944.041, states:{"TX":1691.9,"CA":1176.2,"AZ":959.1,"AL":649.9,"LA":584.1,"NM":542.5,"MS":472.8,"OK":455.8,"GA":451.8,"MO":297.6,"MD":294.4,"VA":276.9,"OH":227.5,"NV":168.4,"IL":160.9,"IN":159.9,"NC":127.5,"SC":107.9,"WV":83.9,"PA":55.2} },
-  { truck:"539",  local:1031.8,  regional:7565.5,  miles:8597.391, states:{"CA":2853.6,"NV":1031.8,"AZ":934.4,"GA":700.1,"OK":669.3,"NM":635.8,"AR":575.8,"AL":384.9,"TX":355.3,"MS":264.8,"SC":165.3,"TN":26.2} },
-  { truck:"20",   local:5406.3,  regional:2197.1,  miles:7603.404, states:{"NV":5406.3,"CA":2197.1} },
-  { truck:"573",  local:4237.0,  regional:2872.5,  miles:7109.524, states:{"NV":4237.0,"CA":2872.5} },
-  { truck:"676",  local:4109.6,  regional:1566.8,  miles:5676.367, states:{"NV":4109.6,"CA":1566.8} },
-  { truck:"127",  local:674.4,   regional:4723.8,  miles:5398.140, states:{"CA":4723.8,"NV":674.4} },
-  { truck:"418",  local:374.4,   regional:4367.2,  miles:4741.647, states:{"CA":4367.2,"NV":374.4} },
-  { truck:"441",  local:1079.9,  regional:3292.5,  miles:4372.447, states:{"CA":3292.5,"NV":1079.9} },
-  { truck:"417",  local:329.5,   regional:3846.7,  miles:4176.158, states:{"CA":3580.7,"NV":329.5,"AZ":266.0} },
-  { truck:"353",  local:671.6,   regional:2002.0,  miles:2673.577, states:{"CA":2002.0,"NV":671.6} },
-  { truck:"440",  local:1175.7,  regional:1456.4,  miles:2632.077, states:{"CA":1456.4,"NV":1175.7} },
-  { truck:"496",  local:124.7,   regional:1918.7,  miles:2043.390, states:{"CA":1918.7,"NV":124.7} },
-  { truck:"569",  local:926.1,   regional:960.1,   miles:1886.287, states:{"CA":960.1,"NV":926.1} },
-  { truck:"463",  local:129.1,   regional:1665.8,  miles:1794.983, states:{"CA":1665.8,"NV":129.1} },
-  { truck:"189",  local:313.0,   regional:1154.9,  miles:1467.951, states:{"CA":1154.9,"NV":313.0} },
-  { truck:"462",  local:85.4,    regional:1081.1,  miles:1166.531, states:{"CA":1081.1,"NV":85.4} },
-  { truck:"589",  local:985.5,   regional:0,       miles:985.511, states:{"NV":985.5} },
-  { truck:"419",  local:254.4,   regional:656.9,   miles:911.353, states:{"CA":656.9,"NV":254.4} },
-  { truck:"570",  local:149.8,   regional:0,       miles:149.772, states:{"NV":149.8} },
+  { truck:"120", local:2198.1, regional:22526.0, miles:24724.052, states:{"CA":11416.7,"NV":2198.1,"AZ":2068.6,"TX":1638.4,"NM":1494.8,"OK":1259.1,"GA":1032.1,"AR":1017.5,"AL":991.4,"MS":663.7,"TN":407.8,"LA":399.3,"SC":136.6} },
+  { truck:"728", local:2922.7, regional:14438.8, miles:17361.486, states:{"CA":11505.6,"AZ":2933.2,"NV":2922.7} },
+  { truck:"568", local:4388.2, regional:12759.4, miles:17147.683, states:{"CA":10323.8,"NV":4388.2,"AZ":2435.6} },
+  { truck:"738", local:2516.6, regional:14476.5, miles:16993.092, states:{"CA":13218.9,"NV":2516.6,"AZ":638.1,"UT":619.4} },
+  { truck:"951", local:3481.2, regional:13464.2, miles:16945.372, states:{"CA":12380.5,"NV":3481.2,"AZ":1083.7} },
+  { truck:"731", local:2991.3, regional:12734.9, miles:15726.168, states:{"CA":11120.1,"NV":2991.3,"AZ":1614.8} },
+  { truck:"577", local:3100.3, regional:11432.2, miles:14532.513, states:{"CA":10305.4,"NV":3100.3,"AZ":1126.7} },
+  { truck:"574", local:3051.5, regional:11041.6, miles:14093.045, states:{"CA":10570.9,"NV":3051.5,"AZ":470.7} },
+  { truck:"730", local:1946.7, regional:10041.7, miles:11988.438, states:{"CA":10041.7,"NV":1946.8} },
+  { truck:"149", local:2047.3, regional:8712.3, miles:10759.561, states:{"CA":8712.3,"NV":2047.3} },
+  { truck:"476", local:2831.8, regional:6843.0, miles:9674.790, states:{"CA":6270.1,"NV":2831.8,"AZ":572.9} },
+  { truck:"937", local:168.4, regional:8775.7, miles:8944.041, states:{"TX":1691.9,"CA":1176.2,"AZ":959.1,"AL":649.9,"LA":584.1,"NM":542.5,"MS":472.8,"OK":455.8,"GA":451.8,"MO":297.6,"MD":294.4,"VA":276.9,"OH":227.5,"NV":168.4,"IL":160.9,"IN":159.9,"NC":127.5,"SC":107.9,"WV":83.9,"PA":55.2} },
+  { truck:"539", local:1031.8, regional:7565.5, miles:8597.391, states:{"CA":2853.6,"NV":1031.8,"AZ":934.4,"GA":700.1,"OK":669.3,"NM":635.8,"AR":575.8,"AL":384.9,"TX":355.3,"MS":264.8,"SC":165.3,"TN":26.2} },
+  { truck:"573", local:4791.9, regional:3364.5, miles:8156.356, states:{"NV":4791.9,"CA":3364.5} },
+  { truck:"20", local:5939.5, regional:2197.1, miles:8136.611, states:{"NV":5939.5,"CA":2197.1} },
+  { truck:"127", local:1013.6, regional:6347.6, miles:7361.180, states:{"CA":6347.6,"NV":1013.6} },
+  { truck:"418", local:691.8, regional:5496.8, miles:6188.638, states:{"CA":5496.8,"NV":691.8} },
+  { truck:"417", local:597.5, regional:5190.4, miles:5787.914, states:{"CA":4607.4,"NV":597.5,"AZ":583.0} },
+  { truck:"676", local:4109.6, regional:1566.8, miles:5676.367, states:{"NV":4109.6,"CA":1566.8} },
+  { truck:"441", local:1651.6, regional:3780.9, miles:5432.540, states:{"CA":3780.9,"NV":1651.6} },
+  { truck:"463", local:381.5, regional:4159.6, miles:4541.075, states:{"CA":4159.6,"NV":381.5} },
+  { truck:"496", local:331.7, regional:3940.1, miles:4271.824, states:{"CA":3940.1,"NV":331.7} },
+  { truck:"440", local:1492.7, regional:1456.4, miles:2949.043, states:{"NV":1492.7,"CA":1456.4} },
+  { truck:"569", local:1468.1, regional:1447.1, miles:2915.214, states:{"NV":1468.1,"CA":1447.1} },
+  { truck:"353", local:909.7, regional:2002.0, miles:2911.673, states:{"CA":2002.0,"NV":909.7} },
+  { truck:"419", local:586.1, regional:2324.4, miles:2910.481, states:{"CA":1642.9,"NV":586.1,"UT":364.2,"CO":285.7,"AZ":31.5} },
+  { truck:"189", local:338.8, regional:1154.9, miles:1493.709, states:{"CA":1154.9,"NV":338.8} },
+  { truck:"502", local:177.8, regional:1045.8, miles:1223.683, states:{"AZ":549.0,"CA":496.9,"NV":177.8} },
+  { truck:"462", local:99.8, regional:1081.1, miles:1180.920, states:{"CA":1081.1,"NV":99.8} },
+  { truck:"589", local:985.5, regional:0, miles:985.511, states:{"NV":985.5} },
+  { truck:"570", local:525.6, regional:0, miles:525.565, states:{"NV":525.6} },
 ];
-let FLEET_LOCAL    = 52792.0;
-let FLEET_REGIONAL = 183475.0;
+let FLEET_LOCAL    = 58768.7;
+let FLEET_REGIONAL = 201367.3;
 
 // ── TRANSACTION DETAIL DATA ──────────────────────────────────
 const DETAIL = {
   labor: {
     label: "Labor — Driver Payroll",
-    thru: "Mar 22, 2026",
+    thru: "Mar 30, 2026",
     note: "All-in employer cost: gross wages + SS + Medicare + NV SUI + FUTA + 401K match",
     total: 411364.46,
     cols: ["Driver", "Hours", "Employer Cost"],
@@ -376,7 +374,7 @@ const DETAIL = {
   },
   fuel: {
     label: "Fuel — EFS + Mudflap",
-    thru: "Mar 22, 2026",
+    thru: "Mar 29, 2026",
     note: "From EFS + Mudflap fuel card exports only — NOT QuickBooks",
     total: 182603.46,
     cols: ["Card", "Amount", "Gallons", "Avg $/Gal"],
@@ -387,9 +385,9 @@ const DETAIL = {
   },
   insurance: {
     label: "Insurance — SF Truck Insurance",
-    thru: "Mar 22, 2026",
+    thru: "Mar 30, 2026",
     note: "Weekly $6,375 premium + Triumph Insurance $467.44",
-    total: 70592.44,
+    total: 76967.44,
     cols: ["Date", "Vendor", "Amount"],
     rows: [
       ["Jan 2",  "SF Truck Insurance",  6375.00],
@@ -404,13 +402,14 @@ const DETAIL = {
       ["Mar 10", "Triumph Insurance",    467.44],
       ["Mar 13", "SF Truck Insurance",  6375.00],
       ["Mar 20", "SF Truck Insurance",  6375.00],
+      ["Mar 27", "SF Truck Insurance",  6375.00],
     ],
   },
   trucks: {
     label: "Truck Payments",
-    thru: "Mar 22, 2026",
+    thru: "Mar 30, 2026",
     note: "QuickBooks: Truck Rentals — Penske + TEC/Transco + TCI + Ryder",
-    total: 132919.70,
+    total: 177591.25,
     cols: ["Date", "Vendor", "Amount"],
     rows: [
       ["Jan 10", "Penske",                    7585.26],
@@ -430,13 +429,15 @@ const DETAIL = {
       ["Mar 10", "Penske",                    9386.35],
       ["Mar 18", "TCI",                       2225.32],
       ["Mar 19", "Ryder Truck Rentals",       7200.00],
+      ["Mar 25", "TEC / Transco Leasing",    27724.37],
+      ["Mar 27", "TCI",                      16947.18],
     ],
   },
   trailers: {
     label: "Trailer Payments",
-    thru: "Mar 22, 2026",
-    note: "QuickBooks: McKinney + Xtra + Utility + Premier + Boxwheel",
-    total: 63295.28,
+    thru: "Mar 30, 2026",
+    note: "QuickBooks: McKinney + Xtra + Utility + Premier + Boxwheel + Ten Trailer",
+    total: 70829.65,
     cols: ["Date", "Vendor", "Amount"],
     rows: [
       ["Jan 7",  "Utility Trailers",         2520.00],
@@ -456,11 +457,13 @@ const DETAIL = {
       ["Mar 7",  "Xtra Lease",               1141.55],
       ["Mar 14", "Premier Trailers",          1402.12],
       ["Mar 18", "McKinney Trailer Rentals", 12189.24],
+      ["Mar 21", "Xtra Lease",               5362.39],
+      ["Mar 24", "Ten Trailer Leasing",       2171.98],
     ],
   },
   truckMaint: {
     label: "Truck Maintenance",
-    thru: "Mar 22, 2026",
+    thru: "Mar 30, 2026",
     note: "Two AutoForce credits netted in (-$140.33, -$503.18)",
     total: 4048.81,
     cols: ["Date", "Vendor", "Amount"],
@@ -481,7 +484,7 @@ const DETAIL = {
   },
   trailerMaint: {
     label: "Trailer Maintenance",
-    thru: "Mar 22, 2026",
+    thru: "Mar 30, 2026",
     note: "2 vendors this period",
     total: 4139.71,
     cols: ["Date", "Vendor", "Amount"],
@@ -492,7 +495,7 @@ const DETAIL = {
   },
   uniforms: {
     label: "Worker Uniforms",
-    thru: "Mar 22, 2026",
+    thru: "Mar 30, 2026",
     note: "Unifirst monthly service + Safety Guard Shoe one-time purchase",
     total: 5264.10,
     cols: ["Date", "Vendor", "Amount"],
@@ -505,7 +508,7 @@ const DETAIL = {
   },
   storage: {
     label: "Storage / Parking",
-    thru: "Mar 22, 2026",
+    thru: "Mar 30, 2026",
     note: "Total Transportation recurring $3,100/period",
     total: 10413.85,
     cols: ["Date", "Vendor", "Amount"],
@@ -681,14 +684,14 @@ function TrucksMileage() {
   return (
     <div>
       <div className="ptitle">Trucks + Mileage</div>
-      <div className="psub">Samsara GPS · Jan 1 – Mar 21, 2026 · 30 trucks · NV = Local · All other states = Regional</div>
+      <div className="psub">Samsara GPS · Jan 1 – Mar 28, 2026 · 31 trucks · NV = Local · All other states = Regional</div>
 
       {/* Fleet summary KPIs */}
       <div className="g4" style={{ marginBottom:14 }}>
         <div className="kpi">
           <div className="klbl">Total Fleet Miles</div>
           <div className="kval" style={{ color:"#4fc3f7" }}>{fn(MILES,0)}</div>
-          <div className="ksub">Samsara GPS · 30 trucks</div>
+          <div className="ksub">Samsara GPS · 31 trucks</div>
         </div>
         <div className="kpi">
           <div className="klbl">Local Miles (NV)</div>
@@ -1490,19 +1493,19 @@ function FleetOverview() {
     <div>
       <DetailModal id={modal} onClose={() => setModal(null)} />
       <div className="ptitle">Fleet Overview</div>
-      <div className="psub">Show Freight Inc · {PERIOD} · " + PAYROLL.length + " Drivers</div>
+      <div className="psub">Show Freight Inc · {PERIOD} · {PAYROLL.length} Drivers</div>
 
       <div className="sbox">
         <strong style={{ color: "#4fc3f7" }}>Data sources (QuickBooks + EFS):</strong>
-        {" "}Payroll {fd(LABOR,0)} <span style={{color:"var(--mu)"}}>(thru Mar 20)</span> ·
-        {" "}Fuel {fd(FUEL_TOT,0)} <span style={{color:"var(--mu)"}}>(EFS + Mudflap thru Mar 22)</span> ·
-        {" "}Insurance {fd(INS_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Mar 22)</span> ·
-        {" "}Trucks {fd(TRUCK_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Mar 22)</span> ·
-        {" "}Trailers {fd(TRAILER_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Mar 22)</span> ·
-        {" "}Truck Maint $4,049 <span style={{color:"var(--mu)"}}>(thru Mar 22)</span> ·
-        {" "}Trailer Maint $4,140 <span style={{color:"var(--mu)"}}>(thru Mar 22)</span> ·
-        {" "}Storage $10,414 <span style={{color:"var(--mu)"}}>(thru Mar 22)</span> ·
-        {" "}Uniforms $5,264 <span style={{color:"var(--mu)"}}>(thru Mar 22)</span>
+        {" "}Payroll {fd(LABOR,0)} <span style={{color:"var(--mu)"}}>(thru Mar 30)</span> ·
+        {" "}Fuel {fd(FUEL_TOT,0)} <span style={{color:"var(--mu)"}}>(EFS + Mudflap thru Mar 29)</span> ·
+        {" "}Insurance {fd(INS_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Mar 30)</span> ·
+        {" "}Trucks {fd(TRUCK_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Mar 30)</span> ·
+        {" "}Trailers {fd(TRAILER_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Mar 30)</span> ·
+        {" "}Truck Maint $4,049 <span style={{color:"var(--mu)"}}>(thru Mar 30)</span> ·
+        {" "}Trailer Maint $4,140 <span style={{color:"var(--mu)"}}>(thru Mar 30)</span> ·
+        {" "}Storage $10,414 <span style={{color:"var(--mu)"}}>(thru Mar 30)</span> ·
+        {" "}Uniforms $5,264 <span style={{color:"var(--mu)"}}>(thru Mar 30)</span>
         <br/><span style={{color:"var(--mu)",fontSize:9}}>CPM uses QuickBooks totals (labor, ins, trucks, trailers, maint, storage, uniforms) + EFS/Mudflap for fuel · Individual invoices in Trucks/Trailers tabs</span>
       </div>
 
@@ -1539,7 +1542,7 @@ function FleetOverview() {
             {fd(tCPM, 3)}
           </div>
           <div style={{ fontSize: 11, color: "var(--mu)", marginTop: 10, position: "relative" }}>
-            {fn(MILES, 0)} mi · Jan 1 – Mar 21, 2026
+            {fn(MILES, 0)} mi · Jan 1 – Mar 28, 2026
           </div>
           <div style={{ marginTop: 14, display: "flex", gap: 10, position: "relative" }}>
             <div style={{ textAlign: "center" }}>
@@ -3034,7 +3037,7 @@ function TrailerFleet() {
               <div className="kpi">
                 <div className="klbl">QB Trailer Rentals (Actual)</div>
                 <div className="kval" style={{ color:"var(--or)" }}>{fd(TRAILER_TOT,0)}</div>
-                <div className="ksub">QuickBooks thru Mar 22 · includes mileage + tax</div>
+                <div className="ksub">QuickBooks thru Mar 30 · includes mileage + tax</div>
               </div>
             </div>
 
@@ -3511,14 +3514,13 @@ function TrailerFleet() {
 
 // ── INCOME DATA ───────────────────────────────────────────────
 const INCOME_2026 = {
-  period: "Jan 1 – Mar 22, 2026",
-  ce:  2894028.46, sf: 923258.66, di: 37538.75,
-  total: 3854825.87,
-  cogs: 2108163.36, grossProfit: 1746662.51,
-  totalExp: 1748607.66, netOpIncome: -1945.15,
-  netIncome: 68247.51,
-  carrierPay: 2053083.76, merchantFees: 55079.60,
-  // Combined weekly + per-company breakdown (CE, SF, DI from P&L columns)
+  period: "Jan 1 – Mar 30, 2026",
+  ce:  3546652.75, sf: 1110688.58, di: 37538.75,
+  total: 4694880.08,
+  cogs: 2507154.72, grossProfit: 2187725.36,
+  totalExp: 1986123.00, netOpIncome: 201602.36,
+  netIncome: 278170.02,
+  carrierPay: 2450122.52, merchantFees: 55079.60,
   weeks: [
     { label:"Jan 1-4",   rev:86886.02,  gp:52052.64,  ce:71474.65,  sf:14362.37,  di:1049.00,  carrier:34100.00,  netInc:25492.50 },
     { label:"Jan 5-11",  rev:167335.63, gp:76449.43,  ce:103721.70, sf:63463.93,  di:150.00,   carrier:88060.25,  netInc:-73568.84 },
@@ -3529,14 +3531,15 @@ const INCOME_2026 = {
     { label:"Feb 9-15",  rev:526250.37, gp:235956.79, ce:403325.58, sf:121889.79, di:1035.00,  carrier:280000.50, netInc:63020.31 },
     { label:"Feb 16-22", rev:259947.62, gp:121921.58, ce:200471.24, sf:58840.48,  di:635.90,   carrier:133235.00, netInc:-67590.54 },
     { label:"Feb 23-M1", rev:379906.17, gp:168598.15, ce:304358.58, sf:71016.84,  di:4530.75,  carrier:204298.25, netInc:43590.88 },
-    { label:"Mar 2-8",   rev:369704.58, gp:165061.53, ce:286145.38, sf:68554.20,  di:15005.00, carrier:198170.00, netInc:21252.19 },
-    { label:"Mar 9-15",  rev:201670.91, gp:107577.81, ce:123160.85, sf:78440.06,  di:70.00,    carrier:90966.50,  netInc:-46809.52 },
-    { label:"Mar 16-22", rev:682454.85, gp:309971.85, ce:557108.00, sf:124466.85, di:880.00,   carrier:372483.00, netInc:128902.20 },
+    { label:"Mar 2-8",   rev:369704.58, gp:165061.53, ce:286145.38, sf:68554.20,  di:15005.00, carrier:198170.00, netInc:20925.01 },
+    { label:"Mar 9-15",  rev:201670.91, gp:107577.81, ce:123160.85, sf:78440.06,  di:70.00,    carrier:90966.50,  netInc:-46874.00 },
+    { label:"Mar 16-22", rev:683445.61, gp:309971.85, ce:557108.00, sf:125457.61, di:880.00,   carrier:372483.00, netInc:113537.89 },
+    { label:"Mar 23-29", rev:839063.45, gp:441062.85, ce:652624.29, sf:186439.16, di:0,        carrier:397038.76, netInc:225758.98 },
   ],
   months: [
     { m: "Jan", rev: 993161.79,  gp: 480933.50, ce:663460.14,  sf:314754.40, di:14947.25, carrier:497223.26, exp:598682.35, netInc:-92214.12 },
-    { m: "Feb", rev: 1607833.74, gp: 683117.82, ce:1264154.09, sf:337043.15, di:6636.50,  carrier:894241.00, exp:647686.29, netInc:60964.46 },
-    { m: "Mar", rev: 1253830.34, gp: 582611.19, ce:966414.23,  sf:271461.11, di:15955.00, carrier:661619.50, exp:502239.02, netInc:99497.17 },
+    { m: "Feb", rev: 1607833.74, gp: 683117.82, ce:1264154.09, sf:337043.15, di:6636.50,  carrier:894241.00, exp:647766.79, netInc:60883.96 },
+    { m: "Mar", rev: 2093884.55, gp: 1023674.04,ce:1619038.52, sf:458891.03, di:15955.00, carrier:1058658.26,exp:739673.86, netInc:309500.18 },
   ],
 };
 
@@ -3602,7 +3605,7 @@ function IncomeDashboard() {
   return (
     <div>
       <div className="ptitle">Income</div>
-      <div className="psub">CE + SF + DI Combined · Jan 1 – Mar 22, 2026 vs Full Year 2025</div>
+      <div className="psub">CE + SF + DI Combined · Jan 1 – Mar 30, 2026 vs Full Year 2025</div>
 
       {/* Sub-nav */}
       <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
@@ -3673,7 +3676,7 @@ function IncomeDashboard() {
               <thead>
                 <tr>
                   <th style={{ textAlign:"left" }}>Line Item</th>
-                  <th>2026 YTD (Mar 22)</th>
+                  <th>2026 YTD (Mar 30)</th>
                   <th>2025 Q1 est.</th>
                   <th>2025 Full Year</th>
                   <th>YoY vs Q1</th>
@@ -3708,7 +3711,7 @@ function IncomeDashboard() {
 
           {/* Run Rate / Full-Year Projections */}
           {(() => {
-            const ytdDays = 81; // Jan 1 – Mar 22
+            const ytdDays = 89; // Jan 1 – Mar 30
             const daysInYear = 365;
             const annFactor = daysInYear / ytdDays;
             const projRev = INCOME_2026.total * annFactor;
@@ -3733,7 +3736,7 @@ function IncomeDashboard() {
               <div className="card" style={{ marginTop:14 }}>
                 <div className="ctit">📈 Run Rate — Full-Year 2026 Projection</div>
                 <div className="ibox" style={{ marginBottom:14 }}>
-                  <strong style={{ color:"#4fc3f7" }}>Based on {ytdDays} days of actual data</strong> (Jan 1 – Mar 22, 2026), annualized at current pace.
+                  <strong style={{ color:"#4fc3f7" }}>Based on {ytdDays} days of actual data</strong> (Jan 1 – Mar 30, 2026), annualized at current pace.
                   These are straight-line projections — seasonal swings (summer slowdown, Q4 peak) will affect actual results.
                 </div>
 
@@ -4050,7 +4053,7 @@ function IncomeDashboard() {
             <div className="kpi">
               <div className="klbl">2026 YTD Revenue</div>
               <div className="kval" style={{ color:"var(--gn)" }}>{fd(INCOME_2026.total,0)}</div>
-              <div className="ksub">Jan 1 – Mar 22</div>
+              <div className="ksub">Jan 1 – Mar 30</div>
             </div>
             <div className="kpi">
               <div className="klbl">2025 Q1 Revenue</div>
@@ -4287,15 +4290,15 @@ function IncomeDashboard() {
 
 
 // ── CE EAST ───────────────────────────────────────────────────
-// ── ASCEND REVENUE DATA (Jan 1 – Mar 23, 2026) ──────────────
+// ── ASCEND REVENUE DATA (Jan 1 – Mar 30, 2026) ──────────────
 const ASCEND = {
-  period: "Jan 1 – Mar 23, 2026",
-  totalLoads: 1679, totalRev: 3059178.25, totalExp: 2086722.60, totalGP: 972455.65,
-  totalMiles: 633615, avgRPM: 4.83, avgGPPerLoad: 579.19, overallMargin: 31.79,
+  period: "Jan 1 – Mar 30, 2026",
+  totalLoads: 1785, totalRev: 3293924.25, totalExp: 2275881.98, totalGP: 1018042.27,
+  totalMiles: 689286, avgRPM: 4.78, avgGPPerLoad: 570.33, overallMargin: 30.91,
   months: [
     { m:"Jan 2026", loads:490, rev:895756.00, exp:655524.22, gp:240231.78, miles:212802, rpm:4.21, cpm:3.08, gpPct:26.82 },
     { m:"Feb 2026", loads:683, rev:1260417.25, exp:851606.25, gp:408811.00, miles:245136, rpm:5.14, cpm:3.47, gpPct:32.43 },
-    { m:"Mar 2026", loads:506, rev:903005.00, exp:579592.13, gp:323412.87, miles:175677, rpm:5.14, cpm:3.30, gpPct:35.82 },
+    { m:"Mar 2026", loads:612, rev:1137751.00, exp:768751.51, gp:368999.49, miles:231348, rpm:4.92, cpm:3.32, gpPct:32.43 },
   ],
   weeks: [
     { label:"Dec 29-Jan 4", loads:36, rev:44575.00, exp:32748.75, gp:11826.25, miles:7630, rpm:5.84, gpPct:26.53 },
@@ -4308,9 +4311,10 @@ const ASCEND = {
     { label:"Feb 16-22", loads:137, rev:289610.00, exp:205520.50, gp:84089.50, miles:62449, rpm:4.64, gpPct:29.04 },
     { label:"Feb 23-Mar 1", loads:149, rev:276962.50, exp:189747.25, gp:87215.25, miles:61339, rpm:4.52, gpPct:31.49 },
     { label:"Mar 2-8",   loads:144, rev:257413.00, exp:180620.25, gp:76792.75, miles:54152, rpm:4.75, gpPct:29.83 },
-    { label:"Mar 9-15",  loads:140, rev:279599.00, exp:187952.50, gp:91646.50, miles:57117, rpm:4.90, gpPct:32.78 },
-    { label:"Mar 16-22", loads:198, rev:337418.00, exp:192803.13, gp:144614.87, miles:59917, rpm:5.63, gpPct:42.86 },
-    { label:"Mar 23",    loads:2,   rev:3950.00,   exp:500.00,    gp:3450.00,   miles:622,   rpm:6.35, gpPct:87.34 },
+    { label:"Mar 9-15",  loads:141, rev:280524.00, exp:188552.50, gp:91971.50, miles:57341, rpm:4.89, gpPct:32.79 },
+    { label:"Mar 16-22", loads:192, rev:342043.00, exp:223620.01, gp:118422.99, miles:59873, rpm:5.71, gpPct:34.62 },
+    { label:"Mar 23-29", loads:110, rev:229096.00, exp:155167.50, gp:73928.50, miles:54504, rpm:4.20, gpPct:32.27 },
+    { label:"Mar 30",    loads:3,   rev:4050.00,   exp:3075.00,   gp:975.00,   miles:1609,  rpm:2.52, gpPct:24.07 },
   ],
 };
 
@@ -4617,45 +4621,45 @@ function RevenueDashboard() {
 }
 
 const CE_EAST = {
-  // Balance Sheet — as of Mar 22, 2026
+  // Balance Sheet — as of Mar 30, 2026
   bs: {
     cash: 4907.63,
     arFunding: 75967.87, arReleased: 18359.75, arUnreleased: 11573.50,
     arFlexentReserves: 2110.00,
     arTotal: 108011.12, dueFromAnthony: 23000.00,
     totalAssets: 135918.75,
-    shareholderChris: 129642.77, shareholderAnthony: 13620.24,
+    shareholderChris: 129642.77, shareholderAnthony: 6810.24,
     totalLiab: 0,
-    retainedEarnings: -51572.93, netIncome2026: 44228.67,
+    retainedEarnings: -51572.93, netIncome2026: 59720.67,
     totalEquity: 135918.75,
   },
   // P&L — All Dates (lifetime)
   pl: {
-    revenue: 1003671.77, directRevenue: 6100, revenueLoss: -13600,
-    totalIncome: 996171.77,
-    cogs: 857072.90,
-    grossProfit: 139098.87, expenses: 146443.13,
-    netIncome: -7344.26,
-    salaries: 85975.90, freightIns: 14990.24, computers: 17299.00,
+    revenue: 1087233.77, directRevenue: 6100, revenueLoss: -13600,
+    totalIncome: 1079733.77,
+    cogs: 923292.90,
+    grossProfit: 156440.87, expenses: 148293.13,
+    netIncome: 8147.74,
+    salaries: 87825.90, freightIns: 14990.24, computers: 17299.00,
     travel: 11621.19, utilities: 2984.96, officeSup: 4884.83,
     rent: 4390.00, meals: 598.11, commissions: 2880.75,
     costOfLabor: 818.15,
-    carrierPay: 840955.00, merchantFees: 16117.90,
+    carrierPay: 907175.00, merchantFees: 16117.90,
     // Salary breakdown
-    salCEEmployee: 9900.00, salColombia: 52075.90, salNelly: 4000.00, salShareholder: 20000.00,
+    salCEEmployee: 9900.00, salColombia: 53925.90, salNelly: 4000.00, salShareholder: 20000.00,
   },
   // CE East monthly 2026 (from monthly P&L)
   months2026: [
     { m:"Jan 26", rev:258555.00, gp:33360.69, carrier:220755.00, fees:4439.31, exp:24581.60, netInc:8779.09 },
     { m:"Feb 26", rev:156830.01, gp:30796.68, carrier:123492.50, fees:2540.83, exp:16162.62, netInc:14634.06 },
-    { m:"Mar 26", rev:99009.25,  gp:31632.39, carrier:66595.00,  fees:781.86,  exp:10816.87, netInc:20815.52 },
+    { m:"Mar 26", rev:182571.25, gp:48974.39, carrier:132815.00, fees:781.86,  exp:12666.87, netInc:36307.52 },
   ],
   // 2026 YTD totals from monthly P&L
   ytd2026: {
-    revenue: 514394.26, carrier: 410842.50, fees: 7762.00, cogs: 418604.50,
-    grossProfit: 95789.76, expenses: 51561.09, netIncome: 44228.67,
+    revenue: 597956.26, carrier: 477062.50, fees: 7762.00, cogs: 484824.50,
+    grossProfit: 113131.76, expenses: 53411.09, netIncome: 59720.67,
   },
-  ytdDays: 81,  // Jan 1 – Mar 22, 2026
+  ytdDays: 89,  // Jan 1 – Mar 30, 2026
 };
 
 function CEEast() {
@@ -4845,12 +4849,12 @@ function CEEast() {
               <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start" }}>
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:11,color:"var(--tx)",fontWeight:600,marginBottom:4 }}>Anthony Contribution</div>
-                  <div className="bar"><div className="bfil" style={{ width:"0%",background:"#ff8a65" }} /></div>
-                  <div style={{ fontSize:10,color:"#f5c542",fontWeight:600,marginTop:4 }}>⏳ Repayment not yet started — upcoming</div>
+                  <div className="bar"><div className="bfil" style={{ width:"50%",background:"#f5c542" }} /></div>
+                  <div style={{ fontSize:10,color:"#f5c542",fontWeight:600,marginTop:4 }}>🔄 $6,810 repaid — $6,810 remaining (50%)</div>
                 </div>
                 <div style={{ textAlign:"right",marginLeft:16 }}>
                   <div style={{ fontFamily:"var(--f2)",fontSize:24,fontWeight:900,color:"#ff8a65" }}>{fd(dueToAnt,0)}</div>
-                  <div style={{ fontSize:9,color:"var(--mu)" }}>0% repaid</div>
+                  <div style={{ fontSize:9,color:"var(--mu)" }}>50% repaid</div>
                 </div>
               </div>
             </div>
@@ -4877,7 +4881,7 @@ function CEEast() {
           {/* All-Time P&L — GP and Net Income prominent */}
           <div className="card">
             <div className="ctit">All-Time P&L — CE East</div>
-            <div style={{ fontSize:9,color:"var(--mu)",marginBottom:14 }}>All dates · as of Mar 22, 2026</div>
+            <div style={{ fontSize:9,color:"var(--mu)",marginBottom:14 }}>All dates · as of Mar 30, 2026</div>
 
             {/* Two hero numbers */}
             <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16 }}>
@@ -4886,9 +4890,9 @@ function CEEast() {
                 <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:"#f5c542",lineHeight:1 }}>{fd(pl.grossProfit,0)}</div>
                 <div style={{ fontSize:10,color:"var(--mu)",marginTop:4 }}>{fp(pl.grossProfit/pl.revenue*100)} margin</div>
               </div>
-              <div style={{ background:"rgba(255,82,82,.08)",border:"1px solid rgba(255,82,82,.25)",borderRadius:4,padding:"16px",textAlign:"center" }}>
-                <div style={{ fontSize:9,color:"#ff5252",letterSpacing:3,textTransform:"uppercase",marginBottom:6 }}>Net Income</div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:"#ff5252",lineHeight:1 }}>{fd(pl.netIncome,0)}</div>
+              <div style={{ background:pl.netIncome>=0?"rgba(61,220,132,.08)":"rgba(255,82,82,.08)",border:`1px solid ${pl.netIncome>=0?"rgba(61,220,132,.25)":"rgba(255,82,82,.25)"}`,borderRadius:4,padding:"16px",textAlign:"center" }}>
+                <div style={{ fontSize:9,color:pl.netIncome>=0?"#3ddc84":"#ff5252",letterSpacing:3,textTransform:"uppercase",marginBottom:6 }}>Net Income</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:pl.netIncome>=0?"#3ddc84":"#ff5252",lineHeight:1 }}>{fd(pl.netIncome,0)}</div>
                 <div style={{ fontSize:10,color:"var(--mu)",marginTop:4 }}>{fp(pl.netIncome/pl.revenue*100)} net margin</div>
               </div>
             </div>
@@ -4904,7 +4908,7 @@ function CEEast() {
               { label:"Computers & Software",   val:-pl.computers,    color:"#ff5252" },
               { label:"Travel Expenses",        val:-pl.travel,       color:"#ff5252" },
               { label:"Other Expenses",         val:-(pl.expenses-pl.salaries-pl.freightIns-pl.computers-pl.travel), color:"#ff5252" },
-              { label:"Net Income",             val:pl.netIncome,     color:"#ff5252", bold:true },
+              { label:"Net Income",             val:pl.netIncome,     color:pl.netIncome>=0?"#3ddc84":"#ff5252", bold:true },
             ].map(item => (
               <div key={item.label} style={{
                 display:"flex",justifyContent:"space-between",alignItems:"center",
@@ -5725,46 +5729,45 @@ function DataSettings() {
 
 // ── OFFICE STAFF DATA ─────────────────────────────────────────
 // Combined from Show Freight Inc + J&A Management Group LLC
-// Period: Jan 1 – Mar 20, 2026
+// Period: Jan 1 – Mar 30, 2026
 // Categories: Office (salary), Warehouse (hourly/salary), Contractors
 
 const OFFICE_W2 = [
-  // Show Freight Inc employees
-  { name:"Adrian Arias",        entity:"SF",  gross:19379.66, taxes:2851.82, contrib:767.18,  totalCost:22231.48, salary:18106,    bonus:1073.66, reimb:200,    commission:0,     note:"Salary + bonus" },
-  { name:"Biniyam Fissehaye",   entity:"SF",  gross:1350,     taxes:151.88,  contrib:0,       totalCost:1501.88,  salary:1350,     bonus:0,       reimb:0,      commission:0,     note:"Partial period at SF" },
-  { name:"Gabriel Gonzalez",    entity:"SF",  gross:12453.83, taxes:1368.33, contrib:0,       totalCost:13822.16, salary:12203.83, bonus:250,     reimb:0,      commission:0,     note:"Salary + bonus" },
-  { name:"Scot Grosser",        entity:"SF",  gross:18395.41, taxes:2068.95, contrib:616,     totalCost:20464.36, salary:15400,    bonus:0,       reimb:0,      commission:0,     note:"Salary + wellness" },
-  { name:"Cecilia Rivera",      entity:"SF",  gross:14565,    taxes:2175.77, contrib:582.60,  totalCost:16740.77, salary:14135,    bonus:430,     reimb:0,      commission:0,     note:"Salary + bonus" },
-  { name:"Nathan Youngblood",   entity:"SF",  gross:13200,    taxes:1447.80, contrib:0,       totalCost:14647.80, salary:13200,    bonus:0,       reimb:0,      commission:0,     note:"Salary" },
-  // J&A Management employees
-  { name:"Valeria Abrego",      entity:"J&A", gross:8965,     taxes:992.29,  contrib:0,       totalCost:9957.29,  salary:0,        bonus:0,       reimb:0,      commission:0,     note:"Hourly" },
-  { name:"Christopher Adamson", entity:"J&A", gross:14000,    taxes:2086,    contrib:560,     totalCost:16086,    salary:14000,    bonus:0,       reimb:0,      commission:0,     note:"Salary + 401K" },
+  // Show Freight Inc employees (thru Mar 27)
+  { name:"Adrian Arias",        entity:"SF",  gross:19379.66, taxes:2851.82, contrib:767.18,  totalCost:24118.61, salary:18106,    bonus:1073.66, reimb:200,    commission:0,     note:"Salary + bonus" },
+  { name:"Gabriel Gonzalez",    entity:"SF",  gross:12453.83, taxes:1368.33, contrib:0,       totalCost:15149.96, salary:12203.83, bonus:250,     reimb:0,      commission:0,     note:"Salary + bonus" },
+  { name:"Scot Grosser",        entity:"SF",  gross:18395.41, taxes:2068.95, contrib:616,     totalCost:22320.94, salary:15400,    bonus:0,       reimb:0,      commission:0,     note:"Salary + wellness" },
+  { name:"Cecilia Rivera",      entity:"SF",  gross:14565,    taxes:2175.77, contrib:582.60,  totalCost:18214.03, salary:14135,    bonus:430,     reimb:0,      commission:0,     note:"Salary + bonus" },
+  { name:"Nathan Youngblood",   entity:"SF",  gross:13200,    taxes:1447.80, contrib:0,       totalCost:15975.60, salary:13200,    bonus:0,       reimb:0,      commission:0,     note:"Salary" },
+  // J&A Management employees (thru Mar 27)
+  { name:"Valeria Abrego",      entity:"J&A", gross:8965,     taxes:992.29,  contrib:0,       totalCost:10864.32, salary:0,        bonus:0,       reimb:0,      commission:0,     note:"Hourly" },
+  { name:"Christopher Adamson", entity:"J&A", gross:14000,    taxes:2086,    contrib:560,     totalCost:18378.00, salary:14000,    bonus:0,       reimb:0,      commission:0,     note:"Salary + 401K" },
   { name:"Debra Adamson",       entity:"J&A", gross:8750,     taxes:934.68,  contrib:0,       totalCost:9684.68,  salary:8750,     bonus:0,       reimb:0,      commission:0,     note:"W2 → Contractor Mar 2026", dual:true },
   { name:"Elizabeth Delgado",   entity:"J&A", gross:8541.11,  taxes:852.13,  contrib:0,       totalCost:9393.24,  salary:5940,     bonus:0,       reimb:898.35, commission:1702.76, note:"W2 → Contractor · commission eligible", dual:true },
   { name:"Abigail Dillon",      entity:"J&A", gross:2135.50,  taxes:239.17,  contrib:0,       totalCost:2374.67,  salary:0,        bonus:0,       reimb:0,      commission:0,     note:"Hourly · partial period" },
-  { name:"Biniyam Fissehaye",   entity:"J&A", gross:9477.07,  taxes:1043.71, contrib:0,       totalCost:10520.78, salary:9450,     bonus:0,       reimb:27.07,  commission:0,     note:"Salary at J&A" },
+  { name:"Biniyam Fissehaye",   entity:"J&A", gross:9477.07,  taxes:1043.71, contrib:0,       totalCost:12013.87, salary:9450,     bonus:0,       reimb:27.07,  commission:0,     note:"Salary at J&A" },
   { name:"Kirsten Hall",        entity:"J&A", gross:2250,     taxes:252.01,  contrib:0,       totalCost:2502.01,  salary:2250,     bonus:0,       reimb:0,      commission:0,     note:"Former employee" },
-  { name:"Ben Hoffman",         entity:"J&A", gross:14807.76, taxes:1988.57, contrib:376.95,  totalCost:16796.33, salary:13730.83, bonus:0,       reimb:0,      commission:0,     note:"Salary + 401K + PTO" },
+  { name:"Ben Hoffman",         entity:"J&A", gross:14807.76, taxes:1988.57, contrib:376.95,  totalCost:18285.18, salary:13730.83, bonus:0,       reimb:0,      commission:0,     note:"Salary + 401K + PTO" },
   { name:"Branden Parnell",     entity:"J&A", gross:5769.20,  taxes:646.15,  contrib:0,       totalCost:6415.35,  salary:5769.20,  bonus:0,       reimb:0,      commission:0,     note:"Former employee" },
   { name:"Ayelen Sanchez",      entity:"J&A", gross:1809.26,  taxes:198.25,  contrib:0,       totalCost:2007.51,  salary:0,        bonus:0,       reimb:39.26,  commission:0,     note:"Hourly · partial period" },
   { name:"Christopher Simpson", entity:"J&A", gross:8998.46,  taxes:1320.95, contrib:359.94,  totalCost:10319.41, salary:6300,     bonus:0,       reimb:0,      commission:2698.46, note:"W2 → Contractor · commission eligible", dual:true },
 ];
 
 const WAREHOUSE = [
-  { name:"Gentry Eagleton",  entity:"SF", gross:9276.20,  taxes:1029.91, contrib:0, totalCost:10306.11, type:"Hourly", hours:451.71, regHrs:427.51, otHrs:24.20, note:"Regular + OT" },
-  { name:"Andres Figueroa",  entity:"SF", gross:17400,    taxes:1863.15, contrib:0, totalCost:19263.15, type:"Salary", hours:480,    regHrs:0,      otHrs:0,     note:"Salary + PTO" },
+  { name:"Gentry Eagleton",  entity:"SF", gross:9276.20,  taxes:1029.91, contrib:0, totalCost:11237.24, type:"Hourly", hours:493.03, regHrs:468.83, otHrs:24.20, note:"Regular + OT" },
+  { name:"Andres Figueroa",  entity:"SF", gross:17400,    taxes:1863.15, contrib:0, totalCost:20839.91, type:"Salary", hours:520,    regHrs:0,      otHrs:0,     note:"Salary + PTO" },
 ];
 
 const CONTRACTORS = [
-  { name:"Jon Marcus Zengotita", dba:"", weekly:2800, payments:11, weeklyTotal:30800, car:350, carPayments:2, carTotal:700, commission:0, healthIns:0, healthInsTotal:0, other:0, total:31500, note:"$2,800/wk + $350/mo car" },
-  { name:"Mellody Abrego",       dba:"Neon Vibes Enterprise", weekly:2150, payments:11, weeklyTotal:23650, car:334.86, carPayments:3, carTotal:1004.58, commission:2033.21, healthIns:368.34, healthInsTotal:4420.08, other:0, total:31107.87, note:"$2,150/wk + $334.86/mo car + commission + health ins" },
+  { name:"Jon Marcus Zengotita", dba:"", weekly:2800, payments:12, weeklyTotal:33600, car:350, carPayments:2, carTotal:700, commission:0, healthIns:0, healthInsTotal:0, other:0, total:34300, note:"$2,800/wk + $350/mo car" },
+  { name:"Mellody Abrego",       dba:"Neon Vibes Enterprise", weekly:2150, payments:12, weeklyTotal:25800, car:334.86, carPayments:3, carTotal:1004.58, commission:2033.21, healthIns:368.34, healthInsTotal:4788.42, other:0, total:33626.21, note:"$2,150/wk + $334.86/mo car + commission + health ins $368.34/wk" },
   { name:"Gabriel Colon",        dba:"", weekly:0, payments:11, weeklyTotal:24548.73, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:24548.73, note:"Variable weekly ~$2,000–$2,442" },
-  { name:"Hilda Salman",         dba:"Salman Enterprises LLC", weekly:1730, payments:11, weeklyTotal:19030, car:0, carPayments:0, carTotal:0, commission:0, healthIns:118.82, healthInsTotal:1425.84, other:0, total:20455.84, note:"$1,730/wk + health ins $118.82/wk" },
+  { name:"Hilda Salman",         dba:"Salman Enterprises LLC", weekly:1730, payments:12, weeklyTotal:20760, car:0, carPayments:0, carTotal:0, commission:0, healthIns:118.82, healthInsTotal:1544.66, other:0, total:22304.66, note:"$1,730/wk + health ins $118.82/wk" },
   { name:"Maria Con",            dba:"", weekly:550, payments:11, weeklyTotal:6150, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:6150, note:"$550/wk → $650/wk starting Mar 2026" },
   { name:"Logic Consultants",    dba:"Logic Consultants LLC / Prestige Development", weekly:500, payments:11, weeklyTotal:5500, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:5500, note:"$500/wk · 10 as Prestige + 1 as Logic" },
-  { name:"Elizabeth Delgado",    dba:"", weekly:900, payments:5, weeklyTotal:3600, car:0, carPayments:0, carTotal:0, commission:1117.74, healthIns:0, healthInsTotal:0, other:0, total:4717.74, note:"$900/wk base + commission · W2 → 1099 Feb 2026", dual:true },
-  { name:"Christopher Simpson",  dba:"", weekly:900, payments:4, weeklyTotal:3600, car:0, carPayments:0, carTotal:0, commission:1031.58, healthIns:53.79, healthInsTotal:645.48, other:0, total:5277.06, note:"$900/wk base + commission + health ins $53.79/wk · W2 → 1099 Feb 2026", dual:true },
-  { name:"Debra Adamson",        dba:"", weekly:1184.97, payments:4, weeklyTotal:3554.91, car:0, carPayments:0, carTotal:0, commission:0, healthIns:53.79, healthInsTotal:645.48, other:984.97, total:5185.36, note:"~$1,185/wk (Chase) + $985 (QuickBooks) + health ins $53.79/wk · excl $2K loan", dual:true },
+  { name:"Elizabeth Delgado",    dba:"", weekly:900, payments:6, weeklyTotal:4500, car:0, carPayments:0, carTotal:0, commission:2021.37, healthIns:0, healthInsTotal:0, other:0, total:6521.37, note:"$900/wk base + commission · W2 → 1099 Feb 2026", dual:true },
+  { name:"Christopher Simpson",  dba:"", weekly:900, payments:5, weeklyTotal:4500, car:0, carPayments:0, carTotal:0, commission:1031.58, healthIns:53.79, healthInsTotal:699.27, other:0, total:6230.85, note:"$900/wk base + commission + health ins $53.79/wk · W2 → 1099 Feb 2026", dual:true },
+  { name:"Debra Adamson",        dba:"", weekly:984.97, payments:5, weeklyTotal:4539.88, car:0, carPayments:0, carTotal:0, commission:0, healthIns:53.79, healthInsTotal:699.27, other:984.97, total:6224.12, note:"~$985/wk (Chase) + $985 (QuickBooks) + health ins $53.79/wk · excl $2K loan", dual:true },
 ];
 
 // ── OFFICE STAFF COMPONENT ───────────────────────────────────
@@ -5788,7 +5791,7 @@ function OfficeStaff() {
   return (
     <div>
       <div className="ptitle">Office Staff</div>
-      <div className="psub">W2 Employees + Warehouse + Contractors · Jan 1 – Mar 20, 2026 · Combined SF + J&A</div>
+      <div className="psub">W2 Employees + Warehouse + Contractors · Jan 1 – Mar 30, 2026 · Combined SF + J&A</div>
 
       {/* Summary KPIs */}
       <div className="g4" style={{ marginBottom:14 }}>
@@ -6237,7 +6240,7 @@ const CASH_SNAPSHOTS = [
       { name:"Nanas Pool Fencing", last4:"5623", balance:5.70,     group:"Other" },
       { name:"American Express Savings", last4:"—", balance:23271.07, group:"Savings" },
     ],
-    // This week's payments (Mar 22-28)
+    // This week's payments (Mar 23-29)
     payments: [
       { day:"Sun 22", vendor:"NV Energy",              amount:615.00,   status:"paid",  cat:"Utilities" },
       { day:"Mon 23", vendor:"Ascend TMS",             amount:1085.00,  status:"due",   cat:"Software" },
@@ -6260,8 +6263,28 @@ const CASH_SNAPSHOTS = [
 ];
 
 function CashFlowDashboard() {
-  const snapshots = CASH_SNAPSHOTS;
-  const latest = snapshots[snapshots.length - 1];
+  const [liveData, setLiveData] = useState(null);
+  const [fetchStatus, setFetchStatus] = useState("idle"); // idle | loading | ok | error
+
+  // Fetch live data from expense-calendar repo
+  useEffect(() => {
+    const url = "https://raw.githubusercontent.com/bhoffman9/expense-calendar/main/current-week.json";
+    setFetchStatus("loading");
+    fetch(url + "?t=" + Date.now()) // cache-bust
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(data => { setLiveData(data); setFetchStatus("ok"); })
+      .catch(() => setFetchStatus("error"));
+  }, []);
+
+  // Use live data if available, fallback to hardcoded
+  const snapshot = liveData ? {
+    date: liveData.week || CASH_SNAPSHOTS[0].date,
+    weekLabel: liveData.week || CASH_SNAPSHOTS[0].weekLabel,
+    accounts: liveData.accounts || CASH_SNAPSHOTS[0].accounts,
+    payments: liveData.payments || CASH_SNAPSHOTS[0].payments,
+  } : CASH_SNAPSHOTS[CASH_SNAPSHOTS.length - 1];
+
+  const latest = snapshot;
   const accts = latest.accounts;
   const totalCash = accts.reduce((s,a) => s + a.balance, 0);
 
@@ -6304,7 +6327,12 @@ function CashFlowDashboard() {
   return (
     <div>
       <div className="ptitle">Cash Flow</div>
-      <div className="psub">Weekly bank snapshot · Monday morning balances · {latest.date}</div>
+      <div className="psub">
+        Weekly bank snapshot · Monday morning balances · {latest.date || latest.weekLabel}
+        {fetchStatus === "ok" && <span style={{ color:"#3ddc84",marginLeft:8,fontSize:10 }}>● Live from expense-calendar repo</span>}
+        {fetchStatus === "error" && <span style={{ color:"#f5c542",marginLeft:8,fontSize:10 }}>● Using built-in data (repo not found)</span>}
+        {fetchStatus === "loading" && <span style={{ color:"var(--mu)",marginLeft:8,fontSize:10 }}>● Loading...</span>}
+      </div>
 
       {/* Cash hero */}
       <div style={{
@@ -6317,7 +6345,7 @@ function CashFlowDashboard() {
         <div style={{ fontSize:9,letterSpacing:4,textTransform:"uppercase",color:"#3ddc84",marginBottom:8,position:"relative" }}>Total Available Cash</div>
         <div style={{ fontFamily:"var(--f2)",fontSize:64,fontWeight:900,color:"#3ddc84",lineHeight:1,position:"relative" }}>{fd(totalCash,0)}</div>
         <div style={{ fontSize:12,color:"var(--mu)",marginTop:10,position:"relative" }}>
-          {accts.length} accounts · {latest.date} · excludes personal
+          {accts.length} accounts · {latest.date || latest.weekLabel} · excludes personal
         </div>
       </div>
 
@@ -6442,7 +6470,7 @@ function CashFlowDashboard() {
       <div className="g2" style={{ gap:14, marginBottom:14 }}>
         {/* Account detail */}
         <div className="card">
-          <div className="ctit">Account Balances — {latest.date}</div>
+          <div className="ctit">Account Balances — {latest.date || latest.weekLabel}</div>
           <table className="tbl" style={{ fontSize:11 }}>
             <thead>
               <tr><th style={{ textAlign:"left" }}>Account</th><th>Last 4</th><th>Group</th><th>Balance</th></tr>
@@ -6503,11 +6531,11 @@ function CashFlowDashboard() {
       </div>
 
       {/* Historical snapshots */}
-      {snapshots.length > 1 && (
+      {CASH_SNAPSHOTS.length > 1 && (
         <div className="card">
           <div className="ctit">Weekly Cash Trend</div>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={snapshots.map(s => ({
+            <BarChart data={CASH_SNAPSHOTS.map(s => ({
               week: s.weekLabel,
               total: s.accounts.reduce((sum,a) => sum + a.balance, 0),
             }))} margin={{ top:8,right:10,left:10,bottom:5 }}>
@@ -6522,8 +6550,8 @@ function CashFlowDashboard() {
       )}
 
       <div className="ibox" style={{ marginTop:14 }}>
-        <strong style={{ color:"#4fc3f7" }}>How to update:</strong> Screenshot your Chase bank accounts page every Monday morning and send it here.
-        Each week gets added as a new snapshot — over time you'll see a cash trend chart showing whether cash is building or draining.
+        <strong style={{ color:"#4fc3f7" }}>Live sync enabled:</strong> This tab pulls from <span style={{ color:"#3ddc84" }}>github.com/bhoffman9/expense-calendar/current-week.json</span>.
+        Update that file with new bank balances and payment statuses — FreightIQ picks it up automatically on page load. Falls back to built-in data if the repo isn't available.
       </div>
     </div>
   );
