@@ -7,6 +7,10 @@ import * as XLSX from "xlsx";
 const DataContext = createContext(null);
 function useDataCtx() { return useContext(DataContext); }
 
+// ── Equipment Context (live from AP Aging) ──────────────────
+const EquipmentContext = createContext(null);
+function useEquipment() { return useContext(EquipmentContext); }
+
 
 // ── PAYROLL DATA ──────────────────────────────────────────────
 let PAYROLL = [
@@ -6848,6 +6852,14 @@ function recomputeDerived() {
 export default function App() {
   const [tab, setTab] = useState("overview");
   const [dataVersion, setDataVersion] = useState(0);
+  const [equipmentData, setEquipmentData] = useState(null);
+
+  useEffect(() => {
+    fetch("https://ap-aging-v4.vercel.app/api/equipment")
+      .then(r => r.json())
+      .then(data => { if (data.units) setEquipmentData(data); })
+      .catch(e => console.warn("Equipment fetch failed:", e));
+  }, []);
 
   const trackedCPM = (LABOR + FUEL_TOT + INS_TOT + EQUIP_TOT + MAINT_TOT + UNIFORMS) / MILES;
 
@@ -6873,6 +6885,7 @@ export default function App() {
 
   return (
     <DataContext.Provider value={ctxValue}>
+    <EquipmentContext.Provider value={equipmentData}>
       <style>{CSS}</style>
       <div className="app" key={dataVersion}>
         <header className="hdr">
@@ -6898,6 +6911,7 @@ export default function App() {
 
         <main className="main">{page()}</main>
       </div>
+    </EquipmentContext.Provider>
     </DataContext.Provider>
   );
 }
