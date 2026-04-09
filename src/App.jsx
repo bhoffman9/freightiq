@@ -534,6 +534,7 @@ const DETAIL = {
 const TABS = [
   { id: "overview", icon: "🏢", label: "Fleet Overview" },
   { id: "basiccpm", icon: "🧮", label: "CPM Calculator" },
+  { id: "perload",  icon: "📦", label: "Per Load CPM" },
   { id: "revenue", icon: "📊", label: "Revenue" },
   { id: "driver",   icon: "🚛", label: "Driver Detail" },
   { id: "trucks",   icon: "📍", label: "Trucks & Mileage" },
@@ -1463,6 +1464,426 @@ function CpmSimulator() {
               </div>
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── PER LOAD CPM ─────────────────────────────────────────────
+function PerLoadCPM() {
+  const totalLoads = ASCEND.totalLoads;
+  const avgMilesPerLoad = ASCEND.totalMiles / totalLoads;
+  const avgRevPerLoad = ASCEND.totalRev / totalLoads;
+  const avgExpPerLoad = ASCEND.totalExp / totalLoads;
+
+  // Allocate fleet costs per load
+  const costPerLoad = ALLIN_COST / totalLoads;
+  const basicCostPerLoad = BASIC_COST / totalLoads;
+  const costCategories = [
+    { key:"labor",    label:"Labor",              val:LABOR,        color:"#f47820" },
+    { key:"fuel",     label:"Fuel",               val:FUEL_TOT,     color:"#f5c542" },
+    { key:"trucks",   label:"Truck Rentals",      val:TRUCK_TOT,    color:"#4fc3f7" },
+    { key:"ins",      label:"Insurance",          val:INS_TOT,      color:"#b39ddb" },
+    { key:"trailers", label:"Trailer Rentals",    val:TRAILER_TOT,  color:"#3ddc84" },
+    { key:"tmaint",   label:"Truck Maint",        val:TRUCK_MAINT,  color:"#ff8a65" },
+    { key:"rmaint",   label:"Trailer Maint",      val:TRAIL_MAINT,  color:"#26a69a" },
+    { key:"storage",  label:"Storage",            val:STORAGE,      color:"#d97706" },
+    { key:"uniforms", label:"Uniforms",           val:UNIFORMS,     color:"#ec407a" },
+  ];
+
+  // Simulator state
+  const [simMiles, setSimMiles] = useState(386);
+  const [simRate, setSimRate] = useState(4.78);
+  const [simMode, setSimMode] = useState("rpm"); // "rpm" or "flat"
+  const [simFlat, setSimFlat] = useState(1846);
+  const [simCostMode, setSimCostMode] = useState("allin"); // "basic" or "allin"
+
+  const simRevenue = simMode === "rpm" ? simMiles * simRate : simFlat;
+  const simCostBase = simCostMode === "allin" ? ALLIN_CPM_V : BASIC_CPM_V;
+  const simCost = simMiles * simCostBase;
+  const simProfit = simRevenue - simCost;
+  const simMargin = simRevenue > 0 ? (simProfit / simRevenue) * 100 : 0;
+  const simRPM = simMiles > 0 ? simRevenue / simMiles : 0;
+
+  // Breakeven distances
+  const breakevens = [100, 200, 300, 400, 500, 750, 1000, 1500];
+
+  // Weekly per-load data
+  const weeklyData = ASCEND.weeks.filter(w => w.loads > 5).map(w => ({
+    ...w,
+    costPerLoad: w.exp / w.loads,
+    milesPerLoad: w.miles / w.loads,
+    gpPerLoad: w.gp / w.loads,
+    costPerMile: w.exp / w.miles,
+  }));
+
+  const inputStyle = {
+    width:90, background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:3,
+    padding:"8px 10px", color:"var(--tx)", fontFamily:"var(--f2)", fontSize:16, fontWeight:700,
+    textAlign:"center", outline:"none",
+  };
+
+  const toggleBtn = (active, onClick, label) => (
+    <button onClick={onClick} style={{
+      padding:"6px 14px", borderRadius:3, cursor:"pointer",
+      fontFamily:"var(--f2)", fontSize:11, fontWeight:700, border:"1px solid",
+      background: active ? "var(--or)" : "transparent",
+      color: active ? "#fff" : "var(--mu)",
+      borderColor: active ? "var(--or)" : "var(--bd)",
+    }}>{label}</button>
+  );
+
+  return (
+    <div>
+      <div className="ptitle">Per Load CPM</div>
+      <div className="psub">Per-load cost allocation, profitability simulation & breakeven analysis · {fn(totalLoads,0)} loads · {fn(ASCEND.totalMiles,0)} miles · {ASCEND.period}</div>
+
+      {/* ── Hero KPIs ── */}
+      <div className="g4" style={{ marginBottom:14 }}>
+        {[
+          { label:"Avg Cost / Load (All-In)", val:fd(costPerLoad,0), color:"#ff5252", sub:`${fd(ALLIN_CPM_V,3)}/mi × ${fn(avgMilesPerLoad,0)} avg mi` },
+          { label:"Avg Revenue / Load", val:fd(avgRevPerLoad,0), color:"#3ddc84", sub:`${fd(ASCEND.avgRPM,2)}/mi · ${fn(totalLoads,0)} loads` },
+          { label:"Avg Profit / Load", val:fd(avgRevPerLoad - costPerLoad,0), color:"#f5c542", sub:`${fp(((avgRevPerLoad-costPerLoad)/avgRevPerLoad)*100)} margin after fleet costs` },
+          { label:"Avg Miles / Load", val:fn(avgMilesPerLoad,0), color:"#4fc3f7", sub:`${fn(ASCEND.totalMiles,0)} total ÷ ${fn(totalLoads,0)} loads` },
+        ].map(k => (
+          <div key={k.label} style={{ background:"var(--s1)", border:`1px solid ${k.color}40`, borderRadius:6, padding:"22px", textAlign:"center" }}>
+            <div style={{ fontSize:9, letterSpacing:3, textTransform:"uppercase", color:k.color, marginBottom:6 }}>{k.label}</div>
+            <div style={{ fontFamily:"var(--f2)", fontSize:38, fontWeight:900, color:k.color, lineHeight:1 }}>{k.val}</div>
+            <div style={{ fontSize:10, color:"var(--mu)", marginTop:6 }}>{k.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Per-Load Cost Allocation ── */}
+      <div className="g2" style={{ marginBottom:14 }}>
+        <div className="card">
+          <div className="ctit">Per-Load Cost Allocation — 9 Categories</div>
+          <div className="sbar" style={{ marginBottom:14 }}>
+            {costCategories.map(c => {
+              const pct = c.val / ALLIN_COST * 100;
+              return <div key={c.key} className="sseg" style={{ width:`${pct}%`, background:c.color, fontSize:pct>8?9:0 }}>
+                {pct > 8 ? `${c.label} ${fp(pct)}` : ""}
+              </div>;
+            })}
+          </div>
+          {costCategories.map(c => {
+            const perLoad = c.val / totalLoads;
+            const perMile = c.val / MILES;
+            return (
+              <div key={c.key} style={{
+                display:"flex", justifyContent:"space-between", alignItems:"center",
+                padding:"8px 10px", marginBottom:4, borderRadius:3,
+                background:`${c.color}08`, border:`1px solid ${c.color}20`,
+              }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <div style={{ width:10, height:10, borderRadius:2, background:c.color }} />
+                  <span style={{ fontSize:12, fontWeight:600, color:"var(--tx)" }}>{c.label}</span>
+                </div>
+                <div style={{ display:"flex", gap:20, alignItems:"center" }}>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontFamily:"var(--f2)", fontSize:15, fontWeight:700, color:c.color }}>{fd(perLoad,0)}</div>
+                    <div style={{ fontSize:9, color:"var(--mu)" }}>per load</div>
+                  </div>
+                  <div style={{ textAlign:"right", minWidth:60 }}>
+                    <div style={{ fontFamily:"var(--f2)", fontSize:13, fontWeight:700, color:"var(--mu)" }}>{fd(perMile,3)}</div>
+                    <div style={{ fontSize:9, color:"var(--mu)" }}>per mile</div>
+                  </div>
+                  <div style={{ textAlign:"right", minWidth:50 }}>
+                    <div style={{ fontFamily:"var(--f2)", fontSize:12, fontWeight:700, color:"var(--mu)" }}>{fp(c.val/ALLIN_COST*100)}</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          <div style={{
+            marginTop:8, background:"var(--orl)", border:"1px solid var(--or)", borderRadius:3,
+            padding:"10px 14px", display:"flex", justifyContent:"space-between", alignItems:"center",
+          }}>
+            <div style={{ fontFamily:"var(--f2)", fontSize:13, fontWeight:800, letterSpacing:2, textTransform:"uppercase", color:"var(--or)" }}>ALL-IN PER LOAD</div>
+            <div style={{ fontFamily:"var(--f2)", fontSize:24, fontWeight:900, color:"var(--or)" }}>{fd(costPerLoad,0)}</div>
+          </div>
+        </div>
+
+        {/* ── Right: Quick Stats + Basic vs All-In comparison ── */}
+        <div>
+          <div className="card" style={{ marginBottom:14 }}>
+            <div className="ctit">Basic vs All-In Per Load</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+              <div style={{
+                background:"linear-gradient(145deg,#1a1f2e,#0f1118)", border:"2px solid #3ddc84", borderRadius:6,
+                padding:"20px", textAlign:"center",
+              }}>
+                <div style={{ fontSize:9, letterSpacing:3, textTransform:"uppercase", color:"#3ddc84", marginBottom:6 }}>Basic / Load</div>
+                <div style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:"#3ddc84", lineHeight:1 }}>{fd(basicCostPerLoad,0)}</div>
+                <div style={{ fontSize:10, color:"var(--mu)", marginTop:6 }}>4 categories</div>
+              </div>
+              <div style={{
+                background:"linear-gradient(145deg,#1f1a12,#141008)", border:"2px solid var(--or)", borderRadius:6,
+                padding:"20px", textAlign:"center",
+              }}>
+                <div style={{ fontSize:9, letterSpacing:3, textTransform:"uppercase", color:"var(--or)", marginBottom:6 }}>All-In / Load</div>
+                <div style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:"var(--or)", lineHeight:1 }}>{fd(costPerLoad,0)}</div>
+                <div style={{ fontSize:10, color:"var(--mu)", marginTop:6 }}>9 categories</div>
+              </div>
+            </div>
+            <div style={{ marginTop:10, padding:"10px", background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:3, textAlign:"center" }}>
+              <span style={{ fontSize:11, color:"var(--mu)" }}>Difference: </span>
+              <span style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"#ff5252" }}>{fd(costPerLoad - basicCostPerLoad,0)}</span>
+              <span style={{ fontSize:11, color:"var(--mu)" }}> / load ({fd((costPerLoad-basicCostPerLoad)/avgMilesPerLoad,3)}/mi)</span>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="ctit">Profitability at Fleet Averages</div>
+            {[
+              { label:"Revenue / Load", val:fd(avgRevPerLoad,0), color:"#3ddc84" },
+              { label:"All-In Cost / Load", val:fd(costPerLoad,0), color:"#ff5252" },
+              { label:"Gross Profit / Load", val:fd(avgRevPerLoad - costPerLoad,0), color:avgRevPerLoad>costPerLoad?"#3ddc84":"#ff5252" },
+              { label:"Margin", val:fp(((avgRevPerLoad-costPerLoad)/avgRevPerLoad)*100), color:"#f5c542" },
+              { label:"Breakeven Rate/Mile", val:fd(ALLIN_CPM_V,3), color:"#4fc3f7" },
+            ].map(item => (
+              <div key={item.label} style={{
+                display:"flex", justifyContent:"space-between", padding:"8px 0",
+                borderBottom:"1px solid var(--bd)",
+              }}>
+                <span style={{ fontSize:12, color:"var(--mu)" }}>{item.label}</span>
+                <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color:item.color }}>{item.val}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── LOAD SIMULATOR ── */}
+      <div style={{
+        marginBottom:14, padding:"24px", borderRadius:6,
+        background:"linear-gradient(135deg,#0f1118,#12151c)",
+        border:"2px solid #4fc3f740",
+      }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
+          <div>
+            <div style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:800, letterSpacing:2, textTransform:"uppercase", color:"#4fc3f7" }}>
+              Load Profitability Simulator
+            </div>
+            <div style={{ fontSize:10, color:"var(--mu)", marginTop:2 }}>Enter load details to see real-time cost & profit breakdown</div>
+          </div>
+          <div style={{ display:"flex", gap:6 }}>
+            {toggleBtn(simCostMode==="basic", () => setSimCostMode("basic"), "Basic CPM")}
+            {toggleBtn(simCostMode==="allin", () => setSimCostMode("allin"), "All-In CPM")}
+          </div>
+        </div>
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
+          {/* Left: Inputs */}
+          <div>
+            <div style={{ marginBottom:16 }}>
+              <div style={{ fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:8 }}>Load Miles</div>
+              <input type="number" value={simMiles} onChange={e => setSimMiles(Number(e.target.value) || 0)} style={{ ...inputStyle, width:"100%", fontSize:28 }} />
+              <div style={{ display:"flex", gap:6, marginTop:8, flexWrap:"wrap" }}>
+                {[100, 250, 386, 500, 750, 1000].map(m => (
+                  <button key={m} onClick={() => setSimMiles(m)} style={{
+                    padding:"4px 10px", borderRadius:3, cursor:"pointer", fontSize:10, fontWeight:700,
+                    fontFamily:"var(--f2)",
+                    background: simMiles === m ? "#4fc3f7" : "transparent",
+                    color: simMiles === m ? "#fff" : "var(--mu)",
+                    border:`1px solid ${simMiles === m ? "#4fc3f7" : "var(--bd)"}`,
+                  }}>{fn(m,0)} mi</button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom:16 }}>
+              <div style={{ fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:8 }}>Revenue Mode</div>
+              <div style={{ display:"flex", gap:6, marginBottom:10 }}>
+                {toggleBtn(simMode==="rpm", () => setSimMode("rpm"), "Rate / Mile")}
+                {toggleBtn(simMode==="flat", () => setSimMode("flat"), "Flat Rate")}
+              </div>
+              {simMode === "rpm" ? (
+                <div>
+                  <div style={{ fontSize:10, color:"var(--mu)", marginBottom:4 }}>Rate per mile ($)</div>
+                  <input type="number" step="0.01" value={simRate} onChange={e => setSimRate(Number(e.target.value) || 0)} style={{ ...inputStyle, width:"100%" }} />
+                  <div style={{ display:"flex", gap:6, marginTop:8, flexWrap:"wrap" }}>
+                    {[2.50, 3.50, 4.00, 4.78, 5.50, 6.50].map(r => (
+                      <button key={r} onClick={() => setSimRate(r)} style={{
+                        padding:"4px 10px", borderRadius:3, cursor:"pointer", fontSize:10, fontWeight:700,
+                        fontFamily:"var(--f2)",
+                        background: simRate === r ? "#3ddc84" : "transparent",
+                        color: simRate === r ? "#fff" : "var(--mu)",
+                        border:`1px solid ${simRate === r ? "#3ddc84" : "var(--bd)"}`,
+                      }}>${r.toFixed(2)}</button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ fontSize:10, color:"var(--mu)", marginBottom:4 }}>Flat rate ($)</div>
+                  <input type="number" value={simFlat} onChange={e => setSimFlat(Number(e.target.value) || 0)} style={{ ...inputStyle, width:"100%" }} />
+                  <div style={{ display:"flex", gap:6, marginTop:8, flexWrap:"wrap" }}>
+                    {[500, 1000, 1500, 2000, 3000, 5000].map(f => (
+                      <button key={f} onClick={() => setSimFlat(f)} style={{
+                        padding:"4px 10px", borderRadius:3, cursor:"pointer", fontSize:10, fontWeight:700,
+                        fontFamily:"var(--f2)",
+                        background: simFlat === f ? "#3ddc84" : "transparent",
+                        color: simFlat === f ? "#fff" : "var(--mu)",
+                        border:`1px solid ${simFlat === f ? "#3ddc84" : "var(--bd)"}`,
+                      }}>{fd(f,0)}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Results */}
+          <div>
+            {/* Profit hero */}
+            <div style={{
+              background:"rgba(0,0,0,.3)", border:`2px solid ${simProfit>=0?"#3ddc84":"#ff5252"}`, borderRadius:6,
+              padding:"24px", textAlign:"center", marginBottom:14,
+            }}>
+              <div style={{ fontSize:9, letterSpacing:4, textTransform:"uppercase", color:simProfit>=0?"#3ddc84":"#ff5252", marginBottom:6 }}>
+                {simProfit >= 0 ? "Profit" : "Loss"} Per Load
+              </div>
+              <div style={{ fontFamily:"var(--f2)", fontSize:64, fontWeight:900, color:simProfit>=0?"#3ddc84":"#ff5252", lineHeight:1 }}>
+                {simProfit >= 0 ? "+" : ""}{fd(simProfit,0)}
+              </div>
+              <div style={{ fontSize:11, color:"var(--mu)", marginTop:8 }}>
+                {fp(Math.abs(simMargin))} margin · {simCostMode === "allin" ? "All-In" : "Basic"} costs
+              </div>
+            </div>
+
+            {/* Breakdown */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:14 }}>
+              {[
+                { label:"Revenue", val:fd(simRevenue,0), color:"#3ddc84", sub:simMode==="rpm"?`${fd(simRate,2)}/mi`:"Flat rate" },
+                { label:`Cost (${simCostMode==="allin"?"9":"4"} cat)`, val:fd(simCost,0), color:"#ff5252", sub:`${fd(simCostBase,3)}/mi` },
+                { label:"Eff. RPM", val:fd(simRPM,2), color:"#4fc3f7", sub:`vs ${fd(simCostBase,3)} cost` },
+              ].map(k => (
+                <div key={k.label} style={{ background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:3, padding:"12px", textAlign:"center" }}>
+                  <div style={{ fontSize:9, color:"var(--mu)", letterSpacing:2, textTransform:"uppercase", marginBottom:4 }}>{k.label}</div>
+                  <div style={{ fontFamily:"var(--f2)", fontSize:20, fontWeight:900, color:k.color }}>{k.val}</div>
+                  <div style={{ fontSize:10, color:"var(--mu)", marginTop:2 }}>{k.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Per-category cost for this load */}
+            <div style={{ fontSize:10, color:"var(--mu)", letterSpacing:2, textTransform:"uppercase", marginBottom:6 }}>Cost Breakdown This Load</div>
+            {costCategories.filter(c => simCostMode === "allin" || ["labor","fuel","trucks","ins"].includes(c.key)).map(c => {
+              const loadCost = (c.val / MILES) * simMiles;
+              return (
+                <div key={c.key} style={{ display:"flex", justifyContent:"space-between", padding:"3px 0", borderBottom:"1px solid var(--bd)" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    <div style={{ width:8, height:8, borderRadius:2, background:c.color }} />
+                    <span style={{ fontSize:11, color:"var(--tx)" }}>{c.label}</span>
+                  </div>
+                  <span style={{ fontFamily:"var(--f2)", fontSize:12, fontWeight:700, color:c.color }}>{fd(loadCost,0)}</span>
+                </div>
+              );
+            })}
+            <div style={{ display:"flex", justifyContent:"space-between", paddingTop:6 }}>
+              <span style={{ fontFamily:"var(--f2)", fontSize:12, fontWeight:800, color:"var(--or)" }}>TOTAL COST</span>
+              <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:900, color:"var(--or)" }}>{fd(simCost,0)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── BREAKEVEN TABLE ── */}
+      <div className="g2" style={{ marginBottom:14 }}>
+        <div className="card">
+          <div className="ctit">Breakeven Rate/Mile by Distance</div>
+          <div style={{ fontSize:10, color:"var(--mu)", marginBottom:10 }}>Minimum $/mile needed to cover costs at each distance</div>
+          <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
+            <thead>
+              <tr style={{ borderBottom:"2px solid var(--bd)" }}>
+                <th style={{ textAlign:"left", padding:"8px 6px", fontSize:10, color:"var(--mu)", letterSpacing:1, textTransform:"uppercase" }}>Distance</th>
+                <th style={{ textAlign:"right", padding:"8px 6px", fontSize:10, color:"#3ddc84", letterSpacing:1, textTransform:"uppercase" }}>Basic B/E</th>
+                <th style={{ textAlign:"right", padding:"8px 6px", fontSize:10, color:"var(--or)", letterSpacing:1, textTransform:"uppercase" }}>All-In B/E</th>
+                <th style={{ textAlign:"right", padding:"8px 6px", fontSize:10, color:"#f5c542", letterSpacing:1, textTransform:"uppercase" }}>20% Margin</th>
+                <th style={{ textAlign:"right", padding:"8px 6px", fontSize:10, color:"#4fc3f7", letterSpacing:1, textTransform:"uppercase" }}>30% Margin</th>
+              </tr>
+            </thead>
+            <tbody>
+              {breakevens.map(d => {
+                const bBE = BASIC_CPM_V;
+                const aBE = ALLIN_CPM_V;
+                const m20 = ALLIN_CPM_V / (1 - 0.20);
+                const m30 = ALLIN_CPM_V / (1 - 0.30);
+                return (
+                  <tr key={d} style={{ borderBottom:"1px solid var(--bd)" }}>
+                    <td style={{ padding:"8px 6px", fontFamily:"var(--f2)", fontWeight:700 }}>{fn(d,0)} mi</td>
+                    <td style={{ textAlign:"right", padding:"8px 6px", fontFamily:"var(--f2)", fontWeight:700, color:"#3ddc84" }}>{fd(bBE,3)} <span style={{color:"var(--mu)",fontSize:10}}>({fd(d*bBE,0)})</span></td>
+                    <td style={{ textAlign:"right", padding:"8px 6px", fontFamily:"var(--f2)", fontWeight:700, color:"var(--or)" }}>{fd(aBE,3)} <span style={{color:"var(--mu)",fontSize:10}}>({fd(d*aBE,0)})</span></td>
+                    <td style={{ textAlign:"right", padding:"8px 6px", fontFamily:"var(--f2)", fontWeight:700, color:"#f5c542" }}>{fd(m20,3)} <span style={{color:"var(--mu)",fontSize:10}}>({fd(d*m20,0)})</span></td>
+                    <td style={{ textAlign:"right", padding:"8px 6px", fontFamily:"var(--f2)", fontWeight:700, color:"#4fc3f7" }}>{fd(m30,3)} <span style={{color:"var(--mu)",fontSize:10}}>({fd(d*m30,0)})</span></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Profit by distance chart */}
+        <div className="card">
+          <div className="ctit">Profit by Distance at Different Rates</div>
+          <div style={{ fontSize:10, color:"var(--mu)", marginBottom:10 }}>Profit per load across distances · All-In costs</div>
+          <ResponsiveContainer width="100%" height={340}>
+            <ComposedChart data={breakevens.map(d => ({
+              dist: d,
+              "$3.50/mi": d * 3.50 - d * ALLIN_CPM_V,
+              "$4.50/mi": d * 4.50 - d * ALLIN_CPM_V,
+              "$5.50/mi": d * 5.50 - d * ALLIN_CPM_V,
+              "Breakeven": 0,
+            }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--bd)" />
+              <XAxis dataKey="dist" tick={{ fill:"var(--mu)", fontSize:10 }} tickFormatter={v => `${v}mi`} />
+              <YAxis tick={{ fill:"var(--mu)", fontSize:10 }} tickFormatter={v => `$${v>=1000?(v/1000).toFixed(1)+"k":v}`} />
+              <Tooltip
+                contentStyle={{ background:"var(--s1)", border:"1px solid var(--bd)", borderRadius:4, fontSize:11 }}
+                formatter={(v,n) => [fd(v,0),n]}
+                labelFormatter={l => `${fn(l,0)} miles`}
+              />
+              <ReferenceLine y={0} stroke="var(--mu)" strokeDasharray="4 4" />
+              <Line type="monotone" dataKey="$3.50/mi" stroke="#f5c542" strokeWidth={2} dot={{ r:3, fill:"#f5c542" }} />
+              <Line type="monotone" dataKey="$4.50/mi" stroke="#3ddc84" strokeWidth={2} dot={{ r:3, fill:"#3ddc84" }} />
+              <Line type="monotone" dataKey="$5.50/mi" stroke="#4fc3f7" strokeWidth={2} dot={{ r:3, fill:"#4fc3f7" }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* ── WEEKLY PER-LOAD TABLE ── */}
+      <div className="card">
+        <div className="ctit">Weekly Per-Load Economics</div>
+        <div style={{ fontSize:10, color:"var(--mu)", marginBottom:10 }}>Actual per-load performance from Ascend TMS · weeks with 6+ loads</div>
+        <div style={{ overflowX:"auto" }}>
+          <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11, whiteSpace:"nowrap" }}>
+            <thead>
+              <tr style={{ borderBottom:"2px solid var(--bd)" }}>
+                {["Week","Loads","Miles","Mi/Load","Revenue","Rev/Load","Exp/Load","GP/Load","Margin","RPM"].map(h => (
+                  <th key={h} style={{ textAlign:h==="Week"?"left":"right", padding:"8px 8px", fontSize:9, color:"var(--mu)", letterSpacing:1, textTransform:"uppercase" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {weeklyData.map(w => (
+                <tr key={w.label} style={{ borderBottom:"1px solid var(--bd)" }}>
+                  <td style={{ padding:"6px 8px", fontWeight:600, color:"var(--tx)" }}>{w.label}</td>
+                  <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700 }}>{w.loads}</td>
+                  <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", color:"var(--mu)" }}>{fn(w.miles,0)}</td>
+                  <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", color:"#4fc3f7" }}>{fn(w.milesPerLoad,0)}</td>
+                  <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", color:"#3ddc84" }}>{fd(w.rev,0)}</td>
+                  <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:"#3ddc84" }}>{fd(w.rev/w.loads,0)}</td>
+                  <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", color:"#ff5252" }}>{fd(w.costPerLoad,0)}</td>
+                  <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:w.gpPerLoad>0?"#f5c542":"#ff5252" }}>{fd(w.gpPerLoad,0)}</td>
+                  <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:w.gpPct>=25?"#3ddc84":w.gpPct>=15?"#f5c542":"#ff5252" }}>{fp(w.gpPct)}</td>
+                  <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", color:"#4fc3f7" }}>${w.rpm.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -6866,6 +7287,7 @@ export default function App() {
   const page = () => {
     if (tab === "overview") return <FleetOverview />;
     if (tab === "basiccpm") return <BasicCPM />;
+    if (tab === "perload")  return <PerLoadCPM />;
     if (tab === "driver")   return <DriverDetail />;
     if (tab === "trucks")   return <TrucksMileage />;
     if (tab === "fuel")     return <FuelAnalysis />;
