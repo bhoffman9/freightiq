@@ -1638,17 +1638,17 @@ function PerLoadCPM() {
           {inputBox("Mileage", miles, setMiles, "#4fc3f7", null,
             [150,250,386,500,750,1000], v => `${fn(v,0)} mi`)}
 
-          {/* Margin — actual + target slider */}
+          {/* Margin — actual + target slider + min revenue */}
           <div>
             {/* Actual margin — large */}
-            <div style={{ textAlign:"center", marginBottom:10 }}>
+            <div style={{ textAlign:"center", marginBottom:8 }}>
               <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:2 }}>Actual Margin</div>
               <div style={{ fontFamily:"var(--f2)", fontSize:52, fontWeight:900, lineHeight:1, color:verdictCol }}>
                 {fp(netMarginCalc)}
               </div>
             </div>
             {/* Target margin slider */}
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:6 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:4 }}>
               <span style={{ fontSize:12, letterSpacing:2, textTransform:"uppercase", color:mCol, fontWeight:700 }}>Target Margin</span>
               <span style={{ fontFamily:"var(--f2)", fontSize:28, fontWeight:900, color:mCol, lineHeight:1 }}>
                 {margin}%
@@ -1657,7 +1657,7 @@ function PerLoadCPM() {
             <input type="range" className="pl-slider" min={0} max={50} step={1}
               value={margin} onChange={e => setMargin(Number(e.target.value))}
               style={{ accentColor:mCol }} />
-            <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", marginTop:4 }}>
               {[0,10,15,20,25,30,40,50].map(t => (
                 <button key={t} onClick={() => setMargin(t)} style={{
                   padding:"3px 8px", borderRadius:3, cursor:"pointer", fontSize:12, fontWeight:700,
@@ -1667,6 +1667,35 @@ function PerLoadCPM() {
                 }}>{t}%</button>
               ))}
             </div>
+            {/* Min revenue needed to hit target */}
+            {(() => {
+              const minRev = margin < 100 ? fleetCost / (1 - margin / 100) : 0;
+              const minRPM = miles > 0 ? minRev / miles : 0;
+              const gap = grossRev - minRev;
+              const hitsTarget = netMarginCalc >= margin;
+              return (
+                <div style={{
+                  marginTop:10, padding:"10px 14px", borderRadius:4,
+                  background: hitsTarget ? "rgba(61,220,132,.08)" : "rgba(255,82,82,.08)",
+                  border:`1px solid ${hitsTarget ? "#3ddc8440" : "#ff525240"}`,
+                }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
+                    <span style={{ fontSize:12, color:"var(--mu)" }}>Min revenue for {margin}%</span>
+                    <span style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:800, color:mCol }}>{fd(minRev,0)}</span>
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
+                    <span style={{ fontSize:12, color:"var(--mu)" }}>Min rate/mile</span>
+                    <span style={{ fontFamily:"var(--f2)", fontSize:15, fontWeight:700, color:mCol }}>{fd(minRPM,2)}/mi</span>
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ fontSize:12, color:"var(--mu)" }}>{hitsTarget ? "Above target by" : "Short by"}</span>
+                    <span style={{ fontFamily:"var(--f2)", fontSize:15, fontWeight:800, color:hitsTarget?"#3ddc84":"#ff5252" }}>
+                      {hitsTarget ? "+" : ""}{fd(gap,0)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
 
