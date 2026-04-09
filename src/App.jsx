@@ -211,7 +211,7 @@ body { background: var(--bg); color: var(--tx); font-family: var(--f1); }
 .pl-sticky { position: sticky; top: 0; z-index: 50; }
 
 /* layout */
-.main { flex: 1; padding: 22px; max-width: 1160px; width: 100%; margin: 0 auto; }
+.main { flex: 1; padding: 22px 32px; max-width: 1400px; width: 100%; margin: 0 auto; }
 .ptitle { font-family: var(--f2); font-size: 32px; font-weight: 900; letter-spacing: 2px;
   text-transform: uppercase; margin-bottom: 3px; }
 .psub { font-size: 10px; color: var(--mu); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
@@ -1576,22 +1576,22 @@ function PerLoadCPM() {
 
   const inputBox = (label, value, onChange, color, prefix, presets, presetFmt) => (
     <div style={{ position:"relative" }}>
-      <span style={{ position:"absolute", left:12, top:6, fontSize:9, letterSpacing:2, textTransform:"uppercase",
+      <span style={{ position:"absolute", left:14, top:8, fontSize:12, letterSpacing:2, textTransform:"uppercase",
         color, fontWeight:700, pointerEvents:"none", zIndex:1 }}>{label}</span>
-      {prefix && <span style={{ position:"absolute", left:12, top:28, fontFamily:"var(--f2)", fontSize:18,
+      {prefix && <span style={{ position:"absolute", left:14, top:32, fontFamily:"var(--f2)", fontSize:20,
         fontWeight:700, color:"var(--mu)", pointerEvents:"none", zIndex:1 }}>{prefix}</span>}
       <input type="number" value={value} onChange={e => onChange(Number(e.target.value) || 0)}
         style={{ background:"var(--bg)", border:`2px solid ${color}60`, borderRadius:6,
-          padding: prefix ? "28px 12px 10px 28px" : "28px 12px 10px 12px",
-          color:"var(--tx)", fontFamily:"var(--f2)", fontSize:24, fontWeight:700,
+          padding: prefix ? "32px 14px 12px 32px" : "32px 14px 12px 14px",
+          color:"var(--tx)", fontFamily:"var(--f2)", fontSize:28, fontWeight:700,
           textAlign:"center", outline:"none", width:"100%",
           transition:"border-color .15s",
         }} />
       {presets && (
-        <div style={{ display:"flex", gap:3, marginTop:6, flexWrap:"wrap" }}>
+        <div style={{ display:"flex", gap:4, marginTop:8, flexWrap:"wrap" }}>
           {presets.map(v => (
             <button key={v} onClick={() => onChange(v)} style={{
-              padding:"3px 7px", borderRadius:3, cursor:"pointer", fontSize:9, fontWeight:700,
+              padding:"4px 10px", borderRadius:3, cursor:"pointer", fontSize:12, fontWeight:700,
               fontFamily:"var(--f2)",
               background: value === v ? color : "transparent",
               color: value === v ? (color==="#f5c542"?"#000":"#fff") : "var(--mu)",
@@ -1629,12 +1629,12 @@ function PerLoadCPM() {
             </div>
             <div style={{ textAlign:"left" }}>
               <div style={{
-                fontSize:11, fontWeight:800, letterSpacing:2, textTransform:"uppercase",
-                color: verdictCol, padding:"3px 10px", borderRadius:3,
+                fontSize:14, fontWeight:800, letterSpacing:2, textTransform:"uppercase",
+                color: verdictCol, padding:"5px 14px", borderRadius:3,
                 background:`${verdictCol}18`, border:`1px solid ${verdictCol}40`,
-                marginBottom:4,
+                marginBottom:6,
               }}>{verdictLabel}</div>
-              <div style={{ fontSize:11, color:"var(--mu)" }}>{fp(effectiveMargin)} margin · {fd(rpm,2)}/mi</div>
+              <div style={{ fontSize:14, color:"var(--mu)" }}>{fp(effectiveMargin)} margin · {fd(rpm,2)}/mi</div>
             </div>
           </div>
         </div>
@@ -1651,7 +1651,7 @@ function PerLoadCPM() {
           {/* Margin slider — wider column */}
           <div>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:6 }}>
-              <span style={{ fontSize:9, letterSpacing:2, textTransform:"uppercase", color:mCol, fontWeight:700 }}>Target Margin</span>
+              <span style={{ fontSize:12, letterSpacing:2, textTransform:"uppercase", color:mCol, fontWeight:700 }}>Target Margin</span>
               <span style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:mCol, lineHeight:1 }}>
                 {Math.round(effectiveMargin)}%
               </span>
@@ -1662,7 +1662,7 @@ function PerLoadCPM() {
             <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
               {[0,10,15,20,25,30,40,50].map(t => (
                 <button key={t} onClick={() => handleMarginChange(t)} style={{
-                  padding:"2px 6px", borderRadius:2, cursor:"pointer", fontSize:9, fontWeight:700,
+                  padding:"3px 8px", borderRadius:3, cursor:"pointer", fontSize:12, fontWeight:700,
                   fontFamily:"var(--f2)", border:"none",
                   background: Math.round(effectiveMargin) === t ? mCol : "transparent",
                   color: Math.round(effectiveMargin) === t ? "#000" : "var(--mu)",
@@ -1675,7 +1675,7 @@ function PerLoadCPM() {
         {/* ── CONDENSED KPI BAR ── */}
         <div style={{
           display:"flex", justifyContent:"space-between", alignItems:"center",
-          background:"rgba(0,0,0,.3)", borderRadius:4, padding:"10px 16px",
+          background:"rgba(0,0,0,.3)", borderRadius:4, padding:"12px 20px",
           marginBottom:16,
         }}>
           {[
@@ -1686,17 +1686,17 @@ function PerLoadCPM() {
             { label:"Fleet Profit", val:(fleetProfit>=0?"+":"")+fd(fleetProfit,0), color:fleetProfit>=0?"#3ddc84":"#ff5252" },
             { label:"Fleet Margin", val:fp(fleetMargin), color:verdictCol },
           ].map((k,i) => (
-            <div key={k.label} style={{ display:"flex", alignItems:"center", gap:6,
-              ...(i > 0 ? { borderLeft:"1px solid var(--bd)", paddingLeft:12 } : {}) }}>
-              <span style={{ fontSize:9, letterSpacing:1, textTransform:"uppercase", color:"var(--mu)" }}>{k.label}</span>
-              <span style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:k.color }}>{k.val}</span>
+            <div key={k.label} style={{ display:"flex", alignItems:"center", gap:8,
+              ...(i > 0 ? { borderLeft:"1px solid var(--bd)", paddingLeft:14 } : {}) }}>
+              <span style={{ fontSize:12, letterSpacing:1, textTransform:"uppercase", color:"var(--mu)" }}>{k.label}</span>
+              <span style={{ fontFamily:"var(--f2)", fontSize:20, fontWeight:800, color:k.color }}>{k.val}</span>
             </div>
           ))}
         </div>
 
         {/* ── COST WATERFALL ── */}
-        <div style={{ background:"rgba(0,0,0,.2)", borderRadius:6, padding:"14px 18px" }}>
-          <div style={{ fontSize:9, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:10 }}>Cost Waterfall</div>
+        <div style={{ background:"rgba(0,0,0,.2)", borderRadius:6, padding:"16px 20px" }}>
+          <div style={{ fontSize:13, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:12 }}>Cost Waterfall</div>
           {(() => {
             const steps = [
               { label:"Gross Revenue", val:grossRev, running:grossRev, color:"#3ddc84" },
@@ -1707,46 +1707,46 @@ function PerLoadCPM() {
             return (
               <div>
                 {steps.map((s,i) => (
-                  <div key={s.label} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:i<steps.length-1?6:0 }}>
-                    <div style={{ width:160, fontSize:11, color:"var(--mu)", textAlign:"right" }}>{s.label}</div>
-                    <div style={{ flex:1, position:"relative", height:24, background:"var(--bg)", borderRadius:3, overflow:"hidden" }}>
+                  <div key={s.label} style={{ display:"flex", alignItems:"center", gap:14, marginBottom:i<steps.length-1?8:0 }}>
+                    <div style={{ width:180, fontSize:14, color:"var(--mu)", textAlign:"right" }}>{s.label}</div>
+                    <div style={{ flex:1, position:"relative", height:30, background:"var(--bg)", borderRadius:4, overflow:"hidden" }}>
                       <div style={{
-                        position:"absolute", left:0, top:0, height:"100%", borderRadius:3,
+                        position:"absolute", left:0, top:0, height:"100%", borderRadius:4,
                         width:`${Math.max(2, Math.abs(s.running) / maxVal * 100)}%`,
                         background:`${s.color}30`, borderRight:`2px solid ${s.color}`,
                         transition:"width .3s",
                       }} />
-                      <div style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)",
-                        fontFamily:"var(--f2)", fontSize:12, fontWeight:700, color:s.color }}>
+                      <div style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)",
+                        fontFamily:"var(--f2)", fontSize:15, fontWeight:700, color:s.color }}>
                         {s.val >= 0 ? "" : "−"}{fd(Math.abs(s.val),0)}
                       </div>
                     </div>
-                    <div style={{ width:80, textAlign:"right", fontFamily:"var(--f2)", fontSize:13, fontWeight:800,
+                    <div style={{ width:90, textAlign:"right", fontFamily:"var(--f2)", fontSize:16, fontWeight:800,
                       color: s.running >= 0 ? "#3ddc84" : "#ff5252" }}>
                       {fd(s.running,0)}
                     </div>
                   </div>
                 ))}
                 {/* Net result bar */}
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:8, paddingTop:8, borderTop:`1px solid var(--bd)` }}>
-                  <div style={{ width:160, fontSize:11, fontWeight:700, color:verdictCol, textAlign:"right", textTransform:"uppercase", letterSpacing:1 }}>Net Profit</div>
-                  <div style={{ flex:1, height:28, background:"var(--bg)", borderRadius:3, position:"relative", overflow:"hidden" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:14, marginTop:10, paddingTop:10, borderTop:`1px solid var(--bd)` }}>
+                  <div style={{ width:180, fontSize:14, fontWeight:700, color:verdictCol, textAlign:"right", textTransform:"uppercase", letterSpacing:1 }}>Net Profit</div>
+                  <div style={{ flex:1, height:34, background:"var(--bg)", borderRadius:4, position:"relative", overflow:"hidden" }}>
                     <div style={{
-                      position:"absolute", left:0, top:0, height:"100%", borderRadius:3,
+                      position:"absolute", left:0, top:0, height:"100%", borderRadius:4,
                       width:`${Math.max(2, Math.abs(netAfterAll) / maxVal * 100)}%`,
                       background: netAfterAll >= 0 ? "rgba(61,220,132,.2)" : "rgba(255,82,82,.2)",
                       borderRight:`3px solid ${verdictCol}`,
                       transition:"width .3s",
                     }} />
-                    <div style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)",
-                      fontFamily:"var(--f2)", fontSize:16, fontWeight:900, color:verdictCol }}>
+                    <div style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)",
+                      fontFamily:"var(--f2)", fontSize:20, fontWeight:900, color:verdictCol }}>
                       {netAfterAll >= 0 ? "+" : ""}{fd(netAfterAll,0)}
                     </div>
                   </div>
-                  <div style={{ width:80, textAlign:"right" }}>
+                  <div style={{ width:90, textAlign:"right" }}>
                     <span style={{
-                      fontSize:10, fontWeight:800, letterSpacing:1, textTransform:"uppercase",
-                      color: verdictCol, padding:"3px 8px", borderRadius:2,
+                      fontSize:12, fontWeight:800, letterSpacing:1, textTransform:"uppercase",
+                      color: verdictCol, padding:"4px 10px", borderRadius:3,
                       background:`${verdictCol}18`, border:`1px solid ${verdictCol}40`,
                     }}>{verdictLabel}</span>
                   </div>
