@@ -1514,6 +1514,7 @@ function PerLoadCPM() {
     { key:"labor",    label:"Labor",           val:LABOR,        color:"#f47820" },
     { key:"fuel",     label:"Fuel",            val:FUEL_TOT,     color:"#f5c542" },
     { key:"trucks",   label:"Truck Rentals",   val:TRUCK_TOT,    color:"#4fc3f7" },
+    { key:"trailers", label:"Trailer Rentals", val:TRAILER_TOT,  color:"#3ddc84" },
     { key:"ins",      label:"Insurance",       val:INS_TOT,      color:"#b39ddb" },
   ];
 
@@ -1810,7 +1811,7 @@ function PerLoadCPM() {
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:12 }}>
             <div>
               <span style={{ fontFamily:"var(--f2)", fontSize:15, fontWeight:800, letterSpacing:3, textTransform:"uppercase", color:"var(--tx)" }}>Fleet Costs</span>
-              <span style={{ fontSize:13, color:"var(--mu)", marginLeft:12 }}>{activeCats.length} of 4 active</span>
+              <span style={{ fontSize:13, color:"var(--mu)", marginLeft:12 }}>{activeCats.length} of 5 active</span>
             </div>
             <div style={{ display:"flex", alignItems:"baseline", gap:16 }}>
               <span style={{ fontFamily:"var(--f2)", fontSize:22, fontWeight:900, color:"#ff5252" }}>{fd(selectedCPM,3)}<span style={{ fontSize:13, fontWeight:700, color:"var(--mu)" }}>/mi</span></span>
@@ -1828,7 +1829,7 @@ function PerLoadCPM() {
             </div>
           </div>
           {/* Cost cards */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:10 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:10 }}>
             {costCategories.map(c => {
               const on = selectedCosts[c.key];
               const cpm = MILES > 0 ? c.val / MILES : 0;
