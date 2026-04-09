@@ -1638,11 +1638,19 @@ function PerLoadCPM() {
           {inputBox("Mileage", miles, setMiles, "#4fc3f7", null,
             [150,250,386,500,750,1000], v => `${fn(v,0)} mi`)}
 
-          {/* Margin slider — wider column */}
+          {/* Margin — actual + target slider */}
           <div>
+            {/* Actual margin — large */}
+            <div style={{ textAlign:"center", marginBottom:10 }}>
+              <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:2 }}>Actual Margin</div>
+              <div style={{ fontFamily:"var(--f2)", fontSize:52, fontWeight:900, lineHeight:1, color:verdictCol }}>
+                {fp(netMarginCalc)}
+              </div>
+            </div>
+            {/* Target margin slider */}
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:6 }}>
               <span style={{ fontSize:12, letterSpacing:2, textTransform:"uppercase", color:mCol, fontWeight:700 }}>Target Margin</span>
-              <span style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:mCol, lineHeight:1 }}>
+              <span style={{ fontFamily:"var(--f2)", fontSize:28, fontWeight:900, color:mCol, lineHeight:1 }}>
                 {margin}%
               </span>
             </div>
