@@ -1522,6 +1522,37 @@ function PerLoadCPM() {
   const [miles, setMiles] = useState(386);
   const [margin, setMargin] = useState(25);
 
+  // Address-based mileage
+  const [origin, setOrigin] = useState("");
+  const [dest, setDest] = useState("");
+  const [routeStatus, setRouteStatus] = useState(null);
+  const [routeInfo, setRouteInfo] = useState(null);
+
+  const calcRoute = async () => {
+    if (!origin.trim() || !dest.trim()) return;
+    setRouteStatus("loading");
+    try {
+      const geo = async (q) => {
+        const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&countrycodes=us`);
+        const d = await r.json();
+        if (!d.length) throw new Error(`Address not found: ${q}`);
+        return { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon), display: d[0].display_name };
+      };
+      const [o, d] = await Promise.all([geo(origin), geo(dest)]);
+      const route = await fetch(`https://router.project-osrm.org/route/v1/driving/${o.lon},${o.lat};${d.lon},${d.lat}?overview=false`);
+      const rj = await route.json();
+      if (rj.code !== "Ok") throw new Error("Route not found");
+      const mi = Math.round(rj.routes[0].distance * 0.000621371);
+      const hrs = (rj.routes[0].duration / 3600).toFixed(1);
+      setMiles(mi);
+      setRouteInfo({ miles: mi, hours: hrs, origin: o.display, dest: d.display });
+      setRouteStatus("done");
+    } catch (e) {
+      setRouteStatus("error");
+      setRouteInfo({ error: e.message });
+    }
+  };
+
   // CPM component selector — which fleet costs apply to this load
   const [selectedCosts, setSelectedCosts] = useState(() => {
     const init = {};
@@ -1652,6 +1683,45 @@ function PerLoadCPM() {
             </div>
           </div>
         </div>
+
+        {/* ── LANE — origin & destination ── */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr auto 1fr auto", gap:10, marginBottom:14, alignItems:"end" }}>
+          <div>
+            <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"#3ddc84", marginBottom:6, fontWeight:700 }}>Origin</div>
+            <input type="text" value={origin} onChange={e => setOrigin(e.target.value)} placeholder="City, State or address"
+              onKeyDown={e => e.key === "Enter" && calcRoute()}
+              style={{ background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:6, padding:"12px 14px",
+                color:"var(--tx)", fontFamily:"var(--f1)", fontSize:14, outline:"none", width:"100%", transition:"border-color .15s" }} />
+          </div>
+          <div style={{ fontFamily:"var(--f2)", fontSize:24, fontWeight:900, color:"var(--mu)", paddingBottom:8 }}>{"\u2192"}</div>
+          <div>
+            <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"#ff5252", marginBottom:6, fontWeight:700 }}>Destination</div>
+            <input type="text" value={dest} onChange={e => setDest(e.target.value)} placeholder="City, State or address"
+              onKeyDown={e => e.key === "Enter" && calcRoute()}
+              style={{ background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:6, padding:"12px 14px",
+                color:"var(--tx)", fontFamily:"var(--f1)", fontSize:14, outline:"none", width:"100%", transition:"border-color .15s" }} />
+          </div>
+          <button onClick={calcRoute} style={{
+            padding:"12px 24px", borderRadius:6, cursor:"pointer", border:"none",
+            fontFamily:"var(--f2)", fontSize:14, fontWeight:800, letterSpacing:1, textTransform:"uppercase",
+            background: routeStatus === "loading" ? "var(--bd)" : "var(--or)", color:"#fff", transition:"all .15s",
+          }}>{routeStatus === "loading" ? "..." : "Calc Miles"}</button>
+        </div>
+        {routeInfo && routeStatus === "done" && (
+          <div style={{ display:"flex", gap:16, alignItems:"center", marginBottom:14, padding:"10px 16px",
+            background:"rgba(61,220,132,.06)", border:"1px solid #3ddc8430", borderRadius:4 }}>
+            <span style={{ fontSize:13, color:"var(--mu)" }}>{routeInfo.origin.split(",").slice(0,2).join(",")}</span>
+            <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:800, color:"var(--or)" }}>{"\u2192"}</span>
+            <span style={{ fontSize:13, color:"var(--mu)" }}>{routeInfo.dest.split(",").slice(0,2).join(",")}</span>
+            <span style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:900, color:"#4fc3f7" }}>{fn(routeInfo.miles,0)} mi</span>
+            <span style={{ fontSize:13, color:"var(--mu)" }}>{routeInfo.hours} hrs driving</span>
+          </div>
+        )}
+        {routeInfo && routeStatus === "error" && (
+          <div style={{ marginBottom:14, padding:"10px 16px", background:"rgba(255,82,82,.06)", border:"1px solid #ff525230", borderRadius:4, fontSize:13, color:"#ff5252" }}>
+            {routeInfo.error}
+          </div>
+        )}
 
         {/* ── INPUTS ROW ── */}
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 2fr", gap:12, marginBottom:16 }}>
