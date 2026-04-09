@@ -1744,59 +1744,54 @@ function PerLoadCPM() {
           </div>
         </div>
 
-        {/* ── CPM COMPONENT SELECTOR — clickable stacked bar ── */}
-        <div style={{ background:"rgba(0,0,0,.2)", borderRadius:6, padding:"14px 18px", marginBottom:16 }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-            <div style={{ fontSize:13, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)" }}>
-              Fleet Costs — {activeCats.length} of 4 · {fd(selectedCPM,3)}/mi · {fd(fleetCost,0)} this load
+        {/* ── FLEET COSTS ── */}
+        <div style={{ marginBottom:16 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:12 }}>
+            <div>
+              <span style={{ fontFamily:"var(--f2)", fontSize:15, fontWeight:800, letterSpacing:3, textTransform:"uppercase", color:"var(--tx)" }}>Fleet Costs</span>
+              <span style={{ fontSize:13, color:"var(--mu)", marginLeft:12 }}>{activeCats.length} of 4 active</span>
             </div>
-            <div style={{ display:"flex", gap:6 }}>
-              {[["All (4)", presetAll],["None", presetNone]].map(([lbl, action]) => (
-                <button key={lbl} onClick={action} style={{
-                  padding:"4px 12px", borderRadius:3, cursor:"pointer",
-                  fontFamily:"var(--f2)", fontSize:12, fontWeight:700,
-                  background:"transparent", color:"var(--mu)", border:"1px solid var(--bd)",
-                }}>{lbl}</button>
-              ))}
+            <div style={{ display:"flex", alignItems:"baseline", gap:16 }}>
+              <span style={{ fontFamily:"var(--f2)", fontSize:22, fontWeight:900, color:"#ff5252" }}>{fd(selectedCPM,3)}<span style={{ fontSize:13, fontWeight:700, color:"var(--mu)" }}>/mi</span></span>
+              <div style={{ display:"flex", gap:6 }}>
+                {[["All", presetAll],["None", presetNone]].map(([lbl, action]) => (
+                  <button key={lbl} onClick={action} style={{
+                    padding:"5px 14px", borderRadius:20, cursor:"pointer",
+                    fontFamily:"var(--f2)", fontSize:11, fontWeight:700, letterSpacing:1,
+                    textTransform:"uppercase",
+                    background:"transparent", color:"var(--mu)", border:"1px solid var(--bd)",
+                    transition:"all .15s",
+                  }}>{lbl}</button>
+                ))}
+              </div>
             </div>
           </div>
-          {/* Stacked bar — click segments to toggle */}
-          <div style={{ display:"flex", height:44, borderRadius:4, overflow:"hidden", marginBottom:8, cursor:"pointer" }}>
-            {costCategories.map(c => {
-              const on = selectedCosts[c.key];
-              const pct = BASIC_COST > 0 ? c.val / BASIC_COST * 100 : 25;
-              return (
-                <div key={c.key} onClick={() => toggleCost(c.key)} style={{
-                  width:`${pct}%`, background: on ? c.color : "var(--bd)",
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                  transition:"all .2s", opacity: on ? 1 : 0.3,
-                  borderRight:"2px solid var(--bg)",
-                  position:"relative",
-                }}>
-                  <span style={{ fontSize:11, fontWeight:700, color: on ? "#fff" : "var(--mu)",
-                    textShadow: on ? "0 1px 3px rgba(0,0,0,.5)" : "none" }}>
-                    {c.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          {/* Labels below bar */}
-          <div style={{ display:"flex" }}>
+          {/* Cost cards */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:10 }}>
             {costCategories.map(c => {
               const on = selectedCosts[c.key];
               const cpm = MILES > 0 ? c.val / MILES : 0;
-              const pct = BASIC_COST > 0 ? c.val / BASIC_COST * 100 : 25;
+              const loadCost = cpm * miles;
               return (
                 <div key={c.key} onClick={() => toggleCost(c.key)} style={{
-                  width:`${pct}%`, textAlign:"center", cursor:"pointer",
-                  opacity: on ? 1 : 0.35, transition:"opacity .2s",
-                  paddingRight:4,
+                  padding:"16px", borderRadius:6, cursor:"pointer",
+                  background: on ? `${c.color}08` : "rgba(0,0,0,.15)",
+                  border: on ? `1px solid ${c.color}40` : "1px solid var(--bd)",
+                  borderTop: on ? `3px solid ${c.color}` : "3px solid transparent",
+                  opacity: on ? 1 : 0.35, transition:"all .2s",
+                  textAlign:"center",
                 }}>
-                  <div style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color: on ? c.color : "var(--mu)" }}>
-                    {fd(cpm,3)}/mi
+                  <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color: on ? c.color : "var(--mu)", marginBottom:8, fontWeight:700 }}>
+                    {c.label}
                   </div>
-                  <div style={{ fontSize:11, color:"var(--mu)" }}>{fd(cpm * miles,0)}</div>
+                  <div style={{ fontFamily:"var(--f2)", fontSize:28, fontWeight:900, color: on ? c.color : "var(--mu)", lineHeight:1, marginBottom:4 }}>
+                    {fd(cpm,3)}
+                  </div>
+                  <div style={{ fontSize:12, color:"var(--mu)" }}>per mile</div>
+                  <div style={{ marginTop:8, paddingTop:8, borderTop:`1px solid ${on ? c.color+"20" : "var(--bd)"}` }}>
+                    <div style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:800, color: on ? "var(--tx)" : "var(--mu)" }}>{fd(loadCost,0)}</div>
+                    <div style={{ fontSize:11, color:"var(--mu)" }}>this load</div>
+                  </div>
                 </div>
               );
             })}
