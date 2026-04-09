@@ -1524,6 +1524,7 @@ function PerLoadCPM() {
   // Booking simulator state
   const [grossRev, setGrossRev] = useState(1846);
   const [miles, setMiles] = useState(386);
+  const [roundtrip, setRoundtrip] = useState(false);
   const [margin, setMargin] = useState(25);
 
   // Address-based mileage
@@ -1567,13 +1568,14 @@ function PerLoadCPM() {
   };
 
   // Derived calculations
-  const rpm = miles > 0 ? grossRev / miles : 0;
+  const effectiveMiles = roundtrip ? miles * 2 : miles;
+  const rpm = effectiveMiles > 0 ? grossRev / effectiveMiles : 0;
 
   // Fleet cost from selected components only
   const activeCats = costCategories.filter(c => selectedCosts[c.key]);
   const selectedTotal = activeCats.reduce((s,c) => s + c.val, 0);
   const selectedCPM = MILES > 0 ? selectedTotal / MILES : 0;
-  const fleetCost = miles * selectedCPM;
+  const fleetCost = effectiveMiles * selectedCPM;
   const netProfit = grossRev - fleetCost;
   const netMarginCalc = grossRev > 0 ? (netProfit / grossRev) * 100 : 0;
 
@@ -1585,7 +1587,7 @@ function PerLoadCPM() {
   // Verdict based on net profit (revenue minus selected fleet costs)
   const verdictCol = netProfit > 0 && netMarginCalc >= 15 ? "#3ddc84" : netProfit > 0 ? "#f5c542" : "#ff5252";
   const verdictLabel = netProfit > 0 && netMarginCalc >= 15 ? "Good Load" : netProfit > 0 ? "Acceptable" : "Loses Money";
-  const profitPerMile = miles > 0 ? netProfit / miles : 0;
+  const profitPerMile = effectiveMiles > 0 ? netProfit / effectiveMiles : 0;
   const minRevForTarget = margin < 100 ? fleetCost / (1 - margin / 100) : 0;
   const hitsTarget = netMarginCalc >= margin;
   const revBorderCol = hitsTarget ? "#3ddc84" : grossRev > fleetCost ? "#f5c542" : "#ff5252";
@@ -1737,8 +1739,26 @@ function PerLoadCPM() {
               ))}
             </div>
           </div>
-          {inputBox("Mileage", miles, setMiles, "#4fc3f7", null,
-            [150,250,386,500,750,1000], v => `${fn(v,0)} mi`)}
+          {/* Mileage with roundtrip toggle */}
+          <div>
+            {inputBox("Mileage (one-way)", miles, setMiles, "#4fc3f7", null,
+              [150,250,386,500,750,1000], v => `${fn(v,0)} mi`)}
+            <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}>
+              <button onClick={() => setRoundtrip(!roundtrip)} style={{
+                padding:"5px 14px", borderRadius:20, cursor:"pointer",
+                fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1,
+                background: roundtrip ? "#4fc3f7" : "transparent",
+                color: roundtrip ? "#000" : "var(--mu)",
+                border:`1px solid ${roundtrip ? "#4fc3f7" : "var(--bd)"}`,
+                transition:"all .15s",
+              }}>{roundtrip ? "↔ Roundtrip ON" : "→ One-way"}</button>
+              {roundtrip && (
+                <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color:"#4fc3f7" }}>
+                  {fn(effectiveMiles,0)} mi total
+                </span>
+              )}
+            </div>
+          </div>
 
           {/* Margin — actual + target slider + min revenue */}
           <div>
@@ -1828,7 +1848,7 @@ function PerLoadCPM() {
             {costCategories.map(c => {
               const on = selectedCosts[c.key];
               const cpm = MILES > 0 ? c.val / MILES : 0;
-              const loadCost = cpm * miles;
+              const loadCost = cpm * effectiveMiles;
               return (
                 <div key={c.key} onClick={() => toggleCost(c.key)} style={{
                   padding:"16px", borderRadius:6, cursor:"pointer",
@@ -1905,7 +1925,8 @@ function PerLoadCPM() {
           </div>
           <div style={{ display:"flex", gap:8 }}>
             {compareMiles.map(m => {
-              const cost = m * selectedCPM;
+              const em = roundtrip ? m * 2 : m;
+              const cost = em * selectedCPM;
               const prof = grossRev - cost;
               const mrg = grossRev > 0 ? (prof / grossRev) * 100 : 0;
               const col = prof > 0 && mrg >= 15 ? "#3ddc84" : prof > 0 ? "#f5c542" : "#ff5252";
@@ -1917,8 +1938,8 @@ function PerLoadCPM() {
                   border: isActive ? `2px solid ${col}` : "1px solid var(--bd)",
                   transition:"all .15s",
                 }}>
-                  <div style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"#4fc3f7" }}>{fn(m,0)} mi</div>
-                  <div style={{ fontFamily:"var(--f2)", fontSize:13, fontWeight:700, color:"var(--mu)", marginTop:2 }}>${(grossRev/m).toFixed(2)}/mi</div>
+                  <div style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"#4fc3f7" }}>{fn(m,0)} mi{roundtrip ? " RT" : ""}</div>
+                  <div style={{ fontFamily:"var(--f2)", fontSize:13, fontWeight:700, color:"var(--mu)", marginTop:2 }}>${(grossRev/em).toFixed(2)}/mi</div>
                   <div style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:900, color:col, marginTop:4 }}>
                     {prof >= 0 ? "+" : ""}{fd(prof,0)}
                   </div>
