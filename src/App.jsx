@@ -1523,9 +1523,7 @@ function PerLoadCPM() {
   // Booking simulator state
   const [grossRev, setGrossRev] = useState(1846);
   const [miles, setMiles] = useState(386);
-  const [carrierPay, setCarrierPay] = useState(1385);
   const [margin, setMargin] = useState(25);
-  const [lastEdited, setLastEdited] = useState("margin"); // "margin" or "carrier"
 
   // CPM component selector — which fleet costs apply to this load
   const [selectedCosts, setSelectedCosts] = useState(() => {
@@ -1550,41 +1548,19 @@ function PerLoadCPM() {
     setSelectedCosts(s);
   };
 
-  // Derived — margin and carrier pay drive each other
-  const effectiveCarrier = lastEdited === "margin" ? grossRev * (1 - margin / 100) : carrierPay;
-  const effectiveMargin = lastEdited === "carrier"
-    ? (grossRev > 0 ? ((grossRev - carrierPay) / grossRev) * 100 : 0)
-    : margin;
-
+  // Derived calculations
   const rpm = miles > 0 ? grossRev / miles : 0;
-  const profit = grossRev - effectiveCarrier;
-  const carrierRPM = miles > 0 ? effectiveCarrier / miles : 0;
-  const spread = rpm - carrierRPM;
 
   // Fleet cost from selected components only
   const activeCats = costCategories.filter(c => selectedCosts[c.key]);
   const selectedTotal = activeCats.reduce((s,c) => s + c.val, 0);
   const selectedCPM = MILES > 0 ? selectedTotal / MILES : 0;
   const fleetCost = miles * selectedCPM;
-  const netProfit = grossRev - effectiveCarrier - fleetCost;
-  const fleetOnlyProfit = grossRev - fleetCost;
-  const fleetOnlyMargin = grossRev > 0 ? (fleetOnlyProfit / grossRev) * 100 : 0;
-
-  // Margin slider handler — updates carrier pay to match
-  const handleMarginChange = (val) => {
-    setMargin(val);
-    setCarrierPay(Math.round(grossRev * (1 - val / 100)));
-    setLastEdited("margin");
-  };
-  // Carrier pay handler — updates margin to match
-  const handleCarrierChange = (val) => {
-    setCarrierPay(val);
-    if (grossRev > 0) setMargin(Math.round(((grossRev - val) / grossRev) * 100));
-    setLastEdited("carrier");
-  };
+  const netProfit = grossRev - fleetCost;
+  const netMarginCalc = grossRev > 0 ? (netProfit / grossRev) * 100 : 0;
 
   // Margin color
-  const mCol = effectiveMargin >= 25 ? "#3ddc84" : effectiveMargin >= 15 ? "#f5c542" : "#ff5252";
+  const mCol = margin >= 25 ? "#3ddc84" : margin >= 15 ? "#f5c542" : "#ff5252";
 
   // Weekly per-load data (for historical section)
   const weeklyData = ASCEND.weeks.filter(w => w.loads > 5).map(w => ({
@@ -1596,10 +1572,9 @@ function PerLoadCPM() {
 
   const breakevens = [100, 200, 300, 400, 500, 750, 1000, 1500];
 
-  // Verdict based on net profit (after carrier + selected fleet costs)
-  const netMargin = grossRev > 0 ? (netProfit / grossRev) * 100 : 0;
-  const verdictCol = netProfit > 0 && netMargin >= 15 ? "#3ddc84" : netProfit > 0 ? "#f5c542" : "#ff5252";
-  const verdictLabel = netProfit > 0 && netMargin >= 15 ? "Good Load" : netProfit > 0 ? "Acceptable" : "Loses Money";
+  // Verdict based on net profit (revenue minus selected fleet costs)
+  const verdictCol = netProfit > 0 && netMarginCalc >= 15 ? "#3ddc84" : netProfit > 0 ? "#f5c542" : "#ff5252";
+  const verdictLabel = netProfit > 0 && netMarginCalc >= 15 ? "Good Load" : netProfit > 0 ? "Acceptable" : "Loses Money";
 
   const inputBox = (label, value, onChange, color, prefix, presets, presetFmt) => (
     <div style={{ position:"relative" }}>
@@ -1661,38 +1636,36 @@ function PerLoadCPM() {
                 background:`${verdictCol}18`, border:`1px solid ${verdictCol}40`,
                 marginBottom:6,
               }}>{verdictLabel}</div>
-              <div style={{ fontSize:14, color:"var(--mu)" }}>Net after carrier + fleet · {activeCats.length} cost{activeCats.length!==1?"s":""} · {fd(selectedCPM,3)}/mi</div>
+              <div style={{ fontSize:14, color:"var(--mu)" }}>{fp(netMarginCalc)} margin · {activeCats.length} cost{activeCats.length!==1?"s":""} · {fd(selectedCPM,3)}/mi</div>
             </div>
           </div>
         </div>
 
         {/* ── INPUTS ROW ── */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 2fr", gap:12, marginBottom:16 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 2fr", gap:12, marginBottom:16 }}>
           {inputBox("Gross Revenue", grossRev, setGrossRev, "var(--or)", "$",
             [1000,1500,2000,2500,3500,5000], v => fd(v,0))}
           {inputBox("Mileage", miles, setMiles, "#4fc3f7", null,
             [150,250,386,500,750,1000], v => `${fn(v,0)} mi`)}
-          {inputBox("Carrier Pay", Math.round(effectiveCarrier), handleCarrierChange, "#f5c542", "$",
-            [800,1000,1200,1500,2000,3000], v => fd(v,0))}
 
           {/* Margin slider — wider column */}
           <div>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:6 }}>
               <span style={{ fontSize:12, letterSpacing:2, textTransform:"uppercase", color:mCol, fontWeight:700 }}>Target Margin</span>
               <span style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:mCol, lineHeight:1 }}>
-                {Math.round(effectiveMargin)}%
+                {margin}%
               </span>
             </div>
             <input type="range" className="pl-slider" min={0} max={50} step={1}
-              value={Math.round(effectiveMargin)} onChange={e => handleMarginChange(Number(e.target.value))}
+              value={margin} onChange={e => setMargin(Number(e.target.value))}
               style={{ accentColor:mCol }} />
             <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
               {[0,10,15,20,25,30,40,50].map(t => (
-                <button key={t} onClick={() => handleMarginChange(t)} style={{
+                <button key={t} onClick={() => setMargin(t)} style={{
                   padding:"3px 8px", borderRadius:3, cursor:"pointer", fontSize:12, fontWeight:700,
                   fontFamily:"var(--f2)", border:"none",
-                  background: Math.round(effectiveMargin) === t ? mCol : "transparent",
-                  color: Math.round(effectiveMargin) === t ? "#000" : "var(--mu)",
+                  background: margin === t ? mCol : "transparent",
+                  color: margin === t ? "#000" : "var(--mu)",
                 }}>{t}%</button>
               ))}
             </div>
@@ -1760,11 +1733,10 @@ function PerLoadCPM() {
         }}>
           {[
             { label:"RPM", val:`$${rpm.toFixed(2)}`, color:"var(--or)" },
-            { label:"Carrier RPM", val:`$${carrierRPM.toFixed(2)}`, color:"#f5c542" },
-            { label:"Spread", val:`$${spread.toFixed(2)}`, color:spread>=1.00?"#3ddc84":spread>=0.50?"#f5c542":"#ff5252" },
+            { label:"Fleet CPM", val:`$${selectedCPM.toFixed(3)}`, color:"#ff5252" },
             { label:`Fleet Cost (${activeCats.length})`, val:fd(fleetCost,0), color:"#ff5252" },
             { label:"Net Profit", val:(netProfit>=0?"+":"")+fd(netProfit,0), color:verdictCol },
-            { label:"Net Margin", val:fp(netMargin), color:verdictCol },
+            { label:"Net Margin", val:fp(netMarginCalc), color:verdictCol },
           ].map((k,i) => (
             <div key={k.label} style={{ display:"flex", alignItems:"center", gap:8,
               ...(i > 0 ? { borderLeft:"1px solid var(--bd)", paddingLeft:14 } : {}) }}>
@@ -1780,7 +1752,6 @@ function PerLoadCPM() {
           {(() => {
             const steps = [
               { label:"Gross Revenue", val:grossRev, running:grossRev, color:"#3ddc84" },
-              { label:"Carrier Pay", val:-effectiveCarrier, running:grossRev-effectiveCarrier, color:"#f5c542" },
               { label:`Fleet Cost (${activeCats.length} items)`, val:-fleetCost, running:netProfit, color:"#ff5252" },
             ];
             const maxVal = grossRev || 1;
