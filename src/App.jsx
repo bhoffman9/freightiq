@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, createContext, useContext } from "react";
+import { useState, useMemo, useEffect, useRef, createContext, useContext } from "react";
 import { BarChart, Bar, LineChart, Line, ComposedChart, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 import * as Papa from "papaparse";
 import * as XLSX from "xlsx";
@@ -209,6 +209,8 @@ body { background: var(--bg); color: var(--tx); font-family: var(--f1); }
   background: var(--or); border: 3px solid var(--tx); cursor: pointer; }
 .pl-slider::-webkit-slider-runnable-track { height: 10px; border-radius: 5px; }
 .pl-sticky { position: sticky; top: 0; z-index: 50; }
+@keyframes pl-pulse { 0%{box-shadow:0 0 0 0 var(--pulse-col)} 70%{box-shadow:0 0 0 12px transparent} 100%{box-shadow:0 0 0 0 transparent} }
+.pl-verdict-pulse { animation: pl-pulse .6s ease-out; }
 
 /* layout */
 .main { flex: 1; padding: 22px 32px; max-width: 1400px; width: 100%; margin: 0 auto; }
@@ -1565,6 +1567,26 @@ function PerLoadCPM() {
   // Verdict based on net profit (revenue minus selected fleet costs)
   const verdictCol = netProfit > 0 && netMarginCalc >= 15 ? "#3ddc84" : netProfit > 0 ? "#f5c542" : "#ff5252";
   const verdictLabel = netProfit > 0 && netMarginCalc >= 15 ? "Good Load" : netProfit > 0 ? "Acceptable" : "Loses Money";
+  const profitPerMile = miles > 0 ? netProfit / miles : 0;
+  const minRevForTarget = margin < 100 ? fleetCost / (1 - margin / 100) : 0;
+  const hitsTarget = netMarginCalc >= margin;
+  const revBorderCol = hitsTarget ? "#3ddc84" : grossRev > fleetCost ? "#f5c542" : "#ff5252";
+
+  // Pulse on verdict change
+  const verdictRef = useRef(null);
+  const prevVerdict = useRef(verdictLabel);
+  useEffect(() => {
+    if (prevVerdict.current !== verdictLabel && verdictRef.current) {
+      verdictRef.current.classList.remove("pl-verdict-pulse");
+      void verdictRef.current.offsetWidth; // reflow
+      verdictRef.current.style.setProperty("--pulse-col", verdictCol + "60");
+      verdictRef.current.classList.add("pl-verdict-pulse");
+    }
+    prevVerdict.current = verdictLabel;
+  }, [verdictLabel, verdictCol]);
+
+  // Mileage quick-compare
+  const compareMiles = [200, 300, 400, 500, 750];
 
   const inputBox = (label, value, onChange, color, prefix, presets, presetFmt) => (
     <div style={{ position:"relative" }}>
@@ -1620,7 +1642,7 @@ function PerLoadCPM() {
               {netProfit >= 0 ? "+" : ""}{fd(netProfit,0)}
             </div>
             <div style={{ textAlign:"left" }}>
-              <div style={{
+              <div ref={verdictRef} style={{
                 fontSize:14, fontWeight:800, letterSpacing:2, textTransform:"uppercase",
                 color: verdictCol, padding:"5px 14px", borderRadius:3,
                 background:`${verdictCol}18`, border:`1px solid ${verdictCol}40`,
@@ -1633,8 +1655,31 @@ function PerLoadCPM() {
 
         {/* ── INPUTS ROW ── */}
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 2fr", gap:12, marginBottom:16 }}>
-          {inputBox("Gross Revenue", grossRev, setGrossRev, "var(--or)", "$",
-            [1000,1500,2000,2500,3500,5000], v => fd(v,0))}
+          {/* Gross revenue with dynamic border */}
+          <div style={{ position:"relative" }}>
+            <span style={{ position:"absolute", left:14, top:8, fontSize:12, letterSpacing:2, textTransform:"uppercase",
+              color:revBorderCol, fontWeight:700, pointerEvents:"none", zIndex:1 }}>Gross Revenue</span>
+            <span style={{ position:"absolute", left:14, top:32, fontFamily:"var(--f2)", fontSize:20,
+              fontWeight:700, color:"var(--mu)", pointerEvents:"none", zIndex:1 }}>$</span>
+            <input type="number" value={grossRev} onChange={e => setGrossRev(Number(e.target.value) || 0)}
+              style={{ background:"var(--bg)", border:`2px solid ${revBorderCol}`, borderRadius:6,
+                padding:"32px 14px 12px 32px",
+                color:"var(--tx)", fontFamily:"var(--f2)", fontSize:28, fontWeight:700,
+                textAlign:"center", outline:"none", width:"100%",
+                transition:"border-color .3s",
+              }} />
+            <div style={{ display:"flex", gap:4, marginTop:8, flexWrap:"wrap" }}>
+              {[1000,1500,2000,2500,3500,5000].map(v => (
+                <button key={v} onClick={() => setGrossRev(v)} style={{
+                  padding:"4px 10px", borderRadius:3, cursor:"pointer", fontSize:12, fontWeight:700,
+                  fontFamily:"var(--f2)",
+                  background: grossRev === v ? revBorderCol : "transparent",
+                  color: grossRev === v ? "#fff" : "var(--mu)",
+                  border:`1px solid ${grossRev === v ? revBorderCol : "var(--bd)"}`,
+                }}>{fd(v,0)}</button>
+              ))}
+            </div>
+          </div>
           {inputBox("Mileage", miles, setMiles, "#4fc3f7", null,
             [150,250,386,500,750,1000], v => `${fn(v,0)} mi`)}
 
@@ -1699,52 +1744,59 @@ function PerLoadCPM() {
           </div>
         </div>
 
-        {/* ── CPM COMPONENT SELECTOR ── */}
+        {/* ── CPM COMPONENT SELECTOR — clickable stacked bar ── */}
         <div style={{ background:"rgba(0,0,0,.2)", borderRadius:6, padding:"14px 18px", marginBottom:16 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
             <div style={{ fontSize:13, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)" }}>
-              Fleet Costs — {activeCats.length} of 4 selected · {fd(selectedCPM,3)}/mi
+              Fleet Costs — {activeCats.length} of 4 · {fd(selectedCPM,3)}/mi · {fd(fleetCost,0)} this load
             </div>
             <div style={{ display:"flex", gap:6 }}>
-              {[
-                ["All (4)", presetAll],
-                ["None", presetNone],
-              ].map(([lbl, action]) => (
+              {[["All (4)", presetAll],["None", presetNone]].map(([lbl, action]) => (
                 <button key={lbl} onClick={action} style={{
                   padding:"4px 12px", borderRadius:3, cursor:"pointer",
                   fontFamily:"var(--f2)", fontSize:12, fontWeight:700,
-                  background:"transparent", color:"var(--mu)",
-                  border:"1px solid var(--bd)",
+                  background:"transparent", color:"var(--mu)", border:"1px solid var(--bd)",
                 }}>{lbl}</button>
               ))}
             </div>
           </div>
-          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+          {/* Stacked bar — click segments to toggle */}
+          <div style={{ display:"flex", height:44, borderRadius:4, overflow:"hidden", marginBottom:8, cursor:"pointer" }}>
+            {costCategories.map(c => {
+              const on = selectedCosts[c.key];
+              const pct = BASIC_COST > 0 ? c.val / BASIC_COST * 100 : 25;
+              return (
+                <div key={c.key} onClick={() => toggleCost(c.key)} style={{
+                  width:`${pct}%`, background: on ? c.color : "var(--bd)",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  transition:"all .2s", opacity: on ? 1 : 0.3,
+                  borderRight:"2px solid var(--bg)",
+                  position:"relative",
+                }}>
+                  <span style={{ fontSize:11, fontWeight:700, color: on ? "#fff" : "var(--mu)",
+                    textShadow: on ? "0 1px 3px rgba(0,0,0,.5)" : "none" }}>
+                    {c.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          {/* Labels below bar */}
+          <div style={{ display:"flex" }}>
             {costCategories.map(c => {
               const on = selectedCosts[c.key];
               const cpm = MILES > 0 ? c.val / MILES : 0;
+              const pct = BASIC_COST > 0 ? c.val / BASIC_COST * 100 : 25;
               return (
                 <div key={c.key} onClick={() => toggleCost(c.key)} style={{
-                  display:"flex", alignItems:"center", gap:8, padding:"8px 14px",
-                  borderRadius:4, cursor:"pointer", flex:"1 1 auto", minWidth:140,
-                  background: on ? `${c.color}12` : "transparent",
-                  border:`1px solid ${on ? c.color+"50" : "var(--bd)"}`,
-                  opacity: on ? 1 : 0.4, transition:"all .15s",
+                  width:`${pct}%`, textAlign:"center", cursor:"pointer",
+                  opacity: on ? 1 : 0.35, transition:"opacity .2s",
+                  paddingRight:4,
                 }}>
-                  <div style={{
-                    width:18, height:18, borderRadius:3, flexShrink:0,
-                    background: on ? c.color : "transparent",
-                    border:`2px solid ${on ? c.color : "var(--mu)"}`,
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                    fontSize:11, color:"#fff", fontWeight:700,
-                  }}>{on ? "✓" : ""}</div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:13, fontWeight:600, color: on ? "var(--tx)" : "var(--mu)" }}>{c.label}</div>
+                  <div style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color: on ? c.color : "var(--mu)" }}>
+                    {fd(cpm,3)}/mi
                   </div>
-                  <div style={{ textAlign:"right" }}>
-                    <div style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color: on ? c.color : "var(--mu)" }}>{fd(cpm,3)}/mi</div>
-                    <div style={{ fontSize:11, color:"var(--mu)" }}>{fd(cpm * miles,0)} this load</div>
-                  </div>
+                  <div style={{ fontSize:11, color:"var(--mu)" }}>{fd(cpm * miles,0)}</div>
                 </div>
               );
             })}
@@ -1760,6 +1812,7 @@ function PerLoadCPM() {
           {[
             { label:"RPM", val:`$${rpm.toFixed(2)}`, color:"var(--or)" },
             { label:"Fleet CPM", val:`$${selectedCPM.toFixed(3)}`, color:"#ff5252" },
+            { label:"Profit/Mi", val:`$${profitPerMile.toFixed(2)}`, color:profitPerMile>=0?verdictCol:"#ff5252" },
             { label:`Fleet Cost (${activeCats.length})`, val:fd(fleetCost,0), color:"#ff5252" },
             { label:"Net Profit", val:(netProfit>=0?"+":"")+fd(netProfit,0), color:verdictCol },
             { label:"Net Margin", val:fp(netMarginCalc), color:verdictCol },
@@ -1831,6 +1884,37 @@ function PerLoadCPM() {
               </div>
             );
           })()}
+        </div>
+
+        {/* ── MILEAGE QUICK-COMPARE ── */}
+        <div style={{ background:"rgba(0,0,0,.2)", borderRadius:6, padding:"14px 18px", marginTop:16 }}>
+          <div style={{ fontSize:13, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:10 }}>
+            What if mileage changes? · at {fd(grossRev,0)} revenue
+          </div>
+          <div style={{ display:"flex", gap:8 }}>
+            {compareMiles.map(m => {
+              const cost = m * selectedCPM;
+              const prof = grossRev - cost;
+              const mrg = grossRev > 0 ? (prof / grossRev) * 100 : 0;
+              const col = prof > 0 && mrg >= 15 ? "#3ddc84" : prof > 0 ? "#f5c542" : "#ff5252";
+              const isActive = m === miles;
+              return (
+                <div key={m} onClick={() => setMiles(m)} style={{
+                  flex:1, textAlign:"center", padding:"10px 6px", borderRadius:4, cursor:"pointer",
+                  background: isActive ? `${col}15` : "var(--bg)",
+                  border: isActive ? `2px solid ${col}` : "1px solid var(--bd)",
+                  transition:"all .15s",
+                }}>
+                  <div style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"#4fc3f7" }}>{fn(m,0)} mi</div>
+                  <div style={{ fontFamily:"var(--f2)", fontSize:13, fontWeight:700, color:"var(--mu)", marginTop:2 }}>${(grossRev/m).toFixed(2)}/mi</div>
+                  <div style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:900, color:col, marginTop:4 }}>
+                    {prof >= 0 ? "+" : ""}{fd(prof,0)}
+                  </div>
+                  <div style={{ fontSize:12, fontWeight:700, color:col }}>{fp(mrg)}</div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
