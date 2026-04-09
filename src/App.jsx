@@ -1532,20 +1532,11 @@ function PerLoadCPM() {
     if (!origin.trim() || !dest.trim()) return;
     setRouteStatus("loading");
     try {
-      const geo = async (q) => {
-        const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&countrycodes=us`);
-        const d = await r.json();
-        if (!d.length) throw new Error(`Address not found: ${q}`);
-        return { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon), display: d[0].display_name };
-      };
-      const [o, d] = await Promise.all([geo(origin), geo(dest)]);
-      const route = await fetch(`https://router.project-osrm.org/route/v1/driving/${o.lon},${o.lat};${d.lon},${d.lat}?overview=false`);
-      const rj = await route.json();
-      if (rj.code !== "Ok") throw new Error("Route not found");
-      const mi = Math.round(rj.routes[0].distance * 0.000621371);
-      const hrs = (rj.routes[0].duration / 3600).toFixed(1);
-      setMiles(mi);
-      setRouteInfo({ miles: mi, hours: hrs, origin: o.display, dest: d.display });
+      const r = await fetch(`/api/distance?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}`);
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || "Route calculation failed");
+      setMiles(data.miles);
+      setRouteInfo({ miles: data.miles, hours: data.hours, origin: data.origin, dest: data.destination });
       setRouteStatus("done");
     } catch (e) {
       setRouteStatus("error");
