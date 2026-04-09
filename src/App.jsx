@@ -199,6 +199,17 @@ body { background: var(--bg); color: var(--tx); font-family: var(--f1); }
 .ntab:hover { color: var(--tx); }
 .ntab.on { color: var(--or); border-bottom-color: var(--or); }
 
+/* per-load slider */
+.pl-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 10px;
+  border-radius: 5px; background: var(--bd); outline: none; cursor: pointer; }
+.pl-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none;
+  width: 24px; height: 24px; border-radius: 50%; background: var(--or);
+  border: 3px solid var(--tx); cursor: pointer; box-shadow: 0 0 8px rgba(0,0,0,.5); }
+.pl-slider::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%;
+  background: var(--or); border: 3px solid var(--tx); cursor: pointer; }
+.pl-slider::-webkit-slider-runnable-track { height: 10px; border-radius: 5px; }
+.pl-sticky { position: sticky; top: 0; z-index: 50; }
+
 /* layout */
 .main { flex: 1; padding: 22px; max-width: 1160px; width: 100%; margin: 0 auto; }
 .ptitle { font-family: var(--f2); font-size: 32px; font-weight: 900; letter-spacing: 2px;
@@ -1558,175 +1569,191 @@ function PerLoadCPM() {
 
   const breakevens = [100, 200, 300, 400, 500, 750, 1000, 1500];
 
-  const inputStyle = {
-    background:"var(--bg)", border:"2px solid var(--bd)", borderRadius:6,
-    padding:"12px 16px", color:"var(--tx)", fontFamily:"var(--f2)", fontWeight:700,
-    textAlign:"center", outline:"none", width:"100%",
-  };
+  // Verdict color for dynamic border
+  const netAfterAll = grossRev - effectiveCarrier - fleetCost;
+  const verdictCol = fleetMargin >= 20 ? "#3ddc84" : fleetMargin >= 10 ? "#f5c542" : "#ff5252";
+  const verdictLabel = fleetMargin >= 20 ? "Good Load" : fleetMargin >= 10 ? "Acceptable" : fleetMargin >= 0 ? "Low Margin" : "Below Cost";
+
+  const inputBox = (label, value, onChange, color, prefix, presets, presetFmt) => (
+    <div style={{ position:"relative" }}>
+      <span style={{ position:"absolute", left:12, top:6, fontSize:9, letterSpacing:2, textTransform:"uppercase",
+        color, fontWeight:700, pointerEvents:"none", zIndex:1 }}>{label}</span>
+      {prefix && <span style={{ position:"absolute", left:12, top:28, fontFamily:"var(--f2)", fontSize:18,
+        fontWeight:700, color:"var(--mu)", pointerEvents:"none", zIndex:1 }}>{prefix}</span>}
+      <input type="number" value={value} onChange={e => onChange(Number(e.target.value) || 0)}
+        style={{ background:"var(--bg)", border:`2px solid ${color}60`, borderRadius:6,
+          padding: prefix ? "28px 12px 10px 28px" : "28px 12px 10px 12px",
+          color:"var(--tx)", fontFamily:"var(--f2)", fontSize:24, fontWeight:700,
+          textAlign:"center", outline:"none", width:"100%",
+          transition:"border-color .15s",
+        }} />
+      {presets && (
+        <div style={{ display:"flex", gap:3, marginTop:6, flexWrap:"wrap" }}>
+          {presets.map(v => (
+            <button key={v} onClick={() => onChange(v)} style={{
+              padding:"3px 7px", borderRadius:3, cursor:"pointer", fontSize:9, fontWeight:700,
+              fontFamily:"var(--f2)",
+              background: value === v ? color : "transparent",
+              color: value === v ? (color==="#f5c542"?"#000":"#fff") : "var(--mu)",
+              border:`1px solid ${value === v ? color : "var(--bd)"}`,
+            }}>{presetFmt ? presetFmt(v) : v}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div>
       <div className="ptitle">Per Load CPM</div>
       <div className="psub">Book loads with real-time margin analysis · Basic CPM: {fd(BASIC_CPM_V,3)}/mi · {PERIOD}</div>
 
-      {/* ═══ BOOKING SIMULATOR ═══ */}
-      <div style={{
-        padding:"28px", borderRadius:8, marginBottom:14,
-        background:"linear-gradient(135deg,#0f1118,#12151c)",
-        border:"2px solid var(--or)",
-        boxShadow:"0 0 60px rgba(244,120,32,.08)",
+      {/* ═══ STICKY BOOKING SIMULATOR ═══ */}
+      <div className="pl-sticky" style={{
+        padding:"20px 24px", borderRadius:8, marginBottom:14,
+        background:"linear-gradient(135deg,#0f1118 0%,#12151c 100%)",
+        border:`2px solid ${verdictCol}`,
+        boxShadow:`0 0 40px ${verdictCol}20`,
+        transition:"border-color .3s, box-shadow .3s",
       }}>
-        {/* Inputs row */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:16, marginBottom:24 }}>
-          {/* Gross Revenue */}
-          <div>
-            <div style={{ fontSize:10, letterSpacing:3, textTransform:"uppercase", color:"var(--or)", marginBottom:8, fontWeight:700 }}>Gross Revenue</div>
-            <div style={{ position:"relative" }}>
-              <span style={{ position:"absolute", left:16, top:"50%", transform:"translateY(-50%)", fontFamily:"var(--f2)", fontSize:20, fontWeight:700, color:"var(--mu)" }}>$</span>
-              <input type="number" value={grossRev} onChange={e => setGrossRev(Number(e.target.value) || 0)}
-                style={{ ...inputStyle, fontSize:28, paddingLeft:32, borderColor:"var(--or)" }} />
-            </div>
-            <div style={{ display:"flex", gap:4, marginTop:8, flexWrap:"wrap" }}>
-              {[1000, 1500, 2000, 2500, 3500, 5000].map(v => (
-                <button key={v} onClick={() => setGrossRev(v)} style={{
-                  padding:"4px 8px", borderRadius:3, cursor:"pointer", fontSize:10, fontWeight:700,
-                  fontFamily:"var(--f2)",
-                  background: grossRev === v ? "var(--or)" : "transparent",
-                  color: grossRev === v ? "#fff" : "var(--mu)",
-                  border:`1px solid ${grossRev === v ? "var(--or)" : "var(--bd)"}`,
-                }}>{fd(v,0)}</button>
-              ))}
-            </div>
-          </div>
 
-          {/* Mileage */}
-          <div>
-            <div style={{ fontSize:10, letterSpacing:3, textTransform:"uppercase", color:"#4fc3f7", marginBottom:8, fontWeight:700 }}>Mileage</div>
-            <input type="number" value={miles} onChange={e => setMiles(Number(e.target.value) || 0)}
-              style={{ ...inputStyle, fontSize:28, borderColor:"#4fc3f7" }} />
-            <div style={{ display:"flex", gap:4, marginTop:8, flexWrap:"wrap" }}>
-              {[150, 250, 386, 500, 750, 1000].map(v => (
-                <button key={v} onClick={() => setMiles(v)} style={{
-                  padding:"4px 8px", borderRadius:3, cursor:"pointer", fontSize:10, fontWeight:700,
-                  fontFamily:"var(--f2)",
-                  background: miles === v ? "#4fc3f7" : "transparent",
-                  color: miles === v ? "#fff" : "var(--mu)",
-                  border:`1px solid ${miles === v ? "#4fc3f7" : "var(--bd)"}`,
-                }}>{fn(v,0)} mi</button>
-              ))}
+        {/* ── PROFIT HERO ── */}
+        <div style={{ textAlign:"center", marginBottom:18 }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:12 }}>
+            <div style={{
+              fontFamily:"var(--f2)", fontSize:72, fontWeight:900, lineHeight:1,
+              color: verdictCol,
+              textShadow:`0 0 40px ${verdictCol}40`,
+            }}>
+              {profit >= 0 ? "+" : ""}{fd(profit,0)}
             </div>
-          </div>
-
-          {/* Carrier Pay */}
-          <div>
-            <div style={{ fontSize:10, letterSpacing:3, textTransform:"uppercase", color:"#f5c542", marginBottom:8, fontWeight:700 }}>Carrier Pay</div>
-            <div style={{ position:"relative" }}>
-              <span style={{ position:"absolute", left:16, top:"50%", transform:"translateY(-50%)", fontFamily:"var(--f2)", fontSize:20, fontWeight:700, color:"var(--mu)" }}>$</span>
-              <input type="number" value={Math.round(effectiveCarrier)} onChange={e => handleCarrierChange(Number(e.target.value) || 0)}
-                style={{ ...inputStyle, fontSize:28, paddingLeft:32, borderColor:"#f5c542" }} />
-            </div>
-            <div style={{ display:"flex", gap:4, marginTop:8, flexWrap:"wrap" }}>
-              {[800, 1000, 1200, 1500, 2000, 3000].map(v => (
-                <button key={v} onClick={() => handleCarrierChange(v)} style={{
-                  padding:"4px 8px", borderRadius:3, cursor:"pointer", fontSize:10, fontWeight:700,
-                  fontFamily:"var(--f2)",
-                  background: Math.round(effectiveCarrier) === v ? "#f5c542" : "transparent",
-                  color: Math.round(effectiveCarrier) === v ? "#000" : "var(--mu)",
-                  border:`1px solid ${Math.round(effectiveCarrier) === v ? "#f5c542" : "var(--bd)"}`,
-                }}>{fd(v,0)}</button>
-              ))}
-            </div>
-            <div style={{ fontSize:9, color:"var(--mu)", marginTop:4 }}>{fd(carrierRPM,2)}/mi to carrier</div>
-          </div>
-
-          {/* Target Margin */}
-          <div>
-            <div style={{ fontSize:10, letterSpacing:3, textTransform:"uppercase", color:mCol, marginBottom:8, fontWeight:700 }}>Target Margin</div>
-            <div style={{ fontSize:48, fontFamily:"var(--f2)", fontWeight:900, color:mCol, textAlign:"center", lineHeight:1, marginBottom:4 }}>
-              {Math.round(effectiveMargin)}%
-            </div>
-            <input type="range" min={0} max={50} step={1} value={Math.round(effectiveMargin)} onChange={e => handleMarginChange(Number(e.target.value))}
-              style={{ width:"100%", accentColor:mCol, cursor:"pointer", height:6 }} />
-            <div style={{ display:"flex", justifyContent:"space-between", fontSize:9, color:"var(--mu)", marginTop:4 }}>
-              <span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span>
+            <div style={{ textAlign:"left" }}>
+              <div style={{
+                fontSize:11, fontWeight:800, letterSpacing:2, textTransform:"uppercase",
+                color: verdictCol, padding:"3px 10px", borderRadius:3,
+                background:`${verdictCol}18`, border:`1px solid ${verdictCol}40`,
+                marginBottom:4,
+              }}>{verdictLabel}</div>
+              <div style={{ fontSize:11, color:"var(--mu)" }}>{fp(effectiveMargin)} margin · {fd(rpm,2)}/mi</div>
             </div>
           </div>
         </div>
 
-        {/* Results — 5 KPI boxes */}
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:10, marginBottom:20 }}>
+        {/* ── INPUTS ROW ── */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 2fr", gap:12, marginBottom:16 }}>
+          {inputBox("Gross Revenue", grossRev, setGrossRev, "var(--or)", "$",
+            [1000,1500,2000,2500,3500,5000], v => fd(v,0))}
+          {inputBox("Mileage", miles, setMiles, "#4fc3f7", null,
+            [150,250,386,500,750,1000], v => `${fn(v,0)} mi`)}
+          {inputBox("Carrier Pay", Math.round(effectiveCarrier), handleCarrierChange, "#f5c542", "$",
+            [800,1000,1200,1500,2000,3000], v => fd(v,0))}
+
+          {/* Margin slider — wider column */}
+          <div>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:6 }}>
+              <span style={{ fontSize:9, letterSpacing:2, textTransform:"uppercase", color:mCol, fontWeight:700 }}>Target Margin</span>
+              <span style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:mCol, lineHeight:1 }}>
+                {Math.round(effectiveMargin)}%
+              </span>
+            </div>
+            <input type="range" className="pl-slider" min={0} max={50} step={1}
+              value={Math.round(effectiveMargin)} onChange={e => handleMarginChange(Number(e.target.value))}
+              style={{ accentColor:mCol }} />
+            <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+              {[0,10,15,20,25,30,40,50].map(t => (
+                <button key={t} onClick={() => handleMarginChange(t)} style={{
+                  padding:"2px 6px", borderRadius:2, cursor:"pointer", fontSize:9, fontWeight:700,
+                  fontFamily:"var(--f2)", border:"none",
+                  background: Math.round(effectiveMargin) === t ? mCol : "transparent",
+                  color: Math.round(effectiveMargin) === t ? "#000" : "var(--mu)",
+                }}>{t}%</button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── CONDENSED KPI BAR ── */}
+        <div style={{
+          display:"flex", justifyContent:"space-between", alignItems:"center",
+          background:"rgba(0,0,0,.3)", borderRadius:4, padding:"10px 16px",
+          marginBottom:16,
+        }}>
           {[
-            { label:"Rate / Mile", val:`$${rpm.toFixed(2)}`, color:"var(--or)", sub:"gross rev ÷ miles" },
-            { label:"Profit", val:fd(profit,0), color:profit>=0?mCol:"#ff5252", sub:`${fd(grossRev,0)} − ${fd(effectiveCarrier,0)}` },
-            { label:"Spread / Mile", val:`$${spread.toFixed(2)}`, color:spread>=1.00?"#3ddc84":spread>=0.50?"#f5c542":"#ff5252", sub:"your RPM − carrier RPM" },
-            { label:"Basic Fleet Cost", val:fd(fleetCost,0), color:"#ff5252", sub:`${fd(BASIC_CPM_V,3)}/mi × ${fn(miles,0)} mi` },
-            { label:"Fleet Profit", val:fd(fleetProfit,0), color:fleetProfit>=0?"#3ddc84":"#ff5252", sub:`${fp(fleetMargin)} fleet margin` },
-          ].map(k => (
-            <div key={k.label} style={{
-              background:"rgba(0,0,0,.3)", border:`1px solid ${k.color}40`, borderRadius:6,
-              padding:"16px 12px", textAlign:"center",
-            }}>
-              <div style={{ fontSize:9, letterSpacing:2, textTransform:"uppercase", color:k.color, marginBottom:6 }}>{k.label}</div>
-              <div style={{ fontFamily:"var(--f2)", fontSize:28, fontWeight:900, color:k.color, lineHeight:1 }}>{k.val}</div>
-              <div style={{ fontSize:9, color:"var(--mu)", marginTop:6 }}>{k.sub}</div>
+            { label:"RPM", val:`$${rpm.toFixed(2)}`, color:"var(--or)" },
+            { label:"Carrier RPM", val:`$${carrierRPM.toFixed(2)}`, color:"#f5c542" },
+            { label:"Spread", val:`$${spread.toFixed(2)}`, color:spread>=1.00?"#3ddc84":spread>=0.50?"#f5c542":"#ff5252" },
+            { label:"Fleet Cost", val:fd(fleetCost,0), color:"#ff5252" },
+            { label:"Fleet Profit", val:(fleetProfit>=0?"+":"")+fd(fleetProfit,0), color:fleetProfit>=0?"#3ddc84":"#ff5252" },
+            { label:"Fleet Margin", val:fp(fleetMargin), color:verdictCol },
+          ].map((k,i) => (
+            <div key={k.label} style={{ display:"flex", alignItems:"center", gap:6,
+              ...(i > 0 ? { borderLeft:"1px solid var(--bd)", paddingLeft:12 } : {}) }}>
+              <span style={{ fontSize:9, letterSpacing:1, textTransform:"uppercase", color:"var(--mu)" }}>{k.label}</span>
+              <span style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:k.color }}>{k.val}</span>
             </div>
           ))}
         </div>
 
-        {/* Profit vs Fleet Cost comparison */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-          {/* Margin bar visualization */}
-          <div style={{ background:"rgba(0,0,0,.2)", borderRadius:6, padding:"18px" }}>
-            <div style={{ fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:12 }}>Revenue Breakdown</div>
-            <div className="sbar" style={{ height:32, marginBottom:12 }}>
-              <div className="sseg" style={{ width:`${grossRev>0?Math.max(0,(effectiveCarrier/grossRev)*100):0}%`, background:"#f5c542", fontSize:11, fontWeight:700 }}>
-                Carrier {grossRev>0?fp((effectiveCarrier/grossRev)*100):"0%"}
+        {/* ── COST WATERFALL ── */}
+        <div style={{ background:"rgba(0,0,0,.2)", borderRadius:6, padding:"14px 18px" }}>
+          <div style={{ fontSize:9, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:10 }}>Cost Waterfall</div>
+          {(() => {
+            const steps = [
+              { label:"Gross Revenue", val:grossRev, running:grossRev, color:"#3ddc84" },
+              { label:"Carrier Pay", val:-effectiveCarrier, running:grossRev-effectiveCarrier, color:"#f5c542" },
+              { label:"Fleet Cost (Basic CPM)", val:-fleetCost, running:netAfterAll, color:"#ff5252" },
+            ];
+            const maxVal = grossRev || 1;
+            return (
+              <div>
+                {steps.map((s,i) => (
+                  <div key={s.label} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:i<steps.length-1?6:0 }}>
+                    <div style={{ width:160, fontSize:11, color:"var(--mu)", textAlign:"right" }}>{s.label}</div>
+                    <div style={{ flex:1, position:"relative", height:24, background:"var(--bg)", borderRadius:3, overflow:"hidden" }}>
+                      <div style={{
+                        position:"absolute", left:0, top:0, height:"100%", borderRadius:3,
+                        width:`${Math.max(2, Math.abs(s.running) / maxVal * 100)}%`,
+                        background:`${s.color}30`, borderRight:`2px solid ${s.color}`,
+                        transition:"width .3s",
+                      }} />
+                      <div style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)",
+                        fontFamily:"var(--f2)", fontSize:12, fontWeight:700, color:s.color }}>
+                        {s.val >= 0 ? "" : "−"}{fd(Math.abs(s.val),0)}
+                      </div>
+                    </div>
+                    <div style={{ width:80, textAlign:"right", fontFamily:"var(--f2)", fontSize:13, fontWeight:800,
+                      color: s.running >= 0 ? "#3ddc84" : "#ff5252" }}>
+                      {fd(s.running,0)}
+                    </div>
+                  </div>
+                ))}
+                {/* Net result bar */}
+                <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:8, paddingTop:8, borderTop:`1px solid var(--bd)` }}>
+                  <div style={{ width:160, fontSize:11, fontWeight:700, color:verdictCol, textAlign:"right", textTransform:"uppercase", letterSpacing:1 }}>Net Profit</div>
+                  <div style={{ flex:1, height:28, background:"var(--bg)", borderRadius:3, position:"relative", overflow:"hidden" }}>
+                    <div style={{
+                      position:"absolute", left:0, top:0, height:"100%", borderRadius:3,
+                      width:`${Math.max(2, Math.abs(netAfterAll) / maxVal * 100)}%`,
+                      background: netAfterAll >= 0 ? "rgba(61,220,132,.2)" : "rgba(255,82,82,.2)",
+                      borderRight:`3px solid ${verdictCol}`,
+                      transition:"width .3s",
+                    }} />
+                    <div style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)",
+                      fontFamily:"var(--f2)", fontSize:16, fontWeight:900, color:verdictCol }}>
+                      {netAfterAll >= 0 ? "+" : ""}{fd(netAfterAll,0)}
+                    </div>
+                  </div>
+                  <div style={{ width:80, textAlign:"right" }}>
+                    <span style={{
+                      fontSize:10, fontWeight:800, letterSpacing:1, textTransform:"uppercase",
+                      color: verdictCol, padding:"3px 8px", borderRadius:2,
+                      background:`${verdictCol}18`, border:`1px solid ${verdictCol}40`,
+                    }}>{verdictLabel}</span>
+                  </div>
+                </div>
               </div>
-              <div className="sseg" style={{ width:`${grossRev>0?Math.max(0,effectiveMargin):0}%`, background:mCol, fontSize:11, fontWeight:700 }}>
-                Margin {fp(effectiveMargin)}
-              </div>
-            </div>
-            <div style={{ display:"flex", justifyContent:"space-between", fontSize:11 }}>
-              <div><span style={{ color:"var(--mu)" }}>Carrier: </span><span style={{ fontFamily:"var(--f2)", fontWeight:700, color:"#f5c542" }}>{fd(effectiveCarrier,0)}</span></div>
-              <div><span style={{ color:"var(--mu)" }}>Profit: </span><span style={{ fontFamily:"var(--f2)", fontWeight:700, color:mCol }}>{fd(profit,0)}</span></div>
-              <div><span style={{ color:"var(--mu)" }}>Total: </span><span style={{ fontFamily:"var(--f2)", fontWeight:700, color:"var(--or)" }}>{fd(grossRev,0)}</span></div>
-            </div>
-          </div>
-
-          {/* Fleet cost check — Basic CPM */}
-          <div style={{ background:"rgba(0,0,0,.2)", borderRadius:6, padding:"18px" }}>
-            <div style={{ fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:12 }}>Fleet Cost Check (Basic CPM)</div>
-            <div style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", borderBottom:"1px solid var(--bd)" }}>
-              <span style={{ fontSize:12, color:"var(--mu)" }}>Gross Revenue</span>
-              <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color:"#3ddc84" }}>{fd(grossRev,0)}</span>
-            </div>
-            <div style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", borderBottom:"1px solid var(--bd)" }}>
-              <span style={{ fontSize:12, color:"var(--mu)" }}>Carrier Pay</span>
-              <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color:"#f5c542" }}>−{fd(effectiveCarrier,0)}</span>
-            </div>
-            <div style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", borderBottom:"1px solid var(--bd)" }}>
-              <span style={{ fontSize:12, color:"var(--mu)" }}>Basic Fleet Cost ({fd(BASIC_CPM_V,3)}/mi)</span>
-              <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color:"#ff5252" }}>−{fd(fleetCost,0)}</span>
-            </div>
-            <div style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", borderBottom:"1px solid var(--bd)" }}>
-              <span style={{ fontSize:12, color:"var(--mu)" }}>Net After Fleet + Carrier</span>
-              <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color:(grossRev-effectiveCarrier-fleetCost)>=0?"#3ddc84":"#ff5252" }}>
-                {(grossRev-effectiveCarrier-fleetCost)>=0?"+":""}{fd(grossRev-effectiveCarrier-fleetCost,0)}
-              </span>
-            </div>
-            <div style={{ display:"flex", justifyContent:"space-between", padding:"6px 0" }}>
-              <span style={{ fontSize:12, color:"var(--mu)" }}>Fleet Margin (no carrier)</span>
-              <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color:fleetMargin>=20?"#3ddc84":fleetMargin>=10?"#f5c542":"#ff5252" }}>{fp(fleetMargin)}</span>
-            </div>
-            <div style={{ marginTop:8, padding:"8px 12px", borderRadius:3, textAlign:"center",
-              background: fleetMargin >= 20 ? "rgba(61,220,132,.1)" : fleetMargin >= 10 ? "rgba(245,197,66,.1)" : "rgba(255,82,82,.1)",
-              border: `1px solid ${fleetMargin >= 20 ? "#3ddc8440" : fleetMargin >= 10 ? "#f5c54240" : "#ff525240"}`,
-            }}>
-              <span style={{ fontSize:11, fontWeight:700, color: fleetMargin >= 20 ? "#3ddc84" : fleetMargin >= 10 ? "#f5c542" : "#ff5252" }}>
-                {fleetMargin >= 20 ? "Good load" : fleetMargin >= 10 ? "Acceptable" : fleetMargin >= 0 ? "Low margin" : "Below cost"}
-              </span>
-            </div>
-          </div>
+            );
+          })()}
         </div>
       </div>
 
