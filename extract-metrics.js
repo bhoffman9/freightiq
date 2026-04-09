@@ -69,3 +69,46 @@ metrics.extracted_at = new Date().toISOString();
 
 writeFileSync('public/metrics.json', JSON.stringify(metrics, null, 2));
 console.log('Extracted metrics.json:', JSON.stringify(metrics, null, 2));
+
+// ── Extract payroll summary for CFO Dashboard ──
+const payroll = { drivers: [], office: [], warehouse: [], contractors: [], period: metrics.period };
+
+// Driver payroll
+const driverBlock = src.match(/let PAYROLL\s*=\s*\[([\s\S]*?)\];/);
+if (driverBlock) {
+  const rows = [...driverBlock[1].matchAll(/\{\s*name:\s*"([^"]+)",\s*hours:\s*([\d.]+),\s*totalCost:\s*([\d.]+)\s*\}/g)];
+  payroll.drivers = rows.map(m => ({ name: m[1], hours: parseFloat(m[2]), totalCost: parseFloat(m[3]) }));
+}
+
+// Office W2
+const officeBlock = src.match(/const OFFICE_W2\s*=\s*\[([\s\S]*?)\];/);
+if (officeBlock) {
+  const rows = [...officeBlock[1].matchAll(/name:"([^"]+)"[\s\S]*?entity:"([^"]+)"[\s\S]*?totalCost:\s*([\d.]+)/g)];
+  payroll.office = rows.map(m => ({ name: m[1], entity: m[2], totalCost: parseFloat(m[3]) }));
+}
+
+// Warehouse
+const whBlock = src.match(/const WAREHOUSE\s*=\s*\[([\s\S]*?)\];/);
+if (whBlock) {
+  const rows = [...whBlock[1].matchAll(/name:"([^"]+)"[\s\S]*?totalCost:\s*([\d.]+)/g)];
+  payroll.warehouse = rows.map(m => ({ name: m[1], totalCost: parseFloat(m[2]) }));
+}
+
+// Contractors
+const conBlock = src.match(/const CONTRACTORS\s*=\s*\[([\s\S]*?)\];/);
+if (conBlock) {
+  const rows = [...conBlock[1].matchAll(/name:"([^"]+)"[\s\S]*?total:\s*([\d.]+)/g)];
+  payroll.contractors = rows.map(m => ({ name: m[1], total: parseFloat(m[2]) }));
+}
+
+payroll.totals = {
+  driverLabor: payroll.drivers.reduce((s, d) => s + d.totalCost, 0),
+  driverCount: payroll.drivers.length,
+  officeTotal: payroll.office.reduce((s, o) => s + o.totalCost, 0),
+  warehouseTotal: payroll.warehouse.reduce((s, w) => s + w.totalCost, 0),
+  contractorTotal: payroll.contractors.reduce((s, c) => s + c.total, 0),
+};
+payroll.totals.grandTotal = payroll.totals.driverLabor + payroll.totals.officeTotal + payroll.totals.warehouseTotal + payroll.totals.contractorTotal;
+
+writeFileSync('public/payroll-summary.json', JSON.stringify(payroll, null, 2));
+console.log('Extracted payroll-summary.json:', JSON.stringify(payroll.totals, null, 2));
