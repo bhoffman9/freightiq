@@ -7376,7 +7376,8 @@ export default function App() {
 
         <nav className="nav">
           {TABS.map(t => (
-            <button key={t.id} className={`ntab${tab === t.id ? " on" : ""}`} onClick={() => setTab(t.id)}>
+            <button key={t.id} className={`ntab${tab === t.id ? " on" : ""}`} onClick={() => setTab(t.id)}
+              style={t.id === "perload" ? { fontSize:15, letterSpacing:1.5 } : undefined}>
               {t.icon} {t.label}
             </button>
           ))}
