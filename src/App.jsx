@@ -1825,65 +1825,25 @@ function PerLoadCPM() {
           ))}
         </div>
 
-        {/* ── COST WATERFALL ── */}
-        <div style={{ background:"rgba(0,0,0,.2)", borderRadius:6, padding:"16px 20px" }}>
-          <div style={{ fontSize:13, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:12 }}>Cost Waterfall</div>
-          {(() => {
-            const steps = [
-              { label:"Gross Revenue", val:grossRev, running:grossRev, color:"#3ddc84" },
-              { label:`Fleet Cost (${activeCats.length} items)`, val:-fleetCost, running:netProfit, color:"#ff5252" },
-            ];
-            const maxVal = grossRev || 1;
-            return (
-              <div>
-                {steps.map((s,i) => (
-                  <div key={s.label} style={{ display:"flex", alignItems:"center", gap:14, marginBottom:i<steps.length-1?8:0 }}>
-                    <div style={{ width:180, fontSize:14, color:"var(--mu)", textAlign:"right" }}>{s.label}</div>
-                    <div style={{ flex:1, position:"relative", height:30, background:"var(--bg)", borderRadius:4, overflow:"hidden" }}>
-                      <div style={{
-                        position:"absolute", left:0, top:0, height:"100%", borderRadius:4,
-                        width:`${Math.max(2, Math.abs(s.running) / maxVal * 100)}%`,
-                        background:`${s.color}30`, borderRight:`2px solid ${s.color}`,
-                        transition:"width .3s",
-                      }} />
-                      <div style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)",
-                        fontFamily:"var(--f2)", fontSize:15, fontWeight:700, color:s.color }}>
-                        {s.val >= 0 ? "" : "−"}{fd(Math.abs(s.val),0)}
-                      </div>
-                    </div>
-                    <div style={{ width:90, textAlign:"right", fontFamily:"var(--f2)", fontSize:16, fontWeight:800,
-                      color: s.running >= 0 ? "#3ddc84" : "#ff5252" }}>
-                      {fd(s.running,0)}
-                    </div>
-                  </div>
-                ))}
-                {/* Net result bar */}
-                <div style={{ display:"flex", alignItems:"center", gap:14, marginTop:10, paddingTop:10, borderTop:`1px solid var(--bd)` }}>
-                  <div style={{ width:180, fontSize:14, fontWeight:700, color:verdictCol, textAlign:"right", textTransform:"uppercase", letterSpacing:1 }}>Net Profit</div>
-                  <div style={{ flex:1, height:34, background:"var(--bg)", borderRadius:4, position:"relative", overflow:"hidden" }}>
-                    <div style={{
-                      position:"absolute", left:0, top:0, height:"100%", borderRadius:4,
-                      width:`${Math.max(2, Math.abs(netProfit) / maxVal * 100)}%`,
-                      background: netProfit >= 0 ? "rgba(61,220,132,.2)" : "rgba(255,82,82,.2)",
-                      borderRight:`3px solid ${verdictCol}`,
-                      transition:"width .3s",
-                    }} />
-                    <div style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)",
-                      fontFamily:"var(--f2)", fontSize:20, fontWeight:900, color:verdictCol }}>
-                      {netProfit >= 0 ? "+" : ""}{fd(netProfit,0)}
-                    </div>
-                  </div>
-                  <div style={{ width:90, textAlign:"right" }}>
-                    <span style={{
-                      fontSize:12, fontWeight:800, letterSpacing:1, textTransform:"uppercase",
-                      color: verdictCol, padding:"4px 10px", borderRadius:3,
-                      background:`${verdictCol}18`, border:`1px solid ${verdictCol}40`,
-                    }}>{verdictLabel}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
+        {/* ── COST SUMMARY — large text ── */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr auto 1fr auto 1fr", gap:0, alignItems:"center",
+          background:"rgba(0,0,0,.2)", borderRadius:6, padding:"20px 24px" }}>
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:12, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:6 }}>Revenue</div>
+            <div style={{ fontFamily:"var(--f2)", fontSize:42, fontWeight:900, color:"#3ddc84", lineHeight:1 }}>{fd(grossRev,0)}</div>
+          </div>
+          <div style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:"var(--mu)", padding:"0 16px" }}>−</div>
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:12, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:6 }}>Fleet Cost</div>
+            <div style={{ fontFamily:"var(--f2)", fontSize:42, fontWeight:900, color:"#ff5252", lineHeight:1 }}>{fd(fleetCost,0)}</div>
+          </div>
+          <div style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:"var(--mu)", padding:"0 16px" }}>=</div>
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:12, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:6 }}>Net Profit</div>
+            <div style={{ fontFamily:"var(--f2)", fontSize:42, fontWeight:900, color:verdictCol, lineHeight:1 }}>
+              {netProfit >= 0 ? "+" : ""}{fd(netProfit,0)}
+            </div>
+          </div>
         </div>
 
         {/* ── MILEAGE QUICK-COMPARE ── */}
