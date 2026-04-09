@@ -1525,6 +1525,7 @@ function PerLoadCPM() {
   const [grossRev, setGrossRev] = useState(1846);
   const [miles, setMiles] = useState(386);
   const [roundtrip, setRoundtrip] = useState(false);
+  const [trucks, setTrucks] = useState(1);
   const [margin, setMargin] = useState(25);
 
   // Address-based mileage
@@ -1567,17 +1568,19 @@ function PerLoadCPM() {
     setSelectedCosts(s);
   };
 
-  // Derived calculations
-  const effectiveMiles = roundtrip ? miles * 2 : miles;
-  const rpm = effectiveMiles > 0 ? grossRev / effectiveMiles : 0;
+  // Derived calculations — per-truck miles, then multiply for fleet total
+  const perTruckMiles = roundtrip ? miles * 2 : miles;
+  const effectiveMiles = perTruckMiles * trucks;
+  const totalRev = grossRev * trucks;
+  const rpm = perTruckMiles > 0 ? grossRev / perTruckMiles : 0;
 
   // Fleet cost from selected components only
   const activeCats = costCategories.filter(c => selectedCosts[c.key]);
   const selectedTotal = activeCats.reduce((s,c) => s + c.val, 0);
   const selectedCPM = MILES > 0 ? selectedTotal / MILES : 0;
   const fleetCost = effectiveMiles * selectedCPM;
-  const netProfit = grossRev - fleetCost;
-  const netMarginCalc = grossRev > 0 ? (netProfit / grossRev) * 100 : 0;
+  const netProfit = totalRev - fleetCost;
+  const netMarginCalc = totalRev > 0 ? (netProfit / totalRev) * 100 : 0;
 
   // Margin color
   const mCol = margin >= 25 ? "#3ddc84" : margin >= 15 ? "#f5c542" : "#ff5252";
@@ -1590,7 +1593,7 @@ function PerLoadCPM() {
   const profitPerMile = effectiveMiles > 0 ? netProfit / effectiveMiles : 0;
   const minRevForTarget = margin < 100 ? fleetCost / (1 - margin / 100) : 0;
   const hitsTarget = netMarginCalc >= margin;
-  const revBorderCol = hitsTarget ? "#3ddc84" : grossRev > fleetCost ? "#f5c542" : "#ff5252";
+  const revBorderCol = hitsTarget ? "#3ddc84" : totalRev > fleetCost ? "#f5c542" : "#ff5252";
 
   // Pulse on verdict change
   const verdictRef = useRef(null);
@@ -1743,7 +1746,7 @@ function PerLoadCPM() {
           <div>
             {inputBox("Mileage (one-way)", miles, setMiles, "#4fc3f7", null,
               [150,250,386,500,750,1000], v => `${fn(v,0)} mi`)}
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, flexWrap:"wrap" }}>
               <button onClick={() => setRoundtrip(!roundtrip)} style={{
                 padding:"5px 14px", borderRadius:20, cursor:"pointer",
                 fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1,
@@ -1751,10 +1754,20 @@ function PerLoadCPM() {
                 color: roundtrip ? "#000" : "var(--mu)",
                 border:`1px solid ${roundtrip ? "#4fc3f7" : "var(--bd)"}`,
                 transition:"all .15s",
-              }}>{roundtrip ? "↔ Roundtrip ON" : "→ One-way"}</button>
-              {roundtrip && (
+              }}>{roundtrip ? "\u2194 Roundtrip" : "\u2192 One-way"}</button>
+              <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+                <span style={{ fontSize:12, color:"var(--mu)" }}>Trucks:</span>
+                <select value={trucks} onChange={e => setTrucks(Number(e.target.value))} style={{
+                  background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:4,
+                  padding:"4px 8px", color:"var(--tx)", fontFamily:"var(--f2)", fontSize:14, fontWeight:700,
+                  cursor:"pointer", outline:"none",
+                }}>
+                  {Array.from({length:20},(_,i)=>i+1).map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+              {(roundtrip || trucks > 1) && (
                 <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color:"#4fc3f7" }}>
-                  {fn(effectiveMiles,0)} mi total
+                  {fn(effectiveMiles,0)} mi total{trucks > 1 ? ` · ${trucks} trucks · ${fd(totalRev,0)} total rev` : ""}
                 </span>
               )}
             </div>
@@ -1792,8 +1805,8 @@ function PerLoadCPM() {
             {/* Min revenue needed to hit target */}
             {(() => {
               const minRev = margin < 100 ? fleetCost / (1 - margin / 100) : 0;
-              const minRPM = miles > 0 ? minRev / miles : 0;
-              const gap = grossRev - minRev;
+              const minRPM = perTruckMiles > 0 ? (minRev / trucks) / perTruckMiles : 0;
+              const gap = totalRev - minRev;
               const hitsTarget = netMarginCalc >= margin;
               return (
                 <div style={{
@@ -1901,8 +1914,8 @@ function PerLoadCPM() {
         <div style={{ display:"grid", gridTemplateColumns:"1fr auto 1fr auto 1fr", gap:0, alignItems:"center",
           background:"rgba(0,0,0,.2)", borderRadius:6, padding:"20px 24px" }}>
           <div style={{ textAlign:"center" }}>
-            <div style={{ fontSize:12, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:6 }}>Revenue</div>
-            <div style={{ fontFamily:"var(--f2)", fontSize:42, fontWeight:900, color:"#3ddc84", lineHeight:1 }}>{fd(grossRev,0)}</div>
+            <div style={{ fontSize:12, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:6 }}>Revenue{trucks>1?` (${trucks} trucks)`:""}</div>
+            <div style={{ fontFamily:"var(--f2)", fontSize:42, fontWeight:900, color:"#3ddc84", lineHeight:1 }}>{fd(totalRev,0)}</div>
           </div>
           <div style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:"var(--mu)", padding:"0 16px" }}>−</div>
           <div style={{ textAlign:"center" }}>
@@ -1921,14 +1934,15 @@ function PerLoadCPM() {
         {/* ── MILEAGE QUICK-COMPARE ── */}
         <div style={{ background:"rgba(0,0,0,.2)", borderRadius:6, padding:"14px 18px", marginTop:16 }}>
           <div style={{ fontSize:13, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:10 }}>
-            What if mileage changes? · at {fd(grossRev,0)} revenue
+            What if mileage changes? · {fd(totalRev,0)} revenue{trucks>1?` · ${trucks} trucks`:""}
           </div>
           <div style={{ display:"flex", gap:8 }}>
             {compareMiles.map(m => {
-              const em = roundtrip ? m * 2 : m;
+              const em = (roundtrip ? m * 2 : m) * trucks;
+              const tRev = grossRev * trucks;
               const cost = em * selectedCPM;
-              const prof = grossRev - cost;
-              const mrg = grossRev > 0 ? (prof / grossRev) * 100 : 0;
+              const prof = tRev - cost;
+              const mrg = tRev > 0 ? (prof / tRev) * 100 : 0;
               const col = prof > 0 && mrg >= 15 ? "#3ddc84" : prof > 0 ? "#f5c542" : "#ff5252";
               const isActive = m === miles;
               return (
@@ -1939,7 +1953,7 @@ function PerLoadCPM() {
                   transition:"all .15s",
                 }}>
                   <div style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"#4fc3f7" }}>{fn(m,0)} mi{roundtrip ? " RT" : ""}</div>
-                  <div style={{ fontFamily:"var(--f2)", fontSize:13, fontWeight:700, color:"var(--mu)", marginTop:2 }}>${(grossRev/em).toFixed(2)}/mi</div>
+                  <div style={{ fontFamily:"var(--f2)", fontSize:13, fontWeight:700, color:"var(--mu)", marginTop:2 }}>${(tRev/em).toFixed(2)}/mi</div>
                   <div style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:900, color:col, marginTop:4 }}>
                     {prof >= 0 ? "+" : ""}{fd(prof,0)}
                   </div>
