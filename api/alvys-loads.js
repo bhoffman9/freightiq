@@ -23,7 +23,15 @@ export default async function handler(req, res) {
         grant_type: "client_credentials",
       }),
     });
-    const { access_token } = await authRes.json();
+    const authText = await authRes.text();
+    if (!authRes.ok) {
+      return res.status(502).json({ error: "Alvys auth failed", status: authRes.status, detail: authText });
+    }
+    const authData = JSON.parse(authText);
+    const access_token = authData.access_token;
+    if (!access_token) {
+      return res.status(502).json({ error: "No access_token in auth response", detail: authText.slice(0, 200) });
+    }
 
     // Fetch all loads across statuses
     const statuses = ["Queued", "Covered", "Open", "In Transit", "Delivered", "Invoiced"];
@@ -32,7 +40,11 @@ export default async function handler(req, res) {
       headers: { authorization: `Bearer ${access_token}`, "content-type": "application/json" },
       body: JSON.stringify({ Status: statuses, pageSize: 500 }),
     });
-    const loadData = await loadRes.json();
+    const loadText = await loadRes.text();
+    if (!loadRes.ok) {
+      return res.status(502).json({ error: "Alvys loads fetch failed", status: loadRes.status, detail: loadText.slice(0, 500) });
+    }
+    const loadData = JSON.parse(loadText);
 
     const loads = (loadData.Items || []).map(l => {
       const stops = l.Stops || [];
