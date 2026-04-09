@@ -1526,6 +1526,8 @@ function PerLoadCPM() {
   const [miles, setMiles] = useState(386);
   const [roundtrip, setRoundtrip] = useState(false);
   const [trucks, setTrucks] = useState(1);
+  const [laborHours, setLaborHours] = useState(10);
+  const HOURLY_RATE = 31.15;
   const [margin, setMargin] = useState(25);
 
   // Address-based mileage
@@ -1574,11 +1576,15 @@ function PerLoadCPM() {
   const totalRev = grossRev * trucks;
   const rpm = perTruckMiles > 0 ? grossRev / perTruckMiles : 0;
 
-  // Fleet cost from selected components only
+  // Fleet cost — labor is hours-based, rest is CPM-based
   const activeCats = costCategories.filter(c => selectedCosts[c.key]);
-  const selectedTotal = activeCats.reduce((s,c) => s + c.val, 0);
-  const selectedCPM = MILES > 0 ? selectedTotal / MILES : 0;
-  const fleetCost = effectiveMiles * selectedCPM;
+  const mileageCats = activeCats.filter(c => c.key !== "labor");
+  const mileageTotal = mileageCats.reduce((s,c) => s + c.val, 0);
+  const mileageCPM = MILES > 0 ? mileageTotal / MILES : 0;
+  const laborCost = selectedCosts.labor ? laborHours * HOURLY_RATE * trucks : 0;
+  const mileageCost = effectiveMiles * mileageCPM;
+  const fleetCost = laborCost + mileageCost;
+  const selectedCPM = effectiveMiles > 0 ? fleetCost / effectiveMiles : 0;
   const netProfit = totalRev - fleetCost;
   const netMarginCalc = totalRev > 0 ? (netProfit / totalRev) * 100 : 0;
 
@@ -1860,28 +1866,61 @@ function PerLoadCPM() {
           <div style={{ display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:10 }}>
             {costCategories.map(c => {
               const on = selectedCosts[c.key];
+              const isLabor = c.key === "labor";
               const cpm = MILES > 0 ? c.val / MILES : 0;
-              const loadCost = cpm * effectiveMiles;
+              const loadCost = isLabor ? laborHours * HOURLY_RATE * trucks : cpm * effectiveMiles;
               return (
-                <div key={c.key} onClick={() => toggleCost(c.key)} style={{
-                  padding:"16px", borderRadius:6, cursor:"pointer",
+                <div key={c.key} onClick={isLabor ? undefined : () => toggleCost(c.key)} style={{
+                  padding:"16px", borderRadius:6, cursor: isLabor ? "default" : "pointer",
                   background: on ? `${c.color}08` : "rgba(0,0,0,.15)",
                   border: on ? `1px solid ${c.color}40` : "1px solid var(--bd)",
                   borderTop: on ? `3px solid ${c.color}` : "3px solid transparent",
                   opacity: on ? 1 : 0.35, transition:"all .2s",
                   textAlign:"center",
                 }}>
-                  <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color: on ? c.color : "var(--mu)", marginBottom:8, fontWeight:700 }}>
-                    {c.label}
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                    <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color: on ? c.color : "var(--mu)", fontWeight:700 }}>
+                      {c.label}
+                    </div>
+                    {isLabor && (
+                      <button onClick={(e) => { e.stopPropagation(); toggleCost("labor"); }} style={{
+                        fontSize:9, padding:"2px 6px", borderRadius:3, cursor:"pointer",
+                        background: on ? c.color : "transparent", color: on ? "#000" : "var(--mu)",
+                        border:`1px solid ${on ? c.color : "var(--bd)"}`, fontWeight:700,
+                      }}>{on ? "ON" : "OFF"}</button>
+                    )}
                   </div>
-                  <div style={{ fontFamily:"var(--f2)", fontSize:28, fontWeight:900, color: on ? c.color : "var(--mu)", lineHeight:1, marginBottom:4 }}>
-                    {fd(cpm,3)}
-                  </div>
-                  <div style={{ fontSize:12, color:"var(--mu)" }}>per mile</div>
-                  <div style={{ marginTop:8, paddingTop:8, borderTop:`1px solid ${on ? c.color+"20" : "var(--bd)"}` }}>
-                    <div style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:800, color: on ? "var(--tx)" : "var(--mu)" }}>{fd(loadCost,0)}</div>
-                    <div style={{ fontSize:11, color:"var(--mu)" }}>this load</div>
-                  </div>
+                  {isLabor ? (
+                    <>
+                      <div style={{ fontFamily:"var(--f2)", fontSize:28, fontWeight:900, color: on ? c.color : "var(--mu)", lineHeight:1, marginBottom:4 }}>
+                        {fd(HOURLY_RATE,2)}
+                      </div>
+                      <div style={{ fontSize:12, color:"var(--mu)" }}>per hour</div>
+                      <div style={{ marginTop:8, paddingTop:8, borderTop:`1px solid ${on ? c.color+"20" : "var(--bd)"}` }}>
+                        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, marginBottom:4 }}>
+                          <input type="number" value={laborHours} onClick={e => e.stopPropagation()}
+                            onChange={e => setLaborHours(Number(e.target.value) || 0)}
+                            style={{ width:50, background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:3,
+                              padding:"4px", color:"var(--tx)", fontFamily:"var(--f2)", fontSize:16, fontWeight:700,
+                              textAlign:"center", outline:"none" }} />
+                          <span style={{ fontSize:11, color:"var(--mu)" }}>hrs</span>
+                        </div>
+                        <div style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:800, color: on ? "var(--tx)" : "var(--mu)" }}>{fd(loadCost,0)}</div>
+                        <div style={{ fontSize:11, color:"var(--mu)" }}>{trucks > 1 ? `${trucks} trucks` : "this load"}</div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontFamily:"var(--f2)", fontSize:28, fontWeight:900, color: on ? c.color : "var(--mu)", lineHeight:1, marginBottom:4 }}>
+                        {fd(cpm,3)}
+                      </div>
+                      <div style={{ fontSize:12, color:"var(--mu)" }}>per mile</div>
+                      <div style={{ marginTop:8, paddingTop:8, borderTop:`1px solid ${on ? c.color+"20" : "var(--bd)"}` }}>
+                        <div style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:800, color: on ? "var(--tx)" : "var(--mu)" }}>{fd(loadCost,0)}</div>
+                        <div style={{ fontSize:11, color:"var(--mu)" }}>this load</div>
+                      </div>
+                    </>
+                  )}
                 </div>
               );
             })}
