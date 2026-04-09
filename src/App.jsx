@@ -1504,11 +1504,14 @@ function CpmSimulator() {
 
 // ── PER LOAD CPM ─────────────────────────────────────────────
 function PerLoadCPM() {
-  const totalLoads = ASCEND.totalLoads;
-  const avgMilesPerLoad = ASCEND.totalMiles / totalLoads;
-  const avgRevPerLoad = ASCEND.totalRev / totalLoads;
-  const costPerLoad = ALLIN_COST / totalLoads;
-  const basicCostPerLoad = BASIC_COST / totalLoads;
+  // Live Alvys data
+  const [alvys, setAlvys] = useState(null);
+  useEffect(() => {
+    fetch("/api/alvys-loads")
+      .then(r => r.json())
+      .then(d => { if (d.loads) setAlvys(d); })
+      .catch(e => console.warn("Alvys fetch failed:", e));
+  }, []);
 
   const costCategories = [
     { key:"labor",    label:"Labor",           val:LABOR,        color:"#f47820" },
@@ -1576,14 +1579,6 @@ function PerLoadCPM() {
 
   // Margin color
   const mCol = margin >= 25 ? "#3ddc84" : margin >= 15 ? "#f5c542" : "#ff5252";
-
-  // Weekly per-load data (for historical section)
-  const weeklyData = ASCEND.weeks.filter(w => w.loads > 5).map(w => ({
-    ...w,
-    costPerLoad: w.exp / w.loads,
-    milesPerLoad: w.miles / w.loads,
-    gpPerLoad: w.gp / w.loads,
-  }));
 
   const breakevens = [100, 200, 300, 400, 500, 750, 1000, 1500];
 
@@ -1935,119 +1930,102 @@ function PerLoadCPM() {
         </div>
       </div>
 
-      {/* ═══ HISTORICAL DATA (below the fold) ═══ */}
+      {/* ═══ LIVE ALVYS DATA ═══ */}
       <div style={{ marginTop:28, paddingTop:20, borderTop:"2px solid var(--bd)" }}>
-        <div style={{ fontSize:13, fontFamily:"var(--f2)", fontWeight:800, letterSpacing:3, textTransform:"uppercase", color:"var(--mu)", marginBottom:14 }}>
-          Historical Performance
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+          <div style={{ fontSize:15, fontFamily:"var(--f2)", fontWeight:800, letterSpacing:3, textTransform:"uppercase", color:"var(--tx)" }}>
+            Alvys TMS — Live Loads
+          </div>
+          {alvys && <span style={{ fontSize:12, color:"var(--mu)" }}>Updated {new Date(alvys.fetchedAt).toLocaleString()} · {alvys.total} loads</span>}
         </div>
 
-        {/* Fleet avg KPIs */}
-        <div className="g4" style={{ marginBottom:14 }}>
-          {[
-            { label:"Avg Cost / Load", val:fd(costPerLoad,0), color:"#ff5252", sub:`All-In · ${fn(totalLoads,0)} loads` },
-            { label:"Avg Revenue / Load", val:fd(avgRevPerLoad,0), color:"#3ddc84", sub:`${fd(ASCEND.avgRPM,2)}/mi avg` },
-            { label:"Avg Profit / Load", val:fd(avgRevPerLoad - costPerLoad,0), color:"#f5c542", sub:`${fp(((avgRevPerLoad-costPerLoad)/avgRevPerLoad)*100)} margin` },
-            { label:"Avg Miles / Load", val:fn(avgMilesPerLoad,0), color:"#4fc3f7", sub:`${fn(ASCEND.totalMiles,0)} total mi` },
-          ].map(k => (
-            <div key={k.label} style={{ background:"var(--s1)", border:`1px solid ${k.color}40`, borderRadius:6, padding:"18px", textAlign:"center" }}>
-              <div style={{ fontSize:9, letterSpacing:3, textTransform:"uppercase", color:k.color, marginBottom:4 }}>{k.label}</div>
-              <div style={{ fontFamily:"var(--f2)", fontSize:30, fontWeight:900, color:k.color, lineHeight:1 }}>{k.val}</div>
-              <div style={{ fontSize:10, color:"var(--mu)", marginTop:4 }}>{k.sub}</div>
+        {!alvys ? (
+          <div style={{ textAlign:"center", padding:"40px", color:"var(--mu)" }}>Loading Alvys data...</div>
+        ) : (
+          <>
+            {/* Summary KPIs */}
+            <div className="g4" style={{ marginBottom:14 }}>
+              {[
+                { label:"Total Pipeline", val:fd(alvys.summary.totalRevenue,0), color:"#3ddc84", sub:`${alvys.total} loads` },
+                { label:"Avg Revenue / Load", val:fd(alvys.summary.avgRevPerLoad,0), color:"#f5c542", sub:`across all statuses` },
+                { label:"Avg RPM", val:`$${alvys.summary.avgRPM}`, color:"#4fc3f7", sub:`${fn(alvys.summary.totalMiles,0)} total miles` },
+                { label:"Top Customer", val:alvys.topCustomers[0]?.name || "—", color:"var(--or)", sub:alvys.topCustomers[0] ? `${alvys.topCustomers[0].loads} loads · ${fd(alvys.topCustomers[0].revenue,0)}` : "" },
+              ].map(k => (
+                <div key={k.label} style={{ background:"var(--s1)", border:`1px solid ${k.color}40`, borderRadius:6, padding:"18px", textAlign:"center" }}>
+                  <div style={{ fontSize:10, letterSpacing:3, textTransform:"uppercase", color:k.color, marginBottom:4 }}>{k.label}</div>
+                  <div style={{ fontFamily:"var(--f2)", fontSize:k.label==="Top Customer"?16:30, fontWeight:900, color:k.color, lineHeight:1 }}>{k.val}</div>
+                  <div style={{ fontSize:11, color:"var(--mu)", marginTop:4 }}>{k.sub}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <div className="g2" style={{ marginBottom:14 }}>
-          {/* Breakeven table */}
-          <div className="card">
-            <div className="ctit">Breakeven Rate/Mile by Distance</div>
-            <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
-              <thead>
-                <tr style={{ borderBottom:"2px solid var(--bd)" }}>
-                  <th style={{ textAlign:"left", padding:"8px 6px", fontSize:9, color:"var(--mu)", letterSpacing:1, textTransform:"uppercase" }}>Distance</th>
-                  <th style={{ textAlign:"right", padding:"8px 6px", fontSize:9, color:"#3ddc84", letterSpacing:1, textTransform:"uppercase" }}>Basic B/E</th>
-                  <th style={{ textAlign:"right", padding:"8px 6px", fontSize:9, color:"var(--or)", letterSpacing:1, textTransform:"uppercase" }}>All-In B/E</th>
-                  <th style={{ textAlign:"right", padding:"8px 6px", fontSize:9, color:"#f5c542", letterSpacing:1, textTransform:"uppercase" }}>20% Margin</th>
-                  <th style={{ textAlign:"right", padding:"8px 6px", fontSize:9, color:"#4fc3f7", letterSpacing:1, textTransform:"uppercase" }}>30% Margin</th>
-                </tr>
-              </thead>
-              <tbody>
-                {breakevens.map(d => {
-                  const m20 = ALLIN_CPM_V / (1 - 0.20);
-                  const m30 = ALLIN_CPM_V / (1 - 0.30);
-                  return (
-                    <tr key={d} style={{ borderBottom:"1px solid var(--bd)" }}>
-                      <td style={{ padding:"6px", fontFamily:"var(--f2)", fontWeight:700 }}>{fn(d,0)} mi</td>
-                      <td style={{ textAlign:"right", padding:"6px", fontFamily:"var(--f2)", fontWeight:700, color:"#3ddc84" }}>{fd(BASIC_CPM_V,3)} <span style={{color:"var(--mu)",fontSize:9}}>({fd(d*BASIC_CPM_V,0)})</span></td>
-                      <td style={{ textAlign:"right", padding:"6px", fontFamily:"var(--f2)", fontWeight:700, color:"var(--or)" }}>{fd(ALLIN_CPM_V,3)} <span style={{color:"var(--mu)",fontSize:9}}>({fd(d*ALLIN_CPM_V,0)})</span></td>
-                      <td style={{ textAlign:"right", padding:"6px", fontFamily:"var(--f2)", fontWeight:700, color:"#f5c542" }}>{fd(m20,3)} <span style={{color:"var(--mu)",fontSize:9}}>({fd(d*m20,0)})</span></td>
-                      <td style={{ textAlign:"right", padding:"6px", fontFamily:"var(--f2)", fontWeight:700, color:"#4fc3f7" }}>{fd(m30,3)} <span style={{color:"var(--mu)",fontSize:9}}>({fd(d*m30,0)})</span></td>
+            {/* Status breakdown */}
+            <div style={{ display:"flex", gap:8, marginBottom:14, flexWrap:"wrap" }}>
+              {Object.entries(alvys.byStatus).filter(([,v]) => v.loads > 0).map(([status, v]) => {
+                const col = status==="Delivered"?"#3ddc84":status==="Invoiced"?"#f5c542":status==="In Transit"?"#4fc3f7":status==="Covered"?"#b39ddb":status==="Queued"?"var(--or)":"var(--mu)";
+                return (
+                  <div key={status} style={{ flex:"1 1 auto", background:"var(--s1)", border:`1px solid ${col}30`, borderRadius:4, padding:"10px 14px", textAlign:"center", minWidth:100 }}>
+                    <div style={{ fontSize:10, letterSpacing:1, textTransform:"uppercase", color:col, marginBottom:4 }}>{status}</div>
+                    <div style={{ fontFamily:"var(--f2)", fontSize:22, fontWeight:900, color:col }}>{v.loads}</div>
+                    <div style={{ fontSize:11, color:"var(--mu)" }}>{fd(v.revenue,0)}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Load table */}
+            <div className="card">
+              <div className="ctit">Recent Loads — All Statuses</div>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, whiteSpace:"nowrap" }}>
+                  <thead>
+                    <tr style={{ borderBottom:"2px solid var(--bd)" }}>
+                      {["Load #","Customer","Origin","Destination","Miles","Revenue","RPM","Status"].map(h => (
+                        <th key={h} style={{ textAlign:h==="Load #"||h==="Customer"||h==="Origin"||h==="Destination"?"left":"right", padding:"8px", fontSize:10, color:"var(--mu)", letterSpacing:1, textTransform:"uppercase" }}>{h}</th>
+                      ))}
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody>
+                    {alvys.loads.slice(0,50).map(l => {
+                      const sCol = l.status==="Delivered"?"#3ddc84":l.status==="Invoiced"?"#f5c542":l.status==="In Transit"?"#4fc3f7":l.status==="Covered"?"#b39ddb":"var(--or)";
+                      return (
+                        <tr key={l.loadNumber} style={{ borderBottom:"1px solid var(--bd)" }}>
+                          <td style={{ padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:"var(--or)" }}>{l.loadNumber}</td>
+                          <td style={{ padding:"6px 8px", color:"var(--tx)", maxWidth:180, overflow:"hidden", textOverflow:"ellipsis" }}>{l.customer}</td>
+                          <td style={{ padding:"6px 8px", color:"var(--mu)" }}>{l.origin.city}{l.origin.state ? `, ${l.origin.state}` : ""}</td>
+                          <td style={{ padding:"6px 8px", color:"var(--mu)" }}>{l.destination.city}{l.destination.state ? `, ${l.destination.state}` : ""}</td>
+                          <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:"#4fc3f7" }}>{l.miles > 0 ? fn(l.miles,0) : "—"}</td>
+                          <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:"#3ddc84" }}>{l.revenue > 0 ? fd(l.revenue,0) : "—"}</td>
+                          <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:l.rpm>=4?"#3ddc84":l.rpm>=3?"#f5c542":"#ff5252" }}>{l.rpm > 0 ? `$${l.rpm.toFixed(2)}` : "—"}</td>
+                          <td style={{ textAlign:"right", padding:"6px 8px" }}>
+                            <span style={{ fontSize:10, fontWeight:700, letterSpacing:1, textTransform:"uppercase", color:sCol, padding:"2px 8px", borderRadius:2, background:`${sCol}15` }}>{l.status}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-          {/* Profit by distance chart */}
-          <div className="card">
-            <div className="ctit">Profit by Distance at Different Rates</div>
-            <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={breakevens.map(d => ({
-                dist: d,
-                "$3.50/mi": d * 3.50 - d * ALLIN_CPM_V,
-                "$4.50/mi": d * 4.50 - d * ALLIN_CPM_V,
-                "$5.50/mi": d * 5.50 - d * ALLIN_CPM_V,
-              }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--bd)" />
-                <XAxis dataKey="dist" tick={{ fill:"var(--mu)", fontSize:10 }} tickFormatter={v => `${v}mi`} />
-                <YAxis tick={{ fill:"var(--mu)", fontSize:10 }} tickFormatter={v => `$${v>=1000?(v/1000).toFixed(1)+"k":v}`} />
-                <Tooltip
-                  contentStyle={{ background:"var(--s1)", border:"1px solid var(--bd)", borderRadius:4, fontSize:11 }}
-                  formatter={(v,n) => [fd(v,0),n]}
-                  labelFormatter={l => `${fn(l,0)} miles`}
-                />
-                <ReferenceLine y={0} stroke="var(--mu)" strokeDasharray="4 4" />
-                <Line type="monotone" dataKey="$3.50/mi" stroke="#f5c542" strokeWidth={2} dot={{ r:3, fill:"#f5c542" }} />
-                <Line type="monotone" dataKey="$4.50/mi" stroke="#3ddc84" strokeWidth={2} dot={{ r:3, fill:"#3ddc84" }} />
-                <Line type="monotone" dataKey="$5.50/mi" stroke="#4fc3f7" strokeWidth={2} dot={{ r:3, fill:"#4fc3f7" }} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Weekly table */}
-        <div className="card">
-          <div className="ctit">Weekly Per-Load Economics</div>
-          <div style={{ fontSize:10, color:"var(--mu)", marginBottom:10 }}>Ascend TMS · weeks with 6+ loads · {ASCEND.period}</div>
-          <div style={{ overflowX:"auto" }}>
-            <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11, whiteSpace:"nowrap" }}>
-              <thead>
-                <tr style={{ borderBottom:"2px solid var(--bd)" }}>
-                  {["Week","Loads","Miles","Mi/Load","Revenue","Rev/Load","Exp/Load","GP/Load","Margin","RPM"].map(h => (
-                    <th key={h} style={{ textAlign:h==="Week"?"left":"right", padding:"8px 8px", fontSize:9, color:"var(--mu)", letterSpacing:1, textTransform:"uppercase" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {weeklyData.map(w => (
-                  <tr key={w.label} style={{ borderBottom:"1px solid var(--bd)" }}>
-                    <td style={{ padding:"6px 8px", fontWeight:600, color:"var(--tx)" }}>{w.label}</td>
-                    <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700 }}>{w.loads}</td>
-                    <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", color:"var(--mu)" }}>{fn(w.miles,0)}</td>
-                    <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", color:"#4fc3f7" }}>{fn(w.milesPerLoad,0)}</td>
-                    <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", color:"#3ddc84" }}>{fd(w.rev,0)}</td>
-                    <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:"#3ddc84" }}>{fd(w.rev/w.loads,0)}</td>
-                    <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", color:"#ff5252" }}>{fd(w.costPerLoad,0)}</td>
-                    <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:w.gpPerLoad>0?"#f5c542":"#ff5252" }}>{fd(w.gpPerLoad,0)}</td>
-                    <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:w.gpPct>=25?"#3ddc84":w.gpPct>=15?"#f5c542":"#ff5252" }}>{fp(w.gpPct)}</td>
-                    <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", color:"#4fc3f7" }}>${w.rpm.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+            {/* Top Customers */}
+            <div className="card" style={{ marginTop:14 }}>
+              <div className="ctit">Top Customers by Revenue</div>
+              {alvys.topCustomers.map((c,i) => (
+                <div key={c.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid var(--bd)" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                    <span style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"var(--mu)", width:24 }}>{i+1}</span>
+                    <span style={{ fontSize:13, color:"var(--tx)" }}>{c.name}</span>
+                  </div>
+                  <div style={{ display:"flex", gap:20, alignItems:"center" }}>
+                    <span style={{ fontSize:12, color:"var(--mu)" }}>{c.loads} loads</span>
+                    <span style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"#3ddc84" }}>{fd(c.revenue,0)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
