@@ -1513,11 +1513,6 @@ function PerLoadCPM() {
     { key:"fuel",     label:"Fuel",            val:FUEL_TOT,     color:"#f5c542" },
     { key:"trucks",   label:"Truck Rentals",   val:TRUCK_TOT,    color:"#4fc3f7" },
     { key:"ins",      label:"Insurance",       val:INS_TOT,      color:"#b39ddb" },
-    { key:"trailers", label:"Trailer Rentals", val:TRAILER_TOT,  color:"#3ddc84" },
-    { key:"tmaint",   label:"Truck Maint",     val:TRUCK_MAINT,  color:"#ff8a65" },
-    { key:"rmaint",   label:"Trailer Maint",   val:TRAIL_MAINT,  color:"#26a69a" },
-    { key:"storage",  label:"Storage",         val:STORAGE,      color:"#d97706" },
-    { key:"uniforms", label:"Uniforms",        val:UNIFORMS,     color:"#ec407a" },
   ];
 
   // Booking simulator state
@@ -1528,16 +1523,11 @@ function PerLoadCPM() {
   // CPM component selector — which fleet costs apply to this load
   const [selectedCosts, setSelectedCosts] = useState(() => {
     const init = {};
-    costCategories.forEach(c => { init[c.key] = ["trucks","ins","trailers","tmaint","rmaint","storage","uniforms"].includes(c.key); });
-    return init; // Default: overhead only (no labor/fuel — assumes brokered)
+    costCategories.forEach(c => { init[c.key] = true; });
+    return init; // Default: all 4 basic components
   });
   const toggleCost = key => setSelectedCosts(prev => ({ ...prev, [key]: !prev[key] }));
-  const presetBrokered = () => {
-    const s = {};
-    costCategories.forEach(c => { s[c.key] = !["labor","fuel"].includes(c.key); });
-    setSelectedCosts(s);
-  };
-  const presetOwnDriver = () => {
+  const presetAll = () => {
     const s = {};
     costCategories.forEach(c => { s[c.key] = true; });
     setSelectedCosts(s);
@@ -1676,12 +1666,11 @@ function PerLoadCPM() {
         <div style={{ background:"rgba(0,0,0,.2)", borderRadius:6, padding:"14px 18px", marginBottom:16 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
             <div style={{ fontSize:13, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)" }}>
-              Fleet Costs — {activeCats.length} of 9 selected · {fd(selectedCPM,3)}/mi
+              Fleet Costs — {activeCats.length} of 4 selected · {fd(selectedCPM,3)}/mi
             </div>
             <div style={{ display:"flex", gap:6 }}>
               {[
-                ["Brokered", presetBrokered],
-                ["Own Driver", presetOwnDriver],
+                ["All (4)", presetAll],
                 ["None", presetNone],
               ].map(([lbl, action]) => (
                 <button key={lbl} onClick={action} style={{
