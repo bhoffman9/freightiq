@@ -103,9 +103,35 @@ export default async function handler(req, res) {
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 10);
 
+    // Top lanes (origin -> destination, aggregated)
+    const laneMap = {};
+    loads.forEach(l => {
+      const o = `${l.origin.city || "?"}, ${l.origin.state || "?"}`;
+      const d = `${l.destination.city || "?"}, ${l.destination.state || "?"}`;
+      if (o.startsWith("?") || d.startsWith("?")) return;
+      const key = `${o}|${d}`;
+      if (!laneMap[key]) laneMap[key] = { origin: o, destination: d, loads: 0, revenue: 0, miles: 0, milesCount: 0 };
+      laneMap[key].loads++;
+      laneMap[key].revenue += l.revenue;
+      if (l.miles > 0) {
+        laneMap[key].miles += l.miles;
+        laneMap[key].milesCount++;
+      }
+    });
+    const topLanes = Object.values(laneMap)
+      .map(l => ({
+        ...l,
+        avgMiles: l.milesCount > 0 ? Math.round(l.miles / l.milesCount) : 0,
+        avgRevenue: Math.round(l.revenue / l.loads),
+        avgRPM: l.milesCount > 0 && l.miles > 0 ? +(l.revenue / l.miles).toFixed(2) : 0,
+      }))
+      .sort((a, b) => b.loads - a.loads)
+      .slice(0, 10);
+
     return res.status(200).json({
       total: loadData.Total || loads.length,
       loads,
+      topLanes,
       summary: { totalRevenue: totalRev, totalMiles, avgRPM, avgRevPerLoad },
       byStatus,
       topCustomers,

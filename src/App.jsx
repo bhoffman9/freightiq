@@ -2004,101 +2004,43 @@ function PerLoadCPM() {
         </div>
       </div>
 
-      {/* ═══ LIVE ALVYS DATA ═══ */}
+      {/* ═══ TOP 10 LANES (LIVE FROM ALVYS) ═══ */}
       <div style={{ marginTop:28, paddingTop:20, borderTop:"2px solid var(--bd)" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
           <div style={{ fontSize:15, fontFamily:"var(--f2)", fontWeight:800, letterSpacing:3, textTransform:"uppercase", color:"var(--tx)" }}>
-            Alvys TMS — Live Loads
+            Top 10 Lanes
           </div>
-          {alvys && <span style={{ fontSize:12, color:"var(--mu)" }}>Updated {new Date(alvys.fetchedAt).toLocaleString()} · {alvys.total} loads</span>}
+          {alvys && <span style={{ fontSize:12, color:"var(--mu)" }}>Live from Alvys · Updated {new Date(alvys.fetchedAt).toLocaleString()}</span>}
         </div>
 
         {!alvys ? (
-          <div style={{ textAlign:"center", padding:"40px", color:"var(--mu)" }}>Loading Alvys data...</div>
+          <div style={{ textAlign:"center", padding:"40px", color:"var(--mu)" }}>Loading lanes...</div>
         ) : (
-          <>
-            {/* Summary KPIs */}
-            <div className="g4" style={{ marginBottom:14 }}>
-              {[
-                { label:"Total Pipeline", val:fd(alvys.summary.totalRevenue,0), color:"#3ddc84", sub:`${alvys.total} loads` },
-                { label:"Avg Revenue / Load", val:fd(alvys.summary.avgRevPerLoad,0), color:"#f5c542", sub:`across all statuses` },
-                { label:"Avg RPM", val:`$${alvys.summary.avgRPM}`, color:"#4fc3f7", sub:`${fn(alvys.summary.totalMiles,0)} total miles` },
-                { label:"Top Customer", val:alvys.topCustomers[0]?.name || "—", color:"var(--or)", sub:alvys.topCustomers[0] ? `${alvys.topCustomers[0].loads} loads · ${fd(alvys.topCustomers[0].revenue,0)}` : "" },
-              ].map(k => (
-                <div key={k.label} style={{ background:"var(--s1)", border:`1px solid ${k.color}40`, borderRadius:6, padding:"18px", textAlign:"center" }}>
-                  <div style={{ fontSize:10, letterSpacing:3, textTransform:"uppercase", color:k.color, marginBottom:4 }}>{k.label}</div>
-                  <div style={{ fontFamily:"var(--f2)", fontSize:k.label==="Top Customer"?16:30, fontWeight:900, color:k.color, lineHeight:1 }}>{k.val}</div>
-                  <div style={{ fontSize:11, color:"var(--mu)", marginTop:4 }}>{k.sub}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Status breakdown */}
-            <div style={{ display:"flex", gap:8, marginBottom:14, flexWrap:"wrap" }}>
-              {Object.entries(alvys.byStatus).filter(([,v]) => v.loads > 0).map(([status, v]) => {
-                const col = status==="Delivered"?"#3ddc84":status==="Invoiced"?"#f5c542":status==="In Transit"?"#4fc3f7":status==="Covered"?"#b39ddb":status==="Queued"?"var(--or)":"var(--mu)";
-                return (
-                  <div key={status} style={{ flex:"1 1 auto", background:"var(--s1)", border:`1px solid ${col}30`, borderRadius:4, padding:"10px 14px", textAlign:"center", minWidth:100 }}>
-                    <div style={{ fontSize:10, letterSpacing:1, textTransform:"uppercase", color:col, marginBottom:4 }}>{status}</div>
-                    <div style={{ fontFamily:"var(--f2)", fontSize:22, fontWeight:900, color:col }}>{v.loads}</div>
-                    <div style={{ fontSize:11, color:"var(--mu)" }}>{fd(v.revenue,0)}</div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Load table */}
-            <div className="card">
-              <div className="ctit">Recent Loads — All Statuses</div>
-              <div style={{ overflowX:"auto" }}>
-                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, whiteSpace:"nowrap" }}>
-                  <thead>
-                    <tr style={{ borderBottom:"2px solid var(--bd)" }}>
-                      {["Load #","Customer","Origin","Destination","Miles","Revenue","RPM","Status"].map(h => (
-                        <th key={h} style={{ textAlign:h==="Load #"||h==="Customer"||h==="Origin"||h==="Destination"?"left":"right", padding:"8px", fontSize:10, color:"var(--mu)", letterSpacing:1, textTransform:"uppercase" }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {alvys.loads.slice(0,50).map(l => {
-                      const sCol = l.status==="Delivered"?"#3ddc84":l.status==="Invoiced"?"#f5c542":l.status==="In Transit"?"#4fc3f7":l.status==="Covered"?"#b39ddb":"var(--or)";
-                      return (
-                        <tr key={l.loadNumber} style={{ borderBottom:"1px solid var(--bd)" }}>
-                          <td style={{ padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:"var(--or)" }}>{l.loadNumber}</td>
-                          <td style={{ padding:"6px 8px", color:"var(--tx)", maxWidth:180, overflow:"hidden", textOverflow:"ellipsis" }}>{l.customer}</td>
-                          <td style={{ padding:"6px 8px", color:"var(--mu)" }}>{l.origin.city}{l.origin.state ? `, ${l.origin.state}` : ""}</td>
-                          <td style={{ padding:"6px 8px", color:"var(--mu)" }}>{l.destination.city}{l.destination.state ? `, ${l.destination.state}` : ""}</td>
-                          <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:"#4fc3f7" }}>{l.miles > 0 ? fn(l.miles,0) : "—"}</td>
-                          <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:"#3ddc84" }}>{l.revenue > 0 ? fd(l.revenue,0) : "—"}</td>
-                          <td style={{ textAlign:"right", padding:"6px 8px", fontFamily:"var(--f2)", fontWeight:700, color:l.rpm>=4?"#3ddc84":l.rpm>=3?"#f5c542":"#ff5252" }}>{l.rpm > 0 ? `$${l.rpm.toFixed(2)}` : "—"}</td>
-                          <td style={{ textAlign:"right", padding:"6px 8px" }}>
-                            <span style={{ fontSize:10, fontWeight:700, letterSpacing:1, textTransform:"uppercase", color:sCol, padding:"2px 8px", borderRadius:2, background:`${sCol}15` }}>{l.status}</span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Top Customers */}
-            <div className="card" style={{ marginTop:14 }}>
-              <div className="ctit">Top Customers by Revenue</div>
-              {alvys.topCustomers.map((c,i) => (
-                <div key={c.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid var(--bd)" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                    <span style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"var(--mu)", width:24 }}>{i+1}</span>
-                    <span style={{ fontSize:13, color:"var(--tx)" }}>{c.name}</span>
-                  </div>
-                  <div style={{ display:"flex", gap:20, alignItems:"center" }}>
-                    <span style={{ fontSize:12, color:"var(--mu)" }}>{c.loads} loads</span>
-                    <span style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"#3ddc84" }}>{fd(c.revenue,0)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
+          <div className="card">
+            <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+              <thead>
+                <tr style={{ borderBottom:"2px solid var(--bd)" }}>
+                  {[{l:"#",a:"left"},{l:"Origin",a:"left"},{l:"Destination",a:"left"},{l:"Loads",a:"right"},{l:"Avg Miles",a:"right"},{l:"Avg Revenue",a:"right"},{l:"Avg RPM",a:"right"},{l:"Total Revenue",a:"right"}].map(h => (
+                    <th key={h.l} style={{ textAlign:h.a, padding:"10px 8px", fontSize:10, color:"var(--mu)", letterSpacing:1, textTransform:"uppercase" }}>{h.l}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(alvys.topLanes || []).map((l,i) => (
+                  <tr key={`${l.origin}-${l.destination}`} style={{ borderBottom:"1px solid var(--bd)" }}>
+                    <td style={{ padding:"10px 8px", fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"var(--mu)" }}>{i+1}</td>
+                    <td style={{ padding:"10px 8px", color:"var(--tx)", fontWeight:600 }}>{l.origin}</td>
+                    <td style={{ padding:"10px 8px", color:"var(--tx)", fontWeight:600 }}>{l.destination}</td>
+                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", fontSize:18, fontWeight:900, color:"var(--or)" }}>{l.loads}</td>
+                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", color:"#4fc3f7" }}>{l.avgMiles > 0 ? fn(l.avgMiles,0) : "—"}</td>
+                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", fontWeight:700, color:"#3ddc84" }}>{fd(l.avgRevenue,0)}</td>
+                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", fontWeight:700, color:l.avgRPM>=4?"#3ddc84":l.avgRPM>=3?"#f5c542":"#ff5252" }}>{l.avgRPM > 0 ? `$${l.avgRPM.toFixed(2)}` : "—"}</td>
+                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", fontWeight:800, color:"#3ddc84" }}>{fd(l.revenue,0)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
