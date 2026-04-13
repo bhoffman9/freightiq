@@ -5571,12 +5571,12 @@ function CEEast() {
   }, []);
 
   // Use live data for payback if available, otherwise fall back to hardcoded
-  const months2026 = ceMonths && ceMonths.length > 0 ? ceMonths : months2026;
+  const months2026 = ceMonths && ceMonths.length > 0 ? ceMonths : CE_EAST.months2026;
   const liveBs = ceBs?.bs || {};
   const bs = {
     ...CE_EAST.bs,
-    shareholderChris: liveBs.equity?.["Due to Shareholder - Chris"] || liveBs.equity?.["Shareholder - Chris"] || CE_EAST.bs.shareholderChris,
-    shareholderAnthony: liveBs.equity?.["Due to Shareholder - Anthony"] || liveBs.equity?.["Shareholder - Anthony"] || CE_EAST.bs.shareholderAnthony,
+    shareholderChris: liveBs.equity?.["Shareholder Contributions - Chris"] || liveBs.equity?.["Due to Shareholder - Chris"] || CE_EAST.bs.shareholderChris,
+    shareholderAnthony: liveBs.equity?.["Shareholder Contributions - Anthony"] || liveBs.equity?.["Due to Shareholder - Anthony"] || CE_EAST.bs.shareholderAnthony,
     totalAssets: liveBs.totals?.totalAssets || CE_EAST.bs.totalAssets,
     totalEquity: liveBs.totals?.totalEquity || CE_EAST.bs.totalEquity,
     dueFromAnthony: liveBs.assets?.["Due from Anthony"] || CE_EAST.bs.dueFromAnthony,
