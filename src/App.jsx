@@ -2128,8 +2128,8 @@ function FleetOverview() {
 
       <div className="sbox">
         <strong style={{ color: "#4fc3f7" }}>Data sources (QuickBooks + EFS):</strong>
-        {" "}Payroll {fd(LABOR,0)} <span style={{color:"var(--mu)"}}>(thru Apr 6)</span> ·
-        {" "}Fuel {fd(FUEL_TOT,0)} <span style={{color:"var(--mu)"}}>(EFS thru Apr 5)</span> ·
+        {" "}Payroll {fd(LABOR,0)} <span style={{color:"var(--mu)"}}>(thru Apr 13)</span> ·
+        {" "}Fuel {fd(FUEL_TOT,0)} <span style={{color:"var(--mu)"}}>(EFS thru Apr 11)</span> ·
         {" "}Insurance {fd(INS_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 12)</span> ·
         {" "}Trucks {fd(TRUCK_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 12)</span> ·
         {" "}Trailers {fd(TRAILER_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 12)</span> ·
@@ -2173,7 +2173,7 @@ function FleetOverview() {
             {fd(tCPM, 3)}
           </div>
           <div style={{ fontSize: 11, color: "var(--mu)", marginTop: 10, position: "relative" }}>
-            {fn(MILES, 0)} mi · Jan 1 – Apr 4, 2026
+            {fn(MILES, 0)} mi · {PERIOD}
           </div>
           <div style={{ marginTop: 14, display: "flex", gap: 10, position: "relative" }}>
             <div style={{ textAlign: "center" }}>
