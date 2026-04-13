@@ -425,7 +425,7 @@ const DETAIL = {
   },
   insurance: {
     label: "Insurance — SF Truck Insurance",
-    thru: "Apr 7, 2026",
+    thru: "Apr 12, 2026",
     note: "SF Truck Insurance only (CPM). Weekly $6,375 premium.",
     total: INS_TOT,
     cols: ["Date", "Vendor", "Amount"],
@@ -448,7 +448,7 @@ const DETAIL = {
   },
   trucks: {
     label: "Truck Payments",
-    thru: "Apr 7, 2026",
+    thru: "Apr 12, 2026",
     note: "QuickBooks: Truck Rentals — Penske + TEC/Transco + TCI + Ryder",
     total: TRUCK_TOT,
     cols: ["Date", "Vendor", "Amount"],
@@ -476,7 +476,7 @@ const DETAIL = {
   },
   trailers: {
     label: "Trailer Payments",
-    thru: "Apr 7, 2026",
+    thru: "Apr 12, 2026",
     note: "QuickBooks: McKinney + Xtra + Utility + Premier + Boxwheel + Ten Trailer",
     total: TRAILER_TOT,
     cols: ["Date", "Vendor", "Amount"],
@@ -506,7 +506,7 @@ const DETAIL = {
   },
   truckMaint: {
     label: "Truck Maintenance",
-    thru: "Apr 7, 2026",
+    thru: "Apr 12, 2026",
     note: "Two AutoForce credits netted in (-$140.33, -$503.18)",
     total: TRUCK_MAINT,
     cols: ["Date", "Vendor", "Amount"],
@@ -527,7 +527,7 @@ const DETAIL = {
   },
   trailerMaint: {
     label: "Trailer Maintenance",
-    thru: "Apr 7, 2026",
+    thru: "Apr 12, 2026",
     note: "2 vendors this period",
     total: TRAIL_MAINT,
     cols: ["Date", "Vendor", "Amount"],
@@ -538,7 +538,7 @@ const DETAIL = {
   },
   uniforms: {
     label: "Worker Uniforms",
-    thru: "Apr 7, 2026",
+    thru: "Apr 12, 2026",
     note: "Unifirst monthly service + Safety Guard Shoe",
     total: UNIFORMS,
     cols: ["Date", "Vendor", "Amount"],
@@ -552,7 +552,7 @@ const DETAIL = {
   },
   storage: {
     label: "Storage / Parking",
-    thru: "Apr 7, 2026",
+    thru: "Apr 12, 2026",
     note: "Total Transportation recurring $3,100/period",
     total: STORAGE,
     cols: ["Date", "Vendor", "Amount"],
@@ -2130,13 +2130,13 @@ function FleetOverview() {
         <strong style={{ color: "#4fc3f7" }}>Data sources (QuickBooks + EFS):</strong>
         {" "}Payroll {fd(LABOR,0)} <span style={{color:"var(--mu)"}}>(thru Apr 6)</span> ·
         {" "}Fuel {fd(FUEL_TOT,0)} <span style={{color:"var(--mu)"}}>(EFS thru Apr 5)</span> ·
-        {" "}Insurance {fd(INS_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 7)</span> ·
-        {" "}Trucks {fd(TRUCK_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 7)</span> ·
-        {" "}Trailers {fd(TRAILER_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 7)</span> ·
-        {" "}Truck Maint {fd(TRUCK_MAINT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 7)</span> ·
-        {" "}Trailer Maint {fd(TRAIL_MAINT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 7)</span> ·
-        {" "}Storage {fd(STORAGE,0)} <span style={{color:"var(--mu)"}}>(thru Apr 7)</span> ·
-        {" "}Uniforms {fd(UNIFORMS,0)} <span style={{color:"var(--mu)"}}>(thru Apr 7)</span>
+        {" "}Insurance {fd(INS_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 12)</span> ·
+        {" "}Trucks {fd(TRUCK_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 12)</span> ·
+        {" "}Trailers {fd(TRAILER_TOT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 12)</span> ·
+        {" "}Truck Maint {fd(TRUCK_MAINT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 12)</span> ·
+        {" "}Trailer Maint {fd(TRAIL_MAINT,0)} <span style={{color:"var(--mu)"}}>(thru Apr 12)</span> ·
+        {" "}Storage {fd(STORAGE,0)} <span style={{color:"var(--mu)"}}>(thru Apr 12)</span> ·
+        {" "}Uniforms {fd(UNIFORMS,0)} <span style={{color:"var(--mu)"}}>(thru Apr 12)</span>
         <br/><span style={{color:"var(--mu)",fontSize:9}}>CPM uses QuickBooks totals (labor, ins, trucks, trailers, maint, storage, uniforms) + EFS/Mudflap for fuel · Individual invoices in Trucks/Trailers tabs</span>
       </div>
 
@@ -4213,7 +4213,7 @@ function IncomeDashboard() {
   return (
     <div>
       <div className="ptitle">Income</div>
-      <div className="psub">CE + SF + DI Combined · Jan 1 – Apr 7, 2026 vs Full Year 2025</div>
+      <div className="psub">CE + SF + DI Combined · {INCOME_2026.period} vs Full Year 2025</div>
 
       {/* Sub-nav */}
       <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
@@ -4404,7 +4404,7 @@ function IncomeDashboard() {
               <thead>
                 <tr>
                   <th style={{ textAlign:"left" }}>Line Item</th>
-                  <th>2026 YTD (Apr 7)</th>
+                  <th>2026 YTD (Apr 12)</th>
                   <th>2025 Q1 est.</th>
                   <th>2025 Full Year</th>
                   <th>YoY vs Q1</th>
@@ -4439,7 +4439,7 @@ function IncomeDashboard() {
 
           {/* Run Rate / Full-Year Projections */}
           {(() => {
-            const ytdDays = 97; // Jan 1 – Apr 7
+            const ytdDays = 102; // Jan 1 – Apr 12
             const daysInYear = 365;
             const annFactor = daysInYear / ytdDays;
             const projRev = INCOME_2026.total * annFactor;
@@ -4464,7 +4464,7 @@ function IncomeDashboard() {
               <div className="card" style={{ marginTop:14 }}>
                 <div className="ctit">📈 Run Rate — Full-Year 2026 Projection</div>
                 <div className="ibox" style={{ marginBottom:14 }}>
-                  <strong style={{ color:"#4fc3f7" }}>Based on {ytdDays} days of actual data</strong> (Jan 1 – Apr 7, 2026), annualized at current pace.
+                  <strong style={{ color:"#4fc3f7" }}>Based on {ytdDays} days of actual data</strong> (Jan 1 – Apr 12, 2026), annualized at current pace.
                   These are straight-line projections — seasonal swings (summer slowdown, Q4 peak) will affect actual results.
                 </div>
 
@@ -5468,7 +5468,7 @@ function RevenueDashboard() {
 }
 
 const CE_EAST = {
-  // Balance Sheet — as of Apr 7, 2026
+  // Balance Sheet — as of Apr 12, 2026
   bs: {
     cash: 9430.29,
     arFunding: 0, arReleased: 0, arUnreleased: 0,
@@ -5507,7 +5507,7 @@ const CE_EAST = {
     revenue: 628321.26, carrier: 501537.50, fees: 7762.00, cogs: 509299.50,
     grossProfit: 119021.76, expenses: 58461.09, netIncome: 60560.67,
   },
-  ytdDays: 97,  // Jan 1 – Apr 7, 2026
+  ytdDays: 102,  // Jan 1 – Apr 12, 2026
 };
 
 function CEEast() {
@@ -5980,7 +5980,7 @@ function CEEast() {
           {/* All-Time P&L — GP and Net Income prominent */}
           <div className="card">
             <div className="ctit">All-Time P&L — CE East</div>
-            <div style={{ fontSize:9,color:"var(--mu)",marginBottom:14 }}>All dates · as of Apr 7, 2026</div>
+            <div style={{ fontSize:9,color:"var(--mu)",marginBottom:14 }}>All dates · as of Apr 12, 2026</div>
 
             {/* Two hero numbers */}
             <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16 }}>
@@ -6947,7 +6947,7 @@ function OfficeStaff() {
   return (
     <div>
       <div className="ptitle">Office Staff</div>
-      <div className="psub">W2 Employees + Warehouse + Contractors · Jan 1 – Apr 7, 2026 · Combined SF + J&A</div>
+      <div className="psub">W2 Employees + Warehouse + Contractors · Jan 1 – Apr 12, 2026 · Combined SF + J&A</div>
 
       {/* Summary KPIs */}
       <div className="g4" style={{ marginBottom:14 }}>
