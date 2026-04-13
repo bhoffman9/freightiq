@@ -4140,9 +4140,23 @@ const CustomTip = ({ active, payload, label }) => {
 };
 
 function IncomeDashboard() {
-  const [view, setView]           = useState("overview"); // overview | trend | yoy
+  const [view, setView]           = useState("live"); // live | overview | trend | yoy
   const [trendMode, setTrendMode] = useState("combined"); // combined | byco | monthly
   const [simAmount, setSimAmount] = useState(300000);
+  const [qbPeriod, setQbPeriod]   = useState("ytd");
+  const [qbData, setQbData]       = useState(null);
+  const [qbLoading, setQbLoading] = useState(false);
+  const [qbError, setQbError]     = useState(null);
+
+  useEffect(() => {
+    if (view !== "live") return;
+    setQbLoading(true); setQbError(null);
+    fetch(`/api/qbo-pnl?company=ce_sf_combined&period=${qbPeriod}`)
+      .then(r => r.json())
+      .then(d => { if (d.error) { setQbError(d.error); setQbData(null); } else setQbData(d); })
+      .catch(e => setQbError(e.message))
+      .finally(() => setQbLoading(false));
+  }, [view, qbPeriod]);
 
   const gpMargin26 = INCOME_2026.grossProfit / INCOME_2026.total * 100;
   const gpMargin25 = INCOME_2025.grossProfit / INCOME_2025.total * 100;
@@ -4164,7 +4178,7 @@ function IncomeDashboard() {
 
       {/* Sub-nav */}
       <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
-        {[["overview","📊","Overview"],["trend","📈","Weekly Trend"],["yoy","🔄","YoY Comparison"]].map(([id,ico,lbl]) => (
+        {[["live","⚡","Live QB"],["overview","📊","Overview"],["trend","📈","Weekly Trend"],["yoy","🔄","YoY Comparison"]].map(([id,ico,lbl]) => (
           <button key={id} onClick={() => setView(id)} style={{
             background: view === id ? "var(--or)" : "transparent",
             color: view === id ? "#fff" : "var(--mu)",
@@ -4175,6 +4189,126 @@ function IncomeDashboard() {
           }}>{ico} {lbl}</button>
         ))}
       </div>
+
+      {/* ── LIVE QUICKBOOKS ── */}
+      {view === "live" && (
+        <>
+          {/* Period selector */}
+          <div style={{ display:"flex",gap:6,flexWrap:"wrap",marginBottom:14 }}>
+            {[
+              ["ytd","YTD"],["this_week","This Week"],["last_week","Last Week"],
+              ["jan","Jan"],["feb","Feb"],["mar","Mar"],["apr","Apr"],["may","May"],["jun","Jun"],
+              ["jul","Jul"],["aug","Aug"],["sep","Sep"],["oct","Oct"],["nov","Nov"],["dec","Dec"],
+            ].map(([id,lbl]) => (
+              <button key={id} onClick={() => setQbPeriod(id)} style={{
+                padding:"6px 14px",borderRadius:3,cursor:"pointer",
+                fontFamily:"var(--f2)",fontSize:11,fontWeight:700,letterSpacing:1,textTransform:"uppercase",
+                background:qbPeriod===id?"#3ddc84":"transparent",
+                color:qbPeriod===id?"#0b0d10":"var(--mu)",
+                border:`1px solid ${qbPeriod===id?"#3ddc84":"var(--bd)"}`,
+              }}>{lbl}</button>
+            ))}
+          </div>
+
+          {qbLoading && <div style={{ textAlign:"center",padding:40,color:"var(--mu)" }}>Loading from QuickBooks...</div>}
+          {qbError && <div style={{ padding:16,background:"rgba(255,82,82,.1)",border:"1px solid rgba(255,82,82,.3)",borderRadius:4,color:"#ff5252",fontSize:12,marginBottom:14 }}>{qbError}</div>}
+
+          {qbData && (() => { const q = qbData.fiq; const p = qbData.period; return (
+            <>
+              <div style={{ fontSize:10,color:"var(--mu)",marginBottom:12,letterSpacing:2,textTransform:"uppercase" }}>
+                QuickBooks Live — {p.start_date} to {p.end_date}
+              </div>
+
+              {/* Revenue hero */}
+              <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14 }}>
+                {[
+                  { label:"CE Revenue", val:q.revenue_ce, color:"#f47820" },
+                  { label:"SF Revenue", val:q.revenue_sf, color:"#4fc3f7" },
+                  { label:"DI Revenue", val:q.revenue_di, color:"#b39ddb" },
+                ].map(co => (
+                  <div key={co.label} style={{ background:"var(--s1)",border:`1px solid ${co.color}50`,borderRadius:6,padding:"22px",textAlign:"center" }}>
+                    <div style={{ fontSize:9,letterSpacing:3,textTransform:"uppercase",color:co.color,marginBottom:6 }}>{co.label}</div>
+                    <div style={{ fontFamily:"var(--f2)",fontSize:38,fontWeight:900,color:co.color,lineHeight:1 }}>{fd(co.val,0)}</div>
+                    <div style={{ fontSize:10,color:"var(--mu)",marginTop:6 }}>{q.total_revenue > 0 ? fp(co.val/q.total_revenue*100) : "0%"} of total</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* P&L summary cards */}
+              <div className="g4" style={{ marginBottom:14 }}>
+                {[
+                  { label:"Total Revenue", val:q.total_revenue, color:"#3ddc84" },
+                  { label:"Gross Profit", val:q.gross_profit, color:"#f5c542", sub:q.total_revenue > 0 ? `${(q.gross_profit/q.total_revenue*100).toFixed(1)}% margin` : "" },
+                  { label:"Net Op Income", val:q.net_op_income, color:q.net_op_income >= 0 ? "#3ddc84" : "#ff5252" },
+                  { label:"Net Income", val:q.net_income, color:q.net_income >= 0 ? "#3ddc84" : "#ff5252" },
+                ].map(k => (
+                  <div key={k.label} style={{ background:"var(--s1)",border:`1px solid ${k.color}40`,borderRadius:6,padding:"18px",textAlign:"center" }}>
+                    <div style={{ fontSize:9,letterSpacing:3,textTransform:"uppercase",color:k.color,marginBottom:6 }}>{k.label}</div>
+                    <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:k.color,lineHeight:1 }}>{fd(k.val,0)}</div>
+                    {k.sub && <div style={{ fontSize:10,color:"var(--mu)",marginTop:6 }}>{k.sub}</div>}
+                  </div>
+                ))}
+              </div>
+
+              {/* COGS breakdown */}
+              <div className="g2" style={{ gap:14,marginBottom:14 }}>
+                <div className="card">
+                  <div className="ctit">Cost of Goods Sold</div>
+                  <table className="tbl" style={{ fontSize:11 }}>
+                    <tbody>
+                      {[
+                        ["Carrier Pay", q.carrier_pay],
+                        ["Flexent Fees", q.flexent_fees],
+                        ["Triumph Merchant Fees", q.merchant_fees],
+                        ["Total COGS", q.total_cogs],
+                      ].map(([lbl,val]) => (
+                        <tr key={lbl} style={{ fontWeight:lbl.startsWith("Total") ? 800 : 400 }}>
+                          <td>{lbl}</td>
+                          <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:lbl.startsWith("Total")?"#ff5252":"var(--tx)" }}>{fd(val)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="card">
+                  <div className="ctit">Truck / Trailer (CPM Components)</div>
+                  <table className="tbl" style={{ fontSize:11 }}>
+                    <tbody>
+                      {[
+                        ["SF Truck Insurance", q.ins_tot, "#f5c542"],
+                        ["Truck Rentals", q.truck_tot, "#4fc3f7"],
+                        ["Trailer Rentals", q.trailer_tot, "#b39ddb"],
+                        ["Truck Maintenance", q.truck_maint, "var(--tx)"],
+                        ["Trailer Maintenance", q.trail_maint, "var(--tx)"],
+                        ["Storage/Parking", q.storage, "var(--tx)"],
+                        ["Uniforms", q.uniforms, "var(--tx)"],
+                        ["Fuel (QB)", q.fuel_qb, "#f47820"],
+                      ].map(([lbl,val,col]) => (
+                        <tr key={lbl}>
+                          <td>{lbl}</td>
+                          <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:col }}>{fd(val)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* CE East if present */}
+              {q.revenue_ce_east > 0 && (
+                <div style={{ padding:12,background:"rgba(79,195,247,.06)",border:"1px solid rgba(79,195,247,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",marginBottom:14 }}>
+                  CE East Revenue: {fd(q.revenue_ce_east,0)}
+                </div>
+              )}
+
+              <div style={{ padding:12,background:"rgba(61,220,132,.06)",border:"1px solid rgba(61,220,132,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",textAlign:"center" }}>
+                Live from QuickBooks · CE & SF Combined P&L · Updated in real-time
+              </div>
+            </>
+          ); })()}
+        </>
+      )}
 
       {/* ── OVERVIEW ── */}
       {view === "overview" && (
