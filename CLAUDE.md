@@ -36,6 +36,14 @@ npm run preview      # Preview production build locally
 | `GOOGLE_MAPS_API_KEY` | Vercel dashboard | Google Distance Matrix API for address mileage |
 | `ALVYS_CLIENT_ID` | Vercel dashboard | Alvys TMS API authentication |
 | `ALVYS_CLIENT_SECRET` | Vercel dashboard | Alvys TMS API authentication |
+| `VITE_APP_PASSWORD` | Vercel dashboard | Password gate (current: `ShowFreight2026!`) |
+
+## Authentication
+
+- **Password gate** wraps the entire React app via the `PasswordGate` component in `src/App.jsx`
+- Users enter the password once per browser, stays unlocked for **30 days** via localStorage key `sf_auth_v1`
+- API endpoints (`/api/ai`, `/api/alvys-loads`, `/api/distance`, `/metrics.json`) bypass the gate so cross-app data flows still work (Per Load CPM, CFO Dashboard read these without authentication)
+- Change the password by updating `VITE_APP_PASSWORD` in Vercel and redeploying — same password is used across FreightIQ, Per Load CPM, AP Aging, Budget Calendar, and Flexent
 
 ## Project Structure
 
@@ -50,7 +58,7 @@ freightiq/
 │   └── App.jsx             # Entire dashboard (~7,500 lines, monolithic)
 ├── public/
 │   └── metrics.json        # Auto-generated KPIs (built by extract-metrics.js)
-├── incoming/               # Drop weekly data files here for processing
+├── incoming-freightiq/     # Drop weekly data files here for processing
 ├── extract-metrics.js      # Build script — parses App.jsx → metrics.json
 ├── index.html
 ├── package.json
@@ -178,7 +186,7 @@ freightiq/
 
 ## Weekly Update Workflow
 
-1. Ben drops cumulative YTD files in `incoming/` folder
+1. Ben drops cumulative YTD files in `incoming-freightiq/` folder
 2. Claude reads and processes files directly
 3. Update `src/App.jsx` with extracted data
 4. **IMMEDIATELY** commit and push to GitHub — Vercel auto-deploys
@@ -215,6 +223,6 @@ No test framework configured. No automated tests.
 
 - **Per Load CPM** (`perload-cpm.vercel.app`) — Standalone booking tool, fetches metrics.json + /api/alvys-loads from this app
 - **AP Aging** (`ap-aging-v4.vercel.app`) — AP Aging dashboard (Next.js + Supabase), feeds equipment data into FreightIQ via EquipmentContext
-- **CFO Dashboard** — Executive metrics dashboard, fetches metrics.json from this app
+- **CFO Dashboard** (`cfo-dashboard-eta.vercel.app`) — Executive financial dashboard (React + Tailwind + Supabase), fetches metrics.json + payroll-summary.json from this app. Local path: `Desktop/Ben/cfo-dashboard`, no GitHub repo — deployed via `npx vercel deploy --prod --yes`
 - **Samsara Agent** (`Desktop/Ben/samsara-agent`) — Autonomous agent pulling Samsara fleet data on cron
 - **Flexent Dashboard** (`flexent-dashboard.vercel.app`) — Factoring dashboard for Capacity Express
