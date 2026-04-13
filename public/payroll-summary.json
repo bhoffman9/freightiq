@@ -301,11 +301,11 @@
   "contractors": [
     {
       "name": "Jon Marcus Zengotita",
-      "total": 37450
+      "total": 40250
     },
     {
       "name": "Mellody Abrego",
-      "total": 35776.21
+      "total": 38294.55
     },
     {
       "name": "Gabriel Colon",
@@ -313,27 +313,27 @@
     },
     {
       "name": "Hilda Salman",
-      "total": 24034.66
+      "total": 25883.48
     },
     {
       "name": "Maria Con",
-      "total": 7450
+      "total": 8100
     },
     {
       "name": "Logic Consultants",
-      "total": 6500
+      "total": 7000
     },
     {
       "name": "Elizabeth Delgado",
-      "total": 6521.37
+      "total": 7421.37
     },
     {
       "name": "Christopher Simpson",
-      "total": 7382.88
+      "total": 8270.64
     },
     {
       "name": "Debra Adamson",
-      "total": 7208.09
+      "total": 8246.85
     }
   ],
   "period": "Jan 1 - Apr 12, 2026",
@@ -342,7 +342,7 @@
     "driverCount": 41,
     "officeTotal": 227389.58000000002,
     "warehouseTotal": 37306.02,
-    "contractorTotal": 161905.22,
-    "grandTotal": 967134.8300000001
+    "contractorTotal": 173048.9,
+    "grandTotal": 978278.5100000001
   }
 }
