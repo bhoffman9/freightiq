@@ -5511,14 +5511,16 @@ const CE_EAST = {
 };
 
 function CEEast() {
-  const [distAmt, setDistAmt] = useState(Math.round(CE_EAST.months2026.reduce((s,r)=>s+r.gp,0) / CE_EAST.months2026.length * 0.5));
   const [ceView, setCeView]   = useState("live");
   const [cePeriod, setCePeriod] = useState("ytd");
   const [ceQb, setCeQb]       = useState(null);
   const [ceBs, setCeBs]       = useState(null);
+  const [ceMonths, setCeMonths] = useState(null); // live monthly P&L
+  const [ceLifetime, setCeLifetime] = useState(null); // all-dates P&L
   const [ceLoading, setCeLoading] = useState(false);
   const [ceError, setCeError] = useState(null);
 
+  // Fetch live P&L for selected period + Balance Sheet
   useEffect(() => {
     if (ceView !== "live") return;
     setCeLoading(true); setCeError(null);
@@ -5532,8 +5534,60 @@ function CEEast() {
       .finally(() => setCeLoading(false));
   }, [ceView, cePeriod]);
 
-  const bs = CE_EAST.bs;
-  const pl = CE_EAST.pl;
+  // Fetch monthly P&L + lifetime on mount for payback calculator
+  useEffect(() => {
+    const year = new Date().getFullYear();
+    const monthNames = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+    const currentMonth = new Date().getMonth(); // 0-indexed
+    const monthsToFetch = monthNames.slice(0, currentMonth + 1);
+    Promise.all([
+      ...monthsToFetch.map(m => fetch(`/api/qbo-pnl?company=ce_east&period=${m}`).then(r => r.json())),
+      fetch(`/api/qbo-pnl?company=ce_east&start_date=2024-01-01&end_date=${new Date().toISOString().split("T")[0]}`).then(r => r.json()),
+      fetch(`/api/qbo-bs?company=ce_east`).then(r => r.json()),
+    ]).then(results => {
+      const bsResult = results.pop();
+      const lifetimeResult = results.pop();
+      const months = results.filter(r => !r.error).map(r => {
+        const t = r.parsed?.totals || {};
+        const cogs = r.parsed?.cogs || {};
+        return {
+          m: r.period?.label?.charAt(0).toUpperCase() + r.period?.label?.slice(1) + " 26",
+          rev: t.totalIncome || 0,
+          gp: t.grossProfit || 0,
+          carrier: cogs["Carrier Pay"] || 0,
+          fees: (cogs["Triumph Merchant Fees"] || 0) + (cogs["Flexent Funding Fees"] || 0),
+          exp: t.totalExpenses || 0,
+          netInc: t.netIncome || 0,
+        };
+      });
+      setCeMonths(months);
+      if (!lifetimeResult.error) setCeLifetime(lifetimeResult);
+      if (!bsResult.error) setCeBs(bsResult);
+    }).catch(() => {});
+  }, []);
+
+  // Use live data for payback if available, otherwise fall back to hardcoded
+  const months2026 = ceMonths && ceMonths.length > 0 ? ceMonths : months2026;
+  const liveBs = ceBs?.bs || {};
+  const bs = {
+    ...CE_EAST.bs,
+    shareholderChris: liveBs.equity?.["Due to Shareholder - Chris"] || liveBs.equity?.["Shareholder - Chris"] || CE_EAST.bs.shareholderChris,
+    shareholderAnthony: liveBs.equity?.["Due to Shareholder - Anthony"] || liveBs.equity?.["Shareholder - Anthony"] || CE_EAST.bs.shareholderAnthony,
+    totalAssets: liveBs.totals?.totalAssets || CE_EAST.bs.totalAssets,
+    totalEquity: liveBs.totals?.totalEquity || CE_EAST.bs.totalEquity,
+    dueFromAnthony: liveBs.assets?.["Due from Anthony"] || CE_EAST.bs.dueFromAnthony,
+    cash: liveBs.assets?.["Checking"] || liveBs.assets?.["Cash and Cash Equivalents"] || CE_EAST.bs.cash,
+    netIncome2026: ceLifetime?.parsed?.totals?.netIncome || CE_EAST.bs.netIncome2026,
+    retainedEarnings: liveBs.equity?.["Retained Earnings"] || CE_EAST.bs.retainedEarnings,
+  };
+  const pl = {
+    ...CE_EAST.pl,
+    grossProfit: ceLifetime?.parsed?.totals?.grossProfit || CE_EAST.pl.grossProfit,
+    netIncome: ceLifetime?.parsed?.totals?.netIncome || CE_EAST.pl.netIncome,
+    revenue: ceLifetime?.parsed?.totals?.totalIncome || CE_EAST.pl.revenue,
+  };
+
+  const [distAmt, setDistAmt] = useState(Math.round(months2026.reduce((s,r)=>s+r.gp,0) / months2026.length * 0.5));
 
   // ── Shareholder obligations ──
   const dueToChr  = bs.shareholderChris;
@@ -5545,7 +5599,7 @@ function CEEast() {
   const gap       = totalDue - gpAllTime;
 
   // ── 2026 GP pace — from actual monthly data ──
-  const monthlyGP  = CE_EAST.months2026.reduce((s,r)=>s+r.gp,0) / CE_EAST.months2026.length; // avg of Jan/Feb/Mar
+  const monthlyGP  = months2026.reduce((s,r)=>s+r.gp,0) / months2026.length; // avg of Jan/Feb/Mar
   const monthsLeft = Math.max(0, gap / monthlyGP);
 
   // ── Distribution date ──
@@ -5771,7 +5825,7 @@ function CEEast() {
         <div className="card">
           <div className="ctit">2026 Monthly Revenue — CE East</div>
           <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10 }}>
-            {CE_EAST.months2026.map(row => (
+            {months2026.map(row => (
               <div key={row.m} style={{ background:"var(--bg)",border:"1px solid var(--bd)",borderRadius:3,padding:"12px 14px" }}>
                 <div style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:800,letterSpacing:1,color:"var(--or)",marginBottom:6 }}>{row.m}</div>
                 <div style={{ fontFamily:"var(--f2)",fontSize:26,fontWeight:900,color:"#f5c542",lineHeight:1 }}>{fd(row.gp,0)}</div>
@@ -5785,10 +5839,10 @@ function CEEast() {
             <div style={{ fontSize:11,fontWeight:800,color:"var(--tx)" }}>2026 YTD Total</div>
             <div style={{ textAlign:"right" }}>
               <div style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:900,color:"#f5c542" }}>
-                {fd(CE_EAST.months2026.reduce((s,r)=>s+r.gp,0),0)} GP
+                {fd(months2026.reduce((s,r)=>s+r.gp,0),0)} GP
               </div>
               <div style={{ fontSize:10,color:"var(--mu)" }}>
-                {fd(CE_EAST.months2026.reduce((s,r)=>s+r.rev,0),0)} revenue
+                {fd(months2026.reduce((s,r)=>s+r.rev,0),0)} revenue
               </div>
             </div>
           </div>
