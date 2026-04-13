@@ -705,16 +705,39 @@ function TrucksMileage() {
   const [sortKey, setSortKey]   = useState("miles");
   const [filter, setFilter]     = useState("all");
   const [view, setView]         = useState("detail"); // detail | trend
+  const [dataSource, setDataSource] = useState("live"); // live | static
+  const [liveData, setLiveData] = useState(null);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [liveError, setLiveError] = useState(null);
+
+  useEffect(() => {
+    if (dataSource !== "live") return;
+    setLiveLoading(true); setLiveError(null);
+    fetch("/api/samsara-miles?year=2026")
+      .then(r => r.json())
+      .then(d => { if (d.error) { setLiveError(d.error); setLiveData(null); } else setLiveData(d); })
+      .catch(e => setLiveError(e.message))
+      .finally(() => setLiveLoading(false));
+  }, [dataSource]);
+
+  // Use live data if available, otherwise fall back to static constants
+  const activeTrucks = dataSource === "live" && liveData ? liveData.trucks : TRUCK_MILES;
+  const activeLocal = dataSource === "live" && liveData ? liveData.fleetLocal : FLEET_LOCAL;
+  const activeRegional = dataSource === "live" && liveData ? liveData.fleetRegional : FLEET_REGIONAL;
+  const activeTotal = dataSource === "live" && liveData ? liveData.fleetTotal : MILES;
+  const activeLabel = dataSource === "live" && liveData
+    ? `Samsara IFTA Live · ${liveData.quartersLoaded.join(" + ")} 2026 · ${liveData.truckCount} trucks`
+    : `Samsara GPS · ${PERIOD} · ${TRUCK_MILES.length} trucks`;
 
   const sorted = useMemo(() => {
-    const arr = [...TRUCK_MILES];
+    const arr = [...activeTrucks];
     if (sortKey === "miles")    return arr.sort((a,b) => b.miles    - a.miles);
     if (sortKey === "local")    return arr.sort((a,b) => b.local    - a.local);
     if (sortKey === "regional") return arr.sort((a,b) => b.regional - a.regional);
     if (sortKey === "truck")    return arr.sort((a,b) => Number(a.truck) - Number(b.truck));
     if (sortKey === "localPct") return arr.sort((a,b) => (b.local/b.miles) - (a.local/a.miles));
     return arr;
-  }, [sortKey]);
+  }, [sortKey, activeTrucks]);
 
   const STATE_COLORS = {
     CA:"#f47820",NV:"#4fc3f7",AZ:"#3ddc84",TX:"#f5c542",OR:"#b39ddb",
@@ -725,35 +748,51 @@ function TrucksMileage() {
   };
   const getColor = (st, i) => STATE_COLORS[st] || `hsl(${(i*47)%360},60%,55%)`;
 
-  const localPct    = FLEET_LOCAL    / MILES * 100;
-  const regionalPct = FLEET_REGIONAL / MILES * 100;
+  const localPct    = activeLocal    / activeTotal * 100;
+  const regionalPct = activeRegional / activeTotal * 100;
+  const truckCount  = activeTrucks.length;
 
   return (
     <div>
       <div className="ptitle">Trucks + Mileage</div>
-      <div className="psub">Samsara GPS · Jan 1 – Apr 4, 2026 · 35 trucks · NV = Local · All other states = Regional</div>
+      <div className="psub">{activeLabel} · NV = Local · All other states = Regional</div>
+
+      {/* Data source toggle */}
+      <div style={{ display:"flex",gap:8,marginBottom:14 }}>
+        {[["live","⚡ Live Samsara"],["static","📁 Static Data"]].map(([id,lbl]) => (
+          <button key={id} onClick={() => setDataSource(id)} style={{
+            padding:"7px 16px",borderRadius:3,cursor:"pointer",
+            fontFamily:"var(--f2)",fontSize:12,fontWeight:700,letterSpacing:1,textTransform:"uppercase",
+            background:dataSource===id?"#3ddc84":"transparent",
+            color:dataSource===id?"#0b0d10":"var(--mu)",
+            border:`1px solid ${dataSource===id?"#3ddc84":"var(--bd)"}`,
+          }}>{lbl}</button>
+        ))}
+        {liveLoading && <span style={{ fontSize:11,color:"var(--mu)",alignSelf:"center" }}>Loading...</span>}
+        {liveError && <span style={{ fontSize:11,color:"#ff5252",alignSelf:"center" }}>{liveError}</span>}
+      </div>
 
       {/* Fleet summary KPIs */}
       <div className="g4" style={{ marginBottom:14 }}>
         <div className="kpi">
           <div className="klbl">Total Fleet Miles</div>
-          <div className="kval" style={{ color:"#4fc3f7" }}>{fn(MILES,0)}</div>
-          <div className="ksub">Samsara GPS · 31 trucks</div>
+          <div className="kval" style={{ color:"#4fc3f7" }}>{fn(activeTotal,0)}</div>
+          <div className="ksub">{truckCount} trucks</div>
         </div>
         <div className="kpi">
           <div className="klbl">Local Miles (NV)</div>
-          <div className="kval" style={{ color:"#3ddc84" }}>{fn(FLEET_LOCAL,0)}</div>
+          <div className="kval" style={{ color:"#3ddc84" }}>{fn(activeLocal,0)}</div>
           <div className="ksub">{fp(localPct)} of fleet</div>
         </div>
         <div className="kpi">
           <div className="klbl">Regional Miles</div>
-          <div className="kval" style={{ color:"#f47820" }}>{fn(FLEET_REGIONAL,0)}</div>
+          <div className="kval" style={{ color:"#f47820" }}>{fn(activeRegional,0)}</div>
           <div className="ksub">{fp(regionalPct)} of fleet</div>
         </div>
         <div className="kpi">
           <div className="klbl">Avg Miles / Truck</div>
-          <div className="kval" style={{ color:"#f5c542" }}>{fn(MILES/25,0)}</div>
-          <div className="ksub">{fn(FLEET_LOCAL/25,0)} local · {fn(FLEET_REGIONAL/25,0)} regional</div>
+          <div className="kval" style={{ color:"#f5c542" }}>{fn(activeTotal/truckCount,0)}</div>
+          <div className="ksub">{fn(activeLocal/truckCount,0)} local · {fn(activeRegional/truckCount,0)} regional</div>
         </div>
       </div>
 
@@ -769,9 +808,9 @@ function TrucksMileage() {
           </div>
         </div>
         <div style={{ display:"flex", gap:24, fontSize:11 }}>
-          <span><span style={{ color:"#3ddc84" }}>■</span> Local (NV): {fn(FLEET_LOCAL,0)} mi</span>
-          <span><span style={{ color:"#f47820" }}>■</span> Regional (all other states): {fn(FLEET_REGIONAL,0)} mi</span>
-          <span style={{ color:"var(--mu)" }}>Total: {fn(MILES,0)} mi</span>
+          <span><span style={{ color:"#3ddc84" }}>■</span> Local (NV): {fn(activeLocal,0)} mi</span>
+          <span><span style={{ color:"#f47820" }}>■</span> Regional (all other states): {fn(activeRegional,0)} mi</span>
+          <span style={{ color:"var(--mu)" }}>Total: {fn(activeTotal,0)} mi</span>
         </div>
       </div>
 
