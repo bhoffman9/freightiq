@@ -13,11 +13,13 @@ Real-time fleet cost-per-mile dashboard with AI-powered data uploads and live AP
 - **Frontend:** React 18 + Vite (dev server on port 3000)
 - **Charts:** Recharts (BarChart, LineChart, ComposedChart)
 - **Data Parsing:** PapaParse (CSV), SheetJS/XLSX (Excel)
-- **APIs:** 3 Vercel serverless functions (see below)
+- **APIs:** 7 Vercel serverless functions (see below)
 - **AI Model:** claude-sonnet-4-20250514 (via api/ai.js proxy)
+- **Live Data:** QuickBooks P&L + Balance Sheet, Samsara IFTA mileage, Alvys TMS loads
+- **Database:** Supabase (shared with CFO Dashboard — OAuth tokens in `qbo_tokens` table, IFTA mileage in `ifta_mileage` table)
 - **Hosting:** Vercel (auto-deploys on push to GitHub main)
 - **Styling:** Inline CSS-in-JS, dark theme, IBM Plex Mono + Barlow Condensed fonts
-- **No database** — fleet data is hardcoded constants in App.jsx, updated weekly from source exports
+- **Hybrid data model** — live API feeds for P&L, mileage, loads + hardcoded constants for EFS fuel and payroll (updated from file drops)
 
 ## Commands
 
@@ -37,6 +39,11 @@ npm run preview      # Preview production build locally
 | `ALVYS_CLIENT_ID` | Vercel dashboard | Alvys TMS API authentication |
 | `ALVYS_CLIENT_SECRET` | Vercel dashboard | Alvys TMS API authentication |
 | `VITE_APP_PASSWORD` | Vercel dashboard | Password gate (current: `ShowFreight2026!`) |
+| `SUPABASE_URL` | Vercel dashboard | Supabase instance (shared with CFO Dashboard) |
+| `SUPABASE_SERVICE_KEY` | Vercel dashboard | Supabase service role key (for qbo_tokens table) |
+| `QBO_CLIENT_ID` | Vercel dashboard | QuickBooks OAuth — Intuit app client ID |
+| `QBO_CLIENT_SECRET` | Vercel dashboard | QuickBooks OAuth — Intuit app client secret |
+| `SAMSARA_API_TOKEN` | Vercel dashboard | Samsara fleet API bearer token |
 
 ## Authentication
 
@@ -50,9 +57,13 @@ npm run preview      # Preview production build locally
 ```
 freightiq/
 ├── api/
-│   ├── ai.js              # Vercel serverless — proxies Claude API requests
-│   ├── alvys-loads.js      # Vercel serverless — fetches live loads from Alvys TMS
-│   └── distance.js         # Vercel serverless — Google Maps Distance Matrix proxy
+│   ├── _qbo-helpers.js     # Shared QB OAuth token management + P&L parser
+│   ├── ai.js               # Vercel serverless — proxies Claude API requests
+│   ├── alvys-loads.js       # Vercel serverless — fetches live loads from Alvys TMS
+│   ├── distance.js          # Vercel serverless — Google Maps Distance Matrix proxy
+│   ├── qbo-pnl.js           # Vercel serverless — QuickBooks P&L with period selector
+│   ├── qbo-bs.js            # Vercel serverless — QuickBooks Balance Sheet
+│   └── samsara-miles.js     # Vercel serverless — Samsara IFTA mileage per truck/state
 ├── src/
 │   ├── main.jsx            # React entry point
 │   └── App.jsx             # Entire dashboard (~7,500 lines, monolithic)
@@ -74,20 +85,32 @@ freightiq/
 | `POST /api/ai` | POST | Proxies requests to Anthropic Claude API (keeps key server-side) |
 | `GET /api/alvys-loads` | GET | Authenticates with Alvys TMS, returns live load pipeline with lanes, revenue, RPM, statuses |
 | `GET /api/distance?origin=X&destination=Y` | GET | Google Maps Distance Matrix proxy — returns driving miles + hours |
+| `GET /api/qbo-pnl?company=X&period=Y` | GET | QuickBooks P&L — companies: `ce_sf_combined`, `ce_east`. Periods: `ytd`, `this_week`, `last_week`, `jan`-`dec`, or `start_date`/`end_date` |
+| `GET /api/qbo-bs?company=X` | GET | QuickBooks Balance Sheet — returns assets, liabilities, equity with account detail |
+| `GET /api/samsara-miles?year=2026` | GET | Samsara IFTA mileage — per-truck, per-state, aggregated across quarters |
 
 **Other apps consume these endpoints:**
 - Per Load CPM (`perload-cpm.vercel.app`) fetches `metrics.json` and `/api/alvys-loads`
-- CFO Dashboard fetches `metrics.json`
+- CFO Dashboard fetches `metrics.json` + `payroll-summary.json`
 
 ## Architecture
 
 - **Monolithic SPA:** Everything lives in `src/App.jsx` — all 15 tabs, all data, all components
 - **No routing** — tab state managed via useState, no React Router
-- **No database** — data sources are:
-  1. Hardcoded constants in App.jsx (PAYROLL, FUEL, MONTHLY_MILES, TRUCK_MILES, INCOME_2026, etc.)
-  2. User CSV/XLSX uploads parsed client-side (PapaParse + SheetJS)
-  3. localStorage for upload history and invoice deduplication
-  4. Live API feeds: Alvys TMS (loads), AP Aging (equipment), Google Maps (distance)
+- **Hybrid data model** — data sources are:
+  1. **Live APIs** (real-time, no file drops needed):
+     - QuickBooks P&L via `/api/qbo-pnl` — CE & SF Combined + CE East, with period selector
+     - QuickBooks Balance Sheet via `/api/qbo-bs` — CE East assets/liabilities/equity
+     - Samsara IFTA mileage via `/api/samsara-miles` — per-truck, per-state (Q1 available, Q2+ auto-added)
+     - Alvys TMS loads via `/api/alvys-loads` — live load pipeline
+     - AP Aging equipment data via EquipmentContext
+  2. **Hardcoded constants** (updated from file drops — EFS fuel, payroll):
+     - `PAYROLL[]`, `FUEL{}` — updated weekly from SF/J&A payroll XLS + EFS PDF
+     - `TRUCK_MILES[]` — static fallback when Samsara live unavailable
+     - `INCOME_2026` — static fallback for weekly trend / YoY views
+     - `CE_EAST{}` — static fallback for Owner Payback calculator
+  3. User CSV/XLSX uploads parsed client-side (PapaParse + SheetJS)
+  4. localStorage for upload history and invoice deduplication
 
 ## Dashboard Tabs
 
@@ -103,8 +126,8 @@ freightiq/
 | Trucks | `TrucksTab()` | TEC, Penske, TCI lease details |
 | Trailers | `TrailerFleet()` | McKinney, Xtra, Utility trailer fleet |
 | Office Staff | `OfficeStaff()` | Office/warehouse/contractor payroll |
-| Income | `IncomeDashboard()` | Weekly/monthly income with YoY comparison |
-| CE East | `CEEast()` | CE East subsidiary P&L, balance sheet |
+| Income | `IncomeDashboard()` | Live QB P&L + weekly/monthly income with YoY comparison |
+| CE East | `CEEast()` | Live QB P&L + Balance Sheet, Owner Payback calculator |
 | Cash Flow | `CashFlowDashboard()` | Cash flow analysis |
 | Upload | `DataSettings()` | Drop CSV/XLSX files, AI auto-maps columns |
 | Checklist | `Checklist()` | Weekly/monthly data update tasks |
@@ -119,10 +142,10 @@ freightiq/
 
 ## Key Data Constants (hardcoded in App.jsx)
 
-- `PAYROLL[]` — 36 drivers with hours/cost (thru Apr 6, 2026)
-- `FUEL{}` — per-driver fuel spend + gallons (EFS only, thru Apr 5)
+- `PAYROLL[]` — 41 drivers with hours/cost (thru Apr 13, 2026)
+- `FUEL{}` — per-driver fuel spend + gallons (EFS only, thru Apr 11)
 - `MONTHLY_MILES[]` — Samsara GPS: per-month, per-truck local vs regional
-- `TRUCK_MILES[]` — 35 trucks with per-state mileage breakdown
+- `TRUCK_MILES[]` — 35 trucks with per-state mileage breakdown (thru Apr 11; also available live via /api/samsara-miles)
 - `TCI_LEASING{}`, `PENSKE{}`, `TEC_EQUIPMENT{}` — truck lease data
 - `TRAILERS_INV{}`, `XTRA_LEASE{}` — trailer inventory/leases
 - `INCOME_2026`, `INCOME_2025` — weekly/monthly revenue + margins
@@ -132,7 +155,7 @@ freightiq/
 - `ASCEND{}` — Historical Ascend TMS data (Jan-Mar 2026, no longer active)
 - `ALVYS{}` — Alvys TMS pipeline snapshot (also fetched live via /api/alvys-loads)
 
-**Current period:** Jan 1 – Apr 5, 2026 (95 days)
+**Current period:** Jan 1 – Apr 12, 2026 (102 days)
 
 ## CPM Definitions (CRITICAL)
 
@@ -182,25 +205,27 @@ freightiq/
 - **URL:** https://freightiq-nine-two.vercel.app (PERMANENT)
 - **GitHub:** github.com/bhoffman9/freightiq (private)
 - **Config:** `vercel.json` — framework: vite, buildCommand: npm run build, output: dist
-- **Serverless:** `api/ai.js`, `api/alvys-loads.js`, `api/distance.js` auto-deployed
+- **Serverless:** `api/ai.js`, `api/alvys-loads.js`, `api/distance.js`, `api/qbo-pnl.js`, `api/qbo-bs.js`, `api/samsara-miles.js` auto-deployed
 
 ## Weekly Update Workflow
 
-1. Ben drops cumulative YTD files in `incoming-freightiq/` folder
-2. Claude reads and processes files directly
-3. Update `src/App.jsx` with extracted data
-4. **IMMEDIATELY** commit and push to GitHub — Vercel auto-deploys
-5. Per Load CPM and CFO Dashboard automatically get updated data via metrics.json
+### Automated (live feeds — no file drops needed):
+- **CE & SF Combined P&L** — live from QuickBooks via `/api/qbo-pnl` (Income tab → Live QB)
+- **CE East P&L + Balance Sheet** — live from QuickBooks (CE East tab → Live QB + Owner Payback)
+- **Samsara mileage** — live from Samsara IFTA API via `/api/samsara-miles` (Trucks & Mileage tab)
+- **Alvys TMS loads** — live via `/api/alvys-loads` (Revenue tab)
 
-### Files needed (all cumulative YTD):
-- Samsara Vehicle Mileage CSV
-- EFS Transaction Report PDF
-- SF Payroll Summary (QuickBooks XLS)
-- J&A Management Payroll Summary (QuickBooks XLS)
-- CE & SF Combined YTD P&L (XLSX)
-- Monthly P&Ls (Jan, Feb, Mar, Apr separately)
-- CE East P&L
-- Contractor payment detail
+### Manual file drops (into `Desktop/Ben/incoming-freightiq/`):
+1. **EFS Transaction Report PDF** — per-driver fuel (no API available)
+2. **SF Payroll Summary** (QuickBooks XLS) — driver + office payroll
+3. **J&A Management Payroll Summary** (QuickBooks XLS) — J&A office staff
+4. **CE & SF Transaction Report** (QuickBooks XLSX) — line-item detail for DETAIL boxes
+5. **Contractor payment detail** — weekly amounts for 1099 contractors
+
+**After processing:** Always clear `incoming-freightiq/` folder, commit, and push immediately.
+
+### Office vs Driver split (SF Payroll):
+**Office staff** (excluded from PAYROLL/CPM): Arias Adrian, Eagleton Gentry (warehouse), Figueroa Andres (warehouse), Fissehaye Biniyam, Gonzalez Gabriel, Grosser Scot, Rivera Cecilia, Youngblood Nathan. Everyone else = drivers.
 
 ## Upload Sources (AI auto-detects format)
 
