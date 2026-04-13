@@ -329,11 +329,11 @@
     },
     {
       "name": "Christopher Simpson",
-      "total": 8370.64
+      "total": 8371.64
     },
     {
       "name": "Debra Adamson",
-      "total": 8246.85
+      "total": 8247.85
     }
   ],
   "period": "Jan 1 - Apr 12, 2026",
@@ -342,7 +342,7 @@
     "driverCount": 41,
     "officeTotal": 227389.58000000002,
     "warehouseTotal": 37306.02,
-    "contractorTotal": 173148.9,
-    "grandTotal": 978378.5100000001
+    "contractorTotal": 173150.9,
+    "grandTotal": 978380.5100000001
   }
 }

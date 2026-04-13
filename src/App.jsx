@@ -6922,8 +6922,8 @@ const CONTRACTORS = [
   { name:"Maria Con",            dba:"", weekly:650, payments:14, weeklyTotal:8100, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:8100, note:"$550/wk → $650/wk starting Mar 2026" },
   { name:"Logic Consultants",    dba:"Logic Consultants LLC / Prestige Development", weekly:500, payments:14, weeklyTotal:7000, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:7000, note:"$500/wk" },
   { name:"Elizabeth Delgado",    dba:"", weekly:900, payments:7, weeklyTotal:5400, car:0, carPayments:0, carTotal:0, commission:2021.37, healthIns:0, healthInsTotal:0, other:0, total:7421.37, note:"$900/wk base + commission · W2 → 1099 Feb 2026", dual:true },
-  { name:"Christopher Simpson",  dba:"", weekly:934.97, payments:7, weeklyTotal:6269.94, car:0, carPayments:0, carTotal:0, commission:1348.64, healthIns:53.79, healthInsTotal:752.06, other:0, total:8370.64, note:"~$935/wk + commission + health ins $53.79/wk (14wk) · W2 → 1099 Feb 2026", dual:true },
-  { name:"Debra Adamson",        dba:"", weekly:984.97, payments:7, weeklyTotal:6509.82, car:0, carPayments:0, carTotal:0, commission:0, healthIns:53.79, healthInsTotal:752.06, other:984.97, total:8246.85, note:"~$985/wk (Chase) + $985 (QuickBooks) + health ins $53.79/wk (14wk) · excl $2K loan", dual:true },
+  { name:"Christopher Simpson",  dba:"", weekly:934.97, payments:7, weeklyTotal:6269.94, car:0, carPayments:0, carTotal:0, commission:1348.64, healthIns:53.79, healthInsTotal:753.06, other:0, total:8371.64, note:"~$935/wk + commission + health ins $53.79/wk (14wk) · W2 → 1099 Feb 2026", dual:true },
+  { name:"Debra Adamson",        dba:"", weekly:984.97, payments:7, weeklyTotal:6509.82, car:0, carPayments:0, carTotal:0, commission:0, healthIns:53.79, healthInsTotal:753.06, other:984.97, total:8247.85, note:"~$985/wk (Chase) + $985 (QuickBooks) + health ins $53.79/wk (14wk) · excl $2K loan", dual:true },
 ];
 
 // ── OFFICE STAFF COMPONENT ───────────────────────────────────
