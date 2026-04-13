@@ -120,13 +120,13 @@ let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
 let MILES     = 327862.1;     // Samsara GPS actual, Jan 1 – Apr 11, 2026
 let TOTAL_HRS  = 17369.3;  // Updated payroll hours — 41 drivers
 let INS_WEEK  = 6375;
-let INS_TOT    = 84203.44;   // QB: SF Truck Insurance only (CPM insurance = truck insurance)
-let TRUCK_TOT  = 177591.25;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI) thru Apr 7
-let TRAILER_TOT = 75859.58;  // QuickBooks: Trailer Rentals (McKinney + Xtra + Utility + Premier + Boxwheel) thru Apr 7
+let INS_TOT    = 102845.24;  // QB: SF Truck Insurance only (CPM insurance = truck insurance)
+let TRUCK_TOT  = 185548.93;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI) thru Apr 12
+let TRAILER_TOT = 75859.58;  // QuickBooks: Trailer Rentals (McKinney + Xtra + Utility + Premier + Boxwheel) thru Apr 12
 let EQUIP_TOT   = TRUCK_TOT + TRAILER_TOT;
 let TRUCK_MAINT  = 4048.81;   // Prime Wash, AutoForce, Titan Glass, Towing, Batteries, TZ Parts, eBay, SF Heavy Equipment
-let TRAIL_MAINT  = 4139.71;   // TravelCenters of America, MKD Express
-let STORAGE      = 10722.35;  // Storage on Wheels, Total Transportation, Parking Service Center
+let TRAIL_MAINT  = 4591.89;   // TravelCenters of America, MKD Express
+let STORAGE      = 13822.35;  // Storage/Parking per P&L thru Apr 12
 let MAINT_TOT    = TRUCK_MAINT + TRAIL_MAINT + STORAGE;
 let UNIFORMS     = 6452.26;   // Unifirst + Safety Guard Shoe
 // Basic CPM = Labor + Fuel + Truck Rentals + Insurance only
@@ -135,7 +135,7 @@ let BASIC_CPM_V = BASIC_COST / MILES;
 // All-In CPM = everything tracked
 let ALLIN_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT + TRAILER_TOT + TRUCK_MAINT + TRAIL_MAINT + STORAGE + UNIFORMS;
 let ALLIN_CPM_V = ALLIN_COST / MILES;
-let PERIOD    = "Jan 1 - Apr 11, 2026";
+let PERIOD    = "Jan 1 - Apr 12, 2026";
 
 // Build merged driver rows
 let DRIVERS = PAYROLL.map(p => {
@@ -4066,13 +4066,13 @@ function TrailerFleet() {
 
 // ── INCOME DATA ───────────────────────────────────────────────
 const INCOME_2026 = {
-  period: "Jan 1 – Apr 7, 2026",
-  ce: 3868583.49, sf: 1314935.00, di: 40306.43, ceEast: 23992.01,
-  total: 5247816.93,
-  cogs: 2767226.88, grossProfit: 2480590.05,
-  totalExp: 2159833.46, netOpIncome: 320756.59,
-  netIncome: 397371.54,
-  carrierPay: 2706740.73, merchantFees: 55079.60, flexentFees: 5406.55,
+  period: "Jan 1 – Apr 12, 2026",
+  ce: 4069785.49, sf: 1400928.54, di: 40506.43, ceEast: 59771.51,
+  total: 5570991.97,
+  cogs: 2931983.37, grossProfit: 2639008.60,
+  totalExp: 2365355.43, netOpIncome: 273653.17,
+  netIncome: 350268.12,
+  carrierPay: 2870301.23, merchantFees: 55079.60, flexentFees: 6602.54,
   weeks: [
     { label:"Jan 1-4",    rev:86886.02,  gp:52052.64,  ce:71474.65,  sf:14362.37,  di:1049.00,   carrier:34100.00,  netInc:25492.50 },
     { label:"Jan 5-11",   rev:167335.63, gp:76449.43,  ce:103721.70, sf:63463.93,  di:150.00,    carrier:88060.25,  netInc:-73568.84 },
@@ -6469,15 +6469,15 @@ const OFFICE_W2 = [
   { name:"Scot Grosser",        entity:"SF",  gross:23645.67, taxes:2655.93, contrib:793.33,  totalCost:26301.60, salary:19600,    bonus:233.33,  reimb:0,      commission:0,     note:"Salary + wellness" },
   { name:"Cecilia Rivera",      entity:"SF",  gross:18635,    taxes:2772.03, contrib:745.40,  totalCost:21407.03, salary:17990,    bonus:645,     reimb:0,      commission:0,     note:"Salary + bonus" },
   { name:"Nathan Youngblood",   entity:"SF",  gross:16800,    taxes:1831.20, contrib:0,       totalCost:18631.20, salary:16800,    bonus:0,       reimb:0,      commission:0,     note:"Salary" },
-  // J&A Management employees (thru Apr 7, 2026 YTD)
-  { name:"Valeria Abrego",      entity:"J&A", gross:10585.10, taxes:1164.02, contrib:0,       totalCost:11749.12, salary:0,        bonus:0,       reimb:0,      commission:0,     note:"Hourly" },
-  { name:"Christopher Adamson", entity:"J&A", gross:18000,    taxes:2670.00, contrib:720,     totalCost:20670.00, salary:18000,    bonus:0,       reimb:0,      commission:0,     note:"Salary + 401K" },
+  // J&A Management employees (thru Apr 10, 2026 YTD)
+  { name:"Valeria Abrego",      entity:"J&A", gross:11510.10, taxes:1248.82, contrib:0,       totalCost:12758.92, salary:0,        bonus:0,       reimb:125.00, commission:0,     note:"Hourly + OT" },
+  { name:"Christopher Adamson", entity:"J&A", gross:20000,    taxes:2962.00, contrib:800,     totalCost:22962.00, salary:20000,    bonus:0,       reimb:0,      commission:0,     note:"Salary + 401K" },
   { name:"Debra Adamson",       entity:"J&A", gross:8750,     taxes:934.68,  contrib:0,       totalCost:9684.68,  salary:8750,     bonus:0,       reimb:0,      commission:0,     note:"*Former · W2 → Contractor", dual:true },
   { name:"Elizabeth Delgado",   entity:"J&A", gross:8541.11,  taxes:852.13,  contrib:0,       totalCost:9393.24,  salary:5940,     bonus:0,       reimb:898.35, commission:1702.76, note:"*Former · W2 → Contractor · commission", dual:true },
-  { name:"Abigail Dillon",      entity:"J&A", gross:2263.00,  taxes:253.46,  contrib:0,       totalCost:2516.46,  salary:0,        bonus:0,       reimb:0,      commission:0,     note:"Hourly" },
-  { name:"Biniyam Fissehaye",   entity:"J&A", gross:12177.07, taxes:1329.91, contrib:0,       totalCost:13506.98, salary:12150,    bonus:0,       reimb:27.07,  commission:0,     note:"Salary at J&A + SF" },
+  { name:"Abigail Dillon",      entity:"J&A", gross:2738.50,  taxes:306.72,  contrib:0,       totalCost:3045.22,  salary:0,        bonus:0,       reimb:0,      commission:0,     note:"Hourly" },
+  { name:"Biniyam Fissehaye",   entity:"J&A", gross:13527.07, taxes:1473.00, contrib:0,       totalCost:15000.07, salary:13500,    bonus:0,       reimb:27.07,  commission:0,     note:"Salary at J&A + SF" },
   { name:"Kirsten Hall",        entity:"J&A", gross:2250,     taxes:252.01,  contrib:0,       totalCost:2502.01,  salary:2250,     bonus:0,       reimb:0,      commission:0,     note:"*Former employee" },
-  { name:"Ben Hoffman",         entity:"J&A", gross:17500.08, taxes:2273.95, contrib:376.95,  totalCost:19774.03, salary:16423.15, bonus:0,       reimb:0,      commission:0,     note:"Salary + 401K + PTO" },
+  { name:"Ben Hoffman",         entity:"J&A", gross:18846.24, taxes:2039.70, contrib:376.95,  totalCost:21262.89, salary:17769.31, bonus:0,       reimb:0,      commission:0,     note:"Salary + 401K + PTO" },
   { name:"Branden Parnell",     entity:"J&A", gross:5769.20,  taxes:646.15,  contrib:0,       totalCost:6415.35,  salary:5769.20,  bonus:0,       reimb:0,      commission:0,     note:"*Former employee" },
   { name:"Ayelen Sanchez",      entity:"J&A", gross:1809.26,  taxes:198.25,  contrib:0,       totalCost:2007.51,  salary:0,        bonus:0,       reimb:39.26,  commission:0,     note:"*Former · Hourly" },
   { name:"Christopher Simpson", entity:"J&A", gross:8998.46,  taxes:1320.95, contrib:359.94,  totalCost:10319.41, salary:6300,     bonus:0,       reimb:0,      commission:2698.46, note:"*Former · W2 → Contractor · commission", dual:true },
