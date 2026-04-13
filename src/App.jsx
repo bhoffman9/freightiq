@@ -5473,6 +5473,21 @@ const CE_EAST = {
 
 function CEEast() {
   const [distAmt, setDistAmt] = useState(Math.round(CE_EAST.months2026.reduce((s,r)=>s+r.gp,0) / CE_EAST.months2026.length * 0.5));
+  const [ceView, setCeView]   = useState("live");
+  const [cePeriod, setCePeriod] = useState("ytd");
+  const [ceQb, setCeQb]       = useState(null);
+  const [ceLoading, setCeLoading] = useState(false);
+  const [ceError, setCeError] = useState(null);
+
+  useEffect(() => {
+    if (ceView !== "live") return;
+    setCeLoading(true); setCeError(null);
+    fetch(`/api/qbo-pnl?company=ce_east&period=${cePeriod}`)
+      .then(r => r.json())
+      .then(d => { if (d.error) { setCeError(d.error); setCeQb(null); } else setCeQb(d); })
+      .catch(e => setCeError(e.message))
+      .finally(() => setCeLoading(false));
+  }, [ceView, cePeriod]);
 
   const bs = CE_EAST.bs;
   const pl = CE_EAST.pl;
@@ -5512,9 +5527,117 @@ function CEEast() {
 
   return (
     <div>
-      <div className="ptitle">CE East — Owner Payback</div>
-      <div className="psub">Distributions begin when cumulative gross profit exceeds shareholder loans</div>
+      <div className="ptitle">CE East</div>
+      <div className="psub">Capacity Express East LLC</div>
 
+      {/* View toggle */}
+      <div style={{ display:"flex",gap:8,marginBottom:14 }}>
+        {[["live","⚡ Live QB"],["payback","📊 Owner Payback"]].map(([id,lbl]) => (
+          <button key={id} onClick={() => setCeView(id)} style={{
+            padding:"7px 16px",borderRadius:3,cursor:"pointer",
+            fontFamily:"var(--f2)",fontSize:12,fontWeight:700,letterSpacing:1,textTransform:"uppercase",
+            background:ceView===id?"var(--or)":"transparent",
+            color:ceView===id?"#fff":"var(--mu)",
+            border:`1px solid ${ceView===id?"var(--or)":"var(--bd)"}`,
+          }}>{lbl}</button>
+        ))}
+      </div>
+
+      {/* ── LIVE QB VIEW ── */}
+      {ceView === "live" && (
+        <>
+          <div style={{ display:"flex",gap:6,flexWrap:"wrap",marginBottom:14 }}>
+            {[
+              ["ytd","YTD"],["this_week","This Week"],["last_week","Last Week"],
+              ["jan","Jan"],["feb","Feb"],["mar","Mar"],["apr","Apr"],["may","May"],["jun","Jun"],
+              ["jul","Jul"],["aug","Aug"],["sep","Sep"],["oct","Oct"],["nov","Nov"],["dec","Dec"],
+            ].map(([id,lbl]) => (
+              <button key={id} onClick={() => setCePeriod(id)} style={{
+                padding:"6px 14px",borderRadius:3,cursor:"pointer",
+                fontFamily:"var(--f2)",fontSize:11,fontWeight:700,letterSpacing:1,textTransform:"uppercase",
+                background:cePeriod===id?"#4fc3f7":"transparent",
+                color:cePeriod===id?"#0b0d10":"var(--mu)",
+                border:`1px solid ${cePeriod===id?"#4fc3f7":"var(--bd)"}`,
+              }}>{lbl}</button>
+            ))}
+          </div>
+
+          {ceLoading && <div style={{ textAlign:"center",padding:40,color:"var(--mu)" }}>Loading CE East from QuickBooks...</div>}
+          {ceError && <div style={{ padding:16,background:"rgba(255,82,82,.1)",border:"1px solid rgba(255,82,82,.3)",borderRadius:4,color:"#ff5252",fontSize:12,marginBottom:14 }}>{ceError}</div>}
+
+          {ceQb && (() => { const t = ceQb.parsed.totals; const p = ceQb.period; const inc = ceQb.parsed.income; const exp = ceQb.parsed.expenses; const cogs = ceQb.parsed.cogs; return (
+            <>
+              <div style={{ fontSize:10,color:"var(--mu)",marginBottom:12,letterSpacing:2,textTransform:"uppercase" }}>
+                QuickBooks Live — CE East — {p.start_date} to {p.end_date}
+              </div>
+
+              {/* Hero KPIs */}
+              <div className="g4" style={{ marginBottom:14 }}>
+                {[
+                  { label:"Revenue", val:t.totalIncome || 0, color:"#3ddc84" },
+                  { label:"Gross Profit", val:t.grossProfit || 0, color:"#f5c542", sub:t.totalIncome > 0 ? `${(t.grossProfit/t.totalIncome*100).toFixed(1)}% margin` : "" },
+                  { label:"Total Expenses", val:t.totalExpenses || 0, color:"#ff8a65" },
+                  { label:"Net Income", val:t.netIncome || 0, color:(t.netIncome||0) >= 0 ? "#3ddc84" : "#ff5252" },
+                ].map(k => (
+                  <div key={k.label} style={{ background:"var(--s1)",border:`1px solid ${k.color}40`,borderRadius:6,padding:"18px",textAlign:"center" }}>
+                    <div style={{ fontSize:9,letterSpacing:3,textTransform:"uppercase",color:k.color,marginBottom:6 }}>{k.label}</div>
+                    <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:k.color,lineHeight:1 }}>{fd(k.val,0)}</div>
+                    {k.sub && <div style={{ fontSize:10,color:"var(--mu)",marginTop:6 }}>{k.sub}</div>}
+                  </div>
+                ))}
+              </div>
+
+              <div className="g2" style={{ gap:14,marginBottom:14 }}>
+                {/* Income breakdown */}
+                <div className="card">
+                  <div className="ctit">Income</div>
+                  <table className="tbl" style={{ fontSize:11 }}>
+                    <tbody>
+                      {Object.entries(inc).filter(([k]) => !k.startsWith("Total")).map(([k,v]) => (
+                        <tr key={k}><td>{k}</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#3ddc84" }}>{fd(v)}</td></tr>
+                      ))}
+                      <tr style={{ fontWeight:800,borderTop:"1px solid var(--bd)" }}><td>Total Income</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#3ddc84" }}>{fd(t.totalIncome)}</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* COGS */}
+                <div className="card">
+                  <div className="ctit">Cost of Goods Sold</div>
+                  <table className="tbl" style={{ fontSize:11 }}>
+                    <tbody>
+                      {Object.entries(cogs).filter(([k]) => !k.startsWith("Total")).map(([k,v]) => (
+                        <tr key={k}><td>{k}</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#ff5252" }}>{fd(v)}</td></tr>
+                      ))}
+                      <tr style={{ fontWeight:800,borderTop:"1px solid var(--bd)" }}><td>Total COGS</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#ff5252" }}>{fd(t.totalCOGS)}</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Expenses */}
+              <div className="card" style={{ marginBottom:14 }}>
+                <div className="ctit">Expenses</div>
+                <table className="tbl" style={{ fontSize:11 }}>
+                  <tbody>
+                    {Object.entries(exp).filter(([k,v]) => !k.startsWith("Total") && v !== 0).sort((a,b) => b[1]-a[1]).map(([k,v]) => (
+                      <tr key={k}><td>{k.replace(/^[^>]+> /,"")}</td><td style={{ textAlign:"right",fontFamily:"var(--f2)" }}>{fd(v)}</td></tr>
+                    ))}
+                    <tr style={{ fontWeight:800,borderTop:"1px solid var(--bd)" }}><td>Total Expenses</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#ff5252" }}>{fd(t.totalExpenses)}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style={{ padding:12,background:"rgba(79,195,247,.06)",border:"1px solid rgba(79,195,247,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",textAlign:"center" }}>
+                Live from QuickBooks · CE East P&L · Updated in real-time
+              </div>
+            </>
+          ); })()}
+        </>
+      )}
+
+      {/* ── OWNER PAYBACK VIEW ── */}
+      {ceView === "payback" && (<>
 
       {/* 2025 + 2026 revenue — top horizontal */}
       <div style={{ display:"grid",gridTemplateColumns:"1fr 2fr",gap:14,marginBottom:14 }}>
@@ -5791,6 +5914,8 @@ function CEEast() {
           </div>
         </div>
       </div>
+
+      </>)}
 
     </div>
   );
