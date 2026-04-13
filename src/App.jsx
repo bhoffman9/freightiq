@@ -5476,16 +5476,20 @@ function CEEast() {
   const [ceView, setCeView]   = useState("live");
   const [cePeriod, setCePeriod] = useState("ytd");
   const [ceQb, setCeQb]       = useState(null);
+  const [ceBs, setCeBs]       = useState(null);
   const [ceLoading, setCeLoading] = useState(false);
   const [ceError, setCeError] = useState(null);
 
   useEffect(() => {
     if (ceView !== "live") return;
     setCeLoading(true); setCeError(null);
-    fetch(`/api/qbo-pnl?company=ce_east&period=${cePeriod}`)
-      .then(r => r.json())
-      .then(d => { if (d.error) { setCeError(d.error); setCeQb(null); } else setCeQb(d); })
-      .catch(e => setCeError(e.message))
+    Promise.all([
+      fetch(`/api/qbo-pnl?company=ce_east&period=${cePeriod}`).then(r => r.json()),
+      fetch(`/api/qbo-bs?company=ce_east`).then(r => r.json()),
+    ]).then(([pnl, bs]) => {
+      if (pnl.error) { setCeError(pnl.error); setCeQb(null); } else setCeQb(pnl);
+      if (!bs.error) setCeBs(bs);
+    }).catch(e => setCeError(e.message))
       .finally(() => setCeLoading(false));
   }, [ceView, cePeriod]);
 
@@ -5628,8 +5632,78 @@ function CEEast() {
                 </table>
               </div>
 
+              {/* Balance Sheet */}
+              {ceBs && ceBs.bs && (() => { const b = ceBs.bs; return (
+                <>
+                  <div style={{ fontSize:10,color:"var(--mu)",marginBottom:8,marginTop:8,letterSpacing:2,textTransform:"uppercase" }}>
+                    Balance Sheet — as of {ceBs.as_of}
+                  </div>
+                  <div className="g3" style={{ gap:14,marginBottom:14 }}>
+                    {/* Assets */}
+                    <div className="card">
+                      <div className="ctit" style={{ color:"#3ddc84" }}>Assets</div>
+                      <table className="tbl" style={{ fontSize:11 }}>
+                        <tbody>
+                          {Object.entries(b.assets).filter(([k,v]) => v !== 0).map(([k,v]) => (
+                            <tr key={k} style={{ fontWeight:k.startsWith("Total") ? 800 : 400 }}>
+                              <td style={{ paddingLeft:k.startsWith("Total") ? 0 : 8 }}>{k}</td>
+                              <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:k.startsWith("Total")?"#3ddc84":"var(--tx)" }}>{fd(v)}</td>
+                            </tr>
+                          ))}
+                          <tr style={{ fontWeight:800,borderTop:"2px solid var(--bd)" }}>
+                            <td>TOTAL ASSETS</td>
+                            <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#3ddc84",fontSize:14 }}>{fd(b.totals.totalAssets)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Liabilities */}
+                    <div className="card">
+                      <div className="ctit" style={{ color:"#ff5252" }}>Liabilities</div>
+                      <table className="tbl" style={{ fontSize:11 }}>
+                        <tbody>
+                          {Object.entries(b.liabilities).filter(([k,v]) => v !== 0).length > 0
+                            ? Object.entries(b.liabilities).filter(([k,v]) => v !== 0).map(([k,v]) => (
+                                <tr key={k} style={{ fontWeight:k.startsWith("Total") ? 800 : 400 }}>
+                                  <td style={{ paddingLeft:k.startsWith("Total") ? 0 : 8 }}>{k}</td>
+                                  <td style={{ textAlign:"right",fontFamily:"var(--f2)" }}>{fd(v)}</td>
+                                </tr>
+                              ))
+                            : <tr><td colSpan={2} style={{ color:"var(--mu)",textAlign:"center" }}>No liabilities</td></tr>
+                          }
+                          <tr style={{ fontWeight:800,borderTop:"2px solid var(--bd)" }}>
+                            <td>TOTAL LIABILITIES</td>
+                            <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#ff5252",fontSize:14 }}>{fd(b.totals.totalLiabilities || 0)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Equity */}
+                    <div className="card">
+                      <div className="ctit" style={{ color:"#f5c542" }}>Equity</div>
+                      <table className="tbl" style={{ fontSize:11 }}>
+                        <tbody>
+                          {Object.entries(b.equity).filter(([k,v]) => v !== 0).map(([k,v]) => (
+                            <tr key={k} style={{ fontWeight:k.startsWith("Total") ? 800 : 400 }}>
+                              <td style={{ paddingLeft:k.startsWith("Total") ? 0 : 8 }}>{k}</td>
+                              <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:v < 0 ? "#ff5252" : "var(--tx)" }}>{fd(v)}</td>
+                            </tr>
+                          ))}
+                          <tr style={{ fontWeight:800,borderTop:"2px solid var(--bd)" }}>
+                            <td>TOTAL EQUITY</td>
+                            <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#f5c542",fontSize:14 }}>{fd(b.totals.totalEquity)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              ); })()}
+
               <div style={{ padding:12,background:"rgba(79,195,247,.06)",border:"1px solid rgba(79,195,247,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",textAlign:"center" }}>
-                Live from QuickBooks · CE East P&L · Updated in real-time
+                Live from QuickBooks · CE East P&L + Balance Sheet · Updated in real-time
               </div>
             </>
           ); })()}
