@@ -53,20 +53,38 @@ function parseBsReport(report) {
   }
 
   for (const section of report.Rows.Row) {
-    const header = section.Header?.ColData?.[0]?.value || '';
+    const header = (section.Header?.ColData?.[0]?.value || '').toUpperCase();
     const summary = section.Summary?.ColData || [];
 
-    if (header === 'Assets' || header === 'ASSETS') {
+    if (header === 'ASSETS') {
       result.totals.totalAssets = parseFloat(summary[1]?.value) || 0;
       extractSection(section.Rows?.Row, result.assets);
     }
-    if (header === 'Liabilities' || header === 'LIABILITIES') {
+
+    // QB uses either separate "Liabilities" + "Equity" or combined "LIABILITIES AND EQUITY"
+    if (header === 'LIABILITIES') {
       result.totals.totalLiabilities = parseFloat(summary[1]?.value) || 0;
       extractSection(section.Rows?.Row, result.liabilities);
     }
-    if (header === 'Equity' || header === 'EQUITY') {
+    if (header === 'EQUITY') {
       result.totals.totalEquity = parseFloat(summary[1]?.value) || 0;
       extractSection(section.Rows?.Row, result.equity);
+    }
+    if (header.includes('LIABILITIES AND EQUITY') || header.includes('LIABILITIES & EQUITY')) {
+      if (section.Rows?.Row) {
+        for (const sub of section.Rows.Row) {
+          const sh = (sub.Header?.ColData?.[0]?.value || sub.ColData?.[0]?.value || '').toUpperCase();
+          const ss = sub.Summary?.ColData || [];
+          if (sh.includes('LIABILIT') && !sh.includes('EQUITY')) {
+            result.totals.totalLiabilities = parseFloat(ss[1]?.value) || parseFloat(sub.ColData?.[1]?.value) || 0;
+            extractSection(sub.Rows?.Row, result.liabilities);
+          }
+          if (sh === 'EQUITY') {
+            result.totals.totalEquity = parseFloat(ss[1]?.value) || 0;
+            extractSection(sub.Rows?.Row, result.equity);
+          }
+        }
+      }
     }
   }
 
