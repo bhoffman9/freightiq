@@ -13,88 +13,98 @@ function useEquipment() { return useContext(EquipmentContext); }
 
 
 // ── PAYROLL DATA ──────────────────────────────────────────────
-// QuickBooks payroll summary by employee, Jan 1 – Apr 6, 2026
+// QuickBooks payroll summary by employee, Jan 1 – Apr 13, 2026
 // LABOR = total payroll cost for drivers (gross + employer taxes + 401k)
 // * = inactive/terminated driver
 let PAYROLL = [
-  { name: "Alexander Christopher", hours: 454.61, totalCost: 13439.19 },
+  { name: "Alexander Christopher", hours: 525.83, totalCost: 15488.12 },
   { name: "Allwine Brian A",       hours: 181.34, totalCost: 5043.53 },   // *inactive
   { name: "Anderson Justin M",     hours: 79.01,  totalCost: 2285.37 },   // *inactive
   { name: "Brown Jr Marcellus",    hours: 77.08,  totalCost: 2143.78 },   // *inactive
-  { name: "Butler Richard",        hours: 309.11, totalCost: 9384.79 },
+  { name: "Butler Richard",        hours: 382.40, totalCost: 11493.27 },
   { name: "Christian Norman L",    hours: 100.08, totalCost: 2894.81 },   // *inactive
   { name: "Clark Rettick",         hours: 255.06, totalCost: 7377.62 },   // *inactive
   { name: "Cotton Kejlon",         hours: 320.32, totalCost: 11677.82 },  // *inactive
-  { name: "Davis Anthoni D",       hours: 984.11, totalCost: 33224.05 },
-  { name: "Denman Samuel E",       hours: 836.24, totalCost: 26624.39 },
-  { name: "Dotch Brandon C",       hours: 137.60, totalCost: 4205.09 },
-  { name: "Gutierrez Danny",       hours: 723.51, totalCost: 22493.33 },
-  { name: "Guzman Jose",           hours: 908.01, totalCost: 32457.39 },
+  { name: "Daniels Gerald W",      hours: 3.00,   totalCost: 86.78 },
+  { name: "Davis Anthoni D",       hours: 1034.71,totalCost: 35184.23 },
+  { name: "Denman Samuel E",       hours: 865.90, totalCost: 27543.33 },
+  { name: "Dotch Brandon C",       hours: 192.11, totalCost: 5781.79 },
+  { name: "Gutierrez Danny",       hours: 761.51, totalCost: 23670.65 },
+  { name: "Guzman Jose",           hours: 967.57, totalCost: 34604.19 },
   { name: "Howell Lawrence",       hours: 85.33,  totalCost: 2373.24 },   // *inactive
-  { name: "Ibarra Jose Pablo",     hours: 891.68, totalCost: 31396.00 },
+  { name: "Ibarra Jose Pablo",     hours: 937.06, totalCost: 33091.56 },
   { name: "Juarez Angel",          hours: 235.86, totalCost: 6822.25 },
-  { name: "Kelly Kirk D",          hours: 760.33, totalCost: 21850.92 },
+  { name: "Kelly Kirk D",          hours: 801.82, totalCost: 23044.55 },
+  { name: "Lucero Andrew",         hours: 22.60,  totalCost: 653.71 },
   { name: "Matthews Ron A",        hours: 464.44, totalCost: 13126.62 },  // *inactive
-  { name: "Mcclam Michael A",      hours: 306.70, totalCost: 8865.46 },
-  { name: "McNamara John",         hours: 871.95, totalCost: 28555.65 },
+  { name: "Mcclam Michael A",      hours: 356.64, totalCost: 10302.17 },
+  { name: "McNamara John",         hours: 937.94, totalCost: 30899.06 },
+  { name: "Memolo Dominick",       hours: 0,      totalCost: 0 },         // *inactive
   { name: "Negrete Arturo",        hours: 371.01, totalCost: 11053.06 },  // *inactive
-  { name: "Restrepo Julian E",     hours: 43.36,  totalCost: 1254.19 },
-  { name: "Robinson Animashaun",   hours: 204.46, totalCost: 5914.01 },
-  { name: "Ronkov Martin P",       hours: 806.45, totalCost: 22668.44 },
-  { name: "Secrest Jermelle",      hours: 247.24, totalCost: 7151.42 },
-  { name: "Stringer Adam E",       hours: 28.48,  totalCost: 823.78 },
-  { name: "Striplin Lamareh",      hours: 257.65, totalCost: 8260.52 },
-  { name: "Thorne Richard",        hours: 198.79, totalCost: 5750.00 },
-  { name: "Wainwright Michael W",  hours: 743.55, totalCost: 22349.76 },
-  { name: "Watkins Shawn",         hours: 264.10, totalCost: 7639.10 },
-  { name: "Watson Dahnifu S",      hours: 757.20, totalCost: 21270.24 },
-  { name: "Whipple Wallace",       hours: 803.47, totalCost: 25638.68 },
-  { name: "Williams Tadaryl C",    hours: 793.47, totalCost: 22958.29 },
-  { name: "Williams Will",         hours: 301.02, totalCost: 8702.04 },
-  { name: "Willis Wali A",         hours: 918.35, totalCost: 30708.84 },
+  { name: "Ponce Carlos",          hours: 19.38,  totalCost: 560.57 },
+  { name: "Restrepo Julian E",     hours: 92.44,  totalCost: 2673.82 },
+  { name: "Reyes Corey",           hours: 24.07,  totalCost: 696.21 },
+  { name: "Robinson Animashaun",   hours: 266.45, totalCost: 7707.07 },
+  { name: "Ronkov Martin P",       hours: 855.88, totalCost: 24090.48 },
+  { name: "Secrest Jermelle",      hours: 318.62, totalCost: 9208.38 },
+  { name: "Stringer Adam E",       hours: 63.46,  totalCost: 1835.58 },
+  { name: "Striplin Lamareh",      hours: 312.27, totalCost: 9833.70 },
+  { name: "Thorne Richard",        hours: 254.53, totalCost: 7387.28 },
+  { name: "Wainwright Michael W",  hours: 815.33, totalCost: 24414.80 },
+  { name: "Watkins Shawn",         hours: 316.67, totalCost: 9152.28 },
+  { name: "Watson Dahnifu S",      hours: 806.84, totalCost: 22973.34 },
+  { name: "Whipple Wallace",       hours: 839.18, totalCost: 26775.06 },
+  { name: "Williams Tadaryl C",    hours: 828.67, totalCost: 23990.43 },
+  { name: "Williams Will",         hours: 351.09, totalCost: 10142.51 },
+  { name: "Willis Wali A",         hours: 985.17, totalCost: 33007.11 },
   { name: "Wright Robert",         hours: 260.66, totalCost: 9443.88 },   // *inactive
 ];
 
 // ── FUEL DATA (EFS only) ──────────────────────────────────────
 let FUEL = {
-  // EFS only, Jan 1 – Apr 5, 2026 — $216,949.15 (44,923.55 gal)
+  // EFS only, Jan 1 – Apr 11, 2026 — $253,560.02 (50,586.27 gal)
   // No Mudflap charges this period
   // Fuel = ULSD + DEFD + BDSL + CDSL + UNPR + UNRG (all fuel products, excludes fees/parking/CADV)
-  "Alexander Christopher": { fuel: 7646.38, gallons: 1371.67 },   // card 77409
+  "Alexander Christopher": { fuel: 9445.06, gallons: 1615.67 },   // card 77409
   "Allwine Brian A":       { fuel: 2147.67, gallons: 556.49 },    // card 07408 (Jan only)
   "Anderson Justin M":     { fuel: 450.60,  gallons: 76.00 },     // card 07405 split
   "Brown Jr Marcellus":    { fuel: 1333.67, gallons: 319.07 },    // card 77462
-  "Butler Richard":        { fuel: 6976.03, gallons: 1274.16 },   // card 67400
+  "Butler Richard":        { fuel: 7470.16, gallons: 1347.85 },   // card 67400
   "Christian Norman L":    { fuel: 819.40,  gallons: 149.01 },    // card 47402
   "Clark Rettick":         { fuel: 2339.97, gallons: 482.50 },    // card 37405 split
   "Cotton Kejlon":         { fuel: 235.78,  gallons: 61.10 },     // card 87401 split
-  "Davis Anthoni D":       { fuel: 23354.98,gallons: 4672.67 },   // card 27406
-  "Denman Samuel E":       { fuel: 12402.37,gallons: 2999.27 },   // card 47405 (Sam)
-  "Dotch Brandon C":       { fuel: 4679.29, gallons: 802.67 },    // card 07405 split
-  "Gutierrez Danny":       { fuel: 5049.99, gallons: 1178.41 },   // card 47404
-  "Guzman Jose":           { fuel: 7065.68, gallons: 1518.93 },   // card 77401
+  "Daniels Gerald W":      { fuel: 0,       gallons: 0 },
+  "Davis Anthoni D":       { fuel: 26575.74,gallons: 5114.99 },   // card 27406
+  "Denman Samuel E":       { fuel: 15670.27,gallons: 3476.83 },   // cards 47405 + 37403
+  "Dotch Brandon C":       { fuel: 5853.88, gallons: 952.13 },    // card 07405 split
+  "Gutierrez Danny":       { fuel: 5834.77, gallons: 1298.84 },   // card 47404
+  "Guzman Jose":           { fuel: 7683.96, gallons: 1622.09 },   // card 77401
   "Howell Lawrence":       { fuel: 0,       gallons: 0 },
-  "Ibarra Jose Pablo":     { fuel: 3571.55, gallons: 795.67 },    // card 97409
-  "Juarez Angel":          { fuel: 0,       gallons: 0 },
+  "Ibarra Jose Pablo":     { fuel: 4084.37, gallons: 883.99 },    // card 97409
+  "Juarez Angel":          { fuel: 1099.33, gallons: 163.57 },    // card 87461
   "Kelly Kirk D":          { fuel: 14388.47,gallons: 3030.99 },   // card 77402
+  "Lucero Andrew":         { fuel: 0,       gallons: 0 },
   "Matthews Ron A":        { fuel: 4209.19, gallons: 1032.33 },   // card 07408 split (Feb-Mar)
-  "Mcclam Michael A":      { fuel: 5304.91, gallons: 860.03 },    // card 07407
-  "McNamara John":         { fuel: 12498.59,gallons: 2955.33 },   // card 17407
+  "Mcclam Michael A":      { fuel: 7847.64, gallons: 1216.11 },   // card 07407
+  "McNamara John":         { fuel: 13938.20,gallons: 3200.70 },   // card 17407
+  "Memolo Dominick":       { fuel: 0,       gallons: 0 },
   "Negrete Arturo":        { fuel: 6494.46, gallons: 1544.44 },   // card 57404
-  "Restrepo Julian E":     { fuel: 938.85,  gallons: 150.00 },    // card 37405 split
+  "Ponce Carlos":          { fuel: 1753.86, gallons: 277.45 },    // card 37466
+  "Restrepo Julian E":     { fuel: 1006.64, gallons: 163.84 },    // card 37405 split
+  "Reyes Corey":           { fuel: 0,       gallons: 0 },
   "Robinson Animashaun":   { fuel: 0,       gallons: 0 },
   "Ronkov Martin P":       { fuel: 2807.30, gallons: 623.49 },    // card 67403
-  "Secrest Jermelle":      { fuel: 9879.97, gallons: 1568.67 },   // cards 37404 + 27404 (Mell)
-  "Stringer Adam E":       { fuel: 0,       gallons: 0 },
-  "Striplin Lamareh":      { fuel: 5389.48, gallons: 1007.32 },   // card 87407
+  "Secrest Jermelle":      { fuel: 11651.44,gallons: 1796.12 },   // cards 37404 + 27404 (Mell)
+  "Stringer Adam E":       { fuel: 691.61,  gallons: 101.72 },    // card 77402 split (1 fill Apr 6)
+  "Striplin Lamareh":      { fuel: 5743.98, gallons: 1063.60 },   // card 87407
   "Thorne Richard":        { fuel: 5620.93, gallons: 961.37 },    // card 87401 split
-  "Wainwright Michael W":  { fuel: 19086.93,gallons: 4219.44 },   // card 67463
-  "Watkins Shawn":         { fuel: 12150.05,gallons: 2189.11 },   // cards 57401 + 57464
-  "Watson Dahnifu S":      { fuel: 6151.43, gallons: 1212.50 },   // card 97406 (Shaq)
-  "Whipple Wallace":       { fuel: 11859.22,gallons: 2933.05 },   // card 57403
-  "Williams Tadaryl C":    { fuel: 10690.28,gallons: 2207.02 },   // card 37402
-  "Williams Will":         { fuel: 7115.24, gallons: 1282.34 },   // card 27405
-  "Willis Wali A":         { fuel: 6298.10, gallons: 1168.41 },   // card 87400
+  "Wainwright Michael W":  { fuel: 20515.71,gallons: 4470.79 },   // card 67463
+  "Watkins Shawn":         { fuel: 15354.25,gallons: 2714.73 },   // cards 57401 + 57464
+  "Watson Dahnifu S":      { fuel: 6967.94, gallons: 1337.61 },   // card 97406 (Shaq)
+  "Whipple Wallace":       { fuel: 12643.71,gallons: 3065.44 },   // card 57403
+  "Williams Tadaryl C":    { fuel: 13276.02,gallons: 2586.62 },   // card 37402
+  "Williams Will":         { fuel: 8379.31, gallons: 1457.07 },   // card 27405
+  "Willis Wali A":         { fuel: 7053.96, gallons: 1283.64 },   // card 87400
   "Wright Robert":         { fuel: 2170.77, gallons: 538.08 },    // card 37405 split
 };
 
@@ -103,12 +113,12 @@ let FUEL = {
 // All other costs come from QuickBooks P&L.
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
-let LABOR     = 497827.55;  // QuickBooks: total driver payroll cost (gross+taxes+401k) thru Apr 6 — 36 drivers
-let FUEL_TOT  = 216949.15;  // EFS only — thru Apr 5 (no Mudflap this period)
-let GALLONS   = 44923.55;  // EFS 44,923.55
+let LABOR     = 540534.01;  // QuickBooks: total driver payroll cost (gross+taxes+401k) thru Apr 13 — 41 drivers
+let FUEL_TOT  = 253560.02;  // EFS only — thru Apr 11 (no Mudflap this period)
+let GALLONS   = 50586.27;  // EFS 50,586.27
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
-let MILES     = 291722.8;     // Samsara GPS actual, Jan 1 – Apr 4, 2026
-let TOTAL_HRS  = 15981.6;  // Updated payroll hours — 36 drivers
+let MILES     = 327862.1;     // Samsara GPS actual, Jan 1 – Apr 11, 2026
+let TOTAL_HRS  = 17369.3;  // Updated payroll hours — 41 drivers
 let INS_WEEK  = 6375;
 let INS_TOT    = 84203.44;   // QB: SF Truck Insurance only (CPM insurance = truck insurance)
 let TRUCK_TOT  = 177591.25;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI) thru Apr 7
@@ -125,7 +135,7 @@ let BASIC_CPM_V = BASIC_COST / MILES;
 // All-In CPM = everything tracked
 let ALLIN_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT + TRAILER_TOT + TRUCK_MAINT + TRAIL_MAINT + STORAGE + UNIFORMS;
 let ALLIN_CPM_V = ALLIN_COST / MILES;
-let PERIOD    = "Jan 1 - Apr 5, 2026";
+let PERIOD    = "Jan 1 - Apr 11, 2026";
 
 // Build merged driver rows
 let DRIVERS = PAYROLL.map(p => {
@@ -352,52 +362,52 @@ const TRUCK_TYPE = {
   // 589 returned 1/14/2026 — removed from active fleet
 };
 
-// ── SAMSARA MILEAGE DATA (Jan 1 – Apr 4, 2026) ──────────────
+// ── SAMSARA MILEAGE DATA (Jan 1 – Apr 11, 2026) ──────────────
 let TRUCK_MILES = [
-  { truck:"120", local:2338.8, regional:23604.7, miles:25943.5, states:{"CA":12495.4,"NV":2338.8,"AZ":2068.6,"TX":1638.4,"NM":1494.8,"OK":1259.1,"GA":1032.1,"AR":1017.5,"AL":991.4,"MS":663.7,"TN":407.8,"LA":399.3,"SC":136.6} },
-  { truck:"951", local:3803.7, regional:13953.0, miles:17756.7, states:{"CA":12869.2,"NV":3803.7,"AZ":1083.7} },
+  { truck:"120", local:2344.5, regional:23604.7, miles:25949.2, states:{"CA":12495.4,"NV":2344.5,"AZ":2068.6,"TX":1638.4,"NM":1494.8,"OK":1259.1,"GA":1032.1,"AR":1017.5,"AL":991.4,"MS":663.7,"TN":407.8,"LA":399.3,"SC":136.6} },
+  { truck:"951", local:4284.4, regional:15666.5, miles:19950.9, states:{"CA":14582.8,"NV":4284.4,"AZ":1083.7} },
+  { truck:"568", local:4476.7, regional:13237.6, miles:17714.3, states:{"CA":10801.9,"NV":4476.7,"AZ":2435.6} },
   { truck:"728", local:2922.7, regional:14438.8, miles:17361.5, states:{"CA":11505.6,"AZ":2933.2,"NV":2922.7} },
-  { truck:"568", local:4388.3, regional:12759.4, miles:17147.7, states:{"CA":10323.8,"NV":4388.3,"AZ":2435.6} },
   { truck:"738", local:2516.6, regional:14476.5, miles:16993.1, states:{"CA":13218.9,"NV":2516.6,"AZ":638.1,"UT":619.4} },
-  { truck:"577", local:3329.3, regional:12502.5, miles:15831.9, states:{"CA":10871.2,"NV":3329.3,"AZ":1631.4} },
+  { truck:"574", local:3354.5, regional:13267.0, miles:16621.5, states:{"CA":12796.3,"NV":3354.5,"AZ":470.7} },
+  { truck:"577", local:3440.8, regional:12962.9, miles:16403.7, states:{"CA":11331.6,"NV":3440.8,"AZ":1631.4} },
   { truck:"731", local:2991.3, regional:12734.9, miles:15726.2, states:{"CA":11120.1,"NV":2991.3,"AZ":1614.8} },
-  { truck:"574", local:3214.6, regional:11875.1, miles:15089.7, states:{"CA":11404.4,"NV":3214.6,"AZ":470.7} },
   { truck:"730", local:1946.8, regional:10041.7, miles:11988.5, states:{"CA":10041.7,"NV":1946.8} },
   { truck:"149", local:2047.3, regional:8712.3, miles:10759.6, states:{"CA":8712.3,"NV":2047.3} },
+  { truck:"127", local:1393.2, regional:8798.9, miles:10192.1, states:{"CA":8798.9,"NV":1393.2} },
+  { truck:"418", local:1290.9, regional:8824.7, miles:10115.6, states:{"CA":8824.7,"NV":1290.9} },
   { truck:"476", local:2831.8, regional:6843.0, miles:9674.8, states:{"CA":6270.1,"NV":2831.8,"AZ":572.9} },
-  { truck:"573", local:5048.7, regional:4101.2, miles:9149.9, states:{"NV":5048.7,"CA":4101.2} },
+  { truck:"417", local:1072.2, regional:8451.3, miles:9523.4, states:{"CA":7868.2,"NV":1072.2,"AZ":583.0} },
+  { truck:"020", local:7089.9, regional:2197.1, miles:9286.9, states:{"NV":7089.9,"CA":2197.1} },
+  { truck:"573", local:5081.0, regional:4101.2, miles:9182.2, states:{"NV":5081.0,"CA":4101.2} },
   { truck:"937", local:168.4, regional:8775.7, miles:8944.0, states:{"TX":1691.9,"CA":1176.2,"AZ":959.1,"AL":649.9,"LA":584.1,"NM":542.5,"MS":472.8,"OK":455.8,"GA":451.8,"MO":297.6,"MD":294.4,"VA":276.9,"OH":227.5,"NV":168.4,"IL":160.9,"IN":159.9,"NC":127.5,"SC":107.9,"WV":83.9,"PA":55.2} },
-  { truck:"20", local:6474.5, regional:2197.1, miles:8671.5, states:{"NV":6474.5,"CA":2197.1} },
   { truck:"539", local:1031.8, regional:7565.5, miles:8597.4, states:{"CA":2853.6,"NV":1031.8,"AZ":934.4,"GA":700.1,"OK":669.3,"NM":635.8,"AR":575.8,"AL":384.9,"TX":355.3,"MS":264.8,"SC":165.3,"TN":26.2} },
-  { truck:"127", local:1190.8, regional:7027.1, miles:8217.9, states:{"CA":7027.1,"NV":1190.8} },
-  { truck:"418", local:954.4, regional:6692.3, miles:7646.6, states:{"CA":6692.3,"NV":954.4} },
-  { truck:"417", local:840.6, regional:6700.5, miles:7541.1, states:{"CA":6117.5,"NV":840.6,"AZ":583.0} },
-  { truck:"441", local:2069.8, regional:4515.1, miles:6585.0, states:{"CA":4515.1,"NV":2069.8} },
-  { truck:"463", local:667.5, regional:5763.8, miles:6431.3, states:{"CA":5229.8,"NV":667.5,"AZ":534.0} },
-  { truck:"496", local:522.9, regional:5759.1, miles:6282.1, states:{"CA":5759.1,"NV":522.9} },
-  { truck:"440", local:2242.3, regional:3642.6, miles:5884.9, states:{"CA":3642.6,"NV":2242.3} },
+  { truck:"496", local:733.3, regional:7447.3, miles:8180.5, states:{"CA":7447.3,"NV":733.3} },
+  { truck:"419", local:1177.2, regional:6583.9, miles:7761.2, states:{"CA":4659.1,"NV":1177.2,"UT":727.7,"CO":612.2,"AZ":585.0} },
+  { truck:"440", local:2811.8, regional:4735.2, miles:7547.0, states:{"CA":4735.2,"NV":2811.8} },
+  { truck:"441", local:2558.0, regional:4980.7, miles:7538.7, states:{"CA":4980.7,"NV":2558.0} },
+  { truck:"463", local:831.3, regional:6585.0, miles:7416.3, states:{"CA":6050.9,"NV":831.3,"AZ":534.0} },
+  { truck:"353", local:1925.4, regional:5309.4, miles:7234.8, states:{"CA":5309.4,"NV":1925.4} },
+  { truck:"569", local:2806.4, regional:3028.7, miles:5835.1, states:{"CA":3028.7,"NV":2806.4} },
   { truck:"676", local:4109.6, regional:1566.8, miles:5676.4, states:{"NV":4109.6,"CA":1566.8} },
-  { truck:"419", local:885.7, regional:4045.4, miles:4931.1, states:{"CA":2120.6,"NV":885.7,"UT":727.7,"CO":612.2,"AZ":585.0} },
-  { truck:"569", local:2227.4, regional:2665.0, miles:4892.4, states:{"CA":2665.0,"NV":2227.4} },
-  { truck:"353", local:1381.6, regional:2982.6, miles:4364.2, states:{"CA":2982.6,"NV":1381.6} },
-  { truck:"502", local:530.5, regional:2338.5, miles:2869.0, states:{"CA":1789.5,"AZ":549.0,"NV":530.5} },
-  { truck:"498", local:148.7, regional:1475.6, miles:1624.2, states:{"CA":1475.6,"NV":148.7} },
-  { truck:"570", local:1089.0, regional:486.4, miles:1575.4, states:{"NV":1089.0,"CA":486.4} },
-  { truck:"189", local:338.8, regional:1154.9, miles:1493.7, states:{"CA":1154.9,"NV":338.8} },
-  { truck:"869", local:135.1, regional:1313.8, miles:1448.9, states:{"CA":464.8,"AZ":382.4,"NM":373.5,"NV":135.1,"TX":93.0} },
-  { truck:"510", local:258.2, regional:1049.2, miles:1307.4, states:{"CA":1049.2,"NV":258.2} },
+  { truck:"502", local:723.4, regional:4296.2, miles:5019.6, states:{"CA":3747.2,"NV":723.4,"AZ":549.0} },
+  { truck:"498", local:384.0, regional:4004.0, miles:4388.0, states:{"CA":4004.0,"NV":384.0} },
+  { truck:"510", local:450.6, regional:3368.6, miles:3819.2, states:{"CA":3368.6,"NV":450.6} },
+  { truck:"869", local:135.1, regional:3281.9, miles:3417.0, states:{"FL":991.1,"TX":604.1,"CA":464.8,"AZ":382.4,"NM":373.5,"MS":202.5,"LA":192.8,"NV":135.1,"AL":70.7} },
+  { truck:"402", local:546.3, regional:2728.6, miles:3274.8, states:{"CA":2728.6,"NV":546.3} },
+  { truck:"570", local:1567.3, regional:486.4, miles:2053.7, states:{"NV":1567.3,"CA":486.4} },
+  { truck:"189", local:393.5, regional:1154.9, miles:1548.4, states:{"CA":1154.9,"NV":393.5} },
   { truck:"462", local:99.8, regional:1081.1, miles:1180.9, states:{"CA":1081.1,"NV":99.8} },
-  { truck:"402", local:198.1, regional:950.7, miles:1148.8, states:{"CA":950.7,"NV":198.1} },
   { truck:"589", local:985.5, regional:0, miles:985.5, states:{"NV":985.5} },
 ];
-let FLEET_LOCAL    = 65930.9;
-let FLEET_REGIONAL = 225791.9;
+let FLEET_LOCAL    = 72523.2;
+let FLEET_REGIONAL = 255338.9;
 
 // ── TRANSACTION DETAIL DATA ──────────────────────────────────
 const DETAIL = {
   labor: {
     label: "Labor — Driver Payroll",
-    thru: "Apr 6, 2026",
+    thru: "Apr 13, 2026",
     note: "All-in employer cost: gross wages + SS + Medicare + NV SUI + FUTA + 401K match",
     total: LABOR,
     cols: ["Driver", "Hours", "Employer Cost"],
@@ -405,7 +415,7 @@ const DETAIL = {
   },
   fuel: {
     label: "Fuel — EFS",
-    thru: "Apr 5, 2026",
+    thru: "Apr 11, 2026",
     note: "From EFS fuel card export only — NOT QuickBooks. No Mudflap charges this period.",
     total: FUEL_TOT,
     cols: ["Card", "Amount", "Gallons", "Avg $/Gal"],
@@ -6449,16 +6459,16 @@ function DataSettings() {
 
 // ── OFFICE STAFF DATA ─────────────────────────────────────────
 // Combined from Show Freight Inc + J&A Management Group LLC
-// Period: Jan 1 – Apr 7, 2026
+// Period: Jan 1 – Apr 13, 2026
 // Categories: Office (salary), Warehouse (hourly/salary), Contractors
 
 const OFFICE_W2 = [
-  // Show Freight Inc employees (thru Apr 6, 2026)
-  { name:"Adrian Arias",        entity:"SF",  gross:22671.66, taxes:3334.09, contrib:898.86,  totalCost:26005.75, salary:21398,    bonus:1073.66, reimb:200,    commission:0,     note:"Salary + bonus" },
-  { name:"Gabriel Gonzalez",    entity:"SF",  gross:14853.83, taxes:1623.93, contrib:0,       totalCost:16477.76, salary:14603.83, bonus:250,     reimb:0,      commission:0,     note:"Salary + bonus" },
-  { name:"Scot Grosser",        entity:"SF",  gross:21973.36, taxes:2471.66, contrib:737.33,  totalCost:24445.02, salary:18200,    bonus:233.33,  reimb:0,      commission:0,     note:"Salary + wellness" },
-  { name:"Cecilia Rivera",      entity:"SF",  gross:17135,    taxes:2552.28, contrib:685.40,  totalCost:19687.28, salary:16705,    bonus:430,     reimb:0,      commission:0,     note:"Salary + bonus" },
-  { name:"Nathan Youngblood",   entity:"SF",  gross:15600,    taxes:1703.40, contrib:0,       totalCost:17303.40, salary:15600,    bonus:0,       reimb:0,      commission:0,     note:"Salary" },
+  // Show Freight Inc employees (thru Apr 13, 2026)
+  { name:"Adrian Arias",        entity:"SF",  gross:24317.66, taxes:3575.23, contrib:964.70,  totalCost:27892.89, salary:23044,    bonus:1073.66, reimb:200,    commission:0,     note:"Salary + bonus" },
+  { name:"Gabriel Gonzalez",    entity:"SF",  gross:16053.83, taxes:1751.73, contrib:0,       totalCost:17805.56, salary:15803.83, bonus:250,     reimb:0,      commission:0,     note:"Salary + bonus" },
+  { name:"Scot Grosser",        entity:"SF",  gross:23645.67, taxes:2655.93, contrib:793.33,  totalCost:26301.60, salary:19600,    bonus:233.33,  reimb:0,      commission:0,     note:"Salary + wellness" },
+  { name:"Cecilia Rivera",      entity:"SF",  gross:18635,    taxes:2772.03, contrib:745.40,  totalCost:21407.03, salary:17990,    bonus:645,     reimb:0,      commission:0,     note:"Salary + bonus" },
+  { name:"Nathan Youngblood",   entity:"SF",  gross:16800,    taxes:1831.20, contrib:0,       totalCost:18631.20, salary:16800,    bonus:0,       reimb:0,      commission:0,     note:"Salary" },
   // J&A Management employees (thru Apr 7, 2026 YTD)
   { name:"Valeria Abrego",      entity:"J&A", gross:10585.10, taxes:1164.02, contrib:0,       totalCost:11749.12, salary:0,        bonus:0,       reimb:0,      commission:0,     note:"Hourly" },
   { name:"Christopher Adamson", entity:"J&A", gross:18000,    taxes:2670.00, contrib:720,     totalCost:20670.00, salary:18000,    bonus:0,       reimb:0,      commission:0,     note:"Salary + 401K" },
@@ -6474,8 +6484,8 @@ const OFFICE_W2 = [
 ];
 
 const WAREHOUSE = [
-  { name:"Gentry Eagleton",  entity:"SF", gross:11035.20, taxes:1217.25, contrib:0, totalCost:12252.45, type:"Hourly", hours:536.80, regHrs:506.88, otHrs:29.92, note:"Regular + OT" },
-  { name:"Andres Figueroa",  entity:"SF", gross:20250,    taxes:2166.68, contrib:0, totalCost:22416.68, type:"Salary", hours:560,    regHrs:0,      otHrs:0,     note:"Salary + PTO" },
+  { name:"Gentry Eagleton",  entity:"SF", gross:11993.30, taxes:1319.28, contrib:0, totalCost:13312.58, type:"Hourly", hours:582.07, regHrs:546.88, otHrs:35.19, note:"Regular + OT" },
+  { name:"Andres Figueroa",  entity:"SF", gross:21675,    taxes:2318.44, contrib:0, totalCost:23993.44, type:"Salary", hours:600,    regHrs:0,      otHrs:0,     note:"Salary + PTO" },
 ];
 
 const CONTRACTORS = [
