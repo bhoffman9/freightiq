@@ -4197,6 +4197,7 @@ function IncomeDashboard() {
       .finally(() => setQbLoading(false));
   }, [view, qbPeriod]);
 
+  const ytdDays    = 102; // Jan 1 – Apr 12, 2026
   const gpMargin26 = INCOME_2026.grossProfit / INCOME_2026.total * 100;
   const gpMargin25 = INCOME_2025.grossProfit / INCOME_2025.total * 100;
   const yoyRevChg  = (INCOME_2026.total / INCOME_2025.q1Rev - 1) * 100;
@@ -4368,7 +4369,7 @@ function IncomeDashboard() {
                 <div style={{ fontSize:9,letterSpacing:3,textTransform:"uppercase",color:co.color,marginBottom:6,position:"relative" }}>{co.label}</div>
                 <div style={{ fontFamily:"var(--f2)",fontSize:46,fontWeight:900,lineHeight:1,color:co.color,position:"relative" }}>{fd(co.val,0)}</div>
                 <div style={{ fontSize:11,color:"var(--mu)",marginTop:8,position:"relative" }}>{fp(co.pct)} of {fd(INCOME_2026.total,0)} total</div>
-                <div style={{ fontSize:11,color:"var(--mu)",marginTop:3,position:"relative" }}>({fd(co.val/81*365,0)} proj. full year)</div>
+                <div style={{ fontSize:11,color:"var(--mu)",marginTop:3,position:"relative" }}>({fd(co.val/ytdDays*365,0)} proj. full year)</div>
                 <div className="bar" style={{ marginTop:8,position:"relative" }}>
                   <div className="bfil" style={{ width:`${co.pct}%`,background:co.color }} />
                 </div>
@@ -4439,7 +4440,6 @@ function IncomeDashboard() {
 
           {/* Run Rate / Full-Year Projections */}
           {(() => {
-            const ytdDays = 102; // Jan 1 – Apr 12
             const daysInYear = 365;
             const annFactor = daysInYear / ytdDays;
             const projRev = INCOME_2026.total * annFactor;
