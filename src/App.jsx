@@ -209,6 +209,14 @@ body { background: var(--bg); color: var(--tx); font-family: var(--f1); }
 .ntab:hover { color: var(--tx); }
 .ntab.on { color: var(--or); border-bottom-color: var(--or); }
 
+.dashbar { background: var(--s1); border-bottom: 1px solid var(--bd); padding: 10px 22px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dashbar-label { color: var(--mu); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
+.dashlink { color: var(--bl); text-decoration: none; border: 1px solid rgba(79,195,247,.25);
+  background: rgba(79,195,247,.08); padding: 6px 10px; border-radius: 3px; font-size: 11px;
+  letter-spacing: 1px; text-transform: uppercase; transition: all .15s; }
+.dashlink:hover { color: var(--tx); border-color: rgba(79,195,247,.55); background: rgba(79,195,247,.14); }
+
 /* per-load slider */
 .pl-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 10px;
   border-radius: 5px; background: var(--bd); outline: none; cursor: pointer; }
@@ -8113,6 +8121,14 @@ export default function App() {
             </button>
           ))}
         </nav>
+
+        <div className="dashbar">
+          <span className="dashbar-label">Strategy Dashboards</span>
+          <a className="dashlink" href="/api/live-decision-dashboard" target="_blank" rel="noreferrer">Live Dashboard</a>
+          <a className="dashlink" href="/api/strategy-dashboard" target="_blank" rel="noreferrer">Review Dashboard</a>
+          <a className="dashlink" href="/api/strategy-comparison-dashboard" target="_blank" rel="noreferrer">Comparison Dashboard</a>
+          <a className="dashlink" href="/api/live-strategy-status" target="_blank" rel="noreferrer">JSON Status</a>
+        </div>
 
         <main className="main">{page()}</main>
       </div>
