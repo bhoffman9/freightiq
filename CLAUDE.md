@@ -142,10 +142,10 @@ freightiq/
 
 ## Key Data Constants (hardcoded in App.jsx)
 
-- `PAYROLL[]` — 41 drivers with hours/cost (thru Apr 13, 2026)
-- `FUEL{}` — per-driver fuel spend + gallons (EFS only, thru Apr 11)
+- `PAYROLL[]` — 42 drivers with hours/cost (41 active + Cowsky Andy new hire $0; Kelly Kirk *inactive) thru Apr 19, 2026
+- `FUEL{}` — per-driver fuel spend + gallons (EFS only, thru Apr 19)
 - `MONTHLY_MILES[]` — Samsara GPS: per-month, per-truck local vs regional
-- `TRUCK_MILES[]` — 35 trucks with per-state mileage breakdown (thru Apr 11; also available live via /api/samsara-miles)
+- `TRUCK_MILES[]` — 35 trucks with per-state mileage breakdown (thru Apr 19; live via /api/samsara-miles supersedes)
 - `TCI_LEASING{}`, `PENSKE{}`, `TEC_EQUIPMENT{}` — truck lease data
 - `TRAILERS_INV{}`, `XTRA_LEASE{}` — trailer inventory/leases
 - `INCOME_2026`, `INCOME_2025` — weekly/monthly revenue + margins
@@ -155,7 +155,7 @@ freightiq/
 - `ASCEND{}` — Historical Ascend TMS data (Jan-Mar 2026, no longer active)
 - `ALVYS{}` — Alvys TMS pipeline snapshot (also fetched live via /api/alvys-loads)
 
-**Current period:** Jan 1 – Apr 12, 2026 (102 days)
+**Current period:** Jan 1 – Apr 19, 2026 (109 days)
 
 ## CPM Definitions (CRITICAL)
 
@@ -215,17 +215,34 @@ freightiq/
 - **Samsara mileage** — live from Samsara IFTA API via `/api/samsara-miles` (Trucks & Mileage tab)
 - **Alvys TMS loads** — live via `/api/alvys-loads` (Revenue tab)
 
-### Manual file drops (into `Desktop/Ben/incoming-freightiq/`):
+### Manual file drops (into `Desktop/Ben/freightiq/incoming-freightiq/`):
 1. **EFS Transaction Report PDF** — per-driver fuel (no API available)
 2. **SF Payroll Summary** (QuickBooks XLS) — driver + office payroll
 3. **J&A Management Payroll Summary** (QuickBooks XLS) — J&A office staff
 4. **CE & SF Transaction Report** (QuickBooks XLSX) — line-item detail for DETAIL boxes
-5. **Contractor payment detail** — weekly amounts for 1099 contractors
+5. **Contractor payment detail** — usually given in chat (e.g. "$2,800 Jon Marcus, $2,150 Mellody, ...")
 
-**After processing:** Always clear `incoming-freightiq/` folder, commit, and push immediately.
+### Weekly parse — one command
+```bash
+python scripts/parse_weekly_drop.py
+```
+Reads everything in `incoming-freightiq/`, writes `_summary.txt` with driver labor (office pre-excluded), EFS per-card totals, and CE&SF P&L category totals — ready to paste into App.jsx constants. See `scripts/parse_weekly_drop.py` docstring for details.
+
+### Update App.jsx constants
+Swap in numbers from `_summary.txt`:
+- `LABOR` / `TOTAL_HRS` ← SF drivers-only (office already excluded by the parser)
+- `FUEL_TOT` / `GALLONS` ← EFS total
+- `INS_TOT` / `TRUCK_TOT` / `TRAILER_TOT` / `STORAGE` / `TRUCK_MAINT` / `TRAIL_MAINT` / `UNIFORMS` ← CE&SF category totals
+- `PERIOD` / `ytdDays` ← new week-ending date + day count (Jan 1 to end date)
+- `MILES` ← extrapolate (old × new_days / old_days); live `/api/samsara-miles` supersedes anyway
+- `PAYROLL[]` ← paste per-driver rows from `_summary.txt`
+- `FUEL{}` ← match EFS cards to drivers; handle splits for shared cards
+- `thru Apr X` labels throughout — grep and sweep
+
+Build verifies + regenerates `public/metrics.json` which feeds CFO Dashboard + Per Load CPM. Commit + push → Vercel auto-deploys (~2 min). Clear `incoming-freightiq/` after.
 
 ### Office vs Driver split (SF Payroll):
-**Office staff** (excluded from PAYROLL/CPM): Arias Adrian, Eagleton Gentry (warehouse), Figueroa Andres (warehouse), Fissehaye Biniyam, Gonzalez Gabriel, Grosser Scot, Rivera Cecilia, Youngblood Nathan. Everyone else = drivers.
+**Office staff** (excluded from PAYROLL/CPM): Arias Adrian, Eagleton Gentry J (warehouse), Figueroa Andres (warehouse), Fissehaye Biniyam G, Gonzalez Gabriel, Grosser Scot E, Rivera Cecilia I, Youngblood Nathan. Everyone else = drivers. (Encoded in `scripts/parse_weekly_drop.py` — keep in sync.)
 
 ## Upload Sources (AI auto-detects format)
 
