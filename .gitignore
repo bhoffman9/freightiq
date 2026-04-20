@@ -1,0 +1,14 @@
+# Build output
+dist/
+node_modules/
+
+# Vercel
+.vercel
+
+# Env files (may contain secrets)
+.env
+.env.local
+.env*.local
+
+# Claude Code per-directory settings (may contain local paths, tokens, PATs)
+.claude/
