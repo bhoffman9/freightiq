@@ -248,6 +248,7 @@ No test framework configured. No automated tests.
 
 - **Per Load CPM** (`perload-cpm.vercel.app`) — Standalone booking tool, fetches metrics.json + /api/alvys-loads from this app
 - **AP Aging** (`ap-aging-v4.vercel.app`) — AP Aging dashboard (Next.js + Supabase), feeds equipment data into FreightIQ via EquipmentContext
-- **CFO Dashboard** (`cfo-dashboard-eta.vercel.app`) — Executive financial dashboard (React + Tailwind + Supabase), fetches metrics.json + payroll-summary.json from this app. Local path: `Desktop/Ben/cfo-dashboard`, no GitHub repo — deployed via `npx vercel deploy --prod --yes`
+- **CFO Dashboard** (`cfo-dashboard-eta.vercel.app`) — Executive financial dashboard (React + Tailwind + Supabase), fetches metrics.json + payroll-summary.json from this app. Local path: `Desktop/Ben/cfo-dashboard`, no GitHub repo — deployed via `npx vercel deploy --prod --yes`. Has per-source status bar, section quick-nav, safeDivide guards, dynamic period/truck count. Known debt: monolithic App.jsx, RLS wide open, no endpoint auth, hardcoded business data.
 - **Samsara Agent** (`Desktop/Ben/samsara-agent`) — Autonomous agent pulling Samsara fleet data on cron
 - **Flexent Dashboard** (`flexent-dashboard.vercel.app`) — Factoring dashboard for Capacity Express
+- **Alvys Invoice Clearer** (`Desktop/Ben/alvys-clearer.html`) — Standalone HTML tool: drop Flexent CarrierRept PDFs, AI parses invoices, cross-references against Alvys queued loads, exports Alvys-ready CSV. Uses `/api/ai` + `/api/alvys-loads`. Supports multiple PDF drops (accumulates). Alvys API is read-only for invoicing — CSV must be uploaded via Alvys UI.
