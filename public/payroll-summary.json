@@ -6,6 +6,11 @@
       "totalCost": 17479.22
     },
     {
+      "name": "Cowsky Andy",
+      "hours": 0,
+      "totalCost": 0
+    },
+    {
       "name": "Allwine Brian A",
       "hours": 181.34,
       "totalCost": 5043.53
@@ -339,7 +344,7 @@
   "period": "Jan 1 - Apr 19, 2026",
   "totals": {
     "driverLabor": 587747.68,
-    "driverCount": 41,
+    "driverCount": 42,
     "officeTotal": 227389.58000000002,
     "warehouseTotal": 37306.02,
     "contractorTotal": 189130.44,

@@ -18,6 +18,7 @@ function useEquipment() { return useContext(EquipmentContext); }
 // * = inactive/terminated driver
 let PAYROLL = [
   { name: "Alexander Christopher", hours: 595.04, totalCost: 17479.22 },
+  { name: "Cowsky Andy",           hours: 0,      totalCost: 0 },         // new hire — fueled not yet paid
   { name: "Allwine Brian A",       hours: 181.34, totalCost: 5043.53 },   // *inactive
   { name: "Anderson Justin M",     hours: 79.01,  totalCost: 2285.37 },   // *inactive
   { name: "Brown Jr Marcellus",    hours: 77.08,  totalCost: 2143.78 },   // *inactive
@@ -34,7 +35,7 @@ let PAYROLL = [
   { name: "Howell Lawrence",       hours: 85.33,  totalCost: 2373.24 },   // *inactive
   { name: "Ibarra Jose Pablo",     hours: 988.73, totalCost: 34987.28 },
   { name: "Juarez Angel",          hours: 267.46, totalCost: 7736.28 },
-  { name: "Kelly Kirk D",          hours: 801.82, totalCost: 23044.55 },
+  { name: "Kelly Kirk D",          hours: 801.82, totalCost: 23044.55 },  // *inactive
   { name: "Lucero Andrew",         hours: 88.38,  totalCost: 2556.40 },
   { name: "Matthews Ron A",        hours: 464.44, totalCost: 13126.62 },  // *inactive
   { name: "Mcclam Michael A",      hours: 405.53, totalCost: 11708.69 },
@@ -73,6 +74,7 @@ let FUEL = {
   "Christian Norman L":    { fuel: 819.40,   gallons: 149.01 },   // card 47402 (Mar only)
   "Clark Rettick":         { fuel: 2339.97,  gallons: 482.50 },   // card 37405 split
   "Cotton Kejlon":         { fuel: 235.78,   gallons: 61.10 },    // card 87401 split
+  "Cowsky Andy":           { fuel: 372.00,   gallons: 51.67 },    // card 77457 (new hire, 1 fill Apr 18)
   "Daniels Gerald W":      { fuel: 1051.25,  gallons: 179.52 },   // card 47402 split (Apr)
   "Davis Anthoni D":       { fuel: 27412.09, gallons: 5179.98 },  // card 27406
   "Denman Samuel E":       { fuel: 14943.65, gallons: 3316.42 },  // cards 47405 + 37403
@@ -113,12 +115,12 @@ let FUEL = {
 // All other costs come from QuickBooks P&L.
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
-let LABOR     = 587747.68;  // QuickBooks: total driver payroll cost (gross+taxes+401k) thru Apr 19 — 41 drivers (SF total $749,018.04 minus 8 office $161,270.36)
+let LABOR     = 587747.68;  // QuickBooks: total driver payroll cost (gross+taxes+401k) thru Apr 19 — 42 drivers incl Cowsky new hire (SF total $749,018.04 minus 8 office $161,270.36; Kelly Kirk now inactive)
 let FUEL_TOT  = 283643.68;  // EFS only — thru Apr 19 (no Mudflap this period)
 let GALLONS   = 55280.07;  // EFS 55,280.07
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
 let MILES     = 353824.0;     // Samsara GPS, Jan 1 – Apr 19, 2026 (static fallback; live /api/samsara-miles supersedes)
-let TOTAL_HRS  = 18680.34;  // Payroll hours — 41 drivers, thru Apr 19
+let TOTAL_HRS  = 18680.34;  // Payroll hours — 42 drivers (Cowsky=0 not yet paid), thru Apr 19
 let INS_WEEK  = 6375;
 let INS_TOT    = 102845.24;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru Apr 19
 let TRUCK_TOT  = 190258.43;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI + Ryder) thru Apr 19
