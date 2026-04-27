@@ -30,6 +30,18 @@ npm run build        # Runs extract-metrics.js then vite build → dist/
 npm run preview      # Preview production build locally
 ```
 
+## MCPs to use in this project
+
+Prefer installed MCPs over `curl`/WebFetch/manual HTTP. Installed as of 2026-04-20 (see `reference_mcp_servers.md` in freightiq-api memory scope for install state).
+
+- **playwright** (`mcp__playwright__*`) — QA live deploys before declaring a task done. The site is password-gated (`ShowFreight2026!`, localStorage key `sf_auth_v1`); handle the gate before driving tabs. Use `/qa` slash command for the default pass.
+- **context7** (`mcp__context7__*`) — current docs for Recharts, PapaParse, SheetJS, Vite, React 18, Vercel SDK, Anthropic SDK. My training is frozen; these libraries drift. Use `/docs <lib>` slash command.
+- **supabase** (`mcp__supabase__*`, read-only) — inspect `qbo_tokens` and `ifta_mileage` tables (shared with CFO Dashboard) before writing SQL or guessing schema. Never assume — query the real schema.
+- **sentry** (`mcp__sentry__*`) — first stop for any prod error report on `freightiq-nine-two.vercel.app`. Use `/sentry` slash command.
+- **google-sheets** (`mcp__google-sheets__*`) — if a weekly data drop references a shared sheet (payroll, contractor tracker, monthly income). Share the sheet with `claude-sheets@distributed-eye-492805-d6.iam.gserviceaccount.com` first.
+
+**Do not** default to `curl -s https://freightiq-nine-two.vercel.app/...` + parsing HTML for UI work. Playwright gives a real browser.
+
 ## Environment Variables
 
 | Variable | Where | Purpose |
@@ -142,10 +154,10 @@ freightiq/
 
 ## Key Data Constants (hardcoded in App.jsx)
 
-- `PAYROLL[]` — 42 drivers with hours/cost (41 active + Cowsky Andy new hire $0; Kelly Kirk *inactive) thru Apr 19, 2026
-- `FUEL{}` — per-driver fuel spend + gallons (EFS only, thru Apr 19)
+- `PAYROLL[]` — 42 drivers with hours/cost (Memolo Dominick still 0; Kelly Kirk D / Butler Richard / Negrete Arturo / Whipple Wallace 57403 / Williams Will 27405 etc. *inactive markings) thru Apr 26, 2026. **Don't write "41 active drivers" in the LABOR comment — extract-metrics.js regex `(\d+)\s*drivers` needs the digit adjacent to "drivers" or `metrics.json` falls back to 0 (regression fixed week 16).**
+- `FUEL{}` — per-driver fuel spend + gallons (EFS only, thru Apr 26)
 - `MONTHLY_MILES[]` — Samsara GPS: per-month, per-truck local vs regional
-- `TRUCK_MILES[]` — 35 trucks with per-state mileage breakdown (thru Apr 19; live via /api/samsara-miles supersedes)
+- `TRUCK_MILES[]` — 35 trucks with per-state mileage breakdown (thru Apr 26; live via /api/samsara-miles supersedes)
 - `TCI_LEASING{}`, `PENSKE{}`, `TEC_EQUIPMENT{}` — truck lease data
 - `TRAILERS_INV{}`, `XTRA_LEASE{}` — trailer inventory/leases
 - `INCOME_2026`, `INCOME_2025` — weekly/monthly revenue + margins
@@ -155,7 +167,7 @@ freightiq/
 - `ASCEND{}` — Historical Ascend TMS data (Jan-Mar 2026, no longer active)
 - `ALVYS{}` — Alvys TMS pipeline snapshot (also fetched live via /api/alvys-loads)
 
-**Current period:** Jan 1 – Apr 19, 2026 (109 days)
+**Current period:** Jan 1 – Apr 26, 2026 (116 days)
 
 ## CPM Definitions (CRITICAL)
 
@@ -215,11 +227,11 @@ freightiq/
 - **Samsara mileage** — live from Samsara IFTA API via `/api/samsara-miles` (Trucks & Mileage tab)
 - **Alvys TMS loads** — live via `/api/alvys-loads` (Revenue tab)
 
-### Manual file drops (into `Desktop/Ben/freightiq/incoming-freightiq/`):
+### Manual file drops (into `Desktop/Freight/freightiq/incoming-freightiq/`):
 1. **EFS Transaction Report PDF** — per-driver fuel (no API available)
 2. **SF Payroll Summary** (QuickBooks XLS) — driver + office payroll
-3. **J&A Management Payroll Summary** (QuickBooks XLS) — J&A office staff
-4. **CE & SF Transaction Report** (QuickBooks XLSX) — line-item detail for DETAIL boxes
+3. **J&A Management Payroll Summary** (QuickBooks XLS) — J&A office staff (**always update each week — same cadence as SF, despite older notes saying otherwise**)
+4. **CE & SF Transaction Report** (QuickBooks XLSX) — line-item detail for DETAIL boxes (the QB Transaction Report is what you want — IGNORE any `Profit and Loss*.xlsx` that appears alongside it; live `/api/qbo-pnl` covers P&L)
 5. **Contractor payment detail** — usually given in chat (e.g. "$2,800 Jon Marcus, $2,150 Mellody, ...")
 
 ### Weekly parse — one command
@@ -265,7 +277,7 @@ No test framework configured. No automated tests.
 
 - **Per Load CPM** (`perload-cpm.vercel.app`) — Standalone booking tool, fetches metrics.json + /api/alvys-loads from this app
 - **AP Aging** (`ap-aging-v4.vercel.app`) — AP Aging dashboard (Next.js + Supabase), feeds equipment data into FreightIQ via EquipmentContext
-- **CFO Dashboard** (`cfo-dashboard-eta.vercel.app`) — Executive financial dashboard (React + Tailwind + Supabase), fetches metrics.json + payroll-summary.json from this app. Local path: `Desktop/Ben/cfo-dashboard`, no GitHub repo — deployed via `npx vercel deploy --prod --yes`. Has per-source status bar, section quick-nav, safeDivide guards, dynamic period/truck count. Known debt: monolithic App.jsx, RLS wide open, no endpoint auth, hardcoded business data.
-- **Samsara Agent** (`Desktop/Ben/samsara-agent`) — Autonomous agent pulling Samsara fleet data on cron
+- **CFO Dashboard** (`cfo-dashboard-eta.vercel.app`) — Executive financial dashboard (React + Tailwind + Supabase), fetches metrics.json + payroll-summary.json from this app. Local path: `Desktop/Freight/cfo-dashboard`, no GitHub repo — deployed via `npx vercel deploy --prod --yes`. Has per-source status bar, section quick-nav, safeDivide guards, dynamic period/truck count. Known debt: monolithic App.jsx, RLS wide open, no endpoint auth, hardcoded business data.
+- **Samsara Agent** (`Desktop/Freight/samsara-agent`) — Autonomous agent pulling Samsara fleet data on cron
 - **Flexent Dashboard** (`flexent-dashboard.vercel.app`) — Factoring dashboard for Capacity Express
-- **Alvys Invoice Clearer** (`Desktop/Ben/alvys-clearer.html`) — Standalone HTML tool: drop Flexent CarrierRept PDFs, AI parses invoices, cross-references against Alvys queued loads, exports Alvys-ready CSV. Uses `/api/ai` + `/api/alvys-loads`. Supports multiple PDF drops (accumulates). Alvys API is read-only for invoicing — CSV must be uploaded via Alvys UI.
+- **Alvys Invoice Clearer** (`Desktop/Freight/alvys-clearer.html`) — Standalone HTML tool: drop Flexent CarrierRept PDFs, AI parses invoices, cross-references against Alvys queued loads, exports Alvys-ready CSV. Uses `/api/ai` + `/api/alvys-loads`. Supports multiple PDF drops (accumulates). Alvys API is read-only for invoicing — CSV must be uploaded via Alvys UI.
