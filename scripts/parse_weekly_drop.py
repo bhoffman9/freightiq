@@ -37,8 +37,12 @@ SF_OFFICE = {
 
 
 def find_file(*patterns):
-    for name in os.listdir(INCOMING):
-        for p in patterns:
+    # Match patterns in priority order — exhaust each pattern across all
+    # filenames before falling back to the next. Prevents a vague fallback
+    # pattern from grabbing the wrong file when both are present.
+    names = os.listdir(INCOMING)
+    for p in patterns:
+        for name in names:
             if re.search(p, name, re.IGNORECASE):
                 return os.path.join(INCOMING, name)
     return None
@@ -95,16 +99,24 @@ def summarize_sf_payroll(path):
     """Extract per-driver hours + totalCost, excluding office staff."""
     wb = xlrd.open_workbook(path)
     sh = wb.sheets()[0]
-    header = [sh.cell(6, c).value for c in range(sh.ncols)]  # row 7 in 1-indexed
-    hours_row = [sh.cell(7, c).value for c in range(sh.ncols)]
+    header = None
+    hours_row = None
     cost_row = None
     period = None
     for r in range(sh.nrows):
         a = sh.cell(r, 0).value
-        if isinstance(a, str) and a.strip().lower().startswith("total payroll cost"):
-            cost_row = [sh.cell(r, c).value for c in range(sh.ncols)]
-        if isinstance(a, str) and "from " in a.lower() and "to " in a.lower():
-            period = a.strip()
+        if isinstance(a, str):
+            s = a.strip().lower()
+            if s == "item" and header is None:
+                header = [sh.cell(r, c).value for c in range(sh.ncols)]
+            elif s == "hours - total" and hours_row is None:
+                hours_row = [sh.cell(r, c).value for c in range(sh.ncols)]
+            elif s.startswith("total payroll cost") and cost_row is None:
+                cost_row = [sh.cell(r, c).value for c in range(sh.ncols)]
+            elif "from " in s and "to " in s and period is None:
+                period = a.strip()
+    if header is None or hours_row is None:
+        return None
     if cost_row is None:
         return None
     drivers = []

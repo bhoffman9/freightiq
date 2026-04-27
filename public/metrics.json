@@ -1,15 +1,15 @@
 {
-  "period": "Jan 1 - Apr 19, 2026",
+  "period": "Jan 1 - Apr 26, 2026",
   "drivers": 42,
-  "miles": 353824,
-  "labor": 587747.68,
-  "fuel_tot": 283643.68,
-  "ins_tot": 102845.24,
-  "truck_tot": 190258.43,
-  "trailer_tot": 80613.68,
+  "miles": 376548,
+  "labor": 641585.18,
+  "fuel_tot": 312191.87,
+  "ins_tot": 105136.28,
+  "truck_tot": 200420.65,
+  "trailer_tot": 93833.99,
   "truck_maint": 4048.81,
-  "trail_maint": 4591.89,
-  "storage": 14926.9,
+  "trail_maint": 3841.89,
+  "storage": 15701.9,
   "uniforms": 6452.26,
   "total_revenue": 5570991.97,
   "carrier_pay": 2870301.23,
@@ -19,6 +19,6 @@
   "revenue_sf": 1400928.54,
   "revenue_di": 40506.43,
   "net_op_income": 273653.17,
-  "days_in_period": 109,
-  "extracted_at": "2026-04-20T17:01:27.319Z"
+  "days_in_period": 116,
+  "extracted_at": "2026-04-27T05:12:38.229Z"
 }
