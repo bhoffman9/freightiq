@@ -32,13 +32,14 @@ npm run preview      # Preview production build locally
 
 ## MCPs to use in this project
 
-Prefer installed MCPs over `curl`/WebFetch/manual HTTP. Installed as of 2026-04-20 (see `reference_mcp_servers.md` in freightiq-api memory scope for install state).
+Prefer installed MCPs over `curl`/WebFetch/manual HTTP. See `reference_mcp_servers.md` in freightiq-api memory scope for install state (last updated 2026-04-26).
 
 - **playwright** (`mcp__playwright__*`) — QA live deploys before declaring a task done. The site is password-gated (`ShowFreight2026!`, localStorage key `sf_auth_v1`); handle the gate before driving tabs. Use `/qa` slash command for the default pass.
 - **context7** (`mcp__context7__*`) — current docs for Recharts, PapaParse, SheetJS, Vite, React 18, Vercel SDK, Anthropic SDK. My training is frozen; these libraries drift. Use `/docs <lib>` slash command.
 - **supabase** (`mcp__supabase__*`, read-only) — inspect `qbo_tokens` and `ifta_mileage` tables (shared with CFO Dashboard) before writing SQL or guessing schema. Never assume — query the real schema.
 - **sentry** (`mcp__sentry__*`) — first stop for any prod error report on `freightiq-nine-two.vercel.app`. Use `/sentry` slash command.
-- **google-sheets** (`mcp__google-sheets__*`) — if a weekly data drop references a shared sheet (payroll, contractor tracker, monthly income). Share the sheet with `claude-sheets@distributed-eye-492805-d6.iam.gserviceaccount.com` first.
+- **quickbooks** (`mcp__claude_ai_Intuit_QuickBooks__*`) — direct Intuit QB queries (added 2026-04-26). Tools: `profit-loss-generator`, `cash-flow-generator`, `benchmarking-against-industry`, `company-info`, `quickbooks-transaction-import`, etc. Useful when validating the FreightIQ proxy endpoints (`/api/qbo-pnl`, `/api/qbo-bs`) or pulling category detail not exposed by them. Both companies (CE & SF Combined, CE East) live in QB; specify which.
+- ~~**google-sheets**~~ — currently DISCONNECTED (2026-04-26). Re-enable before relying on it for shared sheet reads. Service account email still valid: `claude-sheets@distributed-eye-492805-d6.iam.gserviceaccount.com`.
 
 **Do not** default to `curl -s https://freightiq-nine-two.vercel.app/...` + parsing HTML for UI work. Playwright gives a real browser.
 
