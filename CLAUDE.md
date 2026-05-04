@@ -227,19 +227,28 @@ freightiq/
 - **CE East P&L + Balance Sheet** — live from QuickBooks (CE East tab → Live QB + Owner Payback)
 - **Samsara mileage** — live from Samsara IFTA API via `/api/samsara-miles` (Trucks & Mileage tab)
 - **Alvys TMS loads** — live via `/api/alvys-loads` (Revenue tab)
+- **AP Aging equipment** — live via `https://ap-aging-v4.vercel.app/api/equipment` (Trucks + Trailers tabs). Cross-origin fetch — relies on global CORS in `ap-aging/next.config.js`. If Trucks/Trailers go blank, check the red error banner in the tab footer and the AP Aging deploy status.
 
 ### Manual file drops (into `Desktop/Freight/freightiq/incoming-freightiq/`):
-1. **EFS Transaction Report PDF** — per-driver fuel (no API available)
-2. **SF Payroll Summary** (QuickBooks XLS) — driver + office payroll
-3. **J&A Management Payroll Summary** (QuickBooks XLS) — J&A office staff (**always update each week — same cadence as SF, despite older notes saying otherwise**)
-4. **CE & SF Transaction Report** (QuickBooks XLSX) — line-item detail for DETAIL boxes (the QB Transaction Report is what you want — IGNORE any `Profit and Loss*.xlsx` that appears alongside it; live `/api/qbo-pnl` covers P&L)
-5. **Contractor payment detail** — usually given in chat (e.g. "$2,800 Jon Marcus, $2,150 Mellody, ...")
+1. **EFS Transaction Report PDF** — per-driver fuel (no API available).
+   **CRITICAL: Download the PDF directly from the EFS portal — never "Print to PDF" via Windows.** Print-to-PDF produces a raster/image-only file with no text layer; pdfplumber returns 0 chars across all pages and the parser silently outputs `$0.00`. Producer field will say "Microsoft: Print To PDF" — that's the giveaway. Real EFS exports are ~150 KB; print-to-PDF balloons to ~10 MB.
+2. **SF Payroll Summary** (QuickBooks XLS) — driver + office payroll.
+3. **J&A Management Payroll Summary** (QuickBooks XLS) — J&A office staff. **Always update each week — same cadence as SF.**
+4. **CE & SF Transaction Report** (QuickBooks XLSX) — line-item detail for category totals (Fuel, Insurance, Truck/Trailer Rentals, Storage, Maintenance, Uniforms).
+5. **CE & SF Profit and Loss — Weekly** (QuickBooks XLSX with column headers like `Apr 27 - May 3 2026`) — feeds `INCOME_2026.weeks[]`.
+6. **CE & SF Profit and Loss — Monthly** (QuickBooks XLSX with column headers like `Jan 2026`, `Feb 2026`, … `May 1-3 2026`) — feeds `INCOME_2026.months[]` and `MONTHLY_REVENUE`.
+7. **Contractor payment detail** — usually given in chat (e.g. "$2,800 Jon Marcus, $2,150 Mellody, …"). Mention any car payments, commission, or one-offs explicitly.
 
 ### Weekly parse — one command
 ```bash
 python scripts/parse_weekly_drop.py
 ```
-Reads everything in `incoming-freightiq/`, writes `_summary.txt` with driver labor (office pre-excluded), EFS per-card totals, and CE&SF P&L category totals — ready to paste into App.jsx constants. See `scripts/parse_weekly_drop.py` docstring for details.
+Reads everything in `incoming-freightiq/`, writes:
+- `_summary.txt` — driver labor (office pre-excluded), EFS per-card totals, CE&SF P&L category totals.
+- `_parse_output.txt` — raw row-by-row dumps of every file (read this when you need office/contractor detail).
+- `_office_extract.json` / `_pnl_extract.json` — cached structured extracts (skip re-parsing across iterations).
+
+If P&L files are present, parse them separately for `INCOME_2026` updates (the main parser doesn't write a summary section for them yet — read straight from the .xlsx using openpyxl).
 
 ### Update App.jsx constants
 Swap in numbers from `_summary.txt`:
@@ -251,11 +260,28 @@ Swap in numbers from `_summary.txt`:
 - `PAYROLL[]` ← paste per-driver rows from `_summary.txt`
 - `FUEL{}` ← match EFS cards to drivers; handle splits for shared cards
 - `thru Apr X` labels throughout — grep and sweep
+- `INCOME_2026` top-level totals + `weeks[]` (append new week) + `months[]` (replace partial month with full + add new partial)
+- `MONTHLY_REVENUE` ← matching row update for the just-closed month
 
-Build verifies + regenerates `public/metrics.json` which feeds CFO Dashboard + Per Load CPM. Commit + push → Vercel auto-deploys (~2 min). Clear `incoming-freightiq/` after.
+**Build will fail silently on the `drivers: 0` regression** if the `LABOR` comment doesn't have a digit adjacent to the word "drivers". The `extract-metrics.js` regex is `/(\d+)\s*drivers/i` — phrasings like "41 active drivers" break it. Use "41 drivers active" or "— 41 drivers (…)" instead.
+
+Build verifies + regenerates `public/metrics.json` and `public/payroll-summary.json` which feed CFO Dashboard + Per Load CPM. Commit + push → Vercel auto-deploys (~2 min). Clear `incoming-freightiq/` after **all** consumers (CFO Dashboard, Per Load CPM) confirmed pulling new metrics.
+
+### Monthly close protocol
+At month close (when month N is fully invoiced in QB), refresh BOTH spots in App.jsx that hold monthly numbers — they drift independently and there's no automatic check:
+
+1. **`INCOME_2026.months[]`** — replace the partial month-N entry with the full-month numbers from the monthly P&L XLSX. Then append a new partial entry for month N+1 (label `"May"`, etc.) with whatever days are in.
+2. **`MONTHLY_REVENUE`** array (~line 2548) — same data point, different shape: replace the `m:"Apr 26"` row with full April numbers, then append `m:"May 26"` for the partial.
+
+If you only update one, the other silently shows the wrong number forever. (This bit us in May 2026 — the `Apr 26` row in `MONTHLY_REVENUE` sat at `$356K` for weeks while `INCOME_2026.months` had a different partial value, both wrong.)
+
+Tag any partial-month row with an inline `// partial — May 1-3 only` comment so future-you doesn't mistake it for a closed month.
 
 ### Office vs Driver split (SF Payroll):
 **Office staff** (excluded from PAYROLL/CPM): Arias Adrian, Eagleton Gentry J (warehouse), Figueroa Andres (warehouse), Fissehaye Biniyam G, Gonzalez Gabriel, Grosser Scot E, Rivera Cecilia I, Youngblood Nathan. Everyone else = drivers. (Encoded in `scripts/parse_weekly_drop.py` — keep in sync.)
+
+### EFS card → driver mapping
+Cards are mapped to drivers via inline comments in `FUEL{}` (e.g. `// card 27406`). Several cards split between active and *inactive (frozen) drivers — when a card's total is unchanged WoW but the card has frozen contributors, the entire card is dormant. New activity on a split card goes to the active driver(s); frozen drivers' historical values stay locked. EFS cards that don't map to a `PAYROLL[]` driver (warehouse / office / unknown) are excluded from per-driver `FUEL{}` but **still counted in `FUEL_TOT`** so the fleet CPM math reconciles to the EFS report total.
 
 ## Upload Sources (AI auto-detects format)
 
@@ -282,3 +308,20 @@ No test framework configured. No automated tests.
 - **Samsara Agent** (`Desktop/Freight/samsara-agent`) — Autonomous agent pulling Samsara fleet data on cron
 - **Flexent Dashboard** (`flexent-dashboard.vercel.app`) — Factoring dashboard for Capacity Express
 - **Alvys Invoice Clearer** (`Desktop/Freight/alvys-clearer.html`) — Standalone HTML tool: drop Flexent CarrierRept PDFs, AI parses invoices, cross-references against Alvys queued loads, exports Alvys-ready CSV. Uses `/api/ai` + `/api/alvys-loads`. Supports multiple PDF drops (accumulates). Alvys API is read-only for invoicing — CSV must be uploaded via Alvys UI.
+
+## Cross-app deployment dependencies
+
+This dashboard makes cross-origin browser fetches to other repos. **CORS regressions are silent failures** — the response arrives but the browser drops it; the React effect's `.catch` was the only signal until the visible error banner was added.
+
+| Endpoint | Owner repo | Required header | Where it's set |
+|---|---|---|---|
+| `https://ap-aging-v4.vercel.app/api/equipment` | `Desktop/Freight/ap-aging` | `Access-Control-Allow-Origin: *` | Global `headers()` in `next.config.js` (applies to all `/api/*` routes) |
+| `https://flexent-dashboard.vercel.app/master.csv` | `Desktop/Freight` | static asset, no CORS issue | n/a |
+
+If you change `ap-aging/next.config.js` or stand up a sibling AP-Aging deploy, **verify CORS headers are present in the deployed response** before declaring done:
+```bash
+curl -s -I "https://ap-aging-v4.vercel.app/api/equipment" | grep -i access-control
+```
+If the header is missing, the Trucks + Trailers tabs in FreightIQ go blank with a red banner: `⚠ AP Aging fetch failed: <reason>`.
+
+**Watch for the uncommitted-fix pattern** — the CORS regression that bit May 2026 was a fix that lived in the local working tree of `ap-aging` for weeks but was never committed/pushed. Before celebrating a cross-app fix, run `git status` in the upstream repo to confirm the change is shipped.
