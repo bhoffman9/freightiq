@@ -4226,27 +4226,63 @@ function IncomeDashboard() {
       .finally(() => setQbLoading(false));
   }, [view, qbPeriod]);
 
-  const ytdDays    = 122; // Jan 1 – May 2, 2026
+  const ytdDays    = PERIOD_DAYS;
   const gpMargin26 = INCOME_2026.grossProfit / INCOME_2026.total * 100;
   const gpMargin25 = INCOME_2025.grossProfit / INCOME_2025.total * 100;
-  // YoY: compare YTD 2026 against the same-named months in 2025 so the
-  // baseline grows as months close out, instead of being stuck on Q1.
-  const ytd25Same  = INCOME_2026.months.reduce((s, m26) => {
+
+  // Same-window YoY: compare 2026 closed months against the same months in
+  // 2025. Excludes the trailing partial month from BOTH sides so the
+  // comparison is apples-to-apples (a partial May 1-3 vs full 2025 May would
+  // make 2026 look like it cratered). Heuristic: if the last entry's revenue
+  // is < 50% of the prior month, treat it as partial.
+  const lastIdx26 = INCOME_2026.months.length - 1;
+  const lastM26   = INCOME_2026.months[lastIdx26];
+  const priorM26  = INCOME_2026.months[lastIdx26 - 1];
+  const isPartialLast = priorM26 && lastM26 && lastM26.rev < priorM26.rev * 0.5;
+  const fullMonths26 = isPartialLast ? INCOME_2026.months.slice(0, -1) : INCOME_2026.months;
+  const ytd26FullRev = fullMonths26.reduce((s, m) => s + m.rev, 0);
+  const ytd26FullGP  = fullMonths26.reduce((s, m) => s + m.gp,  0);
+  const ytd26FullNI  = fullMonths26.reduce((s, m) => s + m.netInc, 0);
+  const ytd25SameRev = fullMonths26.reduce((s, m26) => {
     const m25 = INCOME_2025.months.find(m => m.m === m26.m);
     return s + (m25 ? m25.rev : 0);
   }, 0);
-  const ytd25SameGP = INCOME_2026.months.reduce((s, m26) => {
+  const ytd25SameGP = fullMonths26.reduce((s, m26) => {
     const m25 = INCOME_2025.months.find(m => m.m === m26.m);
     return s + (m25 ? m25.gp : 0);
   }, 0);
-  const yoyRevChg  = ytd25Same  > 0 ? (INCOME_2026.total       / ytd25Same   - 1) * 100 : 0;
-  const yoyGPChg   = ytd25SameGP > 0 ? (INCOME_2026.grossProfit / ytd25SameGP - 1) * 100 : 0;
+  // 2025 monthly net income isn't broken out, so prorate annual NI by
+  // same-window revenue share. Approximation, but better than comparing
+  // against a stale Q1 figure.
+  const ytd25SameNI = INCOME_2025.total > 0
+    ? INCOME_2025.netIncome * (ytd25SameRev / INCOME_2025.total)
+    : 0;
+  const yoyRevChg = ytd25SameRev > 0 ? (ytd26FullRev / ytd25SameRev - 1) * 100 : 0;
+  const yoyGPChg  = ytd25SameGP  > 0 ? (ytd26FullGP  / ytd25SameGP  - 1) * 100 : 0;
+  const sameWindowLabel = fullMonths26.length === 0
+    ? "no full months yet"
+    : fullMonths26.length === 1
+      ? `${fullMonths26[0].m} 2026 vs ${fullMonths26[0].m} 2025`
+      : `${fullMonths26[0].m}–${fullMonths26[fullMonths26.length - 1].m} ${fullMonths26[0].m === "Jan" ? "(YTD)" : ""}`.trim();
 
   // Custom tooltip for recharts
-  // Month comparison data — pair every 2026 month present with the same month in 2025
-  const monthCompare = INCOME_2026.months.map(m26 => {
+  // Month comparison data — pair every 2026 month present with the same month in 2025.
+  // Includes partial month so users can see it; the v25 value is prorated to
+  // the same fraction of the month (rough proration via day count, falling
+  // back to full-month if we can't infer).
+  const monthCompare = INCOME_2026.months.map((m26, i) => {
     const m25 = INCOME_2025.months.find(m => m.m === m26.m);
-    return { m: m26.m, v26: m26.rev, v25: m25 ? m25.rev : 0 };
+    let v25 = m25 ? m25.rev : 0;
+    // For partial last month, prorate 2025 by the rev ratio against 2026's
+    // full prior month. Imperfect but keeps the bar from misleading.
+    if (i === lastIdx26 && isPartialLast && priorM26 && m25) {
+      const fullPrior25 = INCOME_2025.months.find(m => m.m === priorM26.m);
+      if (fullPrior25 && fullPrior25.rev > 0) {
+        const ratio = m26.rev / priorM26.rev; // ≈ fraction of month elapsed
+        v25 = m25.rev * Math.min(1, Math.max(0, ratio));
+      }
+    }
+    return { m: m26.m, v26: m26.rev, v25, partial: i === lastIdx26 && isPartialLast };
   });
 
   return (
@@ -4438,33 +4474,36 @@ function IncomeDashboard() {
 
           {/* P&L Summary table */}
           <div className="card">
-            <div className="ctit">P&L Summary</div>
+            <div className="ctit">P&L Summary · YoY = same closed months ({sameWindowLabel})</div>
             <table className="tbl">
               <thead>
                 <tr>
                   <th style={{ textAlign:"left" }}>Line Item</th>
-                  <th>2026 YTD (May 2)</th>
-                  <th>2025 Q1 est.</th>
+                  <th>2026 YTD ({PERIOD_DAYS}d)</th>
+                  <th>2025 Same Window</th>
                   <th>2025 Full Year</th>
-                  <th>YoY vs Q1</th>
+                  <th>YoY (Same Window)</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { label:"Total Revenue",   v26:INCOME_2026.total,       q1:INCOME_2025.q1Rev,  fy:INCOME_2025.total,      hi:true },
-                  { label:"COGS",            v26:-INCOME_2026.cogs,       q1:null,               fy:-INCOME_2025.cogs,      neg:true },
-                  { label:"Gross Profit",    v26:INCOME_2026.grossProfit, q1:INCOME_2025.q1GP,   fy:INCOME_2025.grossProfit,hi:true },
-                  { label:"GP Margin",       v26:gpMargin26,              q1:INCOME_2025.q1GP/INCOME_2025.q1Rev*100, fy:gpMargin25, pct:true },
-                  { label:"Net Income",      v26:INCOME_2026.netIncome,   q1:INCOME_2025.q1NI,   fy:INCOME_2025.netIncome,  color:true,hi:true },
+                  { label:"Total Revenue",   v26:INCOME_2026.total,       sw26:ytd26FullRev, sw25:ytd25SameRev, fy:INCOME_2025.total,      hi:true },
+                  { label:"COGS",            v26:-INCOME_2026.cogs,       sw26:null,         sw25:null,         fy:-INCOME_2025.cogs,      neg:true },
+                  { label:"Gross Profit",    v26:INCOME_2026.grossProfit, sw26:ytd26FullGP,  sw25:ytd25SameGP,  fy:INCOME_2025.grossProfit,hi:true },
+                  { label:"GP Margin",       v26:gpMargin26,              sw26:ytd26FullRev>0?(ytd26FullGP/ytd26FullRev*100):0, sw25:ytd25SameRev>0?(ytd25SameGP/ytd25SameRev*100):0, fy:gpMargin25, pct:true },
+                  { label:"Net Income",      v26:INCOME_2026.netIncome,   sw26:ytd26FullNI,  sw25:ytd25SameNI,  fy:INCOME_2025.netIncome,  color:true,hi:true },
                 ].map((r,i) => {
-                  const chg = r.q1 != null ? (r.pct ? r.v26 - r.q1 : (r.v26/r.q1-1)*100) : null;
+                  // YoY is closed-months-only on BOTH sides for apples-to-apples.
+                  const chg = (r.sw26 != null && r.sw25 != null && r.sw25 !== 0)
+                    ? (r.pct ? r.sw26 - r.sw25 : (r.sw26/Math.abs(r.sw25)-1)*100 * (r.sw25 < 0 ? -1 : 1))
+                    : null;
                   return (
                     <tr key={r.label} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                       <td style={{ fontWeight:r.hi?700:400 }}>{r.label}</td>
                       <td style={{ color:r.pct?undefined:r.color?(r.v26>=0?"var(--gn)":"var(--rd)"):r.neg?"var(--rd)":"var(--ye)", fontWeight:r.hi?700:400 }}>
                         {r.pct ? fp(r.v26) : fd(r.v26,0)}
                       </td>
-                      <td style={{ color:"var(--mu)" }}>{r.q1!=null?(r.pct?fp(r.q1):fd(r.q1,0)):"—"}</td>
+                      <td style={{ color:"var(--mu)" }}>{r.sw25!=null?(r.pct?fp(r.sw25):fd(r.sw25,0)):"—"}</td>
                       <td style={{ color:"var(--mu)" }}>{r.pct?fp(r.fy):fd(r.fy,0)}</td>
                       <td style={{ color:chg==null?"var(--mu)":chg>=0?"var(--gn)":"var(--rd)",fontWeight:700 }}>
                         {chg==null?"—":r.pct?`${chg>=0?"+":""}${chg.toFixed(1)} pts`:`${chg>=0?"+":""}${chg.toFixed(1)}%`}
@@ -4817,19 +4856,19 @@ function IncomeDashboard() {
           {/* YoY KPIs */}
           <div className="g4" style={{ marginBottom:14 }}>
             <div className="kpi">
-              <div className="klbl">2026 YTD Revenue</div>
-              <div className="kval" style={{ color:"var(--gn)" }}>{fd(INCOME_2026.total,0)}</div>
-              <div className="ksub">Jan 1 – Apr 7</div>
+              <div className="klbl">2026 Same-Window Revenue</div>
+              <div className="kval" style={{ color:"var(--gn)" }}>{fd(ytd26FullRev,0)}</div>
+              <div className="ksub">{sameWindowLabel} · closed months</div>
             </div>
             <div className="kpi">
-              <div className="klbl">2025 Q1 Revenue</div>
-              <div className="kval" style={{ color:"var(--mu)" }}>{fd(INCOME_2025.q1Rev,0)}</div>
-              <div className="ksub">Jan 1 – Mar 16 (est.)</div>
+              <div className="klbl">2025 Same-Window Revenue</div>
+              <div className="kval" style={{ color:"var(--mu)" }}>{fd(ytd25SameRev,0)}</div>
+              <div className="ksub">same months in 2025</div>
             </div>
             <div className="kpi">
               <div className="klbl">YoY Revenue Change</div>
-              <div className="kval" style={{ color:"var(--gn)" }}>+{yoyRevChg.toFixed(1)}%</div>
-              <div className="ksub">+{fd(INCOME_2026.total-INCOME_2025.q1Rev,0)}</div>
+              <div className="kval" style={{ color:yoyRevChg>=0?"var(--gn)":"var(--rd)" }}>{yoyRevChg>=0?"+":""}{yoyRevChg.toFixed(1)}%</div>
+              <div className="ksub">{yoyRevChg>=0?"+":""}{fd(ytd26FullRev-ytd25SameRev,0)} apples-to-apples</div>
             </div>
             <div className="kpi">
               <div className="klbl">2025 Full Year</div>
@@ -4840,7 +4879,7 @@ function IncomeDashboard() {
 
           {/* Month by month side by side */}
           <div className="card" style={{ marginBottom:14 }}>
-            <div className="ctit">Monthly Revenue — 2026 vs 2025 (Q1 Comparison)</div>
+            <div className="ctit">Monthly Revenue — 2026 vs 2025 (Same Months)</div>
             {/* % change labels above each month */}
             <div style={{ display:"flex",justifyContent:"space-around",marginBottom:6,paddingLeft:40 }}>
               {monthCompare.map(d => {
@@ -4920,22 +4959,22 @@ function IncomeDashboard() {
 
           {/* Net income comparison */}
           <div className="card">
-            <div className="ctit">Net Income — 2026 YTD vs 2025</div>
+            <div className="ctit">Net Income — 2026 vs 2025 (same window: {sameWindowLabel})</div>
             <div className="g3" style={{ gap:10 }}>
               <div className="kpi">
-                <div className="klbl">2026 YTD Net Income</div>
-                <div className="kval" style={{ color:"var(--gn)" }}>{fd(INCOME_2026.netIncome,0)}</div>
-                <div className="ksub">Positive — ahead of 2025</div>
+                <div className="klbl">2026 Same-Window Net</div>
+                <div className="kval" style={{ color:ytd26FullNI>=0?"var(--gn)":"var(--rd)" }}>{fd(ytd26FullNI,0)}</div>
+                <div className="ksub">{sameWindowLabel} closed months</div>
               </div>
               <div className="kpi">
-                <div className="klbl">2025 Q1 Net Income</div>
-                <div className="kval" style={{ color:"var(--rd)" }}>{fd(INCOME_2025.q1NI,0)}</div>
-                <div className="ksub">Jan–Mar 2025 was a loss</div>
+                <div className="klbl">2025 Same-Window Net (est.)</div>
+                <div className="kval" style={{ color:ytd25SameNI>=0?"var(--gn)":"var(--rd)" }}>{fd(ytd25SameNI,0)}</div>
+                <div className="ksub">prorated from full-year ({fp(ytd25SameRev/INCOME_2025.total*100)} of yr)</div>
               </div>
               <div className="kpi">
                 <div className="klbl">2025 Full Year Net</div>
-                <div className="kval" style={{ color:"var(--rd)" }}>{fd(INCOME_2025.netIncome,0)}</div>
-                <div className="ksub">Full year 2025 was a loss</div>
+                <div className="kval" style={{ color:INCOME_2025.netIncome>=0?"var(--gn)":"var(--rd)" }}>{fd(INCOME_2025.netIncome,0)}</div>
+                <div className="ksub">{INCOME_2025.netIncome<0?"loss":"profit"}</div>
               </div>
             </div>
           </div>
