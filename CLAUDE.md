@@ -251,17 +251,32 @@ Reads everything in `incoming-freightiq/`, writes:
 If P&L files are present, parse them separately for `INCOME_2026` updates (the main parser doesn't write a summary section for them yet — read straight from the .xlsx using openpyxl).
 
 ### Update App.jsx constants
-Swap in numbers from `_summary.txt`:
-- `LABOR` / `TOTAL_HRS` ← SF drivers-only (office already excluded by the parser)
-- `FUEL_TOT` / `GALLONS` ← EFS total
+
+**Source-of-truth principle: PERIOD is the only date-related string you need to update.** The rest derives. As of May 2026, anything below labelled "auto-derived" no longer needs a manual edit each week — touching it is a regression risk.
+
+Touch these (real data each week):
+- `PERIOD` ← new week-ending date string (e.g. `"Jan 1 - May 9, 2026"`). Drives `PERIOD_DAYS`, header subtitle, Insurance day-count, P&L "2026 YTD (Nd)" column header. Update once.
+- `LABOR` / `TOTAL_HRS` ← SF drivers-only from `_summary.txt`
+- `FUEL_TOT` / `GALLONS` ← EFS total from `_summary.txt`
 - `INS_TOT` / `TRUCK_TOT` / `TRAILER_TOT` / `STORAGE` / `TRUCK_MAINT` / `TRAIL_MAINT` / `UNIFORMS` ← CE&SF category totals
-- `PERIOD` / `ytdDays` ← new week-ending date + day count (Jan 1 to end date)
 - `MILES` ← extrapolate (old × new_days / old_days); live `/api/samsara-miles` supersedes anyway
 - `PAYROLL[]` ← paste per-driver rows from `_summary.txt`
 - `FUEL{}` ← match EFS cards to drivers; handle splits for shared cards
-- `thru Apr X` labels throughout — grep and sweep
 - `INCOME_2026` top-level totals + `weeks[]` (append new week) + `months[]` (replace partial month with full + add new partial)
 - `MONTHLY_REVENUE` ← matching row update for the just-closed month
+- Sweep any inline `thru <date>` comments next to category constants — these are still hand-typed annotations; keep them current
+
+**DO NOT touch — auto-derived (touching breaks future-week derivation):**
+- `PERIOD_DAYS` — parsed from `PERIOD` at module load
+- `ytdDays` (in IncomeDashboard) — references `PERIOD_DAYS`
+- Header subtitle "Show Freight Inc · {PERIOD}" — already templated
+- Insurance tile subtitle "$6,375/wk · {PERIOD_DAYS}-day period" — derived
+- P&L column header "2026 YTD ({PERIOD_DAYS}d)" — derived
+- YoY same-window logic (`ytd26FullRev`, `ytd25SameRev`, `sameWindowLabel`, etc.) — auto-pairs 2026 closed months with same months in 2025; no Q1 baseline to bump
+- Net Income YoY sign-cross handling — automatically swaps to `+$X (loss→profit)` format when sign changes
+- `INCOME_2025.q1Rev/q1GP/q1NI` — left in data but no longer drives any display
+
+**If you find yourself hand-typing a quarter, day count, or partial date anywhere in `App.jsx` outside of `PERIOD`, stop.** That's a future regression. Wire it through `PERIOD` / `PERIOD_DAYS` / `INCOME_2026.months` instead.
 
 **Build will fail silently on the `drivers: 0` regression** if the `LABOR` comment doesn't have a digit adjacent to the word "drivers". The `extract-metrics.js` regex is `/(\d+)\s*drivers/i` — phrasings like "41 active drivers" break it. Use "41 drivers active" or "— 41 drivers (…)" instead.
 
@@ -285,6 +300,11 @@ Tag any partial-month row with an inline `// partial — May 1-3 only` comment s
 3. **Cross-app endpoints respond.** `curl -s -I https://ap-aging-v4.vercel.app/api/equipment | grep -i access-control` returns CORS headers. If missing, Trucks/Trailers will be blank (`⚠ AP Aging fetch failed` banner appears in the tab footer).
 4. **Sanity-check headline deltas.** A revenue jump >20% WoW or a category that's UNCHANGED WoW (`INS_TOT`, `TRAIL_MAINT`, `UNIFORMS` etc.) should be flagged in the commit message — they're usually either real or a missing data file.
 4a. **Scan subtitle / explanatory labels next to dollar values, not just the dollars.** The numbers can be right while the prose surrounding them silently lies. Anything hardcoded with a quarter ("Q1 2026"), a day count ("72-day period"), or a date should be derived from `PERIOD` / `PERIOD_DAYS` — never typed in directly. If you see a hand-typed quarter/day-count anywhere, that's a future regression about to happen; replace with a derived value.
+4b. **Quick `grep` for drift hotspots before commit:**
+    ```bash
+    grep -nE '\b[0-9]{2,3}-day\b|\bQ[1-4] 20[2-9][0-9]\b|thru (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]+' src/App.jsx | grep -v 'PERIOD_DAYS\|^\s*\*\|fixed\|incoming-freightiq'
+    ```
+    Any hits are hand-typed period strings that should either be derived or deliberately annotated (e.g. inline `// partial — May 1-3 only` comments are fine; `"72-day period"` strings are not).
 5. **No new entities silently absorbed.** New EFS card numbers, new vendor lines in the QB transaction report, new drivers in the payroll XLS — all must be either mapped in the appropriate constant OR explicitly noted in the commit message as "excluded from per-driver mapping" (e.g. card 17408 = Andres / warehouse).
 6. **No stale partial-month rows.** `INCOME_2026.months[]` and `MONTHLY_REVENUE` last entries should either be a full closed month OR a partial flagged with an inline `// partial — May 1-3 only` comment. A closed prior month showing < 50% of the typical run is a stale row.
 7. **Cross-repo fixes are pushed, not just local.** If a fix touches a sibling repo (e.g. `ap-aging` for CORS), `git status` in that repo to confirm clean. The nightly stale-repos cron (`~/Desktop/_stale-repos.md`) catches drift but should never be the first time you discover an uncommitted fix.
