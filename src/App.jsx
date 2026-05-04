@@ -2868,8 +2868,10 @@ function TrucksTab() {
                   </tbody>
                 </table>
               </div>
-              <div style={{ marginTop:10,fontSize:10,color:"var(--mu)" }}>
-                Live data from AP Aging dashboard · Updated {equipment?.updatedAt ? new Date(equipment.updatedAt).toLocaleDateString() : "—"}
+              <div style={{ marginTop:10,fontSize:10,color:equipment?._error ? "#ff5252" : "var(--mu)" }}>
+                {equipment?._error
+                  ? `⚠ AP Aging fetch failed: ${equipment._error} — Trucks data missing. Check ap-aging-v4.vercel.app/api/equipment.`
+                  : <>Live data from AP Aging dashboard · Updated {equipment?.updatedAt ? new Date(equipment.updatedAt).toLocaleDateString() : "—"}</>}
               </div>
             </div>
           </>
@@ -3670,9 +3672,11 @@ function TrailerFleet() {
                   </tbody>
                 </table>
               </div>
-              <div style={{ marginTop:10,fontSize:10,color:"var(--mu)" }}>
-                Live data from AP Aging dashboard · Updated {equipment?.updatedAt ? new Date(equipment.updatedAt).toLocaleDateString() : "—"} ·
-                {Object.entries(byVendor).map(([v,c]) => <span key={v}> <span style={{ color:vendorColor(v) }}>■ {v}</span> ({c})</span>)}
+              <div style={{ marginTop:10,fontSize:10,color:equipment?._error ? "#ff5252" : "var(--mu)" }}>
+                {equipment?._error
+                  ? `⚠ AP Aging fetch failed: ${equipment._error} — Trailers data missing. Check ap-aging-v4.vercel.app/api/equipment.`
+                  : <>Live data from AP Aging dashboard · Updated {equipment?.updatedAt ? new Date(equipment.updatedAt).toLocaleDateString() : "—"} ·
+                    {Object.entries(byVendor).map(([v,c]) => <span key={v}> <span style={{ color:vendorColor(v) }}>■ {v}</span> ({c})</span>)}</>}
               </div>
             </div>
           </>
@@ -8058,12 +8062,26 @@ export default function App() {
   const [tab, setTab] = useState("overview");
   const [dataVersion, setDataVersion] = useState(0);
   const [equipmentData, setEquipmentData] = useState(null);
+  const [equipmentError, setEquipmentError] = useState(null);
 
   useEffect(() => {
     fetch("https://ap-aging-v4.vercel.app/api/equipment")
-      .then(r => r.json())
-      .then(data => { if (data.units) setEquipmentData(data); })
-      .catch(e => console.warn("Equipment fetch failed:", e));
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(data => {
+        if (!data || !Array.isArray(data.units)) throw new Error("malformed response (no units array)");
+        setEquipmentData(data);
+        setEquipmentError(null);
+      })
+      .catch(e => {
+        // Visible error so silent CORS / network / shape regressions don't
+        // leave Trucks/Trailers tabs sitting empty without explanation.
+        const msg = e?.message || String(e);
+        console.warn("Equipment fetch failed:", msg);
+        setEquipmentError(msg);
+      });
   }, []);
 
   const trackedCPM = (LABOR + FUEL_TOT + INS_TOT + EQUIP_TOT + MAINT_TOT + UNIFORMS) / MILES;
@@ -8092,7 +8110,7 @@ export default function App() {
   return (
     <PasswordGate>
     <DataContext.Provider value={ctxValue}>
-    <EquipmentContext.Provider value={equipmentData}>
+    <EquipmentContext.Provider value={equipmentData ? { ...equipmentData, _error: null } : (equipmentError ? { units: [], _error: equipmentError } : null)}>
       <style>{CSS}</style>
       <div className="app" key={dataVersion}>
         <header className="hdr">
