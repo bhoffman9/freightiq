@@ -2561,7 +2561,8 @@ let MONTHLY_REVENUE = [
   { m:"Jan 26", ce:663460.14,  di:14947.25,  sf:314754.40, total:993161.79,   gp:480933.50  },
   { m:"Feb 26", ce:1264154.09, di:6636.50,  sf:337043.15, total:1607833.74,  gp:683117.82  },
   { m:"Mar 26", ce:1734333.27, di:18161.70, sf:522550.51, total:2290040.48,  gp:1113857.96 },
-  { m:"Apr 26", ce:206635.99,  di:560.98,   sf:140586.94, total:356780.92,   gp:202680.77  },
+  { m:"Apr 26", ce:1325895.61, di:1781.88,  sf:643584.16, total:2160721.16,  gp:1107479.39 },
+  { m:"May 26", ce:45638.00,   di:0,        sf:19625.01,  total:73314.01,    gp:35905.26   },  // partial — May 1-3 only
 ];
 
 
@@ -4116,35 +4117,39 @@ function TrailerFleet() {
 
 // ── INCOME DATA ───────────────────────────────────────────────
 const INCOME_2026 = {
-  period: "Jan 1 – May 2, 2026",
-  ce: 4069785.49, sf: 1400928.54, di: 40506.43, ceEast: 59771.51,
-  total: 5570991.97,
-  cogs: 2931983.37, grossProfit: 2639008.60,
-  totalExp: 2365355.43, netOpIncome: 273653.17,
-  netIncome: 350268.12,
-  carrierPay: 2870301.23, merchantFees: 55079.60, flexentFees: 6602.54,
+  period: "Jan 1 – May 3, 2026",
+  ce: 5033481.11, sf: 1837557.23, di: 41527.33, ceEast: 212505.51,
+  total: 7125071.18,
+  cogs: 3703777.25, grossProfit: 3421293.93,
+  totalExp: 3046984.89, netOpIncome: 374309.04,
+  netIncome: 450948.75,
+  carrierPay: 3637056.19, merchantFees: 55079.60, flexentFees: 11641.46,
   weeks: [
-    { label:"Jan 1-4",    rev:86886.02,  gp:52052.64,  ce:71474.65,  sf:14362.37,  di:1049.00,   carrier:34100.00,  netInc:25492.50 },
-    { label:"Jan 5-11",   rev:167335.63, gp:76449.43,  ce:103721.70, sf:63463.93,  di:150.00,    carrier:88060.25,  netInc:-73568.84 },
-    { label:"Jan 12-18",  rev:239072.36, gp:96713.35,  ce:164803.92, sf:68403.04,  di:5865.40,   carrier:138771.76, netInc:-16212.64 },
-    { label:"Jan 19-25",  rev:249993.50, gp:109470.39, ce:157601.79, sf:89058.86,  di:3332.85,   carrier:136472.50, netInc:-25127.46 },
-    { label:"Jan 26-F1",  rev:249874.28, gp:146247.69, ce:165858.08, sf:79466.20,  di:4550.00,   carrier:99818.75,  netInc:-3909.53 },
-    { label:"Feb 2-8",    rev:441729.58, gp:156641.30, ce:355998.69, sf:85296.04,  di:434.85,    carrier:276707.25, netInc:19207.96 },
-    { label:"Feb 9-15",   rev:526250.37, gp:235956.79, ce:403325.58, sf:121889.79, di:1035.00,   carrier:280000.50, netInc:63020.31 },
-    { label:"Feb 16-22",  rev:259947.62, gp:121921.58, ce:200471.24, sf:58840.48,  di:635.90,    carrier:133235.00, netInc:-67590.54 },
-    { label:"Feb 23-M1",  rev:379906.17, gp:168598.15, ce:304358.58, sf:71016.84,  di:4530.75,   carrier:204298.25, netInc:43510.38 },
-    { label:"Mar 2-8",    rev:369704.58, gp:165061.53, ce:286145.38, sf:68554.20,  di:15005.00,  carrier:198170.00, netInc:20925.01 },
-    { label:"Mar 9-15",   rev:201670.91, gp:107577.81, ce:123160.85, sf:78440.06,  di:70.00,     carrier:90966.50,  netInc:-46874.00 },
-    { label:"Mar 16-22",  rev:683445.61, gp:309971.85, ce:557108.00, sf:125457.61, di:880.00,    carrier:372483.00, netInc:113348.36 },
-    { label:"Mar 23-29",  rev:840185.44, gp:441062.85, ce:652624.29, sf:187561.15, di:0,         carrier:397038.76, netInc:221646.74 },
-    { label:"Mar 30-A5",  rev:413053.60, gp:219323.44, ce:238980.74, sf:153613.17, di:2767.68,   carrier:191634.46, netInc:54437.74 },
-    { label:"Apr 6-12",   rev:461936.30, gp:231959.80, ce:284152.00, sf:135504.80, di:200.00,    carrier:228544.25, netInc:21962.13 },
+    { label:"Jan 1-4",    rev:86886.02,  gp:52052.64,  ce:71474.65,  sf:14362.37,  di:1049.00,  carrier:34100.00,  netInc:25492.50 },
+    { label:"Jan 5-11",   rev:167335.63, gp:76449.43,  ce:103721.70, sf:63463.93,  di:150.00,   carrier:88060.25,  netInc:-73568.84 },
+    { label:"Jan 12-18",  rev:239072.36, gp:96713.35,  ce:164803.92, sf:68403.04,  di:5865.40,  carrier:138771.76, netInc:-16212.64 },
+    { label:"Jan 19-25",  rev:249993.50, gp:109470.39, ce:157601.79, sf:89058.86,  di:3332.85,  carrier:136472.50, netInc:-25127.46 },
+    { label:"Jan 26-F1",  rev:249874.28, gp:146247.69, ce:165858.08, sf:79466.20,  di:4550.00,  carrier:99818.75,  netInc:-3909.53 },
+    { label:"Feb 2-8",    rev:441729.58, gp:156641.30, ce:355998.69, sf:85296.04,  di:434.85,   carrier:276707.25, netInc:19207.96 },
+    { label:"Feb 9-15",   rev:526250.37, gp:235956.79, ce:403325.58, sf:121889.79, di:1035.00,  carrier:280000.50, netInc:63020.31 },
+    { label:"Feb 16-22",  rev:259947.62, gp:121921.58, ce:200471.24, sf:58840.48,  di:635.90,   carrier:133235.00, netInc:-67590.54 },
+    { label:"Feb 23-M1",  rev:379906.17, gp:168598.15, ce:304358.58, sf:71016.84,  di:4530.75,  carrier:204298.25, netInc:43510.38 },
+    { label:"Mar 2-8",    rev:369704.58, gp:165061.53, ce:286145.38, sf:68554.20,  di:15005.00, carrier:198170.00, netInc:20925.01 },
+    { label:"Mar 9-15",   rev:201670.91, gp:107577.81, ce:123160.85, sf:78440.06,  di:70.00,    carrier:90966.50,  netInc:-46874.00 },
+    { label:"Mar 16-22",  rev:683445.61, gp:309971.85, ce:557108.00, sf:125457.61, di:880.00,   carrier:372483.00, netInc:113348.36 },
+    { label:"Mar 23-29",  rev:840185.44, gp:441062.85, ce:652624.29, sf:187561.15, di:0,        carrier:397038.76, netInc:221646.74 },
+    { label:"Mar 30-A5",  rev:413053.60, gp:219323.44, ce:238980.74, sf:153613.17, di:2767.68,  carrier:191634.46, netInc:54437.74 },
+    { label:"Apr 6-12",   rev:461936.30, gp:231959.80, ce:284152.00, sf:135504.80, di:200.00,   carrier:228544.25, netInc:16017.14 },
+    { label:"Apr 13-19",  rev:357473.97, gp:177626.95, ce:213785.03, sf:109382.04, di:729.90,   carrier:178386.21, netInc:-16291.62 },
+    { label:"Apr 20-26",  rev:475020.61, gp:236992.07, ce:289391.50, sf:128863.11, di:291.00,   carrier:236591.25, netInc:25443.21 },
+    { label:"Apr 27-M3",  rev:721584.63, gp:367666.31, ce:460519.09, sf:198383.54, di:0,        carrier:351777.50, netInc:97474.03 },
   ],
   months: [
-    { m: "Jan", rev: 993161.79,  gp: 480933.50, ce:663460.14,  sf:314754.40, di:14947.25, carrier:497223.26, exp:598682.35, netInc:-92214.12 },
-    { m: "Feb", rev: 1607833.74, gp: 683117.82, ce:1264154.09, sf:337043.15, di:6636.50,  carrier:924715.92, exp:647766.79, netInc:60883.96 },
-    { m: "Mar", rev: 2290040.48, gp: 1113857.96,ce:1734333.27, sf:522550.51, di:18161.70, carrier:1162575.47,exp:789424.77, netInc:349980.48 },
-    { m: "Apr", rev: 679955.96,  gp: 361099.32, ce:407837.99,  sf:226580.48, di:760.98,   carrier:316261.50, exp:329481.52, netInc:31617.80 },
+    { m: "Jan", rev: 993161.79,  gp: 480933.50,  ce:663460.14,  sf:314754.40, di:14947.25, carrier:497223.26,  exp:598682.35,  netInc:-92214.12 },
+    { m: "Feb", rev: 1607833.74, gp: 683117.82,  ce:1264154.09, sf:337043.15, di:6636.50,  carrier:894241.00,  exp:647766.79,  netInc:60883.96 },
+    { m: "Mar", rev: 2290040.48, gp: 1113857.96, ce:1734333.27, sf:522550.51, di:18161.70, carrier:1162575.47, exp:789424.77,  netInc:349980.48 },
+    { m: "Apr", rev: 2160721.16, gp: 1107479.39, ce:1325895.61, sf:643584.16, di:1781.88,  carrier:1045803.96, exp:887357.07,  netInc:220147.08 },
+    { m: "May", rev: 73314.01,   gp: 35905.26,   ce:45638.00,   sf:19625.01,  di:0,        carrier:37212.50,   exp:123753.91,  netInc:-87848.65 },
   ],
 };
 
@@ -4211,16 +4216,25 @@ function IncomeDashboard() {
   const ytdDays    = 122; // Jan 1 – May 2, 2026
   const gpMargin26 = INCOME_2026.grossProfit / INCOME_2026.total * 100;
   const gpMargin25 = INCOME_2025.grossProfit / INCOME_2025.total * 100;
-  const yoyRevChg  = (INCOME_2026.total / INCOME_2025.q1Rev - 1) * 100;
-  const yoyGPChg   = (INCOME_2026.grossProfit / INCOME_2025.q1GP - 1) * 100;
+  // YoY: compare YTD 2026 against the same-named months in 2025 so the
+  // baseline grows as months close out, instead of being stuck on Q1.
+  const ytd25Same  = INCOME_2026.months.reduce((s, m26) => {
+    const m25 = INCOME_2025.months.find(m => m.m === m26.m);
+    return s + (m25 ? m25.rev : 0);
+  }, 0);
+  const ytd25SameGP = INCOME_2026.months.reduce((s, m26) => {
+    const m25 = INCOME_2025.months.find(m => m.m === m26.m);
+    return s + (m25 ? m25.gp : 0);
+  }, 0);
+  const yoyRevChg  = ytd25Same  > 0 ? (INCOME_2026.total       / ytd25Same   - 1) * 100 : 0;
+  const yoyGPChg   = ytd25SameGP > 0 ? (INCOME_2026.grossProfit / ytd25SameGP - 1) * 100 : 0;
 
   // Custom tooltip for recharts
-  // Month comparison data
-  const monthCompare = [
-    { m: "Jan", v26: INCOME_2026.months[0].rev, v25: INCOME_2025.months[0].rev },
-    { m: "Feb", v26: INCOME_2026.months[1].rev, v25: INCOME_2025.months[1].rev },
-    { m: "Mar", v26: INCOME_2026.months[2].rev, v25: INCOME_2025.months[2].rev },
-  ];
+  // Month comparison data — pair every 2026 month present with the same month in 2025
+  const monthCompare = INCOME_2026.months.map(m26 => {
+    const m25 = INCOME_2025.months.find(m => m.m === m26.m);
+    return { m: m26.m, v26: m26.rev, v25: m25 ? m25.rev : 0 };
+  });
 
   return (
     <div>
