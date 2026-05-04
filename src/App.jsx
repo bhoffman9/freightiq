@@ -139,6 +139,19 @@ let BASIC_CPM_V = BASIC_COST / MILES;
 let ALLIN_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT + TRAILER_TOT + TRUCK_MAINT + TRAIL_MAINT + STORAGE + UNIFORMS;
 let ALLIN_CPM_V = ALLIN_COST / MILES;
 let PERIOD    = "Jan 1 - May 2, 2026";
+// Derived day count parsed from PERIOD — keeps subtitle labels honest without
+// having to bump a magic number every week. If PERIOD parsing fails, fall back
+// to current behavior (Jan 1 → today).
+const PERIOD_DAYS = (() => {
+  const m = PERIOD.match(/(\w+ \d+).*?(\w+ \d+),\s*(\d{4})/);
+  if (m) {
+    const s = new Date(`${m[1]}, ${m[3]}`);
+    const e = new Date(`${m[2]}, ${m[3]}`);
+    return Math.round((e - s) / 86400000) + 1;
+  }
+  const yr = new Date().getFullYear();
+  return Math.round((Date.now() - new Date(`Jan 1, ${yr}`).getTime()) / 86400000) + 1;
+})();
 
 // Build merged driver rows
 let DRIVERS = PAYROLL.map(p => {
@@ -1318,7 +1331,7 @@ function BasicCPM() {
             { label:"Labor",         val:LABOR,    cpm:lCPM, color:"#f47820", sub:PAYROLL.length + " drivers · all-in employer cost" },
             { label:"Fuel",          val:FUEL_TOT, cpm:fCPM, color:"#f5c542", sub:"EFS + Mudflap · "+fn(GALLONS,0)+" gal" },
             { label:"Truck Rentals", val:TRUCK_TOT,cpm:tCPM, color:"#4fc3f7", sub:"Penske + TEC/Transco + TCI" },
-            { label:"Insurance",     val:INS_TOT,  cpm:iCPM, color:"#b39ddb", sub:"$6,375/wk · 72-day period" },
+            { label:"Insurance",     val:INS_TOT,  cpm:iCPM, color:"#b39ddb", sub:"$"+fn(INS_WEEK,0)+"/wk · "+PERIOD_DAYS+"-day period" },
           ].map(item => (
             <div key={item.label} style={{
               background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:3,
@@ -8129,7 +8142,7 @@ export default function App() {
       <div className="app" key={dataVersion}>
         <header className="hdr">
           <div className="logo">⬡ Freight<b>IQ</b></div>
-          <div className="hsub">Show Freight Inc · Q1 2026</div>
+          <div className="hsub">Show Freight Inc · {PERIOD}</div>
           <div className="hbdg">
             <span className="bdg bdg-o">Labor {fd(LABOR, 0)}</span>
             <span className="bdg bdg-o">Fuel {fd(FUEL_TOT, 0)}</span>
