@@ -4494,9 +4494,29 @@ function IncomeDashboard() {
                   { label:"Net Income",      v26:INCOME_2026.netIncome,   sw26:ytd26FullNI,  sw25:ytd25SameNI,  fy:INCOME_2025.netIncome,  color:true,hi:true },
                 ].map((r,i) => {
                   // YoY is closed-months-only on BOTH sides for apples-to-apples.
-                  const chg = (r.sw26 != null && r.sw25 != null && r.sw25 !== 0)
-                    ? (r.pct ? r.sw26 - r.sw25 : (r.sw26/Math.abs(r.sw25)-1)*100 * (r.sw25 < 0 ? -1 : 1))
-                    : null;
+                  // Three cases for the YoY cell:
+                  //  - pct row (margin): show point delta (sw26 - sw25)
+                  //  - sign-cross ($ row): % is undefined → show $ swing instead
+                  //  - same-sign $ row: standard % change vs |sw25|
+                  let chgText = "—";
+                  let chgSign = 0;
+                  if (r.sw26 != null && r.sw25 != null && r.sw25 !== 0) {
+                    if (r.pct) {
+                      const d = r.sw26 - r.sw25;
+                      chgSign = d;
+                      chgText = `${d>=0?"+":""}${d.toFixed(1)} pts`;
+                    } else if ((r.sw25 < 0) !== (r.sw26 < 0)) {
+                      // Sign cross — % is meaningless. Show $ swing + categorical label.
+                      const swing = r.sw26 - r.sw25;
+                      chgSign = swing;
+                      const tag = (r.sw25 < 0 && r.sw26 >= 0) ? "loss→profit" : "profit→loss";
+                      chgText = `${swing>=0?"+":""}${fd(swing,0)} (${tag})`;
+                    } else {
+                      const pct = (r.sw26/Math.abs(r.sw25)-1)*100;
+                      chgSign = pct;
+                      chgText = `${pct>=0?"+":""}${pct.toFixed(1)}%`;
+                    }
+                  }
                   return (
                     <tr key={r.label} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                       <td style={{ fontWeight:r.hi?700:400 }}>{r.label}</td>
@@ -4505,8 +4525,8 @@ function IncomeDashboard() {
                       </td>
                       <td style={{ color:"var(--mu)" }}>{r.sw25!=null?(r.pct?fp(r.sw25):fd(r.sw25,0)):"—"}</td>
                       <td style={{ color:"var(--mu)" }}>{r.pct?fp(r.fy):fd(r.fy,0)}</td>
-                      <td style={{ color:chg==null?"var(--mu)":chg>=0?"var(--gn)":"var(--rd)",fontWeight:700 }}>
-                        {chg==null?"—":r.pct?`${chg>=0?"+":""}${chg.toFixed(1)} pts`:`${chg>=0?"+":""}${chg.toFixed(1)}%`}
+                      <td style={{ color:chgText==="—"?"var(--mu)":chgSign>=0?"var(--gn)":"var(--rd)",fontWeight:700 }}>
+                        {chgText}
                       </td>
                     </tr>
                   );
