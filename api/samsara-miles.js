@@ -35,11 +35,13 @@ function quarterRange(year, quarter) {
   return ranges[quarter];
 }
 
-// Pull odometer (gpsOdometerMeters) samples for the date range, paginate,
-// then compute per-vehicle delta = max - min. Odometer is monotonically
-// increasing so this gives miles driven in the window.
+// Pull odometer samples for the date range. Samsara exposes two types:
+// obdOdometerMeters (only on vehicles with OBD coverage) and
+// gpsOdometerMeters (everywhere, but requires manual baseline). We request
+// both, paginate, then per-vehicle prefer OBD where available and fall back
+// to GPS. Odometer is monotonically increasing so delta = max - min in window.
 async function fetchOdometerDelta(startTime, endTime) {
-  const perVehicle = {}; // name -> { min, max }
+  const perVehicle = {}; // name -> { obd:{min,max}, gps:{min,max} }
   let cursor = null;
   let pages = 0;
 
@@ -47,7 +49,7 @@ async function fetchOdometerDelta(startTime, endTime) {
     const url = new URL(`${SAMSARA_BASE}/fleet/vehicles/stats/history`);
     url.searchParams.set('startTime', startTime);
     url.searchParams.set('endTime', endTime);
-    url.searchParams.set('types', 'gpsOdometerMeters');
+    url.searchParams.set('types', 'obdOdometerMeters,gpsOdometerMeters');
     if (cursor) url.searchParams.set('after', cursor);
 
     const resp = await fetch(url, { headers: authHeaders });
@@ -60,28 +62,39 @@ async function fetchOdometerDelta(startTime, endTime) {
     for (const v of (json.data || [])) {
       const name = v.name || v.vehicle?.name;
       if (!name) continue;
-      const samples = v.gpsOdometerMeters || [];
-      if (!samples.length) continue;
-      if (!perVehicle[name]) perVehicle[name] = { min: Infinity, max: -Infinity };
-      for (const s of samples) {
-        const m = s.value;
-        if (typeof m !== 'number') continue;
-        if (m < perVehicle[name].min) perVehicle[name].min = m;
-        if (m > perVehicle[name].max) perVehicle[name].max = m;
+      if (!perVehicle[name]) perVehicle[name] = {
+        obd: { min: Infinity, max: -Infinity },
+        gps: { min: Infinity, max: -Infinity },
+      };
+      for (const [key, target] of [['obdOdometerMeters', 'obd'], ['gpsOdometerMeters', 'gps']]) {
+        const samples = v[key] || [];
+        for (const s of samples) {
+          const m = s.value;
+          if (typeof m !== 'number') continue;
+          if (m < perVehicle[name][target].min) perVehicle[name][target].min = m;
+          if (m > perVehicle[name][target].max) perVehicle[name][target].max = m;
+        }
       }
     }
 
     cursor = json.pagination?.endCursor || null;
     pages++;
-    if (pages > 30) break; // safety bound on pagination loop
+    if (pages > 30) break;
   } while (cursor);
 
-  // Convert to miles
+  // Per-vehicle delta. Prefer OBD; fall back to GPS.
   const result = {};
-  for (const [name, { min, max }] of Object.entries(perVehicle)) {
-    if (min !== Infinity && max !== -Infinity && max > min) {
-      result[name] = (max - min) / METERS_TO_MILES;
+  for (const [name, { obd, gps }] of Object.entries(perVehicle)) {
+    let delta = null;
+    let source = null;
+    if (obd.min !== Infinity && obd.max !== -Infinity && obd.max > obd.min) {
+      delta = obd.max - obd.min;
+      source = 'obd';
+    } else if (gps.min !== Infinity && gps.max !== -Infinity && gps.max > gps.min) {
+      delta = gps.max - gps.min;
+      source = 'gps';
     }
+    if (delta != null) result[name] = { miles: delta / METERS_TO_MILES, source };
   }
   return result;
 }
@@ -146,10 +159,15 @@ export default async function handler(req, res) {
     // Merge in-progress miles into trucks. State breakdown stays IFTA-only.
     // Local/regional apportioned by IFTA ratio when available; default to
     // 30%/70% for trucks with no IFTA history.
+    let obdCount = 0;
+    let gpsCount = 0;
     if (inProgressMiles) {
-      for (const [name, miles] of Object.entries(inProgressMiles)) {
+      for (const [name, { miles, source }] of Object.entries(inProgressMiles)) {
         if (!trucks[name]) trucks[name] = { states: {}, iftaMiles: 0 };
         trucks[name].inProgressMiles = miles;
+        trucks[name].inProgressSource = source;
+        if (source === 'obd') obdCount++;
+        else if (source === 'gps') gpsCount++;
       }
     }
 
@@ -192,6 +210,7 @@ export default async function handler(req, res) {
         miles: total,
         iftaMiles: Math.round(iftaTotal * 10) / 10,
         inProgressMiles: Math.round(ipMiles * 10) / 10,
+        inProgressSource: data.inProgressSource || null,
         states,
       });
 
@@ -208,7 +227,7 @@ export default async function handler(req, res) {
       quarters: activeQuarters,
       quartersLoaded: iftaResults.filter(r => r.data && r.data.length > 0).map(r => r.quarter),
       inProgressQuarter: cq,
-      inProgressSource: inProgressMiles ? 'gpsOdometerMeters' : null,
+      inProgressSource: inProgressMiles ? `obd:${obdCount} + gps:${gpsCount}` : null,
       inProgressError,
       truckCount: truckMiles.length,
       fleetLocal: Math.round(fleetLocal * 10) / 10,
