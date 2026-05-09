@@ -100,7 +100,7 @@ freightiq/
 | `GET /api/distance?origin=X&destination=Y` | GET | Google Maps Distance Matrix proxy — returns driving miles + hours |
 | `GET /api/qbo-pnl?company=X&period=Y` | GET | QuickBooks P&L — companies: `ce_sf_combined`, `ce_east`. Periods: `ytd`, `this_week`, `last_week`, `jan`-`dec`, or `start_date`/`end_date` |
 | `GET /api/qbo-bs?company=X` | GET | QuickBooks Balance Sheet — returns assets, liabilities, equity with account detail |
-| `GET /api/samsara-miles?year=2026` | GET | Samsara IFTA mileage — per-truck, per-state, aggregated across quarters |
+| `GET /api/samsara-miles?year=2026` | GET | Samsara fleet mileage. **Hybrid:** finalized quarters via IFTA endpoint (per-state breakdown), in-progress quarter via `/fleet/vehicles/stats/history` odometer delta (no per-state breakdown until IFTA closes). Returns `inProgressQuarter`, `inProgressSource` (e.g. `"obd:31 + gps:0"`), per-truck `iftaMiles` + `inProgressMiles`. Drives fleet `MILES` constant + CPM at runtime via `recomputeDerived()` + `dataVersion` remount |
 
 **Other apps consume these endpoints:**
 - Per Load CPM (`perload-cpm.vercel.app`) fetches `metrics.json` and `/api/alvys-loads`
@@ -114,7 +114,7 @@ freightiq/
   1. **Live APIs** (real-time, no file drops needed):
      - QuickBooks P&L via `/api/qbo-pnl` — CE & SF Combined + CE East, with period selector
      - QuickBooks Balance Sheet via `/api/qbo-bs` — CE East assets/liabilities/equity
-     - Samsara IFTA mileage via `/api/samsara-miles` — per-truck, per-state (Q1 available, Q2+ auto-added)
+     - Samsara fleet mileage via `/api/samsara-miles` — finalized quarters use IFTA per-state breakdown; in-progress quarter uses `gpsOdometerMeters`/`obdOdometerMeters` delta from `/fleet/vehicles/stats/history` (per-state breakdown only refreshes when IFTA closes at quarter end). Live `fleetTotal` mutates the module-level `MILES` constant on App mount → drives every fleet CPM display via `recomputeDerived()` + `key={dataVersion}` remount. localStorage cache (`fiq_fleet_miles_v1`, 24h TTL) hydrates synchronously on mount so returning visitors see correct CPM on first paint
      - Alvys TMS loads via `/api/alvys-loads` — live load pipeline
      - AP Aging equipment data via EquipmentContext
   2. **Hardcoded constants** (updated from file drops — EFS fuel, payroll):
@@ -153,12 +153,29 @@ freightiq/
 - **Local state** via `useState` / `useRef` / `useEffect` in each component
 - No Redux, Zustand, or other state library
 
+### Runtime live-data mutation pattern
+
+Module-level `let` constants (`MILES`, `LABOR`, `FUEL_TOT`, `BASIC_CPM_V`, `ALLIN_CPM_V`, etc.) are **mutated at runtime** when live data lands. The plumbing:
+
+1. `recomputeDerived()` (defined just above the App component) re-derives every dependent constant (`BASIC_COST`, `BASIC_CPM_V`, `ALLIN_COST`, `ALLIN_CPM_V`, `MAINT_TOT`, `EQUIP_TOT`, `MILES_EST`, `DRIVERS`) from the current values of the inputs.
+2. The App's `<div className="app" key={dataVersion}>` uses `dataVersion` as a remount key — bumping `dataVersion` unmounts and remounts the entire tab tree, so every component re-reads the freshly-mutated constants on next render.
+3. Update flow: `MILES = newValue; recomputeDerived(); setDataVersion(v => v + 1);`
+
+Used by:
+- The Upload tab (constants pasted from QB exports)
+- App-mount Samsara fetch (`MILES` from `/api/samsara-miles` `fleetTotal`, see API table)
+
+If you're adding a new live data source that needs to drive CPM or other derived displays, follow this pattern instead of trying to wire prop drilling or context — the existing remount key already does the work.
+
+**Hydration cache:** when fetching live data on App mount, store the last good value in localStorage with a TTL and hydrate synchronously on next mount before the fresh fetch fires. Returning visitors then see correct values on first paint instead of the static baseline. See `fiq_fleet_miles_v1` in App.jsx for the reference implementation.
+
 ## Key Data Constants (hardcoded in App.jsx)
 
 - `PAYROLL[]` — 42 drivers with hours/cost (Memolo Dominick still 0; Kelly Kirk D / Butler Richard / Negrete Arturo / Whipple Wallace 57403 / Williams Will 27405 etc. *inactive markings) thru Apr 26, 2026. **Don't write "41 active drivers" in the LABOR comment — extract-metrics.js regex `(\d+)\s*drivers` needs the digit adjacent to "drivers" or `metrics.json` falls back to 0 (regression fixed week 16).**
 - `FUEL{}` — per-driver fuel spend + gallons (EFS only, thru Apr 26)
 - `MONTHLY_MILES[]` — Samsara GPS: per-month, per-truck local vs regional
-- `TRUCK_MILES[]` — 35 trucks with per-state mileage breakdown (thru Apr 26; live via /api/samsara-miles supersedes)
+- `TRUCK_MILES[]` — per-truck per-state mileage static fallback (live via /api/samsara-miles supersedes — driven by IFTA + odometer delta, see API table)
+- `MILES` — fleet total miles **mutated at runtime** on App mount from `/api/samsara-miles` `fleetTotal`. Static baseline is the most recent live snapshot (~454K) so the pre-fetch frame is within 0.05% of truth. Don't extrapolate this manually anymore — set the static baseline to whatever Samsara returned at last build
 - `TCI_LEASING{}`, `PENSKE{}`, `TEC_EQUIPMENT{}` — truck lease data
 - `TRAILERS_INV{}`, `XTRA_LEASE{}` — trailer inventory/leases
 - `INCOME_2026`, `INCOME_2025` — weekly/monthly revenue + margins
@@ -259,7 +276,7 @@ Touch these (real data each week):
 - `LABOR` / `TOTAL_HRS` ← SF drivers-only from `_summary.txt`
 - `FUEL_TOT` / `GALLONS` ← EFS total from `_summary.txt`
 - `INS_TOT` / `TRUCK_TOT` / `TRAILER_TOT` / `STORAGE` / `TRUCK_MAINT` / `TRAIL_MAINT` / `UNIFORMS` ← CE&SF category totals
-- `MILES` ← extrapolate (old × new_days / old_days); live `/api/samsara-miles` supersedes anyway
+- `MILES` ← bump to whatever `/api/samsara-miles` returns for `fleetTotal` at update time (it'll be live-mutated on every page load too, but a stale baseline causes a wrong-CPM flicker on cold loads — keep within 1% of live)
 - `PAYROLL[]` ← paste per-driver rows from `_summary.txt`
 - `FUEL{}` ← match EFS cards to drivers; handle splits for shared cards
 - `INCOME_2026` top-level totals + `weeks[]` (append new week) + `months[]` (replace partial month with full + add new partial)
@@ -312,7 +329,7 @@ Tag any partial-month row with an inline `// partial — May 1-3 only` comment s
 9. **Clear `incoming-freightiq/`** only AFTER all of the above pass.
 
 ### Office vs Driver split (SF Payroll):
-**Office staff** (excluded from PAYROLL/CPM): Arias Adrian, Eagleton Gentry J (warehouse), Figueroa Andres (warehouse), Fissehaye Biniyam G, Gonzalez Gabriel, Grosser Scot E, Rivera Cecilia I, Youngblood Nathan. Everyone else = drivers. (Encoded in `scripts/parse_weekly_drop.py` — keep in sync.)
+**Office staff** (excluded from PAYROLL/CPM): Arias Adrian, Eagleton Gentry J (warehouse), Figueroa Andres (warehouse), Fissehaye Biniyam G, Gonzalez Gabriel, Grosser Scot E, Naruszewicz Bartosz, Rivera Cecilia I, Youngblood Nathan. Everyone else = drivers. (Encoded in `scripts/parse_weekly_drop.py` — keep in sync.)
 
 ### EFS card → driver mapping
 Cards are mapped to drivers via inline comments in `FUEL{}` (e.g. `// card 27406`). Several cards split between active and *inactive (frozen) drivers — when a card's total is unchanged WoW but the card has frozen contributors, the entire card is dormant. New activity on a split card goes to the active driver(s); frozen drivers' historical values stay locked. EFS cards that don't map to a `PAYROLL[]` driver (warehouse / office / unknown) are excluded from per-driver `FUEL{}` but **still counted in `FUEL_TOT`** so the fleet CPM math reconciles to the EFS report total.
