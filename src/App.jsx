@@ -8162,6 +8162,22 @@ export default function App() {
   const [equipmentData, setEquipmentData] = useState(null);
   const [equipmentError, setEquipmentError] = useState(null);
 
+  // Pull live Samsara fleet miles on mount; supersedes the static MILES
+  // fallback so fleet CPM (BASIC/ALL-IN) reflects real-quarter data
+  // including in-progress quarter (odometer-derived).
+  useEffect(() => {
+    fetch("/api/samsara-miles?year=2026")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d && typeof d.fleetTotal === "number" && d.fleetTotal > 0) {
+          MILES = d.fleetTotal;
+          recomputeDerived();
+          setDataVersion(v => v + 1);
+        }
+      })
+      .catch(e => console.warn("Samsara live fetch failed:", e?.message || e));
+  }, []);
+
   useEffect(() => {
     fetch("https://ap-aging-v4.vercel.app/api/equipment")
       .then(r => {
