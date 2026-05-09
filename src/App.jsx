@@ -750,9 +750,14 @@ function TrucksMileage() {
   const activeLocal = dataSource === "live" && liveData ? liveData.fleetLocal : FLEET_LOCAL;
   const activeRegional = dataSource === "live" && liveData ? liveData.fleetRegional : FLEET_REGIONAL;
   const activeTotal = dataSource === "live" && liveData ? liveData.fleetTotal : MILES;
-  const activeLabel = dataSource === "live" && liveData
-    ? `Samsara IFTA Live · ${liveData.quartersLoaded.join(" + ")} 2026 · ${liveData.truckCount} trucks`
-    : `Samsara GPS · ${PERIOD} · ${TRUCK_MILES.length} trucks`;
+  const activeLabel = (() => {
+    if (!(dataSource === "live" && liveData)) return `Samsara GPS · ${PERIOD} · ${TRUCK_MILES.length} trucks`;
+    const finalized = liveData.quartersLoaded?.length ? liveData.quartersLoaded.join(" + ") : "none";
+    const ip = liveData.inProgressQuarter && liveData.inProgressSource
+      ? ` + ${liveData.inProgressQuarter} odometer (in progress)`
+      : "";
+    return `Samsara Live · ${finalized}${ip} 2026 · ${liveData.truckCount} trucks`;
+  })();
 
   const sorted = useMemo(() => {
     const arr = [...activeTrucks];
