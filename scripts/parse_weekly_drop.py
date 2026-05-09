@@ -32,7 +32,7 @@ INCOMING = os.path.join(BASE, "incoming-freightiq")
 SF_OFFICE = {
     "Arias Adrian", "Eagleton Gentry J", "Figueroa Andres",
     "Fissehaye Biniyam G", "Gonzalez Gabriel", "Grosser Scot E",
-    "Rivera Cecilia I", "Youngblood Nathan",
+    "Naruszewicz Bartosz", "Rivera Cecilia I", "Youngblood Nathan",
 }
 
 
