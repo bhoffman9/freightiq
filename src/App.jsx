@@ -120,7 +120,7 @@ let LABOR     = 744851.74;  // QuickBooks: total driver payroll cost (gross+taxe
 let FUEL_TOT  = 364414.57;  // EFS only — thru May 9 (no Mudflap this period)
 let GALLONS   = 68737.70;   // EFS 68,737.70
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
-let MILES     = 418747.0;     // Samsara GPS, Jan 1 – May 9, 2026 (static fallback extrapolated 396022×129/122; live /api/samsara-miles supersedes)
+let MILES     = 454000.0;     // Samsara GPS, Jan 1 – May 9, 2026 (static baseline = last live Samsara snapshot; live /api/samsara-miles refines on each page load)
 let TOTAL_HRS  = 23962.65;  // Payroll hours — driver-only (office excluded), thru May 9
 let INS_WEEK  = 6375;
 let INS_TOT    = 128624.45;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru May 9
@@ -8162,10 +8162,23 @@ export default function App() {
   const [equipmentData, setEquipmentData] = useState(null);
   const [equipmentError, setEquipmentError] = useState(null);
 
-  // Pull live Samsara fleet miles on mount; supersedes the static MILES
-  // fallback so fleet CPM (BASIC/ALL-IN) reflects real-quarter data
-  // including in-progress quarter (odometer-derived).
+  // Pull live Samsara fleet miles. Hydrate synchronously from localStorage
+  // (if recent) so returning visitors see correct CPM on first paint —
+  // then fetch fresh and refresh. Avoids the 5-10s cold-load window where
+  // the static baseline is shown and looks "wrong".
   useEffect(() => {
+    const CACHE_KEY = "fiq_fleet_miles_v1";
+    const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24h
+    try {
+      const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+      if (cached && typeof cached.miles === "number" && cached.miles > 0
+          && (Date.now() - cached.ts) < MAX_AGE_MS) {
+        MILES = cached.miles;
+        recomputeDerived();
+        setDataVersion(v => v + 1);
+      }
+    } catch (e) { /* localStorage unavailable */ }
+
     fetch("/api/samsara-miles?year=2026")
       .then(r => r.ok ? r.json() : null)
       .then(d => {
@@ -8173,6 +8186,7 @@ export default function App() {
           MILES = d.fleetTotal;
           recomputeDerived();
           setDataVersion(v => v + 1);
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify({ miles: d.fleetTotal, ts: Date.now() })); } catch (e) {}
         }
       })
       .catch(e => console.warn("Samsara live fetch failed:", e?.message || e));
