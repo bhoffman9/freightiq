@@ -613,6 +613,7 @@ const TABS = [
   { id: "income",  icon: "💵", label: "Income" },
   { id: "ceeast",   icon: "🏦", label: "CE East" },
   { id: "cashflow", icon: "💰", label: "Cash Flow" },
+  { id: "budget",   icon: "📋", label: "Budgeting" },
   { id: "settings", icon: "📂", label: "Upload" },
   { id: "checklist", icon: "✅", label: "Checklist" },
 ];
@@ -7906,6 +7907,390 @@ function CashFlowDashboard() {
 }
 
 
+// ── BUDGETING ─────────────────────────────────────────────────
+// Pulls live QBO P&L (ce_sf_combined, YTD) and rolls expense lines into
+// 17 buckets. What-if simulator persists shared scenarios via Supabase
+// (freightiq_budget_whatifs table — run the migration SQL once).
+function Budgeting() {
+  const [pnl, setPnl]               = useState(null);
+  const [pnlLoading, setPnlLoading] = useState(false);
+  const [pnlError, setPnlError]     = useState(null);
+  const [scenarios, setScenarios]   = useState([]);
+  const [setupErr, setSetupErr]     = useState(null);
+  const [scnLoading, setScnLoading] = useState(false);
+  const [formLabel, setFormLabel]   = useState("");
+  const [formAmount, setFormAmount] = useState("");
+  const [formFreq, setFormFreq]     = useState("weekly");
+  const [adding, setAdding]         = useState(false);
+
+  // Live QBO P&L on mount
+  useEffect(() => {
+    setPnlLoading(true); setPnlError(null);
+    fetch("/api/qbo-pnl?company=ce_sf_combined&period=ytd")
+      .then(r => r.ok ? r.json() : r.json().then(b => Promise.reject(b)))
+      .then(d => { if (d.error) throw new Error(d.error); setPnl(d); })
+      .catch(e => setPnlError(e.message || String(e)))
+      .finally(() => setPnlLoading(false));
+  }, []);
+
+  // What-if scenarios from Supabase
+  const refreshScenarios = () => {
+    setScnLoading(true);
+    fetch("/api/budget-whatifs")
+      .then(async r => {
+        const j = await r.json().catch(() => ({}));
+        if (r.status === 503 && j.error === "table-not-found") {
+          setSetupErr(j.message || "Supabase table not provisioned");
+          setScenarios([]);
+          return;
+        }
+        if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+        setSetupErr(null);
+        setScenarios(j.scenarios || []);
+      })
+      .catch(e => setSetupErr(e.message || String(e)))
+      .finally(() => setScnLoading(false));
+  };
+  useEffect(() => { refreshScenarios(); }, []);
+
+  // Roll expense lines into investor-readable buckets
+  const buckets = useMemo(() => {
+    const b = [
+      { key:"carrier",   label:"Carrier Pay (COGS)",  val:0, color:"#ff5252", icon:"📦" },
+      { key:"driver",    label:"Driver Labor",         val:0, color:"#f47820", icon:"🚚" },
+      { key:"office",    label:"Office Labor",         val:0, color:"#4fc3f7", icon:"🏢" },
+      { key:"contract",  label:"Contractor Payroll",   val:0, color:"#f5c542", icon:"📋" },
+      { key:"taxes",     label:"Payroll Taxes & Benefits", val:0, color:"#b39ddb", icon:"💼" },
+      { key:"fuel",      label:"Fuel",                 val:0, color:"#ff8a65", icon:"⛽" },
+      { key:"truckRent", label:"Truck Rentals",        val:0, color:"#a78bfa", icon:"🚛" },
+      { key:"trailRent", label:"Trailer Rentals",      val:0, color:"#26a69a", icon:"🚜" },
+      { key:"truckIns",  label:"Truck Insurance",      val:0, color:"#ec407a", icon:"🛡" },
+      { key:"otherIns",  label:"Other Insurance",      val:0, color:"#ab47bc", icon:"🏥" },
+      { key:"maint",     label:"Maint & Storage",      val:0, color:"#d97706", icon:"🔧" },
+      { key:"owner",     label:"Owner Draws + Purchases", val:0, color:"#3ddc84", icon:"👑" },
+      { key:"ceEast",    label:"CE East Operations",   val:0, color:"#7e57c2", icon:"🏦" },
+      { key:"badDebt",   label:"Bad Debt",             val:0, color:"#ef5350", icon:"💸" },
+      { key:"assetLoan", label:"Asset Loan Payments",  val:0, color:"#5c6bc0", icon:"🏠" },
+      { key:"legal",     label:"Legal & Professional", val:0, color:"#66bb6a", icon:"⚖" },
+      { key:"gaOther",   label:"G&A Other",            val:0, color:"#78909c", icon:"📎" },
+    ];
+    const idx = Object.fromEntries(b.map(x => [x.key, x]));
+
+    if (!pnl) {
+      // Static fallback from this week's QBO extraction
+      idx.carrier.val    = INCOME_2026.carrierPay;
+      idx.driver.val     = 552199.46;
+      idx.office.val     = 238058.43;
+      idx.contract.val   = 239221.69 + 67469.31;  // contractor payroll + cost of labor (owner ops)
+      idx.taxes.val      = 277707.13 + 28609.11 + 3888.03;  // payroll tax + 401k + child support
+      idx.fuel.val       = 398087.03;
+      idx.truckRent.val  = TRUCK_TOT;
+      idx.trailRent.val  = TRAILER_TOT;
+      idx.truckIns.val   = INS_TOT;
+      idx.otherIns.val   = 66786.96;
+      idx.maint.val      = TRUCK_MAINT + TRAIL_MAINT + STORAGE + UNIFORMS;
+      idx.owner.val      = 233765.59 + 71846.51;  // owner draws + owner purchases
+      idx.ceEast.val     = 112791.90;
+      idx.badDebt.val    = 84000.00;
+      idx.assetLoan.val  = 37568.67;
+      idx.legal.val      = 64197.78;
+      // Remainder bucket
+      const sumSoFar = b.reduce((s, x) => s + x.val, 0);
+      const knownTotal = INCOME_2026.cogs + INCOME_2026.totalExp;
+      idx.gaOther.val    = Math.max(0, knownTotal - sumSoFar);
+      return b;
+    }
+
+    // Live QBO mapping
+    idx.carrier.val = pnl.cogs?.["Carrier Pay"] || 0;
+
+    for (const [k, v] of Object.entries(pnl.expenses || {})) {
+      if (k.includes(" > ")) continue;  // sub-items already in their subtotal
+      if (k === "Total for Salaries and Wages") continue;  // double-counts components below
+      if (k === "Total for Truck/Trailer") continue;  // handled via pnl.truckTrailer
+
+      if (k === "Salaries & Wages - Drivers")      idx.driver.val   += v;
+      else if (k === "Salaries & Wages - Office")  idx.office.val   += v;
+      else if (k === "Contractor Payroll")         idx.contract.val += v;
+      else if (k === "Total for Cost of Labor" || k === "Cost of Labor") idx.contract.val += v;
+      else if (k === "401(k) Expense" || k === "Child Support Payments" || k === "Total for Payroll Taxes") idx.taxes.val += v;
+      else if (k === "Total for Asset Loan Payments")            idx.assetLoan.val += v;
+      else if (k === "Total for Bad Debt Expense")               idx.badDebt.val   += v;
+      else if (k === "Total for Capacity Express East")          idx.ceEast.val    += v;
+      else if (k === "Total for Insurance")                      idx.otherIns.val  += v;
+      else if (k === "Total for Legal and Professional Fees")    idx.legal.val     += v;
+      else if (k === "Total for Owners Draw" || k === "Owner Purchases") idx.owner.val += v;
+      else idx.gaOther.val += v;
+    }
+
+    for (const [k, v] of Object.entries(pnl.truckTrailer || {})) {
+      if (k.startsWith("_")) continue;
+      if (k === "Fuel")                idx.fuel.val      += v;
+      else if (k === "SF Truck Insurance") idx.truckIns.val  += v;
+      else if (k === "Truck Rentals")  idx.truckRent.val += v;
+      else if (k === "Trailer Rentals") idx.trailRent.val += v;
+      else                              idx.maint.val     += v;  // truck maint, trailer maint, storage, uniforms
+    }
+
+    return b;
+  }, [pnl]);
+
+  // Time/aggregate math
+  const days = PERIOD_DAYS;
+  const weeksElapsed = days / 7;
+  const totalWeeklyExp = buckets.reduce((s, b) => s + b.val, 0) / weeksElapsed;
+  const totalAnnualExp = buckets.reduce((s, b) => s + b.val, 0) * (365 / days);
+  const weeklyRev = INCOME_2026.total / weeksElapsed;
+  const opMargin = (weeklyRev - totalWeeklyExp) / weeklyRev * 100;
+
+  // What-if impact math
+  const activeScn = scenarios.filter(s => s.active);
+  const scnWeekly = activeScn.reduce((sum, s) => sum + (s.frequency === "weekly" ? s.amount : s.amount * 12 / 52), 0);
+  const adjWeeklyExp = totalWeeklyExp + scnWeekly;
+  const adjOpMargin = (weeklyRev - adjWeeklyExp) / weeklyRev * 100;
+  const adjAnnualExp = totalAnnualExp + scnWeekly * 52;
+
+  async function addScenario(e) {
+    e.preventDefault();
+    const amt = Number(formAmount);
+    if (!formLabel.trim() || !isFinite(amt) || amt <= 0) return;
+    setAdding(true);
+    try {
+      const r = await fetch("/api/budget-whatifs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label: formLabel.trim(), amount: amt, frequency: formFreq }),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        setSetupErr(j.message || j.error || `HTTP ${r.status}`);
+        return;
+      }
+      setFormLabel(""); setFormAmount(""); setFormFreq("weekly");
+      refreshScenarios();
+    } finally { setAdding(false); }
+  }
+
+  async function toggleScenario(id, active) {
+    await fetch(`/api/budget-whatifs?id=${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active }),
+    });
+    refreshScenarios();
+  }
+  async function deleteScenario(id) {
+    await fetch(`/api/budget-whatifs?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    refreshScenarios();
+  }
+
+  const sortedBuckets = [...buckets].sort((a, b) => b.val - a.val);
+
+  return (
+    <div>
+      <div className="ptitle">Budgeting</div>
+      <div className="psub">QBO P&L weekly run rate · {PERIOD} ({days} days / {weeksElapsed.toFixed(1)} weeks) · {pnl ? "Live QB" : pnlLoading ? "Loading…" : "Static fallback"}</div>
+
+      {pnlError && (
+        <div className="ibox" style={{ borderColor:"rgba(255,82,82,.4)", background:"rgba(255,82,82,.08)" }}>
+          <strong style={{ color:"var(--rd)" }}>⚠ QB P&L fetch failed:</strong> {pnlError} · using static fallback from last QB extraction
+        </div>
+      )}
+
+      {/* Summary KPIs */}
+      <div className="g4" style={{ marginBottom:14 }}>
+        <div className="kpi" style={{ borderTop:"3px solid #ff5252" }}>
+          <div className="klbl">Total Weekly Spend</div>
+          <div className="kval" style={{ color:"#ff5252" }}>{fd(totalWeeklyExp, 0)}</div>
+          <div className="ksub">{fd(totalAnnualExp, 0)} annualized</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
+          <div className="klbl">Weekly Revenue (avg)</div>
+          <div className="kval" style={{ color:"#3ddc84" }}>{fd(weeklyRev, 0)}</div>
+          <div className="ksub">{weeksElapsed.toFixed(1)} weeks · {fd(INCOME_2026.total, 0)} YTD</div>
+        </div>
+        <div className="kpi" style={{ borderTop:`3px solid ${opMargin>=0?"#3ddc84":"#ff5252"}` }}>
+          <div className="klbl">Weekly Operating Margin</div>
+          <div className="kval" style={{ color: opMargin>=0?"#3ddc84":"#ff5252" }}>{fp(opMargin)}</div>
+          <div className="ksub">{fd(weeklyRev - totalWeeklyExp, 0)} weekly delta</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
+          <div className="klbl">With What-Ifs</div>
+          <div className="kval" style={{ color: adjOpMargin>=0?"#3ddc84":"#ff5252" }}>{fp(adjOpMargin)}</div>
+          <div className="ksub">{fd(adjWeeklyExp, 0)}/wk · {activeScn.length} active scenarios</div>
+        </div>
+      </div>
+
+      {/* Budget table */}
+      <div className="card" style={{ marginBottom:14 }}>
+        <div className="ctit">📋 Weekly Budget by Category · QBO P&L (sorted by size)</div>
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th style={{ textAlign:"left" }}>Category</th>
+              <th>YTD ({days}d)</th>
+              <th>Weekly</th>
+              <th>Monthly (~4.33wk)</th>
+              <th>Annualized</th>
+              <th>% of Weekly Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedBuckets.map((b, i) => {
+              const weekly = b.val / weeksElapsed;
+              const monthly = weekly * 4.33;
+              const annual = b.val * (365 / days);
+              const pctOfRev = weeklyRev > 0 ? (weekly / weeklyRev * 100) : 0;
+              return (
+                <tr key={b.key} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
+                  <td>
+                    <span style={{ display:"inline-block", width:24 }}>{b.icon}</span>
+                    <span style={{ color:b.color, fontWeight:600 }}>{b.label}</span>
+                  </td>
+                  <td>{fd(b.val, 0)}</td>
+                  <td style={{ color:b.color, fontWeight:700 }}>{fd(weekly, 0)}</td>
+                  <td style={{ color:"var(--mu)" }}>{fd(monthly, 0)}</td>
+                  <td style={{ color:"var(--mu)" }}>{fd(annual, 0)}</td>
+                  <td style={{ color: pctOfRev > 30 ? "var(--rd)" : pctOfRev > 10 ? "var(--ye)" : "var(--mu)" }}>{fp(pctOfRev)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>TOTAL · {sortedBuckets.length} categories</td>
+              <td>{fd(sortedBuckets.reduce((s,b)=>s+b.val,0), 0)}</td>
+              <td>{fd(totalWeeklyExp, 0)}</td>
+              <td>{fd(totalWeeklyExp * 4.33, 0)}</td>
+              <td>{fd(totalAnnualExp, 0)}</td>
+              <td>{fp(totalWeeklyExp / weeklyRev * 100)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {/* What-If Simulator */}
+      <div className="card" style={{ marginBottom:14 }}>
+        <div className="ctit">🎯 What-If Simulator · Add hypothetical expenses</div>
+
+        {setupErr && (
+          <div className="ibox" style={{ borderColor:"rgba(245,197,66,.5)", background:"rgba(245,197,66,.08)", marginBottom:14 }}>
+            <strong style={{ color:"var(--ye)" }}>⚙ Setup needed:</strong> {setupErr}
+          </div>
+        )}
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+          {/* Add form */}
+          <form onSubmit={addScenario} style={{ background:"var(--s2)", border:"1px solid var(--bd)", borderRadius:4, padding:14 }}>
+            <div className="ctit" style={{ fontSize:10, marginBottom:10 }}>Add Scenario</div>
+            <div className="fld">
+              <label className="lbl">Label</label>
+              <input className="inp" type="text" value={formLabel} onChange={e=>setFormLabel(e.target.value)} placeholder="e.g. New dispatcher" disabled={adding} />
+            </div>
+            <div className="row2">
+              <div className="fld">
+                <label className="lbl">Amount ($)</label>
+                <input className="inp" type="number" min="0" step="0.01" value={formAmount} onChange={e=>setFormAmount(e.target.value)} placeholder="1400" disabled={adding} />
+              </div>
+              <div className="fld">
+                <label className="lbl">Frequency</label>
+                <select className="inp" value={formFreq} onChange={e=>setFormFreq(e.target.value)} disabled={adding}>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" className="btn" disabled={adding || !formLabel.trim() || !formAmount}>
+              {adding ? "Adding…" : "Add Scenario"}
+            </button>
+          </form>
+
+          {/* Active impact summary */}
+          <div style={{ background:"var(--s2)", border:"1px solid var(--bd)", borderRadius:4, padding:14 }}>
+            <div className="ctit" style={{ fontSize:10, marginBottom:10 }}>Combined Impact (active only)</div>
+            <div className="g2" style={{ gap:10 }}>
+              <div className="met">
+                <div className="mlbl">Added /wk</div>
+                <div className="mval" style={{ color:"#f5c542", fontSize:22 }}>{fd(scnWeekly, 0)}</div>
+                <div className="msub">{fd(scnWeekly * 4.33, 0)}/mo · {fd(scnWeekly * 52, 0)}/yr</div>
+              </div>
+              <div className="met">
+                <div className="mlbl">Margin Δ</div>
+                <div className="mval" style={{ color: (adjOpMargin-opMargin) >= 0 ? "#3ddc84" : "#ff5252", fontSize:22 }}>
+                  {adjOpMargin - opMargin >= 0 ? "+" : ""}{(adjOpMargin - opMargin).toFixed(1)} pts
+                </div>
+                <div className="msub">{fp(opMargin)} → {fp(adjOpMargin)}</div>
+              </div>
+              <div className="met">
+                <div className="mlbl">New weekly burn</div>
+                <div className="mval" style={{ color:"#ff5252", fontSize:22 }}>{fd(adjWeeklyExp, 0)}</div>
+                <div className="msub">vs {fd(totalWeeklyExp, 0)} baseline</div>
+              </div>
+              <div className="met">
+                <div className="mlbl">New annual burn</div>
+                <div className="mval" style={{ color:"#b39ddb", fontSize:22 }}>{fd(adjAnnualExp, 0)}</div>
+                <div className="msub">+{fd(adjAnnualExp - totalAnnualExp, 0)}/yr</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scenarios list */}
+        <div style={{ marginTop:14 }}>
+          <div className="ctit" style={{ fontSize:10, marginBottom:10 }}>Saved Scenarios · {scenarios.length} total · {activeScn.length} active</div>
+          {scnLoading && <div style={{ color:"var(--mu)", fontSize:11 }}>Loading…</div>}
+          {!scnLoading && scenarios.length === 0 && !setupErr && (
+            <div style={{ color:"var(--mu)", fontSize:11, padding:10, textAlign:"center" }}>No scenarios yet. Add one above to see its weekly impact.</div>
+          )}
+          {scenarios.length > 0 && (
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th style={{ textAlign:"left" }}>Label</th>
+                  <th>Amount</th>
+                  <th>Frequency</th>
+                  <th>Weekly Equivalent</th>
+                  <th>Annualized</th>
+                  <th>Active</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {scenarios.map((s, i) => {
+                  const weekly = s.frequency === "weekly" ? s.amount : s.amount * 12 / 52;
+                  return (
+                    <tr key={s.id} style={{ background:i%2===0?"var(--s2)":"transparent", opacity:s.active?1:0.5 }}>
+                      <td style={{ fontWeight:600 }}>{s.label}</td>
+                      <td>{fd(s.amount, 2)}</td>
+                      <td style={{ color:"var(--mu)" }}>{s.frequency}</td>
+                      <td style={{ color:"#f5c542", fontWeight:700 }}>{fd(weekly, 0)}/wk</td>
+                      <td style={{ color:"var(--mu)" }}>{fd(weekly * 52, 0)}</td>
+                      <td>
+                        <button onClick={()=>toggleScenario(s.id, !s.active)} style={{
+                          background:"transparent", border:`1px solid ${s.active?"var(--gn)":"var(--mu)"}`,
+                          color:s.active?"var(--gn)":"var(--mu)", padding:"3px 10px", borderRadius:3,
+                          fontSize:10, fontFamily:"var(--f2)", letterSpacing:1, cursor:"pointer", textTransform:"uppercase",
+                        }}>{s.active ? "✓ ON" : "OFF"}</button>
+                      </td>
+                      <td>
+                        <button onClick={()=>{ if (confirm(`Delete "${s.label}"?`)) deleteScenario(s.id); }} style={{
+                          background:"transparent", border:"1px solid var(--rd)", color:"var(--rd)",
+                          padding:"3px 8px", borderRadius:3, fontSize:11, cursor:"pointer",
+                        }}>×</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 // ── WEEKLY/MONTHLY CHECKLIST ──────────────────────────────────
 function Checklist() {
   const getWeekLabel = () => {
@@ -8312,6 +8697,7 @@ export default function App() {
     if (tab === "revenue")  return <RevenueDashboard />;
     if (tab === "ceeast")   return <CEEast />;
     if (tab === "cashflow") return <CashFlowDashboard />;
+    if (tab === "budget")   return <Budgeting />;
     if (tab === "office")   return <OfficeStaff />;
     if (tab === "settings") return <DataSettings />;
     if (tab === "checklist") return <Checklist />;
