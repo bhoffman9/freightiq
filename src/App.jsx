@@ -8005,22 +8005,42 @@ function Budgeting() {
     const parsed = pnl.parsed || pnl;
     idx.carrier.val = parsed.cogs?.["Carrier Pay"] || 0;
 
-    for (const [k, v] of Object.entries(parsed.expenses || {})) {
-      if (k.includes(" > ")) continue;  // sub-items already in their subtotal
-      if (k === "Total for Salaries and Wages") continue;  // double-counts components below
-      if (k === "Total for Truck/Trailer") continue;  // handled via pnl.truckTrailer
+    // Sections where we use the "Total for X" subtotal — skip any " > "
+    // sub-items under these to avoid double-counting.
+    const subSectionsUseSubtotal = new Set([
+      "Asset Loan Payments", "Bad Debt Expense", "Capacity Express East",
+      "Insurance", "Legal and Professional Fees", "Owners Draw",
+      "Payroll Taxes", "Travel Expenses",
+    ]);
 
-      if (k === "Salaries & Wages - Drivers")      idx.driver.val   += v;
-      else if (k === "Salaries & Wages - Office")  idx.office.val   += v;
-      else if (k === "Contractor Payroll")         idx.contract.val += v;
-      else if (k === "Total for Cost of Labor" || k === "Cost of Labor") idx.contract.val += v;
-      else if (k === "401(k) Expense" || k === "Child Support Payments" || k === "Total for Payroll Taxes") idx.taxes.val += v;
-      else if (k === "Total for Asset Loan Payments")            idx.assetLoan.val += v;
-      else if (k === "Total for Bad Debt Expense")               idx.badDebt.val   += v;
-      else if (k === "Total for Capacity Express East")          idx.ceEast.val    += v;
-      else if (k === "Total for Insurance")                      idx.otherIns.val  += v;
-      else if (k === "Total for Legal and Professional Fees")    idx.legal.val     += v;
-      else if (k === "Total for Owners Draw" || k === "Owner Purchases") idx.owner.val += v;
+    for (const [k, v] of Object.entries(parsed.expenses || {})) {
+      // Skip "Total for Salaries and Wages" (its components are summed individually below)
+      if (k === "Total for Salaries and Wages") continue;
+      if (k === "Total for Truck/Trailer") continue;  // handled via parsed.truckTrailer
+
+      // Strip parent-section prefix where present. For sections we sum via
+      // subtotal, skip the sub-items entirely. Otherwise use the suffix as the
+      // match key (so "Salaries and Wages > Salaries & Wages - Drivers" maps
+      // to driverLabor).
+      let key = k;
+      if (k.includes(" > ")) {
+        const section = k.slice(0, k.indexOf(" > "));
+        if (subSectionsUseSubtotal.has(section)) continue;
+        key = k.slice(k.indexOf(" > ") + 3);
+      }
+
+      if (key === "Salaries & Wages - Drivers")      idx.driver.val   += v;
+      else if (key === "Salaries & Wages - Office")  idx.office.val   += v;
+      else if (key === "Contractor Payroll")         idx.contract.val += v;
+      else if (key === "Total for Cost of Labor" || key === "Cost of Labor" || key === "Owner Operators") idx.contract.val += v;
+      else if (key === "401(k) Expense" || key === "Child Support Payments") idx.taxes.val += v;
+      else if (key === "Total for Payroll Taxes" || key === "Total Payroll Taxes") idx.taxes.val += v;
+      else if (key === "Total for Asset Loan Payments")            idx.assetLoan.val += v;
+      else if (key === "Total for Bad Debt Expense")               idx.badDebt.val   += v;
+      else if (key === "Total for Capacity Express East")          idx.ceEast.val    += v;
+      else if (key === "Total for Insurance")                      idx.otherIns.val  += v;
+      else if (key === "Total for Legal and Professional Fees")    idx.legal.val     += v;
+      else if (key === "Total for Owners Draw" || key === "Owner Purchases") idx.owner.val += v;
       else idx.gaOther.val += v;
     }
 
