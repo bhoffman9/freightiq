@@ -73,15 +73,18 @@ freightiq/
 │   ├── _qbo-helpers.js     # Shared QB OAuth token management + P&L parser
 │   ├── ai.js               # Vercel serverless — proxies Claude API requests
 │   ├── alvys-loads.js       # Vercel serverless — fetches live loads from Alvys TMS
+│   ├── budget-whatifs.js    # Vercel serverless — Supabase CRUD for Budgeting tab what-if scenarios
 │   ├── distance.js          # Vercel serverless — Google Maps Distance Matrix proxy
 │   ├── qbo-pnl.js           # Vercel serverless — QuickBooks P&L with period selector
 │   ├── qbo-bs.js            # Vercel serverless — QuickBooks Balance Sheet
 │   └── samsara-miles.js     # Vercel serverless — Samsara IFTA mileage per truck/state
 ├── src/
 │   ├── main.jsx            # React entry point
-│   └── App.jsx             # Entire dashboard (~7,500 lines, monolithic)
+│   └── App.jsx             # Entire dashboard (~8,500 lines, monolithic)
 ├── public/
 │   └── metrics.json        # Auto-generated KPIs (built by extract-metrics.js)
+├── supabase/migrations/    # SQL migrations (run manually in Supabase SQL editor)
+│   └── freightiq_budget_whatifs.sql
 ├── incoming-freightiq/     # Drop weekly data files here for processing
 ├── extract-metrics.js      # Build script — parses App.jsx → metrics.json
 ├── index.html
@@ -98,8 +101,9 @@ freightiq/
 | `POST /api/ai` | POST | Proxies requests to Anthropic Claude API (keeps key server-side) |
 | `GET /api/alvys-loads` | GET | Authenticates with Alvys TMS, returns live load pipeline with lanes, revenue, RPM, statuses |
 | `GET /api/distance?origin=X&destination=Y` | GET | Google Maps Distance Matrix proxy — returns driving miles + hours |
-| `GET /api/qbo-pnl?company=X&period=Y` | GET | QuickBooks P&L — companies: `ce_sf_combined`, `ce_east`. Periods: `ytd`, `this_week`, `last_week`, `jan`-`dec`, or `start_date`/`end_date` |
+| `GET /api/qbo-pnl?company=X&period=Y` | GET | QuickBooks P&L — companies: `ce_sf_combined`, `ce_east`. Periods: `ytd`, `this_week`, `last_week`, `jan`-`dec`, or `start_date`/`end_date`. **Returns `{ company, period, fiq, parsed }` — expenses/cogs/truckTrailer dicts live under `parsed.*`, not top-level. See `parsePnlReport()` in `_qbo-helpers.js` for the bucket-mapping gotchas (nested-section prefix loss, etc.)** |
 | `GET /api/qbo-bs?company=X` | GET | QuickBooks Balance Sheet — returns assets, liabilities, equity with account detail |
+| `GET/POST/PATCH/DELETE /api/budget-whatifs` | * | Supabase CRUD for Budgeting tab what-if scenarios. POST body `{ label, amount, frequency: 'weekly'\|'monthly' }`. Backed by `freightiq_budget_whatifs` table — returns 503 `table-not-found` until migration is applied |
 | `GET /api/samsara-miles?year=2026` | GET | Samsara fleet mileage. **Hybrid:** finalized quarters via IFTA endpoint (per-state breakdown), in-progress quarter via `/fleet/vehicles/stats/history` odometer delta (no per-state breakdown until IFTA closes). Returns `inProgressQuarter`, `inProgressSource` (e.g. `"obd:31 + gps:0"`), per-truck `iftaMiles` + `inProgressMiles`. Drives fleet `MILES` constant + CPM at runtime via `recomputeDerived()` + `dataVersion` remount |
 
 **Other apps consume these endpoints:**
@@ -142,6 +146,7 @@ freightiq/
 | Income | `IncomeDashboard()` | Live QB P&L + weekly/monthly income with YoY comparison |
 | CE East | `CEEast()` | Live QB P&L + Balance Sheet, Owner Payback calculator |
 | Cash Flow | `CashFlowDashboard()` | Cash flow analysis |
+| Budgeting | `Budgeting()` | QBO P&L rolled into 19 weekly-budget buckets + Supabase-backed what-if simulator. See "Budgeting tab" section below for bucket-mapping rules |
 | Upload | `DataSettings()` | Drop CSV/XLSX files, AI auto-maps columns |
 | Checklist | `Checklist()` | Weekly/monthly data update tasks |
 
@@ -152,6 +157,34 @@ freightiq/
   - `EquipmentContext` — truck/trailer AP aging data from external dashboard
 - **Local state** via `useState` / `useRef` / `useEffect` in each component
 - No Redux, Zustand, or other state library
+
+### Budgeting tab — QBO P&L bucket mapping
+
+The Budgeting tab (`Budgeting()` component in App.jsx) rolls every QBO P&L expense line into 19 investor-readable buckets so the user can see weekly run-rate and add what-if scenarios. The mapping logic is non-obvious — these are the gotchas that cost time and would cost it again:
+
+**Response shape:** `/api/qbo-pnl` returns `{ company, period, fiq, parsed }`. The dicts are nested under `parsed.*` (`parsed.expenses`, `parsed.cogs`, `parsed.truckTrailer`, `parsed.totals`) — NOT top-level. The `fiq` object is a flat KPI subset used elsewhere; don't confuse the two.
+
+**Nested-section prefix:** `parsePnlReport()` stores nested rows as `"Parent Section > Item Name"`. Subtotals store as `"Total for X"` or sometimes `"Total X"` (QBO is inconsistent — match both spellings). Example:
+- `"Salaries and Wages > Salaries & Wages - Drivers"` — direct child of Salaries section
+- `"Payroll Taxes > Federal Tax"` — direct child of Payroll Taxes sub-section
+- `"Total for Salaries and Wages"` — subtotal at top level
+- `"Total Payroll Taxes"` — also subtotal at top level (no "for")
+
+**Two-level nesting loses parent context.** When QBO nests sections (e.g. `Capacity Express East > Travel Expenses - CE East > Flights - CE East`), the parser only carries one level of prefix. The Flights row stores as `"Travel Expenses - CE East > Flights - CE East"` — the `Capacity Express East` context is gone. If you skip CE East's children via the `Capacity Express East` prefix, the CE East travel sub-items still leak through. Fix: add the inner section name (`Travel Expenses - CE East`) to `subSectionsUseSubtotal` AND skip the subtotal key (`Total Travel Expenses - CE East`) explicitly because it's already inside `Total for Capacity Express East`.
+
+**Two ways a category gets counted (don't mix them up):**
+
+1. **Use the subtotal.** Sections with sibling line items that aggregate (Asset Loans, Bad Debt, CE East, Cost of Labor, Insurance, Legal, Owner Draws, Payroll Taxes, Travel Expenses, Travel Expenses - CE East) — match the `"Total for X"` key, and add the section name to `subSectionsUseSubtotal` so the `>`-prefixed children are skipped.
+
+2. **Use the components.** Sections where the subtotal bundles things you want separated (Salaries and Wages → drivers + office + contractor + payroll taxes are different buckets) — skip the `"Total for ..."` subtotal explicitly, and consume the `>`-prefixed children (strip the prefix when matching). Otherwise you'd double-count: subtotal + components.
+
+**COGS bucket** = ALL `parsed.cogs` values, not just `Carrier Pay`. Flexent Funding Fees + Triumph Merchant Fees (~$69K YTD) are also COGS — sum them all into the carrier bucket.
+
+**Net margin uses Net Income, not Net Operating Income.** Other Income (Triumph withholding refunds + interest) adds ~$77K YTD that's NOT in revenue−spend. Use `INCOME_2026.netIncome / INCOME_2026.total`, which matches the headline on the Income tab.
+
+**What-if math:** each added $/wk reduces weekly net income 1:1. Show clearing in dollars (before vs after), not just margin points — the dollar number is what investors care about.
+
+**Supabase what-if persistence:** scenarios live in `freightiq_budget_whatifs` (uuid id, label, amount, frequency, active, created_at, updated_at). RLS enabled with permissive policy (service key bypasses anyway). Migration SQL in `supabase/migrations/freightiq_budget_whatifs.sql` — run manually in the Supabase SQL editor; the read-only MCP can't create tables. The API returns `503 { error: 'table-not-found' }` until the migration is applied, and the UI surfaces that as a yellow setup banner so it's obvious what to do.
 
 ### Runtime live-data mutation pattern
 
