@@ -8001,10 +8001,11 @@ function Budgeting() {
       return b;
     }
 
-    // Live QBO mapping
-    idx.carrier.val = pnl.cogs?.["Carrier Pay"] || 0;
+    // Live QBO mapping — parsed data lives under pnl.parsed
+    const parsed = pnl.parsed || pnl;
+    idx.carrier.val = parsed.cogs?.["Carrier Pay"] || 0;
 
-    for (const [k, v] of Object.entries(pnl.expenses || {})) {
+    for (const [k, v] of Object.entries(parsed.expenses || {})) {
       if (k.includes(" > ")) continue;  // sub-items already in their subtotal
       if (k === "Total for Salaries and Wages") continue;  // double-counts components below
       if (k === "Total for Truck/Trailer") continue;  // handled via pnl.truckTrailer
@@ -8023,7 +8024,7 @@ function Budgeting() {
       else idx.gaOther.val += v;
     }
 
-    for (const [k, v] of Object.entries(pnl.truckTrailer || {})) {
+    for (const [k, v] of Object.entries(parsed.truckTrailer || {})) {
       if (k.startsWith("_")) continue;
       if (k === "Fuel")                idx.fuel.val      += v;
       else if (k === "SF Truck Insurance") idx.truckIns.val  += v;
