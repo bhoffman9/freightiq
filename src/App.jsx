@@ -8063,13 +8063,18 @@ function Budgeting() {
   const totalWeeklyExp = buckets.reduce((s, b) => s + b.val, 0) / weeksElapsed;
   const totalAnnualExp = buckets.reduce((s, b) => s + b.val, 0) * (365 / days);
   const weeklyRev = INCOME_2026.total / weeksElapsed;
-  const opMargin = (weeklyRev - totalWeeklyExp) / weeklyRev * 100;
+  // Net margin uses actual Net Income (= revenue − COGS − opex + other income),
+  // not just revenue − spend, so the Triumph withholding refunds & interest are
+  // included. Matches Income tab's headline net margin.
+  const netMargin = INCOME_2026.netIncome / INCOME_2026.total * 100;
+  const weeklyNetIncome = INCOME_2026.netIncome / weeksElapsed;
 
-  // What-if impact math
+  // What-if impact math — each added $/wk reduces weekly net income 1:1
   const activeScn = scenarios.filter(s => s.active);
   const scnWeekly = activeScn.reduce((sum, s) => sum + (s.frequency === "weekly" ? s.amount : s.amount * 12 / 52), 0);
   const adjWeeklyExp = totalWeeklyExp + scnWeekly;
-  const adjOpMargin = (weeklyRev - adjWeeklyExp) / weeklyRev * 100;
+  const adjNetIncome = weeklyNetIncome - scnWeekly;
+  const adjNetMargin = adjNetIncome / weeklyRev * 100;
   const adjAnnualExp = totalAnnualExp + scnWeekly * 52;
 
   async function addScenario(e) {
@@ -8131,15 +8136,15 @@ function Budgeting() {
           <div className="kval" style={{ color:"#3ddc84" }}>{fd(weeklyRev, 0)}</div>
           <div className="ksub">{weeksElapsed.toFixed(1)} weeks · {fd(INCOME_2026.total, 0)} YTD</div>
         </div>
-        <div className="kpi" style={{ borderTop:`3px solid ${opMargin>=0?"#3ddc84":"#ff5252"}` }}>
-          <div className="klbl">Weekly Operating Margin</div>
-          <div className="kval" style={{ color: opMargin>=0?"#3ddc84":"#ff5252" }}>{fp(opMargin)}</div>
-          <div className="ksub">{fd(weeklyRev - totalWeeklyExp, 0)} weekly delta</div>
+        <div className="kpi" style={{ borderTop:`3px solid ${netMargin>=0?"#3ddc84":"#ff5252"}` }}>
+          <div className="klbl">Net Income Margin</div>
+          <div className="kval" style={{ color: netMargin>=0?"#3ddc84":"#ff5252" }}>{fp(netMargin)}</div>
+          <div className="ksub">{fd(weeklyNetIncome, 0)}/wk net income · {fd(INCOME_2026.netIncome, 0)} YTD</div>
         </div>
         <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
           <div className="klbl">With What-Ifs</div>
-          <div className="kval" style={{ color: adjOpMargin>=0?"#3ddc84":"#ff5252" }}>{fp(adjOpMargin)}</div>
-          <div className="ksub">{fd(adjWeeklyExp, 0)}/wk · {activeScn.length} active scenarios</div>
+          <div className="kval" style={{ color: adjNetMargin>=0?"#3ddc84":"#ff5252" }}>{fp(adjNetMargin)}</div>
+          <div className="ksub">{fd(adjWeeklyExp, 0)}/wk spend · {activeScn.length} active scenarios</div>
         </div>
       </div>
 
@@ -8237,11 +8242,11 @@ function Budgeting() {
                 <div className="msub">{fd(scnWeekly * 4.33, 0)}/mo · {fd(scnWeekly * 52, 0)}/yr</div>
               </div>
               <div className="met">
-                <div className="mlbl">Margin Δ</div>
-                <div className="mval" style={{ color: (adjOpMargin-opMargin) >= 0 ? "#3ddc84" : "#ff5252", fontSize:22 }}>
-                  {adjOpMargin - opMargin >= 0 ? "+" : ""}{(adjOpMargin - opMargin).toFixed(1)} pts
+                <div className="mlbl">Net Margin Δ</div>
+                <div className="mval" style={{ color: (adjNetMargin-netMargin) >= 0 ? "#3ddc84" : "#ff5252", fontSize:22 }}>
+                  {adjNetMargin - netMargin >= 0 ? "+" : ""}{(adjNetMargin - netMargin).toFixed(1)} pts
                 </div>
-                <div className="msub">{fp(opMargin)} → {fp(adjOpMargin)}</div>
+                <div className="msub">{fp(netMargin)} → {fp(adjNetMargin)}</div>
               </div>
               <div className="met">
                 <div className="mlbl">New weekly burn</div>
