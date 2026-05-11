@@ -121,6 +121,7 @@ let FUEL_TOT  = 364414.57;  // EFS only — thru May 9 (no Mudflap this period)
 let GALLONS   = 68737.70;   // EFS 68,737.70
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
 let MILES     = 454000.0;     // Samsara GPS, Jan 1 – May 9, 2026 (static baseline = last live Samsara snapshot; live /api/samsara-miles refines on each page load)
+let TRUCK_COUNT = 42;       // Active fleet trucks — refined on App mount from /api/samsara-miles truckCount
 let TOTAL_HRS  = 23962.65;  // Payroll hours — driver-only (office excluded), thru May 9
 let INS_WEEK  = 6375;
 let INS_TOT    = 128624.45;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru May 9
@@ -4546,6 +4547,88 @@ function IncomeDashboard() {
             </table>
           </div>
 
+          {/* Operational Efficiency · Per-Worker Productivity */}
+          {(() => {
+            const daysInYear = 365;
+            const annFactor = daysInYear / ytdDays;
+            const projRevEff = INCOME_2026.total * annFactor;
+
+            const activeDrivers = PAYROLL.filter(p => p.hours > 0).length;
+            const activeContractors = CONTRACTORS.filter(c => c.total > 0).length;
+            // Office = not *Former (terminated) and not dual (those count as contractors)
+            const activeOffice = OFFICE_W2.filter(e => {
+              const n = e.note || "";
+              if (e.dual) return false;
+              if (n.includes("*Former")) return false;
+              return true;
+            }).length;
+            const warehouseCount = WAREHOUSE.length;
+            const totalFTE = activeDrivers + activeOffice + warehouseCount + activeContractors;
+            const truckCount = TRUCK_COUNT;
+            const driverOffice = activeOffice > 0 ? activeDrivers / activeOffice : 0;
+
+            const revPerDriver = projRevEff / activeDrivers;
+            const revPerTruck  = projRevEff / truckCount;
+            const revPerFTE    = projRevEff / totalFTE;
+
+            const tiles = [
+              {
+                label: "Revenue / Driver", val: revPerDriver, color: "#f47820",
+                sub: `${activeDrivers} active drivers · annualized`,
+                bench: "OTR industry avg ~$200K/yr (ATA)",
+                benchPass: revPerDriver >= 200000,
+              },
+              {
+                label: "Revenue / Truck", val: revPerTruck, color: "#4fc3f7",
+                sub: `${truckCount} trucks · annualized`,
+                bench: "Asset carrier avg ~$210K/yr",
+                benchPass: revPerTruck >= 210000,
+              },
+              {
+                label: "Revenue / Total FTE", val: revPerFTE, color: "#3ddc84",
+                sub: `${activeDrivers}D · ${activeOffice}O · ${warehouseCount}W · ${activeContractors}C = ${totalFTE} FTE`,
+                bench: "Asset+broker hybrid · varies wide",
+                benchPass: null,
+              },
+              {
+                label: "Driver : Office Leverage", val: null, ratio: driverOffice, color: "#b39ddb",
+                sub: `${activeDrivers} drivers ÷ ${activeOffice} office FTE`,
+                bench: "Brokerage 5:1+ · Asset 10:1+",
+                benchPass: driverOffice >= 5,
+              },
+            ];
+
+            return (
+              <div className="card" style={{ marginTop:14 }}>
+                <div className="ctit">⚙️ Operational Efficiency · Per-Worker Productivity</div>
+                <div className="ibox" style={{ marginBottom:14 }}>
+                  <strong style={{ color:"#4fc3f7" }}>Investor-grade unit economics.</strong> Revenue per worker normalized
+                  to a full-year run rate ({fd(projRevEff,0)} projected from {ytdDays} actual days). Compare against industry
+                  benchmarks for asset-based trucking and freight brokerage.
+                </div>
+                <div className="g4">
+                  {tiles.map(t => (
+                    <div key={t.label} className="kpi" style={{ borderTop:`3px solid ${t.color}` }}>
+                      <div className="klbl">{t.label}</div>
+                      <div style={{ fontFamily:"var(--f2)", fontSize:30, fontWeight:900, color:t.color, lineHeight:1, marginTop:4 }}>
+                        {t.val != null ? fd(t.val, 0) : `${t.ratio.toFixed(1)}:1`}
+                      </div>
+                      <div className="ksub" style={{ marginTop:6 }}>{t.sub}</div>
+                      <div style={{
+                        fontSize:10, marginTop:8, padding:"4px 7px", borderRadius:2,
+                        background: t.benchPass===true?"rgba(61,220,132,.1)":t.benchPass===false?"rgba(255,82,82,.08)":"rgba(90,99,112,.1)",
+                        color: t.benchPass===true?"var(--gn)":t.benchPass===false?"var(--rd)":"var(--mu)",
+                        border: `1px solid ${t.benchPass===true?"rgba(61,220,132,.3)":t.benchPass===false?"rgba(255,82,82,.25)":"var(--bd)"}`,
+                      }}>
+                        {t.benchPass===true?"✓ ":t.benchPass===false?"⚠ ":""}{t.bench}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Run Rate / Full-Year Projections */}
           {(() => {
             const daysInYear = 365;
@@ -8174,6 +8257,7 @@ export default function App() {
       if (cached && typeof cached.miles === "number" && cached.miles > 0
           && (Date.now() - cached.ts) < MAX_AGE_MS) {
         MILES = cached.miles;
+        if (typeof cached.trucks === "number" && cached.trucks > 0) TRUCK_COUNT = cached.trucks;
         recomputeDerived();
         setDataVersion(v => v + 1);
       }
@@ -8184,9 +8268,10 @@ export default function App() {
       .then(d => {
         if (d && typeof d.fleetTotal === "number" && d.fleetTotal > 0) {
           MILES = d.fleetTotal;
+          if (typeof d.truckCount === "number" && d.truckCount > 0) TRUCK_COUNT = d.truckCount;
           recomputeDerived();
           setDataVersion(v => v + 1);
-          try { localStorage.setItem(CACHE_KEY, JSON.stringify({ miles: d.fleetTotal, ts: Date.now() })); } catch (e) {}
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify({ miles: d.fleetTotal, trucks: d.truckCount, ts: Date.now() })); } catch (e) {}
         }
       })
       .catch(e => console.warn("Samsara live fetch failed:", e?.message || e));
