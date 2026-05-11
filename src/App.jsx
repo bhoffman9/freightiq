@@ -8161,7 +8161,7 @@ function Budgeting() {
         <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
           <div className="klbl">With What-Ifs</div>
           <div className="kval" style={{ color: adjNetMargin>=0?"#3ddc84":"#ff5252" }}>{fp(adjNetMargin)}</div>
-          <div className="ksub">{fd(adjWeeklyExp, 0)}/wk spend · {activeScn.length} active scenarios</div>
+          <div className="ksub">{fd(adjNetIncome, 0)}/wk clearing · {activeScn.length} active scenarios</div>
         </div>
       </div>
 
@@ -8266,14 +8266,14 @@ function Budgeting() {
                 <div className="msub">{fp(netMargin)} → {fp(adjNetMargin)}</div>
               </div>
               <div className="met">
-                <div className="mlbl">New weekly burn</div>
-                <div className="mval" style={{ color:"#ff5252", fontSize:22 }}>{fd(adjWeeklyExp, 0)}</div>
-                <div className="msub">vs {fd(totalWeeklyExp, 0)} baseline</div>
+                <div className="mlbl">Weekly Clearing (after)</div>
+                <div className="mval" style={{ color: adjNetIncome >= 0 ? "#3ddc84" : "#ff5252", fontSize:22 }}>{fd(adjNetIncome, 0)}</div>
+                <div className="msub">before {fd(weeklyNetIncome, 0)} · Δ {scnWeekly >= 0 ? "−" : "+"}{fd(Math.abs(scnWeekly), 0)}</div>
               </div>
               <div className="met">
-                <div className="mlbl">New annual burn</div>
-                <div className="mval" style={{ color:"#b39ddb", fontSize:22 }}>{fd(adjAnnualExp, 0)}</div>
-                <div className="msub">+{fd(adjAnnualExp - totalAnnualExp, 0)}/yr</div>
+                <div className="mlbl">Annual Clearing (after)</div>
+                <div className="mval" style={{ color: adjNetIncome * 52 >= 0 ? "#3ddc84" : "#ff5252", fontSize:22 }}>{fd(adjNetIncome * 52, 0)}</div>
+                <div className="msub">before {fd(weeklyNetIncome * 52, 0)} · Δ {scnWeekly >= 0 ? "−" : "+"}{fd(Math.abs(scnWeekly * 52), 0)}</div>
               </div>
             </div>
           </div>
