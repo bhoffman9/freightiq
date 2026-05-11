@@ -7955,24 +7955,26 @@ function Budgeting() {
 
   // Roll expense lines into investor-readable buckets
   const buckets = useMemo(() => {
+    // Brighter color variants chosen for legibility against the #0b0d10 / #181c26
+    // backgrounds — replaces lavender / indigo / gray washouts.
     const b = [
-      { key:"carrier",   label:"Carrier Pay (COGS)",  val:0, color:"#ff5252", icon:"📦" },
+      { key:"carrier",   label:"Carrier Pay (COGS)",  val:0, color:"#ff6b6b", icon:"📦" },
       { key:"driver",    label:"Driver Labor",         val:0, color:"#f47820", icon:"🚚" },
       { key:"office",    label:"Office Labor",         val:0, color:"#4fc3f7", icon:"🏢" },
-      { key:"contract",  label:"Contractor Payroll",   val:0, color:"#f5c542", icon:"📋" },
-      { key:"taxes",     label:"Payroll Taxes & Benefits", val:0, color:"#b39ddb", icon:"💼" },
+      { key:"contract",  label:"Contractor Payroll",   val:0, color:"#fbbf24", icon:"📋" },
+      { key:"taxes",     label:"Payroll Taxes & Benefits", val:0, color:"#c4b5fd", icon:"💼" },
       { key:"fuel",      label:"Fuel",                 val:0, color:"#ff8a65", icon:"⛽" },
-      { key:"truckRent", label:"Truck Rentals",        val:0, color:"#a78bfa", icon:"🚛" },
-      { key:"trailRent", label:"Trailer Rentals",      val:0, color:"#26a69a", icon:"🚜" },
-      { key:"truckIns",  label:"Truck Insurance",      val:0, color:"#ec407a", icon:"🛡" },
-      { key:"otherIns",  label:"Other Insurance",      val:0, color:"#ab47bc", icon:"🏥" },
-      { key:"maint",     label:"Maint & Storage",      val:0, color:"#d97706", icon:"🔧" },
+      { key:"truckRent", label:"Truck Rentals",        val:0, color:"#c084fc", icon:"🚛" },
+      { key:"trailRent", label:"Trailer Rentals",      val:0, color:"#5eead4", icon:"🚜" },
+      { key:"truckIns",  label:"Truck Insurance",      val:0, color:"#f472b6", icon:"🛡" },
+      { key:"otherIns",  label:"Other Insurance",      val:0, color:"#e879f9", icon:"🏥" },
+      { key:"maint",     label:"Maint & Storage",      val:0, color:"#fbbf24", icon:"🔧" },
       { key:"owner",     label:"Owner Draws + Purchases", val:0, color:"#3ddc84", icon:"👑" },
-      { key:"ceEast",    label:"CE East Operations",   val:0, color:"#7e57c2", icon:"🏦" },
-      { key:"badDebt",   label:"Bad Debt",             val:0, color:"#ef5350", icon:"💸" },
-      { key:"assetLoan", label:"Asset Loan Payments",  val:0, color:"#5c6bc0", icon:"🏠" },
-      { key:"legal",     label:"Legal & Professional", val:0, color:"#66bb6a", icon:"⚖" },
-      { key:"gaOther",   label:"G&A Other",            val:0, color:"#78909c", icon:"📎" },
+      { key:"ceEast",    label:"CE East Operations",   val:0, color:"#a78bfa", icon:"🏦" },
+      { key:"badDebt",   label:"Bad Debt",             val:0, color:"#ff5252", icon:"💸" },
+      { key:"assetLoan", label:"Asset Loan Payments",  val:0, color:"#93c5fd", icon:"🏠" },
+      { key:"legal",     label:"Legal & Professional", val:0, color:"#86efac", icon:"⚖" },
+      { key:"gaOther",   label:"G&A Other",            val:0, color:"#cbd5e1", icon:"📎" },
     ];
     const idx = Object.fromEntries(b.map(x => [x.key, x]));
 
@@ -8150,16 +8152,16 @@ function Budgeting() {
 
       {/* Budget table */}
       <div className="card" style={{ marginBottom:14 }}>
-        <div className="ctit">📋 Weekly Budget by Category · QBO P&L (sorted by size)</div>
-        <table className="tbl">
+        <div className="ctit" style={{ fontSize:13 }}>📋 Weekly Budget by Category · QBO P&L (sorted by size)</div>
+        <table className="tbl" style={{ fontSize:13 }}>
           <thead>
             <tr>
-              <th style={{ textAlign:"left" }}>Category</th>
-              <th>YTD ({days}d)</th>
-              <th>Weekly</th>
-              <th>Monthly (~4.33wk)</th>
-              <th>Annualized</th>
-              <th>% of Weekly Revenue</th>
+              <th style={{ textAlign:"left", fontSize:10 }}>Category</th>
+              <th style={{ fontSize:10 }}>YTD ({days}d)</th>
+              <th style={{ fontSize:10 }}>Weekly</th>
+              <th style={{ fontSize:10 }}>Monthly (~4.33wk)</th>
+              <th style={{ fontSize:10 }}>Annualized</th>
+              <th style={{ fontSize:10 }}>% of Weekly Rev</th>
             </tr>
           </thead>
           <tbody>
@@ -8170,27 +8172,27 @@ function Budgeting() {
               const pctOfRev = weeklyRev > 0 ? (weekly / weeklyRev * 100) : 0;
               return (
                 <tr key={b.key} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
-                  <td>
-                    <span style={{ display:"inline-block", width:24 }}>{b.icon}</span>
-                    <span style={{ color:b.color, fontWeight:600 }}>{b.label}</span>
+                  <td style={{ padding:"10px 9px", borderLeft:`4px solid ${b.color}` }}>
+                    <span style={{ display:"inline-block", width:26, fontSize:16 }}>{b.icon}</span>
+                    <span style={{ color:"var(--tx)", fontWeight:600, fontSize:13 }}>{b.label}</span>
                   </td>
-                  <td>{fd(b.val, 0)}</td>
-                  <td style={{ color:b.color, fontWeight:700 }}>{fd(weekly, 0)}</td>
-                  <td style={{ color:"var(--mu)" }}>{fd(monthly, 0)}</td>
-                  <td style={{ color:"var(--mu)" }}>{fd(annual, 0)}</td>
-                  <td style={{ color: pctOfRev > 30 ? "var(--rd)" : pctOfRev > 10 ? "var(--ye)" : "var(--mu)" }}>{fp(pctOfRev)}</td>
+                  <td style={{ color:"var(--tx)", fontVariantNumeric:"tabular-nums", padding:"10px 9px" }}>{fd(b.val, 0)}</td>
+                  <td style={{ color:b.color, fontWeight:800, fontSize:14, fontVariantNumeric:"tabular-nums", padding:"10px 9px" }}>{fd(weekly, 0)}</td>
+                  <td style={{ color:"#9aa4b3", fontVariantNumeric:"tabular-nums", padding:"10px 9px" }}>{fd(monthly, 0)}</td>
+                  <td style={{ color:"#9aa4b3", fontVariantNumeric:"tabular-nums", padding:"10px 9px" }}>{fd(annual, 0)}</td>
+                  <td style={{ color: pctOfRev > 30 ? "#ff7777" : pctOfRev > 10 ? "#fcd34d" : "#9aa4b3", fontWeight:700, padding:"10px 9px" }}>{fp(pctOfRev)}</td>
                 </tr>
               );
             })}
           </tbody>
           <tfoot>
             <tr>
-              <td>TOTAL · {sortedBuckets.length} categories</td>
-              <td>{fd(sortedBuckets.reduce((s,b)=>s+b.val,0), 0)}</td>
-              <td>{fd(totalWeeklyExp, 0)}</td>
-              <td>{fd(totalWeeklyExp * 4.33, 0)}</td>
-              <td>{fd(totalAnnualExp, 0)}</td>
-              <td>{fp(totalWeeklyExp / weeklyRev * 100)}</td>
+              <td style={{ padding:"12px 9px", fontSize:13 }}>TOTAL · {sortedBuckets.length} categories</td>
+              <td style={{ fontSize:13, padding:"12px 9px" }}>{fd(sortedBuckets.reduce((s,b)=>s+b.val,0), 0)}</td>
+              <td style={{ fontSize:14, fontWeight:900, padding:"12px 9px" }}>{fd(totalWeeklyExp, 0)}</td>
+              <td style={{ fontSize:13, padding:"12px 9px" }}>{fd(totalWeeklyExp * 4.33, 0)}</td>
+              <td style={{ fontSize:13, padding:"12px 9px" }}>{fd(totalAnnualExp, 0)}</td>
+              <td style={{ fontSize:13, padding:"12px 9px" }}>{fp(totalWeeklyExp / weeklyRev * 100)}</td>
             </tr>
           </tfoot>
         </table>
@@ -8270,15 +8272,15 @@ function Budgeting() {
             <div style={{ color:"var(--mu)", fontSize:11, padding:10, textAlign:"center" }}>No scenarios yet. Add one above to see its weekly impact.</div>
           )}
           {scenarios.length > 0 && (
-            <table className="tbl">
+            <table className="tbl" style={{ fontSize:13 }}>
               <thead>
                 <tr>
-                  <th style={{ textAlign:"left" }}>Label</th>
-                  <th>Amount</th>
-                  <th>Frequency</th>
-                  <th>Weekly Equivalent</th>
-                  <th>Annualized</th>
-                  <th>Active</th>
+                  <th style={{ textAlign:"left", fontSize:10 }}>Label</th>
+                  <th style={{ fontSize:10 }}>Amount</th>
+                  <th style={{ fontSize:10 }}>Frequency</th>
+                  <th style={{ fontSize:10 }}>Weekly Equivalent</th>
+                  <th style={{ fontSize:10 }}>Annualized</th>
+                  <th style={{ fontSize:10 }}>Active</th>
                   <th></th>
                 </tr>
               </thead>
@@ -8287,11 +8289,11 @@ function Budgeting() {
                   const weekly = s.frequency === "weekly" ? s.amount : s.amount * 12 / 52;
                   return (
                     <tr key={s.id} style={{ background:i%2===0?"var(--s2)":"transparent", opacity:s.active?1:0.5 }}>
-                      <td style={{ fontWeight:600 }}>{s.label}</td>
-                      <td>{fd(s.amount, 2)}</td>
-                      <td style={{ color:"var(--mu)" }}>{s.frequency}</td>
-                      <td style={{ color:"#f5c542", fontWeight:700 }}>{fd(weekly, 0)}/wk</td>
-                      <td style={{ color:"var(--mu)" }}>{fd(weekly * 52, 0)}</td>
+                      <td style={{ fontWeight:600, color:"var(--tx)", padding:"10px 9px" }}>{s.label}</td>
+                      <td style={{ color:"var(--tx)", fontVariantNumeric:"tabular-nums", padding:"10px 9px" }}>{fd(s.amount, 2)}</td>
+                      <td style={{ color:"#9aa4b3", textTransform:"uppercase", fontSize:11, padding:"10px 9px" }}>{s.frequency}</td>
+                      <td style={{ color:"#fbbf24", fontWeight:800, fontSize:14, fontVariantNumeric:"tabular-nums", padding:"10px 9px" }}>{fd(weekly, 0)}/wk</td>
+                      <td style={{ color:"#9aa4b3", fontVariantNumeric:"tabular-nums", padding:"10px 9px" }}>{fd(weekly * 52, 0)}</td>
                       <td>
                         <button onClick={()=>toggleScenario(s.id, !s.active)} style={{
                           background:"transparent", border:`1px solid ${s.active?"var(--gn)":"var(--mu)"}`,
