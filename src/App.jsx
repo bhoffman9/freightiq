@@ -8003,14 +8003,15 @@ function Budgeting() {
 
     // Live QBO mapping — parsed data lives under pnl.parsed
     const parsed = pnl.parsed || pnl;
-    idx.carrier.val = parsed.cogs?.["Carrier Pay"] || 0;
+    // Carrier bucket = all COGS lines (Carrier Pay + Flexent + Triumph fees)
+    for (const v of Object.values(parsed.cogs || {})) idx.carrier.val += v;
 
     // Sections where we use the "Total for X" subtotal — skip any " > "
     // sub-items under these to avoid double-counting.
     const subSectionsUseSubtotal = new Set([
       "Asset Loan Payments", "Bad Debt Expense", "Capacity Express East",
-      "Insurance", "Legal and Professional Fees", "Owners Draw",
-      "Payroll Taxes", "Travel Expenses",
+      "Cost of Labor", "Insurance", "Legal and Professional Fees",
+      "Owners Draw", "Payroll Taxes", "Travel Expenses",
     ]);
 
     for (const [k, v] of Object.entries(parsed.expenses || {})) {
@@ -8032,7 +8033,7 @@ function Budgeting() {
       if (key === "Salaries & Wages - Drivers")      idx.driver.val   += v;
       else if (key === "Salaries & Wages - Office")  idx.office.val   += v;
       else if (key === "Contractor Payroll")         idx.contract.val += v;
-      else if (key === "Total for Cost of Labor" || key === "Cost of Labor" || key === "Owner Operators") idx.contract.val += v;
+      else if (key === "Total for Cost of Labor") idx.contract.val += v;
       else if (key === "401(k) Expense" || key === "Child Support Payments") idx.taxes.val += v;
       else if (key === "Total for Payroll Taxes" || key === "Total Payroll Taxes") idx.taxes.val += v;
       else if (key === "Total for Asset Loan Payments")            idx.assetLoan.val += v;
