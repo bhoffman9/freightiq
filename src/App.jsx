@@ -7972,8 +7972,10 @@ function Budgeting() {
       { key:"owner",     label:"Owner Draws + Purchases", val:0, color:"#3ddc84", icon:"👑" },
       { key:"ceEast",    label:"CE East Operations",   val:0, color:"#a78bfa", icon:"🏦" },
       { key:"badDebt",   label:"Bad Debt",             val:0, color:"#ff5252", icon:"💸" },
-      { key:"assetLoan", label:"Asset Loan Payments",  val:0, color:"#93c5fd", icon:"🏠" },
+      { key:"assetLoan", label:"Asset Loan Payments",  val:0, color:"#93c5fd", icon:"🚙" },
       { key:"legal",     label:"Legal & Professional", val:0, color:"#86efac", icon:"⚖" },
+      { key:"facilities", label:"Facilities & Utilities", val:0, color:"#fde68a", icon:"🏠" },
+      { key:"techMkt",   label:"Tech & Marketing",     val:0, color:"#7dd3fc", icon:"💻" },
       { key:"gaOther",   label:"G&A Other",            val:0, color:"#cbd5e1", icon:"📎" },
     ];
     const idx = Object.fromEntries(b.map(x => [x.key, x]));
@@ -7996,6 +7998,8 @@ function Budgeting() {
       idx.badDebt.val    = 84000.00;
       idx.assetLoan.val  = 37568.67;
       idx.legal.val      = 64197.78;
+      idx.facilities.val = 62146.76 + 18587.91 + 5914.34;       // Rent + Utilities + Repair
+      idx.techMkt.val    = 68389.76 + 45474.00 + 15683.92;      // Computer & Software + Advertising + Dues
       // Remainder bucket
       const sumSoFar = b.reduce((s, x) => s + x.val, 0);
       const knownTotal = INCOME_2026.cogs + INCOME_2026.totalExp;
@@ -8009,17 +8013,24 @@ function Budgeting() {
     for (const v of Object.values(parsed.cogs || {})) idx.carrier.val += v;
 
     // Sections where we use the "Total for X" subtotal — skip any " > "
-    // sub-items under these to avoid double-counting.
+    // sub-items under these to avoid double-counting. "Travel Expenses - CE
+    // East" is a sub-section inside Capacity Express East; the parser loses
+    // the CE East prefix when recursing one more level deep, so we have to
+    // skip it explicitly (otherwise its $4K flights/hotel/uber would land in
+    // gaOther AND already be summed in "Total for Capacity Express East").
     const subSectionsUseSubtotal = new Set([
       "Asset Loan Payments", "Bad Debt Expense", "Capacity Express East",
       "Cost of Labor", "Insurance", "Legal and Professional Fees",
       "Owners Draw", "Payroll Taxes", "Travel Expenses",
+      "Travel Expenses - CE East",
     ]);
 
     for (const [k, v] of Object.entries(parsed.expenses || {})) {
       // Skip "Total for Salaries and Wages" (its components are summed individually below)
       if (k === "Total for Salaries and Wages") continue;
       if (k === "Total for Truck/Trailer") continue;  // handled via parsed.truckTrailer
+      // CE East travel subtotal is already inside "Total for Capacity Express East"
+      if (k === "Total Travel Expenses - CE East") continue;
 
       // Strip parent-section prefix where present. For sections we sum via
       // subtotal, skip the sub-items entirely. Otherwise use the suffix as the
@@ -8044,6 +8055,10 @@ function Budgeting() {
       else if (key === "Total for Insurance")                      idx.otherIns.val  += v;
       else if (key === "Total for Legal and Professional Fees")    idx.legal.val     += v;
       else if (key === "Total for Owners Draw" || key === "Owner Purchases") idx.owner.val += v;
+      // Facilities & Utilities: physical space costs
+      else if (key === "Rent/Lease of Building" || key === "Utilities" || key === "Repair & Maintenance") idx.facilities.val += v;
+      // Tech & Marketing: software, ads, paid subscriptions
+      else if (key === "Computer & Software" || key === "Advertising & Marketing" || key === "Dues & Subscriptions") idx.techMkt.val += v;
       else idx.gaOther.val += v;
     }
 
