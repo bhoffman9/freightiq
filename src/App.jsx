@@ -13,102 +13,110 @@ function useEquipment() { return useContext(EquipmentContext); }
 
 
 // ── PAYROLL DATA ──────────────────────────────────────────────
-// QuickBooks payroll summary by employee, Jan 1 – May 9, 2026
+// QuickBooks payroll summary by employee, Jan 1 – May 16, 2026
 // LABOR = total payroll cost for drivers (gross + employer taxes + 401k)
 // * = inactive/terminated driver
+// entity:"ATL" = Atlanta operations (since May 11, 2026); YTD includes prior CE/SF weeks
 let PAYROLL = [
-  { name: "Alexander Christopher", hours: 858.94, totalCost: 25071.36 },
-  { name: "Cowsky Andy",           hours: 180.42, totalCost: 5218.66 },
+  { name: "Alexander Christopher", hours: 935.90, totalCost: 27314.67 },
+  { name: "Cowsky Andy",           hours: 243.18, totalCost: 7033.99 },
   { name: "Allwine Brian A",       hours: 181.34, totalCost: 5043.53 },   // *inactive
+  { name: "Alshamaa Manar",        hours: 32.34,  totalCost: 989.41,  entity: "ATL" },  // NEW · ATL
   { name: "Anderson Justin M",     hours: 79.01,  totalCost: 2285.37 },   // *inactive
   { name: "Brown Jr Marcellus",    hours: 77.08,  totalCost: 2143.78 },   // *inactive
   { name: "Butler Richard",        hours: 382.40, totalCost: 11493.27 },  // *inactive
   { name: "Christian Norman L",    hours: 100.08, totalCost: 2894.81 },   // *inactive
   { name: "Clark Rettick",         hours: 255.06, totalCost: 7377.62 },   // *inactive
   { name: "Cotton Kejlon",         hours: 320.32, totalCost: 11677.82 },  // *inactive
-  { name: "Daniels Gerald W",      hours: 263.76, totalCost: 7929.26 },
-  { name: "Davis Anthoni D",       hours: 1289.53,totalCost: 44926.45 },
-  { name: "Denman Samuel E",       hours: 1093.61,totalCost: 35215.81 },
-  { name: "Dotch Brandon C",       hours: 437.57, totalCost: 12955.45 },
-  { name: "Gutierrez Danny",       hours: 977.35, totalCost: 30357.81 },
-  { name: "Guzman Jose",           hours: 1237.58,totalCost: 44202.37 },
+  { name: "Daniels Gerald W",      hours: 321.49, totalCost: 9590.94 },
+  { name: "Davis Anthoni D",       hours: 1365.32,totalCost: 47625.27, entity: "ATL" },  // ATL since May 11
+  { name: "Denman Samuel E",       hours: 1169.18,totalCost: 37557.11, entity: "ATL" },  // ATL since May 11
+  { name: "Dotch Brandon C",       hours: 495.01, totalCost: 14832.95 },
+  { name: "Gutierrez Danny",       hours: 1021.00,totalCost: 31710.17 },
+  { name: "Guzman Jose",           hours: 1309.41,totalCost: 46889.62 },
   { name: "Howell Lawrence",       hours: 85.33,  totalCost: 2373.24 },   // *inactive
-  { name: "Ibarra Jose Pablo",     hours: 1207.91,totalCost: 42716.46 },
+  { name: "Ibarra Jose Pablo",     hours: 1283.94,totalCost: 45387.37 },
+  { name: "Johnson Christopher",   hours: 0,      totalCost: 0,        entity: "ATL", note: "ATL · starts week of May 17, EFS card 37459 already active" },  // NEW · ATL · not yet on payroll
   { name: "Juarez Angel",          hours: 376.15, totalCost: 10863.46 },
   { name: "Kelly Kirk D",          hours: 801.82, totalCost: 23044.55 },  // *inactive
   { name: "Lucero Andrew",         hours: 149.53, totalCost: 4325.15 },
   { name: "Matthews Ron A",        hours: 464.44, totalCost: 13126.62 },  // *inactive
-  { name: "Mcclam Michael A",      hours: 593.80, totalCost: 17125.04 },
-  { name: "McNamara John",         hours: 1208.15,totalCost: 39848.34 },
+  { name: "Mcclam Michael A",      hours: 676.18, totalCost: 19645.02 },
+  { name: "McNamara John",         hours: 1271.65,totalCost: 41886.82 },
   { name: "Memolo Dominick",       hours: 0,      totalCost: 0 },         // *inactive
   { name: "Negrete Arturo",        hours: 371.01, totalCost: 11053.06 },  // *inactive
-  { name: "Ponce Carlos",          hours: 281.18, totalCost: 8131.26 },
-  { name: "Restrepo Julian E",     hours: 341.21, totalCost: 10543.01 },
-  { name: "Reyes Corey",           hours: 255.33, totalCost: 7385.42 },
-  { name: "Robinson Animashaun",   hours: 515.31, totalCost: 14866.96 },
-  { name: "Ronkov Martin P",       hours: 1099.89,totalCost: 31260.40 },
-  { name: "Secrest Jermelle",      hours: 542.59, totalCost: 15663.69 },
+  { name: "Ponce Carlos",          hours: 358.82, totalCost: 10514.90 },
+  { name: "Restrepo Julian E",     hours: 417.29, totalCost: 13081.76 },
+  { name: "Reyes Corey",           hours: 323.58, totalCost: 9351.07 },
+  { name: "Robinson Animashaun",   hours: 567.48, totalCost: 16367.84 },
+  { name: "Ronkov Martin P",       hours: 1167.17,totalCost: 33345.99 },
+  { name: "Secrest Jermelle",      hours: 613.67, totalCost: 17708.58 },
   { name: "Stringer Adam E",       hours: 203.46, totalCost: 5885.08 },
-  { name: "Striplin Lamareh",      hours: 568.77, totalCost: 17437.95 },
+  { name: "Striplin Lamareh",      hours: 620.80, totalCost: 19084.79 },
   { name: "Thorne Richard",        hours: 254.53, totalCost: 7387.28 },   // *inactive
-  { name: "Wainwright Michael W",  hours: 1075.97,totalCost: 32363.16 },
-  { name: "Watkins Shawn",         hours: 539.40, totalCost: 15559.99 },
-  { name: "Watson Dahnifu S",      hours: 1014.21,totalCost: 28939.17 },
-  { name: "Whipple Wallace",       hours: 1051.29,totalCost: 34258.43 },
-  { name: "Williams Tadaryl C",    hours: 1107.53,totalCost: 32392.25 },
-  { name: "Williams Will",         hours: 608.68, totalCost: 17778.11 },
-  { name: "Willis Wali A",         hours: 1250.45,totalCost: 42286.41 },
+  { name: "Tucker Robert",         hours: 28.15,  totalCost: 861.21,   entity: "ATL" },  // NEW · ATL
+  { name: "Wainwright Michael W",  hours: 1125.68,totalCost: 33793.26 },
+  { name: "Watkins Shawn",         hours: 581.06, totalCost: 16758.52 },
+  { name: "Watson Dahnifu S",      hours: 1068.45,totalCost: 30649.59 },
+  { name: "Whipple Wallace",       hours: 1146.98,totalCost: 37303.48 },
+  { name: "Williams Tadaryl C",    hours: 1168.98,totalCost: 34194.10 },
+  { name: "Williams Will",         hours: 625.07, totalCost: 18249.64 },
+  { name: "Willis Wali A",         hours: 1339.05,totalCost: 45483.81 },
   { name: "Wright Robert",         hours: 260.66, totalCost: 9443.88 },   // *inactive
 ];
 
 // ── FUEL DATA (EFS only) ──────────────────────────────────────
 let FUEL = {
-  // EFS only, Jan 1 – May 9, 2026 — $364,414.57 (68,737.70 gal) per EFS Transaction Report
+  // EFS only, Jan 1 – May 16, 2026 — $396,098.95 (74,018.74 gal) per EFS Transaction Report
   // No Mudflap charges this period
   // Fuel = ULSD + BDSL + CDSL + UNPR + UNRG (all fuel products; excludes DEF, fees, parking, CADV)
-  // Excluded from per-driver mapping (still counted in FUEL_TOT): card 17408 Andres ($3,645.45 — warehouse), 27467 Nathan ($90.01 — office), 67402 ($609.44 unknown), 47465 ($277.05 unknown)
-  "Alexander Christopher": { fuel: 16951.28, gallons: 2781.59 },  // card 77409
+  // Excluded from per-driver mapping (still counted in FUEL_TOT): card 17408 Andres ($4,044.08 — warehouse), 27467 Nathan ($90.01 — office), 67402 ($666.65 unknown), 47465 ($277.05 unknown)
+  // Card 47458 reassigned from Wright Robert (frozen) to Tucker Robert (ATL) — Wright's $742.45 was a misattribution last week
+  "Alexander Christopher": { fuel: 18210.76, gallons: 2995.09 },  // card 77409
   "Allwine Brian A":       { fuel: 2147.67,  gallons: 556.49 },   // card 07408 split (Jan only, *inactive — frozen)
+  "Alshamaa Manar":        { fuel: 2186.15,  gallons: 390.78,  entity: "ATL" },  // NEW · ATL · card 87454
   "Anderson Justin M":     { fuel: 450.60,   gallons: 76.00 },    // card 07405 split (Jan only, *inactive — frozen)
   "Brown Jr Marcellus":    { fuel: 1282.90,  gallons: 307.66 },   // card 77462 (*inactive — frozen, UNCHANGED WoW)
-  "Butler Richard":        { fuel: 7248.06,  gallons: 1300.88 },  // card 67400 (*inactive — frozen, UNCHANGED WoW)
+  "Butler Richard":        { fuel: 7248.06,  gallons: 1300.88 },  // card 67400 (*inactive — frozen, UNCHANGED WoW × 2)
   "Christian Norman L":    { fuel: 819.40,   gallons: 149.01 },   // card 47402 split (Mar only, *inactive — frozen)
   "Clark Rettick":         { fuel: 2339.97,  gallons: 482.50 },   // card 37405 split (*inactive — frozen)
   "Cotton Kejlon":         { fuel: 235.78,   gallons: 61.10 },    // card 87401 split (*inactive — frozen)
-  "Cowsky Andy":           { fuel: 6296.52,  gallons: 1030.12 },  // card 77457
-  "Daniels Gerald W":      { fuel: 2864.70,  gallons: 501.36 },   // card 47402 split (active, absorbs deltas over Christian)
-  "Davis Anthoni D":       { fuel: 31456.85, gallons: 5908.98 },  // card 27406
-  "Denman Samuel E":       { fuel: 16747.55, gallons: 3637.30 },  // cards 47405 + 37403
-  "Dotch Brandon C":       { fuel: 11751.81, gallons: 1831.88 },  // cards 07405 (Anderson-frozen split) + 17468
-  "Gutierrez Danny":       { fuel: 7777.89,  gallons: 1636.01 },  // card 47404
-  "Guzman Jose":           { fuel: 9414.47,  gallons: 1917.31 },  // card 77401
+  "Cowsky Andy":           { fuel: 8536.89,  gallons: 1359.16 },  // card 77457
+  "Daniels Gerald W":      { fuel: 3531.31,  gallons: 614.36 },   // card 47402 split (active, absorbs deltas over Christian)
+  "Davis Anthoni D":       { fuel: 32971.68, gallons: 6174.23, entity: "ATL" },  // card 27406 · ATL since May 11
+  "Denman Samuel E":       { fuel: 18614.48, gallons: 3963.43, entity: "ATL" },  // cards 47405 + 37403 · ATL since May 11
+  "Dotch Brandon C":       { fuel: 12032.86, gallons: 1880.68 },  // cards 07405 (Anderson-frozen split) + 17468
+  "Gutierrez Danny":       { fuel: 8217.75,  gallons: 1712.39 },  // card 47404
+  "Guzman Jose":           { fuel: 9963.89,  gallons: 2014.40 },  // card 77401
   "Howell Lawrence":       { fuel: 0,        gallons: 0 },
-  "Ibarra Jose Pablo":     { fuel: 6764.72,  gallons: 1350.02 },  // card 97409
-  "Juarez Angel":          { fuel: 2961.21,  gallons: 429.11 },   // card 87461 (UNCHANGED WoW — flag)
-  "Kelly Kirk D":          { fuel: 13948.17, gallons: 2933.07 },  // card 77402 split (*inactive — frozen)
-  "Lucero Andrew":         { fuel: 1481.30,  gallons: 210.83 },   // card 87401 split (active, UNCHANGED WoW — entire 87401 card UNCHANGED)
+  "Ibarra Jose Pablo":     { fuel: 7177.00,  gallons: 1422.87 },  // card 97409
+  "Johnson Christopher":   { fuel: 657.51,   gallons: 124.32, entity: "ATL" },  // NEW · ATL · card 37459 (fuel before payroll starts)
+  "Juarez Angel":          { fuel: 2961.21,  gallons: 429.11 },   // card 87461 (UNCHANGED WoW × 2 — frozen)
+  "Kelly Kirk D":          { fuel: 13948.17, gallons: 2933.07 },  // card 77402 split (*inactive — frozen, UNCHANGED WoW × 2)
+  "Lucero Andrew":         { fuel: 1481.30,  gallons: 210.83 },   // card 87401 split (active, UNCHANGED WoW × 2)
   "Matthews Ron A":        { fuel: 4209.19,  gallons: 1032.33 },  // card 07408 split (*inactive — frozen)
-  "Mcclam Michael A":      { fuel: 14542.48, gallons: 2146.10 },  // card 07407
-  "McNamara John":         { fuel: 17487.84, gallons: 3820.36 },  // card 17407
+  "Mcclam Michael A":      { fuel: 15719.94, gallons: 2312.64 },  // card 07407
+  "McNamara John":         { fuel: 18568.49, gallons: 4018.74 },  // card 17407
   "Memolo Dominick":       { fuel: 0,        gallons: 0 },
-  "Negrete Arturo":        { fuel: 6348.68,  gallons: 1511.56 },  // card 57404 (*inactive — frozen, UNCHANGED WoW)
-  "Ponce Carlos":          { fuel: 6427.19,  gallons: 982.97 },   // card 37466
-  "Restrepo Julian E":     { fuel: 6891.21,  gallons: 1102.38 },  // card 37405 split (active, absorbs deltas over Wright+Clark)
-  "Reyes Corey":           { fuel: 5289.07,  gallons: 788.43 },   // cards 07469 + 97453
+  "Negrete Arturo":        { fuel: 6348.68,  gallons: 1511.56 },  // card 57404 (*inactive — frozen, UNCHANGED WoW × 2)
+  "Ponce Carlos":          { fuel: 8652.49,  gallons: 1276.66 },  // card 37466
+  "Restrepo Julian E":     { fuel: 9594.94,  gallons: 1500.34 },  // card 37405 split (active, absorbs deltas over Wright+Clark)
+  "Reyes Corey":           { fuel: 6513.95,  gallons: 956.25 },   // cards 07469 + 97453
   "Robinson Animashaun":   { fuel: 0,        gallons: 0 },
-  "Ronkov Martin P":       { fuel: 3521.33,  gallons: 751.03 },   // card 67403 (UNCHANGED WoW — flag)
-  "Secrest Jermelle":      { fuel: 14752.43, gallons: 2231.15 },  // cards 37404 + 27404 (Mell)
-  "Stringer Adam E":       { fuel: 2532.47,  gallons: 419.23 },   // card 77402 split (active, UNCHANGED WoW — Kelly portion frozen)
-  "Striplin Lamareh":      { fuel: 10101.58, gallons: 1793.84 },  // card 87407
+  "Ronkov Martin P":       { fuel: 4132.37,  gallons: 859.01 },   // card 67403
+  "Secrest Jermelle":      { fuel: 14752.43, gallons: 2231.15 },  // cards 37404 + 27404 (Mell) · 27404 UNCHANGED WoW
+  "Stringer Adam E":       { fuel: 2532.47,  gallons: 419.23 },   // card 77402 split (active, UNCHANGED WoW × 2 — Kelly portion frozen)
+  "Striplin Lamareh":      { fuel: 10101.58, gallons: 1793.84 },  // card 87407 (UNCHANGED WoW)
   "Thorne Richard":        { fuel: 5514.29,  gallons: 938.16 },   // card 87401 split (*inactive — frozen)
-  "Wainwright Michael W":  { fuel: 25665.15, gallons: 5354.16 },  // card 67463
-  "Watkins Shawn":         { fuel: 25854.71, gallons: 4537.24 },  // cards 57401 + 57464
-  "Watson Dahnifu S":      { fuel: 10588.75, gallons: 1963.31 },  // card 97406 (Shaq)
-  "Whipple Wallace":       { fuel: 18073.68, gallons: 3977.87 },  // card 57403
-  "Williams Tadaryl C":    { fuel: 15603.19, gallons: 2983.35 },  // card 37402
-  "Williams Will":         { fuel: 11764.01, gallons: 1948.32 },  // card 27405
-  "Willis Wali A":         { fuel: 9034.98,  gallons: 1614.71 },  // card 87400
-  "Wright Robert":         { fuel: 2913.22,  gallons: 673.10 },   // card 37405 split + late activity on card 47458 (*inactive — late charges)
+  "Tucker Robert":         { fuel: 1894.77,  gallons: 328.88, entity: "ATL" },  // NEW · ATL · card 47458 (reassigned from Wright misattribution)
+  "Wainwright Michael W":  { fuel: 26321.68, gallons: 5468.16 },  // card 67463
+  "Watkins Shawn":         { fuel: 29185.91, gallons: 5130.34 },  // cards 57401 + 57464
+  "Watson Dahnifu S":      { fuel: 10819.93, gallons: 2003.45 },  // card 97406 (Shaq)
+  "Whipple Wallace":       { fuel: 19682.58, gallons: 4275.87 },  // card 57403
+  "Williams Tadaryl C":    { fuel: 15603.19, gallons: 2983.35 },  // card 37402 (UNCHANGED WoW)
+  "Williams Will":         { fuel: 14343.28, gallons: 2412.80 },  // card 27405
+  "Willis Wali A":         { fuel: 9606.57,  gallons: 1715.72 },  // card 87400
+  "Wright Robert":         { fuel: 2170.77,  gallons: 538.08 },   // card 37405 split only (*inactive — frozen; 47458 reassigned to Tucker)
 };
 
 // ── FLEET CONSTANTS (QuickBooks + EFS only — these drive CPM) ───
@@ -116,30 +124,30 @@ let FUEL = {
 // All other costs come from QuickBooks P&L.
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
-let LABOR     = 744851.74;  // QuickBooks: total driver payroll cost (gross+taxes+401k) thru May 9 — 41 drivers active (Memolo still 0; SF total $940,127.18 minus 9 office + 2 warehouse)
-let FUEL_TOT  = 364414.57;  // EFS only — thru May 9 (no Mudflap this period)
-let GALLONS   = 68737.70;   // EFS 68,737.70
+let LABOR     = 797630.40;  // QuickBooks: total driver payroll cost (gross+taxes+401k) thru May 16 — 43 drivers active (incl. 2 new: Manar Alshamaa + Robert Tucker, both ATL · Memolo still 0; SF total $1,005,297.24 minus 9 office + 2 warehouse)
+let FUEL_TOT  = 396098.95;  // EFS only — thru May 16 (no Mudflap this period)
+let GALLONS   = 74018.74;   // EFS 74,018.74
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
-let MILES     = 454000.0;     // Samsara GPS, Jan 1 – May 9, 2026 (static baseline = last live Samsara snapshot; live /api/samsara-miles refines on each page load)
-let TRUCK_COUNT = 42;       // Active fleet trucks — refined on App mount from /api/samsara-miles truckCount
-let TOTAL_HRS  = 23962.65;  // Payroll hours — driver-only (office excluded), thru May 9
+let MILES     = 480000.0;     // Samsara GPS, Jan 1 – May 16, 2026 (static baseline = last live snapshot; live /api/samsara-miles refines on each page load)
+let TRUCK_COUNT = 45;       // Active fleet trucks (3 new in May: Manar + Tucker + Christopher J ATL drivers) — refined on App mount from /api/samsara-miles truckCount
+let TOTAL_HRS  = 25639.05;  // Payroll hours — driver-only (office excluded), thru May 16
 let INS_WEEK  = 6375;
-let INS_TOT    = 128624.45;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru May 9
-let TRUCK_TOT  = 258455.19;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI + Ryder) thru May 9
-let TRAILER_TOT = 116566.39; // QuickBooks: Trailer Rentals (McKinney + Xtra + Utility + Premier + Boxwheel + Ten) thru May 9
+let INS_TOT    = 128624.45;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru May 16 (UNCHANGED WoW × 3 — flag, May invoice not yet posted)
+let TRUCK_TOT  = 269698.38;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI + Ryder) thru May 16
+let TRAILER_TOT = 139119.88; // QuickBooks: Trailer Rentals (McKinney + Xtra + Utility + Premier + Boxwheel + Ten) thru May 16
 let EQUIP_TOT   = TRUCK_TOT + TRAILER_TOT;
-let TRUCK_MAINT  = 4848.81;   // Prime Wash, AutoForce, Titan Glass, Towing, Batteries, TZ Parts, eBay, SF Heavy Equipment thru May 9 (UNCHANGED WoW — flag)
-let TRAIL_MAINT  = 3841.89;   // TravelCenters of America, MKD Express thru May 9 (UNCHANGED WoW — flag)
-let STORAGE      = 30568.68;  // Storage/Parking per P&L thru May 9
+let TRUCK_MAINT  = 5858.37;   // Prime Wash, AutoForce, Titan Glass, Towing, Batteries, TZ Parts, eBay, SF Heavy Equipment thru May 16
+let TRAIL_MAINT  = 3841.89;   // TravelCenters of America, MKD Express thru May 16 (UNCHANGED WoW × 3 — flag)
+let STORAGE      = 30839.62;  // Storage/Parking per P&L thru May 16
 let MAINT_TOT    = TRUCK_MAINT + TRAIL_MAINT + STORAGE;
-let UNIFORMS     = 7923.56;   // Unifirst + Safety Guard Shoe thru May 9
+let UNIFORMS     = 7923.56;   // Unifirst + Safety Guard Shoe thru May 16 (UNCHANGED WoW × 3 — flag)
 // Basic CPM = Labor + Fuel + Truck Rentals + Insurance only
 let BASIC_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT;
 let BASIC_CPM_V = BASIC_COST / MILES;
 // All-In CPM = everything tracked
 let ALLIN_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT + TRAILER_TOT + TRUCK_MAINT + TRAIL_MAINT + STORAGE + UNIFORMS;
 let ALLIN_CPM_V = ALLIN_COST / MILES;
-let PERIOD    = "Jan 1 - May 9, 2026";
+let PERIOD    = "Jan 1 - May 16, 2026";
 // Derived day count parsed from PERIOD — keeps subtitle labels honest without
 // having to bump a magic number every week. If PERIOD parsing fails, fall back
 // to current behavior (Jan 1 → today).
@@ -612,6 +620,7 @@ const TABS = [
   { id: "office",   icon: "🏢", label: "Office Staff" },
   { id: "income",  icon: "💵", label: "Income" },
   { id: "ceeast",   icon: "🏦", label: "CE East" },
+  { id: "atl",      icon: "🍑", label: "ATL Ops" },
   { id: "cashflow", icon: "💰", label: "Cash Flow" },
   { id: "budget",   icon: "📋", label: "Budgeting" },
   { id: "settings", icon: "📂", label: "Upload" },
@@ -2587,7 +2596,7 @@ let MONTHLY_REVENUE = [
   { m:"Feb 26", ce:1264154.09, di:6636.50,  sf:337043.15, total:1607833.74,  gp:683117.82  },
   { m:"Mar 26", ce:1734333.27, di:18161.70, sf:522550.51, total:2290040.48,  gp:1113857.96 },
   { m:"Apr 26", ce:1325895.61, di:1781.88,  sf:643584.16, total:2160721.16,  gp:1107479.39 },
-  { m:"May 26", ce:440648.95,  di:0,        sf:189926.99, total:665309.24,   gp:334299.31  },  // partial — May 1-9 only
+  { m:"May 26", ce:1014149.45, di:629.00,   sf:427492.04, total:1502528.79,  gp:737619.17  },  // partial — May 1-16 only
 ];
 
 
@@ -4142,13 +4151,13 @@ function TrailerFleet() {
 
 // ── INCOME DATA ───────────────────────────────────────────────
 const INCOME_2026 = {
-  period: "Jan 1 – May 9, 2026",
-  ce: 5428492.06, sf: 2007859.21, di: 41527.33, ceEast: 239187.81,
-  total: 7717066.41,
-  cogs: 3997378.43, grossProfit: 3719687.98,
-  totalExp: 3274605.19, netOpIncome: 445082.79,
-  netIncome: 521722.50,
-  carrierPay: 3928706.57, merchantFees: 55079.60, flexentFees: 13592.26,
+  period: "Jan 1 – May 16, 2026",
+  ce: 6001992.56, sf: 2245424.26, di: 42156.33, ceEast: 264712.81,
+  total: 8554285.96,
+  cogs: 4431278.12, grossProfit: 4123007.84,
+  totalExp: 3495437.76, netOpIncome: 627570.08,
+  netIncome: 704209.79,
+  carrierPay: 4359962.57, merchantFees: 55079.60, flexentFees: 16235.95,
   weeks: [
     { label:"Jan 1-4",    rev:86886.02,  gp:52052.64,  ce:71474.65,  sf:14362.37,  di:1049.00,  carrier:34100.00,  netInc:25492.50 },
     { label:"Jan 5-11",   rev:167335.63, gp:76449.43,  ce:103721.70, sf:63463.93,  di:150.00,   carrier:88060.25,  netInc:-73568.84 },
@@ -4168,14 +4177,15 @@ const INCOME_2026 = {
     { label:"Apr 13-19",  rev:357473.97, gp:177626.95, ce:213785.03, sf:109382.04, di:729.90,   carrier:178386.21, netInc:-16291.62 },
     { label:"Apr 20-26",  rev:475020.61, gp:236992.07, ce:289391.50, sf:128863.11, di:291.00,   carrier:236591.25, netInc:25057.61 },
     { label:"Apr 27-M3",  rev:721584.63, gp:367666.31, ce:460519.09, sf:198383.54, di:0,        carrier:351777.50, netInc:71777.47 },
-    { label:"May 4-9",    rev:591995.23, gp:298394.05, ce:395010.95, sf:170301.98, di:0,        carrier:291650.38, netInc:96855.91 },
+    { label:"May 4-10",   rev:591995.23, gp:298394.05, ce:395010.95, sf:170301.98, di:0,        carrier:291650.38, netInc:79646.91 },
+    { label:"May 11-16",  rev:837219.55, gp:403319.86, ce:573500.50, sf:237565.05, di:629.00,   carrier:431256.00, netInc:199696.29 },
   ],
   months: [
     { m: "Jan", rev: 993161.79,  gp: 480933.50,  ce:663460.14,  sf:314754.40, di:14947.25, carrier:497223.26,  exp:598682.35,  netInc:-92214.12 },
     { m: "Feb", rev: 1607833.74, gp: 683117.82,  ce:1264154.09, sf:337043.15, di:6636.50,  carrier:894241.00,  exp:647766.79,  netInc:60883.96 },
     { m: "Mar", rev: 2290040.48, gp: 1113857.96, ce:1734333.27, sf:522550.51, di:18161.70, carrier:1162575.47, exp:789424.77,  netInc:349980.48 },
     { m: "Apr", rev: 2160721.16, gp: 1107479.39, ce:1325895.61, sf:643584.16, di:1781.88,  carrier:1045803.96, exp:888173.85,  netInc:219330.30 },
-    { m: "May", rev: 665309.24,  gp: 334299.31,  ce:440648.95,  sf:189926.99, di:0,        carrier:328862.88,  exp:350557.43,  netInc:-16258.12 },  // partial — May 1-9 only
+    { m: "May", rev: 1502528.79, gp: 737619.17,  ce:1014149.45, sf:427492.04, di:629.00,   carrier:760118.88,  exp:571390.00,  netInc:166229.17 },  // partial — May 1-16 only
   ],
 };
 
@@ -7081,42 +7091,51 @@ function DataSettings() {
 // Categories: Office (salary), Warehouse (hourly/salary), Contractors
 
 const OFFICE_W2 = [
-  // Show Freight Inc employees (thru May 9, 2026)
-  { name:"Adrian Arias",        entity:"SF",  gross:31175.66, taxes:3340.91, contrib:1239.02, totalCost:35755.59, salary:29628,    bonus:1347.66, reimb:200,    commission:0,       note:"Salary + bonus" },
-  { name:"Gabriel Gonzalez",    entity:"SF",  gross:20884.83, taxes:2262.93, contrib:0,       totalCost:23147.76, salary:20603.83, bonus:250,     reimb:31,     commission:0,       note:"Salary + bonus" },
-  { name:"Scot Grosser",        entity:"SF",  gross:30567.91, taxes:2400.49, contrib:1026.65, totalCost:33995.05, salary:25200,    bonus:466.33,  reimb:0,      commission:0,       note:"Salary + wellness" },
-  { name:"Bartosz Naruszewicz", entity:"SF",  gross:1764.30,  taxes:198.49,  contrib:0,       totalCost:1962.79,  salary:0,        bonus:0,       reimb:0,      commission:0,       note:"Hourly · new hire May 2026" },
-  { name:"Cecilia Rivera",      entity:"SF",  gross:23990,    taxes:2596.94, contrib:959.60,  totalCost:27546.54, salary:23130,    bonus:860,     reimb:0,      commission:0,       note:"Salary + bonus" },
-  { name:"Nathan Youngblood",   entity:"SF",  gross:21600,    taxes:2342.40, contrib:0,       totalCost:23942.40, salary:21600,    bonus:0,       reimb:0,      commission:0,       note:"Salary" },
-  // J&A Management employees (thru May 9, 2026 YTD)
-  { name:"Valeria Abrego",      entity:"J&A", gross:14850.10, taxes:1588.02, contrib:0,       totalCost:16438.12, salary:0,        bonus:0,       reimb:265,    commission:0,       note:"Hourly + OT" },
-  { name:"Christopher Adamson", entity:"J&A", gross:28000,    taxes:3010,    contrib:1120,    totalCost:32130,    salary:28000,    bonus:0,       reimb:0,      commission:0,       note:"Salary + 401K" },
+  // Show Freight Inc employees (thru May 16, 2026)
+  { name:"Adrian Arias",        entity:"SF",  gross:32821.66, taxes:3516.20, contrib:1304.86, totalCost:37642.72, salary:31274,    bonus:1347.66, reimb:200,    commission:0,       note:"Salary + bonus" },
+  { name:"Gabriel Gonzalez",    entity:"SF",  gross:22084.83, taxes:2390.73, contrib:0,       totalCost:24475.56, salary:21803.83, bonus:250,     reimb:31,     commission:0,       note:"Salary + bonus" },
+  { name:"Scot Grosser",        entity:"SF",  gross:32307.31, taxes:2528.76, contrib:1082.65, totalCost:35918.72, salary:26600,    bonus:466.33,  reimb:67.09,  commission:0,       note:"Salary + wellness + reimb" },
+  { name:"Bartosz Naruszewicz", entity:"SF",  gross:3550.20,  taxes:399.40,  contrib:0,       totalCost:3949.60,  salary:0,        bonus:0,       reimb:0,      commission:0,       note:"Hourly · new hire May 2026" },
+  { name:"Cecilia Rivera",      entity:"SF",  gross:25275,    taxes:2733.79, contrib:1011.00, totalCost:29019.79, salary:24415,    bonus:860,     reimb:0,      commission:0,       note:"Salary + bonus" },
+  { name:"Nathan Youngblood",   entity:"SF",  gross:22800,    taxes:2470.20, contrib:0,       totalCost:25270.20, salary:22800,    bonus:0,       reimb:0,      commission:0,       note:"Salary" },
+  // J&A Management employees (thru May 16, 2026 YTD)
+  { name:"Valeria Abrego",      entity:"J&A", gross:15650.10, taxes:1672.82, contrib:0,       totalCost:17322.92, salary:0,        bonus:0,       reimb:265,    commission:0,       note:"Hourly + OT" },
+  { name:"Christopher Adamson", entity:"J&A", gross:30000,    taxes:3222,    contrib:1200,    totalCost:34422,    salary:30000,    bonus:0,       reimb:0,      commission:0,       note:"Salary + 401K" },
   { name:"Debra Adamson",       entity:"J&A", gross:8750,     taxes:934.68,  contrib:0,       totalCost:9684.68,  salary:8750,     bonus:0,       reimb:0,      commission:0,       note:"*Former · W2 → Contractor", dual:true },
   { name:"Elizabeth Delgado",   entity:"J&A", gross:8541.11,  taxes:852.13,  contrib:0,       totalCost:9393.24,  salary:5940,     bonus:0,       reimb:898.35, commission:1702.76, note:"*Former · W2 → Contractor · commission", dual:true },
   { name:"Abigail Dillon",      entity:"J&A", gross:3596.13,  taxes:402.77,  contrib:0,       totalCost:3998.90,  salary:0,        bonus:0,       reimb:0,      commission:0,       note:"Hourly" },
-  { name:"Biniyam Fissehaye",   entity:"J&A", gross:19077.07, taxes:2045.40, contrib:0,       totalCost:21122.47, salary:18900,    bonus:0,       reimb:177.07, commission:0,       note:"Salary at J&A + SF (J&A side only; SF side $1,501.88)" },
+  { name:"Biniyam Fissehaye",   entity:"J&A", gross:19077.07, taxes:2045.40, contrib:0,       totalCost:21122.47, salary:18900,    bonus:0,       reimb:177.07, commission:0,       note:"*Former · W2 → 1099 ENM Trucking LLC (transitioned mid-May, ATL ops) · J&A side only; SF side $1,501.88", dual:true },
   { name:"Kirsten Hall",        entity:"J&A", gross:2250,     taxes:252.01,  contrib:0,       totalCost:2502.01,  salary:2250,     bonus:0,       reimb:0,      commission:0,       note:"*Former employee" },
-  { name:"Ben Hoffman",         entity:"J&A", gross:24270.88, taxes:2610.47, contrib:376.95,  totalCost:27258.30, salary:23153.95, bonus:0,       reimb:40,     commission:0,       note:"Salary + 401K + PTO" },
+  { name:"Ben Hoffman",         entity:"J&A", gross:25617.04, taxes:2753.17, contrib:376.95,  totalCost:28747.16, salary:24500.11, bonus:0,       reimb:40,     commission:0,       note:"Salary + 401K + PTO" },
   { name:"Branden Parnell",     entity:"J&A", gross:5769.20,  taxes:646.15,  contrib:0,       totalCost:6415.35,  salary:5769.20,  bonus:0,       reimb:0,      commission:0,       note:"*Former employee" },
   { name:"Ayelen Sanchez",      entity:"J&A", gross:1809.26,  taxes:198.25,  contrib:0,       totalCost:2007.51,  salary:0,        bonus:0,       reimb:39.26,  commission:0,       note:"*Former · Hourly" },
   { name:"Christopher Simpson", entity:"J&A", gross:8998.46,  taxes:961.01,  contrib:359.94,  totalCost:10319.41, salary:6300,     bonus:0,       reimb:0,      commission:2698.46, note:"*Former · W2 → Contractor · commission", dual:true },
 ];
 
 const WAREHOUSE = [
-  { name:"Gentry Eagleton",  entity:"SF", gross:15436.90, taxes:1686.04, contrib:0, totalCost:17122.94, type:"Hourly", hours:749.78, regHrs:705.65, otHrs:44.13, note:"Regular + OT" },
-  { name:"Andres Figueroa",  entity:"SF", gross:27375,    taxes:2925.49, contrib:0, totalCost:30300.49, type:"Salary", hours:760,    regHrs:0,      otHrs:0,     note:"Salary + PTO" },
+  { name:"Gentry Eagleton",  entity:"SF", gross:16239.60, taxes:1771.52, contrib:0, totalCost:18011.12, type:"Hourly", hours:790,    regHrs:744,    otHrs:46,    note:"Regular + OT" },
+  { name:"Andres Figueroa",  entity:"SF", gross:28800,    taxes:3077.25, contrib:0, totalCost:31877.25, type:"Salary", hours:800,    regHrs:0,      otHrs:0,     note:"Salary + PTO" },
 ];
 
 const CONTRACTORS = [
-  { name:"Jon Marcus Zengotita", dba:"", weekly:2800, payments:18, weeklyTotal:50400, car:350, carPayments:4, carTotal:1400, commission:0, healthIns:0, healthInsTotal:0, other:0, total:51800, note:"$2,800/wk + $350/mo car (4 months)" },
-  { name:"Mellody Abrego",       dba:"Neon Vibes Enterprise", weekly:2150, payments:18, weeklyTotal:38700, car:334.86, carPayments:5, carTotal:1674.30, commission:2033.21, healthIns:368.34, healthInsTotal:6630.12, other:0, total:49037.63, note:"$2,150/wk + $334.86/mo car (5 months) + commission + health ins $368.34/wk (18wk)" },
-  { name:"Gabriel Colon",        dba:"", weekly:0, payments:18, weeklyTotal:40540.29, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:40540.29, note:"Variable weekly — $2,000 (May 8) + $2,210.64 (May 1) + $2,247.64 (Apr 24) + $2,000 (Apr 17) + $2,500 (Apr 10) + $2,833.30 (Apr 3) + $2,199.98 (Mar 27)" },
-  { name:"Hilda Salman",         dba:"Salman Enterprises LLC", weekly:1730, payments:18, weeklyTotal:31140, car:0, carPayments:0, carTotal:0, commission:0, healthIns:118.82, healthInsTotal:2138.76, other:0, total:33278.76, note:"$1,730/wk + health ins $118.82/wk" },
-  { name:"Maria Con",            dba:"", weekly:650, payments:18, weeklyTotal:10700, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:10700, note:"$550/wk → $650/wk starting Mar 2026" },
-  { name:"Logic Consultants",    dba:"Logic Consultants LLC / Prestige Development", weekly:500, payments:18, weeklyTotal:9000, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:9000, note:"$500/wk" },
-  { name:"Elizabeth Delgado",    dba:"", weekly:900, payments:11, weeklyTotal:9000, car:0, carPayments:0, carTotal:0, commission:2021.37, healthIns:0, healthInsTotal:0, other:0, total:11021.37, note:"$900/wk base + commission · W2 → 1099 Feb 2026", dual:true },
-  { name:"Christopher Simpson",  dba:"", weekly:834.97, payments:11, weeklyTotal:9609.82, car:0, carPayments:0, carTotal:0, commission:1529.01, healthIns:53.79, healthInsTotal:968.22, other:0, total:12107.05, note:"~$835/wk base + commission + health ins $53.79/wk (18wk) · W2 → 1099 Feb 2026", dual:true },
-  { name:"Debra Adamson",        dba:"", weekly:1750, payments:11, weeklyTotal:11214.73, car:0, carPayments:0, carTotal:0, commission:0, healthIns:53.79, healthInsTotal:968.22, other:984.97, total:13167.92, note:"$985/wk (Chase) → $1,750/wk new normal May 2026 + $985 (QuickBooks) + health ins $53.79/wk (18wk) · excl $2K loan", dual:true },
+  { name:"Jon Marcus Zengotita", dba:"", weekly:2800, payments:19, weeklyTotal:53200, car:350, carPayments:5, carTotal:1750, commission:0, healthIns:0, healthInsTotal:0, other:0, total:54950, note:"$2,800/wk + $350/mo car (5 months)" },
+  { name:"Mellody Abrego",       dba:"Neon Vibes Enterprise", weekly:2250, payments:19, weeklyTotal:40950, car:334.86, carPayments:5, carTotal:1674.30, commission:3033.21, healthIns:368.34, healthInsTotal:6998.46, other:0, total:52655.97, entity:"ATL", note:"$2,150 → $2,250/wk new normal May 11 + $334.86/mo car (5mo) + commission (+$1K this wk) + health ins $368.34/wk (19wk) · ATL ops since May 11" },
+  { name:"Gabriel Colon",        dba:"", weekly:0, payments:19, weeklyTotal:42871.92, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:42871.92, note:"Variable weekly — $2,331.63 (May 15) + $2,000 (May 8) + $2,210.64 (May 1) + $2,247.64 (Apr 24) + $2,000 (Apr 17) + $2,500 (Apr 10) + $2,833.30 (Apr 3) + $2,199.98 (Mar 27)" },
+  { name:"Hilda Salman",         dba:"Salman Enterprises LLC", weekly:1730, payments:19, weeklyTotal:32870, car:0, carPayments:0, carTotal:0, commission:0, healthIns:118.82, healthInsTotal:2257.58, other:0, total:35127.58, note:"$1,730/wk + health ins $118.82/wk" },
+  { name:"Maria Con",            dba:"", weekly:650, payments:19, weeklyTotal:11350, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:11350, note:"$550/wk → $650/wk starting Mar 2026" },
+  { name:"Logic Consultants",    dba:"Logic Consultants LLC / Prestige Development", weekly:500, payments:19, weeklyTotal:9500, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:9500, note:"$500/wk" },
+  { name:"ENM Trucking",         dba:"ENM Trucking LLC (Biniyam Fissehaye)", weekly:1850, payments:1, weeklyTotal:1850, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:1850, entity:"ATL", note:"$1,850/wk · W2 (J&A) → 1099 May 11 2026 · ATL ops" },
+  { name:"Elizabeth Delgado",    dba:"", weekly:900, payments:12, weeklyTotal:9900, car:0, carPayments:0, carTotal:0, commission:3597.62, healthIns:0, healthInsTotal:0, other:0, total:13497.62, note:"$900/wk base + commission (+$1,576.25 this wk) · W2 → 1099 Feb 2026", dual:true },
+  { name:"Christopher Simpson",  dba:"", weekly:834.97, payments:12, weeklyTotal:10444.79, car:0, carPayments:0, carTotal:0, commission:1529.01, healthIns:53.79, healthInsTotal:1022.01, other:0, total:12995.81, note:"~$835/wk base + commission + health ins $53.79/wk (19wk) · W2 → 1099 Feb 2026", dual:true },
+  { name:"Debra Adamson",        dba:"", weekly:1750, payments:12, weeklyTotal:12964.73, car:0, carPayments:0, carTotal:0, commission:0, healthIns:53.79, healthInsTotal:1022.01, other:984.97, total:14971.71, note:"$985/wk (Chase) → $1,750/wk new normal May 2026 + $985 (QuickBooks) + health ins $53.79/wk (19wk) · excl $2K loan", dual:true },
+];
+
+// ── AGENTS ────────────────────────────────────────────────────
+// Agent payments are categorized as Owner Draws in QBO but tracked
+// separately on the dashboard because they're a distinct expense lens
+// (recruiter/finder model, not operational contractor).
+const AGENTS = [
+  { name:"Kevin Deveraux", dba:"Nixon Graye Associates", weekly:500, payments:1, weeklyTotal:500, total:500, note:"$500/wk · Agent · paid via Owner Draws in QBO · started May 11 2026" },
 ];
 
 // ── OFFICE STAFF COMPONENT ───────────────────────────────────
@@ -7907,6 +7926,155 @@ function CashFlowDashboard() {
 }
 
 
+// ── ATL OPERATIONS ────────────────────────────────────────────
+// Atlanta operations launched May 11, 2026. ATL drivers + contractors
+// are tagged with entity:"ATL" in their PAYROLL/FUEL/CONTRACTORS entries;
+// this tab sums those tagged rows for the YTD view + flags that pre-May 11
+// activity for transferred drivers (Davis, Denman) is rolled in.
+function AtlOperations() {
+  const atlDrivers = PAYROLL.filter(p => p.entity === "ATL");
+  const atlContractors = CONTRACTORS.filter(c => c.entity === "ATL");
+
+  // YTD labor and fuel — note: Davis + Denman were SF/CE drivers
+  // pre-May 11, so YTD includes that pre-ATL period; this is flagged.
+  const atlLaborYTD = atlDrivers.reduce((s, p) => s + p.totalCost, 0);
+  const atlHoursYTD = atlDrivers.reduce((s, p) => s + p.hours, 0);
+
+  const atlFuelRows = atlDrivers.map(p => {
+    const f = FUEL[p.name] || { fuel: 0, gallons: 0 };
+    return { name: p.name, hours: p.hours, totalCost: p.totalCost, fuel: f.fuel, gallons: f.gallons };
+  });
+  const atlFuelYTD = atlFuelRows.reduce((s, r) => s + r.fuel, 0);
+  const atlGallonsYTD = atlFuelRows.reduce((s, r) => s + r.gallons, 0);
+  const atlMilesEst = atlGallonsYTD * 6.5;
+  const atlContractorYTD = atlContractors.reduce((s, c) => s + c.total, 0);
+  const atlAllInLabor = atlLaborYTD + atlContractorYTD;
+
+  const laborCpm = atlMilesEst > 0 ? atlLaborYTD / atlMilesEst : null;
+  const fuelCpm  = atlMilesEst > 0 ? atlFuelYTD  / atlMilesEst : null;
+  const allInCpm = atlMilesEst > 0 ? (atlAllInLabor + atlFuelYTD) / atlMilesEst : null;
+
+  return (
+    <div>
+      <div className="ptitle">🍑 ATL Operations</div>
+      <div className="psub">Atlanta operations · launched May 11, 2026 · {atlDrivers.length} W2 drivers · {atlContractors.length} 1099 contractor{atlContractors.length===1?"":"s"}</div>
+
+      <div className="ibox" style={{ marginBottom:14 }}>
+        <strong style={{ color:"#4fc3f7" }}>Note:</strong> YTD figures for Davis + Denman include their CE/SF activity from before May 11 (when they transferred to ATL). Manar, Tucker, and Johnson started ATL fresh; ENM Trucking transitioned from Bini's J&A W2.
+      </div>
+
+      {/* Top KPIs */}
+      <div className="g4" style={{ marginBottom:14 }}>
+        <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
+          <div className="klbl">ATL Driver Labor (YTD)</div>
+          <div className="kval" style={{ color:"#f47820" }}>{fd(atlLaborYTD, 0)}</div>
+          <div className="ksub">{atlDrivers.length} drivers · {fn(atlHoursYTD, 0)} hrs</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #f5c542" }}>
+          <div className="klbl">ATL Contractor Labor (YTD)</div>
+          <div className="kval" style={{ color:"#fbbf24" }}>{fd(atlContractorYTD, 0)}</div>
+          <div className="ksub">{atlContractors.map(c => c.name.split(" ")[0]).join(", ") || "—"}</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #ff8a65" }}>
+          <div className="klbl">ATL Fuel (YTD)</div>
+          <div className="kval" style={{ color:"#ff8a65" }}>{fd(atlFuelYTD, 0)}</div>
+          <div className="ksub">{fn(atlGallonsYTD, 0)} gal · {fd(atlGallonsYTD>0?atlFuelYTD/atlGallonsYTD:0,3)}/gal avg</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
+          <div className="klbl">ATL All-In Labor + Fuel</div>
+          <div className="kval" style={{ color:"#3ddc84" }}>{fd(atlAllInLabor + atlFuelYTD, 0)}</div>
+          <div className="ksub">{fn(atlMilesEst, 0)} mi est · {laborCpm!=null?fd(allInCpm,3)+"/mi":"—"}</div>
+        </div>
+      </div>
+
+      {/* ATL Drivers table */}
+      <div className="card" style={{ marginBottom:14 }}>
+        <div className="ctit" style={{ fontSize:13 }}>🚚 ATL Drivers (YTD)</div>
+        <table className="tbl" style={{ fontSize:13 }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign:"left", fontSize:10 }}>Driver</th>
+              <th style={{ fontSize:10 }}>Hours</th>
+              <th style={{ fontSize:10 }}>Labor</th>
+              <th style={{ fontSize:10 }}>Fuel</th>
+              <th style={{ fontSize:10 }}>Gallons</th>
+              <th style={{ fontSize:10 }}>Combined</th>
+              <th style={{ fontSize:10 }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {atlFuelRows.sort((a,b) => (b.totalCost + b.fuel) - (a.totalCost + a.fuel)).map((r, i) => {
+              const transferred = ["Davis Anthoni D","Denman Samuel E"].includes(r.name);
+              const newATL = ["Alshamaa Manar","Tucker Robert"].includes(r.name);
+              const pending = r.name === "Johnson Christopher";
+              return (
+                <tr key={r.name} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
+                  <td style={{ padding:"10px 9px", borderLeft:"4px solid #f47820", fontWeight:600 }}>{r.name}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums" }}>{r.hours>0?fn(r.hours,2):"—"}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums" }}>{fd(r.totalCost,0)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#ff8a65" }}>{fd(r.fuel,0)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#9aa4b3" }}>{r.gallons>0?fn(r.gallons,0):"—"}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:800 }}>{fd(r.totalCost + r.fuel, 0)}</td>
+                  <td style={{ padding:"10px 9px", fontSize:10 }}>
+                    {pending && <span style={{ color:"var(--ye)", border:"1px solid var(--ye)", padding:"2px 6px", borderRadius:2 }}>STARTING</span>}
+                    {newATL && <span style={{ color:"#3ddc84", border:"1px solid #3ddc84", padding:"2px 6px", borderRadius:2 }}>NEW · ATL</span>}
+                    {transferred && <span style={{ color:"#4fc3f7", border:"1px solid #4fc3f7", padding:"2px 6px", borderRadius:2 }}>TRANSFERRED · YTD incl. pre-ATL</span>}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td style={{ padding:"12px 9px", fontSize:13 }}>TOTAL · {atlDrivers.length} drivers</td>
+              <td style={{ padding:"12px 9px", fontSize:13 }}>{fn(atlHoursYTD,0)}</td>
+              <td style={{ padding:"12px 9px", fontSize:13 }}>{fd(atlLaborYTD,0)}</td>
+              <td style={{ padding:"12px 9px", fontSize:13, color:"#ff8a65" }}>{fd(atlFuelYTD,0)}</td>
+              <td style={{ padding:"12px 9px", fontSize:13 }}>{fn(atlGallonsYTD,0)}</td>
+              <td style={{ padding:"12px 9px", fontSize:14, fontWeight:900 }}>{fd(atlLaborYTD + atlFuelYTD,0)}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {/* ATL Contractors table */}
+      {atlContractors.length > 0 && (
+        <div className="card" style={{ marginBottom:14 }}>
+          <div className="ctit" style={{ fontSize:13 }}>📋 ATL Contractors (YTD)</div>
+          <table className="tbl" style={{ fontSize:13 }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign:"left", fontSize:10 }}>Contractor</th>
+                <th style={{ textAlign:"left", fontSize:10 }}>DBA</th>
+                <th style={{ fontSize:10 }}>Weekly</th>
+                <th style={{ fontSize:10 }}>Payments</th>
+                <th style={{ fontSize:10 }}>Weekly Total</th>
+                <th style={{ fontSize:10 }}>Commission</th>
+                <th style={{ fontSize:10 }}>Total YTD</th>
+              </tr>
+            </thead>
+            <tbody>
+              {atlContractors.map((c, i) => (
+                <tr key={c.name} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
+                  <td style={{ padding:"10px 9px", borderLeft:"4px solid #fbbf24", fontWeight:600 }}>{c.name}</td>
+                  <td style={{ padding:"10px 9px", color:"#9aa4b3", textAlign:"left" }}>{c.dba || "—"}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums" }}>{fd(c.weekly,0)}</td>
+                  <td style={{ padding:"10px 9px", color:"#9aa4b3" }}>{c.payments}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums" }}>{fd(c.weeklyTotal,0)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#9aa4b3" }}>{c.commission>0?fd(c.commission,0):"—"}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:800, color:"#fbbf24" }}>{fd(c.total,0)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 // ── BUDGETING ─────────────────────────────────────────────────
 // Pulls live QBO P&L (ce_sf_combined, YTD) and rolls expense lines into
 // 17 buckets. What-if simulator persists shared scenarios via Supabase
@@ -7976,9 +8144,17 @@ function Budgeting() {
       { key:"legal",     label:"Legal & Professional", val:0, color:"#86efac", icon:"⚖" },
       { key:"facilities", label:"Facilities & Utilities", val:0, color:"#fde68a", icon:"🏠" },
       { key:"techMkt",   label:"Tech & Marketing",     val:0, color:"#7dd3fc", icon:"💻" },
+      { key:"agent",     label:"Agent Payments",       val:0, color:"#fb923c", icon:"🤝" },
       { key:"gaOther",   label:"G&A Other",            val:0, color:"#cbd5e1", icon:"📎" },
     ];
     const idx = Object.fromEntries(b.map(x => [x.key, x]));
+
+    // Agent payments tracked separately from CONTRACTORS array (different
+    // expense lens — recruiter/finder model). Sum across all AGENTS entries.
+    // Note: in QBO these post to "Owner Draws", so we subtract from the
+    // owner bucket below to avoid double-counting.
+    const agentTotal = AGENTS.reduce((s, a) => s + (a.total || 0), 0);
+    idx.agent.val = agentTotal;
 
     if (!pnl) {
       // Static fallback from this week's QBO extraction
@@ -7993,11 +8169,11 @@ function Budgeting() {
       idx.truckIns.val   = INS_TOT;
       idx.otherIns.val   = 66786.96;
       idx.maint.val      = TRUCK_MAINT + TRAIL_MAINT + STORAGE + UNIFORMS;
-      idx.owner.val      = 233765.59 + 71846.51;  // owner draws + owner purchases
-      idx.ceEast.val     = 112791.90;
+      idx.owner.val      = Math.max(0, 247082.12 + 71846.51 - agentTotal);  // owner draws (less agent) + owner purchases
+      idx.ceEast.val     = 122383.21;
       idx.badDebt.val    = 84000.00;
-      idx.assetLoan.val  = 37568.67;
-      idx.legal.val      = 64197.78;
+      idx.assetLoan.val  = 41765.53;
+      idx.legal.val      = 64696.24;
       idx.facilities.val = 62146.76 + 18587.91 + 5914.34;       // Rent + Utilities + Repair
       idx.techMkt.val    = 68389.76 + 45474.00 + 15683.92;      // Computer & Software + Advertising + Dues
       // Remainder bucket
@@ -8061,6 +8237,10 @@ function Budgeting() {
       else if (key === "Computer & Software" || key === "Advertising & Marketing" || key === "Dues & Subscriptions") idx.techMkt.val += v;
       else idx.gaOther.val += v;
     }
+
+    // Agent payments post to "Owner Draws" in QBO — subtract from owner bucket
+    // so totals don't double-count when we display Agent as its own bucket.
+    idx.owner.val = Math.max(0, idx.owner.val - agentTotal);
 
     for (const [k, v] of Object.entries(parsed.truckTrailer || {})) {
       if (k.startsWith("_")) continue;
@@ -8741,6 +8921,7 @@ export default function App() {
     if (tab === "revenue")  return <RevenueDashboard />;
     if (tab === "ceeast")   return <CEEast />;
     if (tab === "cashflow") return <CashFlowDashboard />;
+    if (tab === "atl")      return <AtlOperations />;
     if (tab === "budget")   return <Budgeting />;
     if (tab === "office")   return <OfficeStaff />;
     if (tab === "settings") return <DataSettings />;
