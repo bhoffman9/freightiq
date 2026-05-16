@@ -29,8 +29,8 @@ let PAYROLL = [
   { name: "Clark Rettick",         hours: 255.06, totalCost: 7377.62 },   // *inactive
   { name: "Cotton Kejlon",         hours: 320.32, totalCost: 11677.82 },  // *inactive
   { name: "Daniels Gerald W",      hours: 321.49, totalCost: 9590.94 },
-  { name: "Davis Anthoni D",       hours: 1365.32,totalCost: 47625.27, entity: "ATL" },  // ATL since May 11
-  { name: "Denman Samuel E",       hours: 1169.18,totalCost: 37557.11, entity: "ATL" },  // ATL since May 11
+  { name: "Davis Anthoni D",       hours: 1365.32,totalCost: 47625.27, entity: "ATL", atlPreYtd: { hours: 1289.53, totalCost: 44926.45 } },  // ATL since May 11 (preATL = thru May 10)
+  { name: "Denman Samuel E",       hours: 1169.18,totalCost: 37557.11, entity: "ATL", atlPreYtd: { hours: 1093.61, totalCost: 35215.81 } },  // ATL since May 11 (preATL = thru May 10)
   { name: "Dotch Brandon C",       hours: 495.01, totalCost: 14832.95 },
   { name: "Gutierrez Danny",       hours: 1021.00,totalCost: 31710.17 },
   { name: "Guzman Jose",           hours: 1309.41,totalCost: 46889.62 },
@@ -83,8 +83,8 @@ let FUEL = {
   "Cotton Kejlon":         { fuel: 235.78,   gallons: 61.10 },    // card 87401 split (*inactive — frozen)
   "Cowsky Andy":           { fuel: 8536.89,  gallons: 1359.16 },  // card 77457
   "Daniels Gerald W":      { fuel: 3531.31,  gallons: 614.36 },   // card 47402 split (active, absorbs deltas over Christian)
-  "Davis Anthoni D":       { fuel: 32971.68, gallons: 6174.23, entity: "ATL" },  // card 27406 · ATL since May 11
-  "Denman Samuel E":       { fuel: 18614.48, gallons: 3963.43, entity: "ATL" },  // cards 47405 + 37403 · ATL since May 11
+  "Davis Anthoni D":       { fuel: 32971.68, gallons: 6174.23, entity: "ATL", atlPreYtd: { fuel: 31456.85, gallons: 5908.98 } },  // card 27406 · ATL since May 11 (preATL = thru May 10)
+  "Denman Samuel E":       { fuel: 18614.48, gallons: 3963.43, entity: "ATL", atlPreYtd: { fuel: 16747.55, gallons: 3637.30 } },  // cards 47405 + 37403 · ATL since May 11 (preATL = thru May 10)
   "Dotch Brandon C":       { fuel: 12032.86, gallons: 1880.68 },  // cards 07405 (Anderson-frozen split) + 17468
   "Gutierrez Danny":       { fuel: 8217.75,  gallons: 1712.39 },  // card 47404
   "Guzman Jose":           { fuel: 9963.89,  gallons: 2014.40 },  // card 77401
@@ -7119,7 +7119,7 @@ const WAREHOUSE = [
 
 const CONTRACTORS = [
   { name:"Jon Marcus Zengotita", dba:"", weekly:2800, payments:19, weeklyTotal:53200, car:350, carPayments:5, carTotal:1750, commission:0, healthIns:0, healthInsTotal:0, other:0, total:54950, note:"$2,800/wk + $350/mo car (5 months)" },
-  { name:"Mellody Abrego",       dba:"Neon Vibes Enterprise", weekly:2250, payments:19, weeklyTotal:40950, car:334.86, carPayments:5, carTotal:1674.30, commission:3033.21, healthIns:368.34, healthInsTotal:6998.46, other:0, total:52655.97, entity:"ATL", note:"$2,150 → $2,250/wk new normal May 11 + $334.86/mo car (5mo) + commission (+$1K this wk) + health ins $368.34/wk (19wk) · ATL ops since May 11" },
+  { name:"Mellody Abrego",       dba:"Neon Vibes Enterprise", weekly:2250, payments:19, weeklyTotal:40950, car:334.86, carPayments:5, carTotal:1674.30, commission:3033.21, healthIns:368.34, healthInsTotal:6998.46, other:0, total:52655.97, entity:"ATL", atlPreYtd: { total: 49037.63 }, note:"$2,150 → $2,250/wk new normal May 11 + $334.86/mo car (5mo) + commission (+$1K this wk) + health ins $368.34/wk (19wk) · ATL ops since May 11 (preATL = thru May 10)" },
   { name:"Gabriel Colon",        dba:"", weekly:0, payments:19, weeklyTotal:42871.92, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:42871.92, note:"Variable weekly — $2,331.63 (May 15) + $2,000 (May 8) + $2,210.64 (May 1) + $2,247.64 (Apr 24) + $2,000 (Apr 17) + $2,500 (Apr 10) + $2,833.30 (Apr 3) + $2,199.98 (Mar 27)" },
   { name:"Hilda Salman",         dba:"Salman Enterprises LLC", weekly:1730, payments:19, weeklyTotal:32870, car:0, carPayments:0, carTotal:0, commission:0, healthIns:118.82, healthInsTotal:2257.58, other:0, total:35127.58, note:"$1,730/wk + health ins $118.82/wk" },
   { name:"Maria Con",            dba:"", weekly:650, payments:19, weeklyTotal:11350, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:11350, note:"$550/wk → $650/wk starting Mar 2026" },
@@ -7928,68 +7928,75 @@ function CashFlowDashboard() {
 
 // ── ATL OPERATIONS ────────────────────────────────────────────
 // Atlanta operations launched May 11, 2026. ATL drivers + contractors
-// are tagged with entity:"ATL" in their PAYROLL/FUEL/CONTRACTORS entries;
-// this tab sums those tagged rows for the YTD view + flags that pre-May 11
-// activity for transferred drivers (Davis, Denman) is rolled in.
+// are tagged with entity:"ATL" in their PAYROLL/FUEL/CONTRACTORS entries.
+// For drivers/contractors who transferred (Davis, Denman, Mellody),
+// the atlPreYtd field stores their YTD as of May 10 — we subtract this
+// so the ATL tab shows ONLY post-May-11 activity.
 function AtlOperations() {
   const atlDrivers = PAYROLL.filter(p => p.entity === "ATL");
   const atlContractors = CONTRACTORS.filter(c => c.entity === "ATL");
 
-  // YTD labor and fuel — note: Davis + Denman were SF/CE drivers
-  // pre-May 11, so YTD includes that pre-ATL period; this is flagged.
-  const atlLaborYTD = atlDrivers.reduce((s, p) => s + p.totalCost, 0);
-  const atlHoursYTD = atlDrivers.reduce((s, p) => s + p.hours, 0);
-
+  // Per-driver ATL-period numbers: current YTD minus preATL snapshot.
+  // Manar/Tucker/Johnson have no preATL → full YTD = ATL.
   const atlFuelRows = atlDrivers.map(p => {
     const f = FUEL[p.name] || { fuel: 0, gallons: 0 };
-    return { name: p.name, hours: p.hours, totalCost: p.totalCost, fuel: f.fuel, gallons: f.gallons };
+    const prePayroll = p.atlPreYtd || { hours: 0, totalCost: 0 };
+    const preFuel = f.atlPreYtd || { fuel: 0, gallons: 0 };
+    return {
+      name: p.name,
+      hours: Math.max(0, p.hours - prePayroll.hours),
+      totalCost: Math.max(0, p.totalCost - prePayroll.totalCost),
+      fuel: Math.max(0, f.fuel - preFuel.fuel),
+      gallons: Math.max(0, f.gallons - preFuel.gallons),
+    };
   });
+  const atlLaborYTD = atlFuelRows.reduce((s, r) => s + r.totalCost, 0);
+  const atlHoursYTD = atlFuelRows.reduce((s, r) => s + r.hours, 0);
   const atlFuelYTD = atlFuelRows.reduce((s, r) => s + r.fuel, 0);
   const atlGallonsYTD = atlFuelRows.reduce((s, r) => s + r.gallons, 0);
   const atlMilesEst = atlGallonsYTD * 6.5;
-  const atlContractorYTD = atlContractors.reduce((s, c) => s + c.total, 0);
-  const atlAllInLabor = atlLaborYTD + atlContractorYTD;
 
-  const laborCpm = atlMilesEst > 0 ? atlLaborYTD / atlMilesEst : null;
-  const fuelCpm  = atlMilesEst > 0 ? atlFuelYTD  / atlMilesEst : null;
+  // Contractors: same preATL treatment
+  const atlContractorRows = atlContractors.map(c => {
+    const pre = c.atlPreYtd?.total || 0;
+    return { ...c, atlTotal: Math.max(0, c.total - pre) };
+  });
+  const atlContractorYTD = atlContractorRows.reduce((s, c) => s + c.atlTotal, 0);
+  const atlAllInLabor = atlLaborYTD + atlContractorYTD;
   const allInCpm = atlMilesEst > 0 ? (atlAllInLabor + atlFuelYTD) / atlMilesEst : null;
 
   return (
     <div>
       <div className="ptitle">🍑 ATL Operations</div>
-      <div className="psub">Atlanta operations · launched May 11, 2026 · {atlDrivers.length} W2 drivers · {atlContractors.length} 1099 contractor{atlContractors.length===1?"":"s"}</div>
-
-      <div className="ibox" style={{ marginBottom:14 }}>
-        <strong style={{ color:"#4fc3f7" }}>Note:</strong> YTD figures for Davis + Denman include their CE/SF activity from before May 11 (when they transferred to ATL). Manar, Tucker, and Johnson started ATL fresh; ENM Trucking transitioned from Bini's J&A W2.
-      </div>
+      <div className="psub">Atlanta operations · launched May 11, 2026 · {atlDrivers.length} W2 drivers · {atlContractors.length} 1099 contractor{atlContractors.length===1?"":"s"} · ATL-period only (pre-May 11 activity for transferred drivers excluded)</div>
 
       {/* Top KPIs */}
       <div className="g4" style={{ marginBottom:14 }}>
         <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
-          <div className="klbl">ATL Driver Labor (YTD)</div>
+          <div className="klbl">ATL Driver Labor</div>
           <div className="kval" style={{ color:"#f47820" }}>{fd(atlLaborYTD, 0)}</div>
-          <div className="ksub">{atlDrivers.length} drivers · {fn(atlHoursYTD, 0)} hrs</div>
+          <div className="ksub">{atlDrivers.length} drivers · {fn(atlHoursYTD, 0)} hrs · since May 11</div>
         </div>
         <div className="kpi" style={{ borderTop:"3px solid #f5c542" }}>
-          <div className="klbl">ATL Contractor Labor (YTD)</div>
+          <div className="klbl">ATL Contractor Labor</div>
           <div className="kval" style={{ color:"#fbbf24" }}>{fd(atlContractorYTD, 0)}</div>
           <div className="ksub">{atlContractors.map(c => c.name.split(" ")[0]).join(", ") || "—"}</div>
         </div>
         <div className="kpi" style={{ borderTop:"3px solid #ff8a65" }}>
-          <div className="klbl">ATL Fuel (YTD)</div>
+          <div className="klbl">ATL Fuel</div>
           <div className="kval" style={{ color:"#ff8a65" }}>{fd(atlFuelYTD, 0)}</div>
           <div className="ksub">{fn(atlGallonsYTD, 0)} gal · {fd(atlGallonsYTD>0?atlFuelYTD/atlGallonsYTD:0,3)}/gal avg</div>
         </div>
         <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
           <div className="klbl">ATL All-In Labor + Fuel</div>
           <div className="kval" style={{ color:"#3ddc84" }}>{fd(atlAllInLabor + atlFuelYTD, 0)}</div>
-          <div className="ksub">{fn(atlMilesEst, 0)} mi est · {laborCpm!=null?fd(allInCpm,3)+"/mi":"—"}</div>
+          <div className="ksub">{fn(atlMilesEst, 0)} mi est · {allInCpm!=null?fd(allInCpm,3)+"/mi":"—"}</div>
         </div>
       </div>
 
       {/* ATL Drivers table */}
       <div className="card" style={{ marginBottom:14 }}>
-        <div className="ctit" style={{ fontSize:13 }}>🚚 ATL Drivers (YTD)</div>
+        <div className="ctit" style={{ fontSize:13 }}>🚚 ATL Drivers · since May 11</div>
         <table className="tbl" style={{ fontSize:13 }}>
           <thead>
             <tr>
@@ -8018,7 +8025,7 @@ function AtlOperations() {
                   <td style={{ padding:"10px 9px", fontSize:10 }}>
                     {pending && <span style={{ color:"var(--ye)", border:"1px solid var(--ye)", padding:"2px 6px", borderRadius:2 }}>STARTING</span>}
                     {newATL && <span style={{ color:"#3ddc84", border:"1px solid #3ddc84", padding:"2px 6px", borderRadius:2 }}>NEW · ATL</span>}
-                    {transferred && <span style={{ color:"#4fc3f7", border:"1px solid #4fc3f7", padding:"2px 6px", borderRadius:2 }}>TRANSFERRED · YTD incl. pre-ATL</span>}
+                    {transferred && <span style={{ color:"#4fc3f7", border:"1px solid #4fc3f7", padding:"2px 6px", borderRadius:2 }}>TRANSFERRED MAY 11</span>}
                   </td>
                 </tr>
               );
@@ -8039,33 +8046,36 @@ function AtlOperations() {
       </div>
 
       {/* ATL Contractors table */}
-      {atlContractors.length > 0 && (
+      {atlContractorRows.length > 0 && (
         <div className="card" style={{ marginBottom:14 }}>
-          <div className="ctit" style={{ fontSize:13 }}>📋 ATL Contractors (YTD)</div>
+          <div className="ctit" style={{ fontSize:13 }}>📋 ATL Contractors · since May 11</div>
           <table className="tbl" style={{ fontSize:13 }}>
             <thead>
               <tr>
                 <th style={{ textAlign:"left", fontSize:10 }}>Contractor</th>
                 <th style={{ textAlign:"left", fontSize:10 }}>DBA</th>
                 <th style={{ fontSize:10 }}>Weekly</th>
-                <th style={{ fontSize:10 }}>Payments</th>
-                <th style={{ fontSize:10 }}>Weekly Total</th>
-                <th style={{ fontSize:10 }}>Commission</th>
-                <th style={{ fontSize:10 }}>Total YTD</th>
+                <th style={{ fontSize:10 }}>ATL Total</th>
+                <th style={{ fontSize:10 }}>Status</th>
               </tr>
             </thead>
             <tbody>
-              {atlContractors.map((c, i) => (
-                <tr key={c.name} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
-                  <td style={{ padding:"10px 9px", borderLeft:"4px solid #fbbf24", fontWeight:600 }}>{c.name}</td>
-                  <td style={{ padding:"10px 9px", color:"#9aa4b3", textAlign:"left" }}>{c.dba || "—"}</td>
-                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums" }}>{fd(c.weekly,0)}</td>
-                  <td style={{ padding:"10px 9px", color:"#9aa4b3" }}>{c.payments}</td>
-                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums" }}>{fd(c.weeklyTotal,0)}</td>
-                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#9aa4b3" }}>{c.commission>0?fd(c.commission,0):"—"}</td>
-                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:800, color:"#fbbf24" }}>{fd(c.total,0)}</td>
-                </tr>
-              ))}
+              {atlContractorRows.map((c, i) => {
+                const transferred = c.atlPreYtd != null;
+                return (
+                  <tr key={c.name} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
+                    <td style={{ padding:"10px 9px", borderLeft:"4px solid #fbbf24", fontWeight:600 }}>{c.name}</td>
+                    <td style={{ padding:"10px 9px", color:"#9aa4b3", textAlign:"left" }}>{c.dba || "—"}</td>
+                    <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums" }}>{fd(c.weekly,0)}</td>
+                    <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:800, color:"#fbbf24" }}>{fd(c.atlTotal,0)}</td>
+                    <td style={{ padding:"10px 9px", fontSize:10 }}>
+                      {transferred
+                        ? <span style={{ color:"#4fc3f7", border:"1px solid #4fc3f7", padding:"2px 6px", borderRadius:2 }}>TRANSFERRED MAY 11</span>
+                        : <span style={{ color:"#3ddc84", border:"1px solid #3ddc84", padding:"2px 6px", borderRadius:2 }}>NEW · ATL</span>}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -8151,8 +8161,8 @@ function Budgeting() {
 
     // Agent payments tracked separately from CONTRACTORS array (different
     // expense lens — recruiter/finder model). Sum across all AGENTS entries.
-    // Note: in QBO these post to "Owner Draws", so we subtract from the
-    // owner bucket below to avoid double-counting.
+    // Note: Agent draws are a SEPARATE draw category in QBO (NOT inside
+    // "Total for Owners Draw"), so we don't subtract from the owner bucket.
     const agentTotal = AGENTS.reduce((s, a) => s + (a.total || 0), 0);
     idx.agent.val = agentTotal;
 
@@ -8169,7 +8179,7 @@ function Budgeting() {
       idx.truckIns.val   = INS_TOT;
       idx.otherIns.val   = 66786.96;
       idx.maint.val      = TRUCK_MAINT + TRAIL_MAINT + STORAGE + UNIFORMS;
-      idx.owner.val      = Math.max(0, 247082.12 + 71846.51 - agentTotal);  // owner draws (less agent) + owner purchases
+      idx.owner.val      = 247082.12 + 71846.51;  // owner draws + owner purchases (Agent is a SEPARATE draw in QBO, not subtracted)
       idx.ceEast.val     = 122383.21;
       idx.badDebt.val    = 84000.00;
       idx.assetLoan.val  = 41765.53;
@@ -8237,10 +8247,6 @@ function Budgeting() {
       else if (key === "Computer & Software" || key === "Advertising & Marketing" || key === "Dues & Subscriptions") idx.techMkt.val += v;
       else idx.gaOther.val += v;
     }
-
-    // Agent payments post to "Owner Draws" in QBO — subtract from owner bucket
-    // so totals don't double-count when we display Agent as its own bucket.
-    idx.owner.val = Math.max(0, idx.owner.val - agentTotal);
 
     for (const [k, v] of Object.entries(parsed.truckTrailer || {})) {
       if (k.startsWith("_")) continue;
