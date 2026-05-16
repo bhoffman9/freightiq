@@ -7634,11 +7634,12 @@ function CashFlowDashboard() {
   const [liveData, setLiveData] = useState(null);
   const [fetchStatus, setFetchStatus] = useState("idle"); // idle | loading | ok | error
 
-  // Fetch live data from expense-calendar repo
+  // Live data: Supabase-backed (queries the budget-calendar w_* tables for
+  // this week's recurring + one-time expenses). Replaces the old GitHub
+  // raw fetch of current-week.json that fell out of practice.
   useEffect(() => {
-    const url = "https://raw.githubusercontent.com/bhoffman9/expense-calendar/main/current-week.json";
     setFetchStatus("loading");
-    fetch(url + "?t=" + Date.now()) // cache-bust
+    fetch("/api/cash-flow")
       .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(data => { setLiveData(data); setFetchStatus("ok"); })
       .catch(() => setFetchStatus("error"));
@@ -7697,8 +7698,8 @@ function CashFlowDashboard() {
       <div className="ptitle">Cash Flow</div>
       <div className="psub">
         Weekly bank snapshot · Monday morning balances · {latest.date || latest.weekLabel}
-        {fetchStatus === "ok" && <span style={{ color:"#3ddc84",marginLeft:8,fontSize:10 }}>● Live from expense-calendar repo</span>}
-        {fetchStatus === "error" && <span style={{ color:"#f5c542",marginLeft:8,fontSize:10 }}>● Using built-in data (repo not found)</span>}
+        {fetchStatus === "ok" && <span style={{ color:"#3ddc84",marginLeft:8,fontSize:10 }}>● Live from budget calendar (Supabase)</span>}
+        {fetchStatus === "error" && <span style={{ color:"#f5c542",marginLeft:8,fontSize:10 }}>● Using built-in data (Supabase fetch failed)</span>}
         {fetchStatus === "loading" && <span style={{ color:"var(--mu)",marginLeft:8,fontSize:10 }}>● Loading...</span>}
       </div>
 
@@ -7918,8 +7919,8 @@ function CashFlowDashboard() {
       )}
 
       <div className="ibox" style={{ marginTop:14 }}>
-        <strong style={{ color:"#4fc3f7" }}>Live sync enabled:</strong> This tab pulls from <span style={{ color:"#3ddc84" }}>github.com/bhoffman9/expense-calendar/current-week.json</span>.
-        Update that file with new bank balances and payment statuses — FreightIQ picks it up automatically on page load. Falls back to built-in data if the repo isn't available.
+        <strong style={{ color:"#4fc3f7" }}>Live sync enabled:</strong> Scheduled payments pull from the budget-calendar's Supabase tables (<span style={{ color:"#3ddc84" }}>w_custom_recurring + w_one_time_expenses</span>) via <span style={{ color:"#3ddc84" }}>/api/cash-flow</span>.
+        Update payments + paid/unpaid status in the budget calendar app — FreightIQ picks it up on next page load. Bank account balances are still hardcoded (no calendar table tracks them); fall back to built-in if Supabase is unreachable.
       </div>
     </div>
   );

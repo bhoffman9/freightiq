@@ -1,0 +1,33 @@
+<svg width="1200" height="720" viewBox="0 0 1200 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1200" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1C1921"/>
+      <stop offset="1" stop-color="#29363A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="720" rx="36" fill="url(#bg3)"/>
+  <rect x="34" y="30" width="1132" height="60" rx="18" fill="#25212A"/>
+  <text x="62" y="66" fill="#FFF7EE" font-size="22" font-family="Arial" font-weight="700">Ben Hoffman Trading Strategy Review</text>
+  <rect x="52" y="118" width="740" height="250" rx="28" fill="#27232D" stroke="#4D5F64"/>
+  <text x="86" y="156" fill="#D3B47A" font-size="16" font-family="Arial" font-weight="700">EXTERNAL REVIEW DASHBOARD</text>
+  <text x="86" y="212" fill="#FFF7EE" font-size="48" font-family="Arial" font-weight="700">Investment committee framing</text>
+  <text x="86" y="256" fill="#D5CFC5" font-size="22" font-family="Arial">The blended portfolio thesis is stronger than the stand-alone sleeve thesis.</text>
+  <rect x="86" y="296" width="150" height="34" rx="17" fill="#3C3350"/>
+  <rect x="248" y="296" width="142" height="34" rx="17" fill="#284A4C"/>
+  <rect x="402" y="296" width="198" height="34" rx="17" fill="#433722"/>
+  <rect x="820" y="118" width="346" height="250" rx="28" fill="#27232D" stroke="#4D5F64"/>
+  <rect x="852" y="158" width="282" height="68" rx="18" fill="#284A4C"/>
+  <rect x="852" y="242" width="282" height="68" rx="18" fill="#3C3350"/>
+  <text x="878" y="185" fill="#FFF7EE" font-size="14" font-family="Arial" font-weight="700">FUND TODAY</text>
+  <text x="878" y="210" fill="#FFF7EE" font-size="28" font-family="Arial" font-weight="700">90 / 10 SPY / G+</text>
+  <text x="878" y="269" fill="#FFF7EE" font-size="14" font-family="Arial" font-weight="700">DEFAULT FALLBACK</text>
+  <text x="878" y="294" fill="#FFF7EE" font-size="28" font-family="Arial" font-weight="700">SPY alone</text>
+  <rect x="52" y="398" width="1114" height="270" rx="30" fill="#211E27" stroke="#4D5F64"/>
+  <rect x="88" y="444" width="540" height="186" rx="22" fill="#2B3440"/>
+  <rect x="658" y="444" width="472" height="186" rx="22" fill="#2B3440"/>
+  <rect x="118" y="478" width="238" height="18" rx="9" fill="#51616A"/>
+  <rect x="118" y="512" width="304" height="18" rx="9" fill="#51616A"/>
+  <rect x="118" y="546" width="270" height="18" rx="9" fill="#51616A"/>
+  <rect x="690" y="478" width="206" height="104" rx="18" fill="#284A4C"/>
+  <rect x="914" y="478" width="184" height="104" rx="18" fill="#433722"/>
+</svg>

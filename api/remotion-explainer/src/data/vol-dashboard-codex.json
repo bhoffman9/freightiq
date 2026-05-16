@@ -1,0 +1,189 @@
+{
+  "brandName": "Vol Dashboard Codex",
+  "projectName": "Rules-Based Trading Dashboard Suite",
+  "audience": "Personal trading review and disciplined execution",
+  "oneLiner": "Trading dashboards built to keep research, live signals, and execution discipline aligned.",
+  "problemPoints": [
+    "When markets get noisy, research, live inputs, and execution rules drift apart.",
+    "Without one disciplined view, it gets too easy to react instead of follow the system."
+  ],
+  "solutionPoints": [
+    "The workflow is split into live, comparison, review, and audit views.",
+    "A written policy keeps every screen tied to process, not impulse."
+  ],
+  "features": [
+    {
+      "title": "Live dashboard",
+      "detail": "Current call, live inputs, feed health, and guardrails in one readout."
+    },
+    {
+      "title": "Comparison view",
+      "detail": "Shows what is fundable, not just what posted the prettiest CAGR."
+    },
+    {
+      "title": "Review and audit",
+      "detail": "Reframes the strategy like a real memo and checks whether extra complexity is earning its keep."
+    }
+  ],
+  "metrics": [
+    {
+      "label": "Routes",
+      "value": "6 routes",
+      "detail": "Live, comparison, review, audit, JSON, and home views are exposed directly."
+    },
+    {
+      "label": "OOS tests",
+      "value": "10 tests",
+      "detail": "Ten out-of-sample windows keep the story grounded in live plausibility."
+    },
+    {
+      "label": "Core mix",
+      "value": "90/10",
+      "detail": "SPY stays the anchor while G plus stays capped as an overlay."
+    }
+  ],
+  "ctaTitle": "Make the system feel obvious.",
+  "ctaBody": "The best explainer feels simple because the process is.",
+  "website": "vol-dashboard-codex.local",
+  "accentColor": "#0f766e",
+  "secondaryColor": "#d7a255",
+  "backgroundColor": "#08131f",
+  "sceneDurations": {
+    "intro": 300,
+    "problemSolution": 360,
+    "features": 450,
+    "metrics": 330,
+    "outro": 240
+  },
+  "voiceover": {
+    "enabled": true,
+    "src": "audio/vol-dashboard-codex-voiceover.mp3",
+    "volume": 1,
+    "fadeInFrames": 12,
+    "fadeOutFrames": 20
+  },
+  "captions": {
+    "enabled": true,
+    "cues": [
+      {
+        "fromMs": 0,
+        "toMs": 3600,
+        "text": "Vol Dashboard Codex keeps research,\nlive signals, and execution discipline aligned."
+      },
+      {
+        "fromMs": 3600,
+        "toMs": 7600,
+        "text": "When markets get noisy,\nprocess drift is the real risk."
+      },
+      {
+        "fromMs": 7600,
+        "toMs": 11400,
+        "text": "So this suite makes the workflow easier to read."
+      },
+      {
+        "fromMs": 11400,
+        "toMs": 15000,
+        "text": "Live shows the current call."
+      },
+      {
+        "fromMs": 15000,
+        "toMs": 18600,
+        "text": "Comparison shows what is fundable."
+      },
+      {
+        "fromMs": 18600,
+        "toMs": 22600,
+        "text": "Review and audit show what earns trust."
+      },
+      {
+        "fromMs": 22600,
+        "toMs": 27200,
+        "text": "The live screen pulls VIX,\nSVIX, and term structure into one view."
+      },
+      {
+        "fromMs": 27200,
+        "toMs": 32000,
+        "text": "The comparison view keeps the story on sizing and risk."
+      },
+      {
+        "fromMs": 32000,
+        "toMs": 36800,
+        "text": "The policy keeps the dashboards tied to process,\nnot temptation."
+      },
+      {
+        "fromMs": 36800,
+        "toMs": 42400,
+        "text": "Six routes. Ten out-of-sample tests.\nA capped ninety-ten structure."
+      },
+      {
+        "fromMs": 42400,
+        "toMs": 49200,
+        "text": "That makes the system easier to explain,\nand easier to trust."
+      },
+      {
+        "fromMs": 49200,
+        "toMs": 55600,
+        "text": "Clear inputs. Visible guardrails.\nDecisions you can reproduce later."
+      }
+    ]
+  },
+  "lowerThirds": {
+    "title": {
+      "eyebrow": "Signal plus discipline",
+      "title": "One decision flow",
+      "detail": "Research, live context, and guardrails stay in one lane."
+    },
+    "problemSolution": {
+      "eyebrow": "Why it exists",
+      "title": "Fight drift",
+      "detail": "Keep the system from sliding into ad hoc calls."
+    },
+    "features": {
+      "eyebrow": "Three quick reads",
+      "title": "See the workflow fast",
+      "detail": "Each screen does one job, so the story stays clear."
+    },
+    "metrics": {
+      "eyebrow": "Proof on screen",
+      "title": "Keep it fundable",
+      "detail": "The evidence is visible on screen."
+    },
+    "outro": {
+      "eyebrow": "The standard",
+      "title": "Clear. Tight. Reproducible.",
+      "detail": "Trust comes from a flow people can follow."
+    }
+  },
+  "previews": {
+    "title": [
+      {
+        "src": "dashboard-previews/live-dashboard.svg",
+        "title": "Live decision dashboard",
+        "route": "/api/live-decision-dashboard",
+        "detail": "Current call, feed health, and guardrails in one screen."
+      }
+    ],
+    "features": [
+      {
+        "src": "dashboard-previews/live-dashboard.svg",
+        "title": "Live",
+        "route": "/api/live-decision-dashboard",
+        "detail": "Actionable readout"
+      },
+      {
+        "src": "dashboard-previews/comparison-dashboard.svg",
+        "title": "Comparison",
+        "route": "/api/strategy-comparison-dashboard",
+        "detail": "Fundable mixes"
+      }
+    ],
+    "metrics": [
+      {
+        "src": "dashboard-previews/comparison-dashboard.svg",
+        "title": "Fundable over flashy",
+        "route": "/api/strategy-comparison-dashboard",
+        "detail": "The story favors disciplined portfolio construction over backtest theater."
+      }
+    ]
+  }
+}

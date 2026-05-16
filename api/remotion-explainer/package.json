@@ -1,0 +1,20 @@
+{
+  "name": "freightiq-remotion-explainer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "remotion studio src/index.jsx",
+    "render": "remotion render src/index.jsx ProjectExplainer out/project-explainer.mp4 --props=./src/data/sample-props.json",
+    "render:vol-dashboard": "remotion render src/index.jsx ProjectExplainer out/vol-dashboard-codex.mp4 --props=./src/data/vol-dashboard-codex.json",
+    "voiceover:vol-dashboard": "node ./scripts/generate-elevenlabs-voiceover.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.443",
+    "@remotion/zod-types": "^4.0.443",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remotion": "^4.0.443",
+    "zod": "^4.3.6"
+  }
+}
