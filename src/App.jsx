@@ -7119,7 +7119,7 @@ const WAREHOUSE = [
 
 const CONTRACTORS = [
   { name:"Jon Marcus Zengotita", dba:"", weekly:2800, payments:19, weeklyTotal:53200, car:350, carPayments:5, carTotal:1750, commission:0, healthIns:0, healthInsTotal:0, other:0, total:54950, note:"$2,800/wk + $350/mo car (5 months)" },
-  { name:"Mellody Abrego",       dba:"Neon Vibes Enterprise", weekly:2250, payments:19, weeklyTotal:40950, car:334.86, carPayments:5, carTotal:1674.30, commission:3033.21, healthIns:368.34, healthInsTotal:6998.46, other:0, total:52655.97, entity:"ATL", atlPreYtd: { total: 49037.63 }, note:"$2,150 → $2,250/wk new normal May 11 + $334.86/mo car (5mo) + commission (+$1K this wk) + health ins $368.34/wk (19wk) · ATL ops since May 11 (preATL = thru May 10)" },
+  { name:"Mellody Abrego",       dba:"Neon Vibes Enterprise", weekly:2250, payments:19, weeklyTotal:40950, car:334.86, carPayments:5, carTotal:1674.30, commission:3033.21, healthIns:368.34, healthInsTotal:6998.46, other:0, total:52655.97, entity:"ATL", atlPreYtd: { weeklyTotal: 38700, carTotal: 1674.30, commission: 2033.21, healthInsTotal: 6630.12, total: 49037.63 }, note:"$2,150 → $2,250/wk new normal May 11 + $334.86/mo car (5mo) + commission (+$1K this wk) + health ins $368.34/wk (19wk) · ATL ops since May 11 (preATL = thru May 10)" },
   { name:"Gabriel Colon",        dba:"", weekly:0, payments:19, weeklyTotal:42871.92, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:42871.92, note:"Variable weekly — $2,331.63 (May 15) + $2,000 (May 8) + $2,210.64 (May 1) + $2,247.64 (Apr 24) + $2,000 (Apr 17) + $2,500 (Apr 10) + $2,833.30 (Apr 3) + $2,199.98 (Mar 27)" },
   { name:"Hilda Salman",         dba:"Salman Enterprises LLC", weekly:1730, payments:19, weeklyTotal:32870, car:0, carPayments:0, carTotal:0, commission:0, healthIns:118.82, healthInsTotal:2257.58, other:0, total:35127.58, note:"$1,730/wk + health ins $118.82/wk" },
   { name:"Maria Con",            dba:"", weekly:650, payments:19, weeklyTotal:11350, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:11350, note:"$550/wk → $650/wk starting Mar 2026" },
@@ -7956,10 +7956,18 @@ function AtlOperations() {
   const atlGallonsYTD = atlFuelRows.reduce((s, r) => s + r.gallons, 0);
   const atlMilesEst = atlGallonsYTD * 6.5;
 
-  // Contractors: same preATL treatment
+  // Contractors: subtract atlPreYtd component-by-component so the table can
+  // show base / commission / health / car deltas separately.
   const atlContractorRows = atlContractors.map(c => {
-    const pre = c.atlPreYtd?.total || 0;
-    return { ...c, atlTotal: Math.max(0, c.total - pre) };
+    const pre = c.atlPreYtd || {};
+    return {
+      ...c,
+      atlBase:       Math.max(0, (c.weeklyTotal    || 0) - (pre.weeklyTotal    || 0)),
+      atlCommission: Math.max(0, (c.commission     || 0) - (pre.commission     || 0)),
+      atlHealth:     Math.max(0, (c.healthInsTotal || 0) - (pre.healthInsTotal || 0)),
+      atlCar:        Math.max(0, (c.carTotal       || 0) - (pre.carTotal       || 0)),
+      atlTotal:      Math.max(0, (c.total          || 0) - (pre.total          || 0)),
+    };
   });
   const atlContractorYTD = atlContractorRows.reduce((s, c) => s + c.atlTotal, 0);
   const atlAllInLabor = atlLaborYTD + atlContractorYTD;
@@ -8048,13 +8056,16 @@ function AtlOperations() {
       {/* ATL Contractors table */}
       {atlContractorRows.length > 0 && (
         <div className="card" style={{ marginBottom:14 }}>
-          <div className="ctit" style={{ fontSize:13 }}>📋 ATL Contractors · since May 11</div>
+          <div className="ctit" style={{ fontSize:13 }}>📋 ATL Contractors · since May 11 · component breakdown</div>
           <table className="tbl" style={{ fontSize:13 }}>
             <thead>
               <tr>
                 <th style={{ textAlign:"left", fontSize:10 }}>Contractor</th>
                 <th style={{ textAlign:"left", fontSize:10 }}>DBA</th>
-                <th style={{ fontSize:10 }}>Weekly</th>
+                <th style={{ fontSize:10 }}>Base</th>
+                <th style={{ fontSize:10 }}>Commission</th>
+                <th style={{ fontSize:10 }}>Health Ins</th>
+                <th style={{ fontSize:10 }}>Car</th>
                 <th style={{ fontSize:10 }}>ATL Total</th>
                 <th style={{ fontSize:10 }}>Status</th>
               </tr>
@@ -8066,8 +8077,11 @@ function AtlOperations() {
                   <tr key={c.name} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                     <td style={{ padding:"10px 9px", borderLeft:"4px solid #fbbf24", fontWeight:600 }}>{c.name}</td>
                     <td style={{ padding:"10px 9px", color:"#9aa4b3", textAlign:"left" }}>{c.dba || "—"}</td>
-                    <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums" }}>{fd(c.weekly,0)}</td>
-                    <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:800, color:"#fbbf24" }}>{fd(c.atlTotal,0)}</td>
+                    <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums" }}>{fd(c.atlBase, 0)}</td>
+                    <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color: c.atlCommission > 0 ? "#3ddc84" : "#9aa4b3" }}>{c.atlCommission > 0 ? fd(c.atlCommission, 0) : "—"}</td>
+                    <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color: c.atlHealth > 0 ? "#b39ddb" : "#9aa4b3" }}>{c.atlHealth > 0 ? fd(c.atlHealth, 0) : "—"}</td>
+                    <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color: c.atlCar > 0 ? "#a78bfa" : "#9aa4b3" }}>{c.atlCar > 0 ? fd(c.atlCar, 0) : "—"}</td>
+                    <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:800, color:"#fbbf24", fontSize:14 }}>{fd(c.atlTotal, 0)}</td>
                     <td style={{ padding:"10px 9px", fontSize:10 }}>
                       {transferred
                         ? <span style={{ color:"#4fc3f7", border:"1px solid #4fc3f7", padding:"2px 6px", borderRadius:2 }}>TRANSFERRED MAY 11</span>
@@ -8077,6 +8091,17 @@ function AtlOperations() {
                 );
               })}
             </tbody>
+            <tfoot>
+              <tr>
+                <td style={{ padding:"12px 9px", fontSize:13 }} colSpan={2}>TOTAL · {atlContractorRows.length} contractors</td>
+                <td style={{ padding:"12px 9px", fontSize:13 }}>{fd(atlContractorRows.reduce((s,c)=>s+c.atlBase, 0), 0)}</td>
+                <td style={{ padding:"12px 9px", fontSize:13, color:"#3ddc84" }}>{fd(atlContractorRows.reduce((s,c)=>s+c.atlCommission, 0), 0)}</td>
+                <td style={{ padding:"12px 9px", fontSize:13, color:"#b39ddb" }}>{fd(atlContractorRows.reduce((s,c)=>s+c.atlHealth, 0), 0)}</td>
+                <td style={{ padding:"12px 9px", fontSize:13, color:"#a78bfa" }}>{fd(atlContractorRows.reduce((s,c)=>s+c.atlCar, 0), 0)}</td>
+                <td style={{ padding:"12px 9px", fontSize:14, fontWeight:900, color:"#fbbf24" }}>{fd(atlContractorYTD, 0)}</td>
+                <td></td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       )}
