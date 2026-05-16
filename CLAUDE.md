@@ -104,6 +104,7 @@ freightiq/
 | `GET /api/qbo-pnl?company=X&period=Y` | GET | QuickBooks P&L — companies: `ce_sf_combined`, `ce_east`. Periods: `ytd`, `this_week`, `last_week`, `jan`-`dec`, or `start_date`/`end_date`. **Returns `{ company, period, fiq, parsed }` — expenses/cogs/truckTrailer dicts live under `parsed.*`, not top-level. See `parsePnlReport()` in `_qbo-helpers.js` for the bucket-mapping gotchas (nested-section prefix loss, etc.)** |
 | `GET /api/qbo-bs?company=X` | GET | QuickBooks Balance Sheet — returns assets, liabilities, equity with account detail |
 | `GET/POST/PATCH/DELETE /api/budget-whatifs` | * | Supabase CRUD for Budgeting tab what-if scenarios. POST body `{ label, amount, frequency: 'weekly'\|'monthly' }`. Backed by `freightiq_budget_whatifs` table — returns 503 `table-not-found` until migration is applied |
+| `GET /api/cash-flow` | GET | Pulls this week's scheduled payments from the budget-calendar's shared Supabase tables (`w_custom_recurring` + `w_one_time_expenses` + `w_checked_items` + `w_categories`) and shapes them as `{ week, windowStart, windowEnd, payments: [{day, vendor, amount, status, cat}] }`. Used by Cash Flow tab. Replaces the old GitHub raw fetch of `current-week.json`. Bank account balances are NOT tracked in the calendar tables — UI falls back to hardcoded `CASH_SNAPSHOTS` for that side |
 | `GET /api/samsara-miles?year=2026` | GET | Samsara fleet mileage. **Hybrid:** finalized quarters via IFTA endpoint (per-state breakdown), in-progress quarter via `/fleet/vehicles/stats/history` odometer delta (no per-state breakdown until IFTA closes). Returns `inProgressQuarter`, `inProgressSource` (e.g. `"obd:31 + gps:0"`), per-truck `iftaMiles` + `inProgressMiles`. Drives fleet `MILES` constant + CPM at runtime via `recomputeDerived()` + `dataVersion` remount |
 
 **Other apps consume these endpoints:**
@@ -144,9 +145,10 @@ freightiq/
 | Trailers | `TrailerFleet()` | McKinney, Xtra, Utility trailer fleet |
 | Office Staff | `OfficeStaff()` | Office/warehouse/contractor payroll |
 | Income | `IncomeDashboard()` | Live QB P&L + weekly/monthly income with YoY comparison |
-| CE East | `CEEast()` | Live QB P&L + Balance Sheet, Owner Payback calculator |
-| Cash Flow | `CashFlowDashboard()` | Cash flow analysis |
-| Budgeting | `Budgeting()` | QBO P&L rolled into 19 weekly-budget buckets + Supabase-backed what-if simulator. See "Budgeting tab" section below for bucket-mapping rules |
+| CE East | `CEEast()` | Live QBO P&L + Balance Sheet for the CE East entity. Uses a separate QBO token (`ce_east`) in the shared `qbo_tokens` table — when this token expires (401s in the console), re-auth via the CFO Dashboard (see "Re-authorizing QBO" below) |
+| ATL Ops | `AtlOperations()` | Atlanta operations launched May 11, 2026. Sums entries tagged `entity:"ATL"` in PAYROLL/FUEL/CONTRACTORS. Transferred drivers/contractors carry an `atlPreYtd` snapshot so the tab shows since-launch only, not YTD. **Every week ask Ben which drivers + contractors were ATL — it's fluid, not a fixed roster.** See `feedback_atl_weekly` memory + the data layer notes below |
+| Cash Flow | `CashFlowDashboard()` | Weekly cash snapshot. Bank-balance accounts are hardcoded in `CASH_SNAPSHOTS` (no Supabase table tracks them). Scheduled payments pull live from `/api/cash-flow` which queries the budget-calendar's `w_*` Supabase tables. Subtitle shows "Live from budget calendar (Supabase)" when the fetch succeeds |
+| Budgeting | `Budgeting()` | QBO P&L rolled into 19 weekly-budget buckets + Agent bucket + Supabase-backed what-if simulator. See "Budgeting tab" section below for bucket-mapping rules. Agent bucket pulls from `AGENTS[]` (NOT subtracted from owner — Kevin's draws are a separate QBO category) |
 | Upload | `DataSettings()` | Drop CSV/XLSX files, AI auto-maps columns |
 | Checklist | `Checklist()` | Weekly/monthly data update tasks |
 
@@ -185,6 +187,40 @@ The Budgeting tab (`Budgeting()` component in App.jsx) rolls every QBO P&L expen
 **What-if math:** each added $/wk reduces weekly net income 1:1. Show clearing in dollars (before vs after), not just margin points — the dollar number is what investors care about.
 
 **Supabase what-if persistence:** scenarios live in `freightiq_budget_whatifs` (uuid id, label, amount, frequency, active, created_at, updated_at). RLS enabled with permissive policy (service key bypasses anyway). Migration SQL in `supabase/migrations/freightiq_budget_whatifs.sql` — run manually in the Supabase SQL editor; the read-only MCP can't create tables. The API returns `503 { error: 'table-not-found' }` until the migration is applied, and the UI surfaces that as a yellow setup banner so it's obvious what to do.
+
+### ATL Operations + Agent — entity tagging data layer
+
+ATL Operations (Atlanta, launched May 11, 2026) and the Agent model (Kevin Deveraux / Nixon Graye Associates, launched May 11, 2026) are tracked as separate operational entities. The plumbing:
+
+**`entity: "ATL"` tag** on `PAYROLL[]`, `FUEL{}`, `CONTRACTORS[]` entries. `AtlOperations()` filters by this tag.
+
+**`atlPreYtd` snapshot** on transferred drivers/contractors — stores their YTD as of the day before they transferred to ATL, so the ATL tab can subtract and show **since-launch only**, not YTD:
+- PAYROLL: `atlPreYtd: { hours, totalCost }`
+- FUEL: `atlPreYtd: { fuel, gallons }`
+- CONTRACTORS: `atlPreYtd: { weeklyTotal, carTotal, commission, healthInsTotal, total }` — per-component so the contractor table can break it out by base / commission / health / car
+
+Native-ATL entries (drivers/contractors who started fresh in ATL): no `atlPreYtd` needed; full YTD = ATL contribution.
+
+**Initial ATL roster (May 11, 2026 launch):**
+- W2 drivers (`entity: "ATL"`): Samuel Denman + Anthoni Davis (transferred from CE/SF, atlPreYtd stored), Manar Alshamaa + Robert Tucker (NEW), Christopher Johnson (NEW — pending first paycheck, EFS card 37459 already active)
+- Contractors (`entity: "ATL"`): Mellody Abrego (transferred, atlPreYtd with components), ENM Trucking LLC = Biniyam Fissehaye (NEW — J&A W2 → 1099 same day)
+
+**Agent layer (`AGENTS[]` array)** — separate top-level array NOT inside CONTRACTORS. Surfaced as its own bucket on the Budgeting tab (`agent` key, 🤝 icon). Agent payments are a **separate draw category in QBO** — NOT inside `Total for Owners Draw`. **Do NOT subtract agent total from the owner bucket** — they don't overlap in QBO.
+
+Card-47458 footnote: previously misattributed to Wright Robert (frozen) — reassigned to Tucker Robert ATL in the May 16 update. Wright stays frozen at $2,170.77 (his card 37405 portion only).
+
+### Re-authorizing QBO (when CE East or another company shows 401s)
+
+QBO tokens for all companies live in the shared `qbo_tokens` Supabase table. CE East has its own row (`id: ce_east`). When the refresh token expires (typically 100 days), `/api/qbo-pnl?company=ce_east` returns 401 and the CE East tab falls back to its static block.
+
+**The OAuth flow lives on the CFO Dashboard** (not FreightIQ) — it's the redirect URI registered with Intuit. Re-auth procedure:
+
+1. Open: `https://cfo-dashboard-eta.vercel.app/api/qbo-auth?company=<id>` where `<id>` is one of `ce_sf_combined` | `sf_payroll` | `ja_management` | `ce_east`
+2. Browser redirects to Intuit's OAuth screen — sign in if needed, pick the matching QuickBooks company, authorize
+3. Intuit redirects back to `/api/qbo-callback` which writes the fresh token to `qbo_tokens` row matching `<id>`
+4. FreightIQ reads from the same table — the relevant tab loads live on next page refresh
+
+Verify with: `curl -s -o /dev/null -w "%{http_code}\n" "https://freightiq-nine-two.vercel.app/api/qbo-pnl?company=ce_east&period=ytd"` — should return 200.
 
 ### Runtime live-data mutation pattern
 
@@ -271,6 +307,16 @@ If you're adding a new live data source that needs to drive CPM or other derived
 - **Serverless:** `api/ai.js`, `api/alvys-loads.js`, `api/distance.js`, `api/qbo-pnl.js`, `api/qbo-bs.js`, `api/samsara-miles.js` auto-deployed
 
 ## Weekly Update Workflow
+
+### Step 0 — ASK Ben for the ATL + Agent rosters (do this FIRST, before any code changes)
+
+ATL and Agent are fluid week-to-week. The QBO P&L files and payroll exports don't carry the entity label, so you can't infer it from data alone — Ben is the source of truth. Three questions, every weekly drop:
+
+1. **ATL Drivers** — which W2 drivers were ATL this week? Any joins / leaves / transfers back to CE-SF?
+2. **ATL Contractors** — which contractor payments were ATL this week? (Default-tagged ATL: Mellody, ENM Trucking)
+3. **Agent payments** — which agents got paid this week? Any new agents? Same $/wk? (Default: Kevin Deveraux / Nixon Graye $500/wk)
+
+For ATL drivers/contractors, also confirm whether each is **transferred from CE-SF** (needs `atlPreYtd` snapshot of YTD-as-of-day-before-transfer) or **native ATL** (no preATL — full YTD = ATL contribution). See `feedback_atl_weekly` memory for the full implementation.
 
 ### Automated (live feeds — no file drops needed):
 - **CE & SF Combined P&L** — live from QuickBooks via `/api/qbo-pnl` (Income tab → Live QB)
