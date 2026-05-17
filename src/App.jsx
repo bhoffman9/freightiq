@@ -7990,6 +7990,25 @@ function AtlOperations() {
   const atlDrivers = PAYROLL.filter(p => p.entity === "ATL");
   const atlContractors = CONTRACTORS.filter(c => c.entity === "ATL");
 
+  // Live ATL P&L from QB class 'ATL' on the ce_sf_combined company.
+  // Headline KPIs (Revenue, COGS, GP, Net) come from QBO; the entity-tag
+  // tables below provide per-driver / per-contractor granularity that the
+  // class P&L doesn't expose.
+  const [atlPnl, setAtlPnl]         = useState(null);
+  const [atlPnlLoading, setAtlPnlLoading] = useState(false);
+  const [atlPnlError, setAtlPnlError]     = useState(null);
+
+  useEffect(() => {
+    setAtlPnlLoading(true); setAtlPnlError(null);
+    fetch("/api/qbo-pnl?company=ce_sf_combined&period=ytd&class=ATL")
+      .then(r => r.json())
+      .then(d => { if (d.error) throw new Error(d.error); setAtlPnl(d); })
+      .catch(e => setAtlPnlError(e.message || String(e)))
+      .finally(() => setAtlPnlLoading(false));
+  }, []);
+
+  const fiq = atlPnl?.fiq || null;
+
   // Per-driver ATL-period numbers: current YTD minus preATL snapshot.
   // Manar/Tucker/Johnson have no preATL → full YTD = ATL.
   const atlFuelRows = atlDrivers.map(p => {
@@ -8030,7 +8049,38 @@ function AtlOperations() {
   return (
     <div>
       <div className="ptitle">🍑 ATL Operations</div>
-      <div className="psub">Atlanta operations · launched May 11, 2026 · {atlDrivers.length} W2 drivers · {atlContractors.length} 1099 contractor{atlContractors.length===1?"":"s"} · ATL-period only (pre-May 11 activity for transferred drivers excluded)</div>
+      <div className="psub">
+        Atlanta operations · launched May 11, 2026 · {atlDrivers.length} W2 drivers · {atlContractors.length} 1099 contractor{atlContractors.length===1?"":"s"}
+        {atlPnlLoading && <span style={{ color:"var(--bl)", marginLeft:8, fontSize:10 }}>● loading QB class P&L…</span>}
+        {fiq && <span style={{ color:"var(--gn)", marginLeft:8, fontSize:10 }}>● Live from QB class 'ATL'</span>}
+        {atlPnlError && <span style={{ color:"var(--ye)", marginLeft:8, fontSize:10 }}>● class P&L unavailable: {atlPnlError}</span>}
+      </div>
+
+      {/* Live ATL P&L headline (QB class) */}
+      {fiq && (
+        <div className="g4" style={{ marginBottom:14 }}>
+          <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
+            <div className="klbl">ATL Revenue</div>
+            <div className="kval" style={{ color:"#3ddc84" }}>{fd(fiq.total_revenue, 0)}</div>
+            <div className="ksub">CE {fd(fiq.revenue_ce, 0)} · SF {fd(fiq.revenue_sf, 0)}</div>
+          </div>
+          <div className="kpi" style={{ borderTop:"3px solid #ff5252" }}>
+            <div className="klbl">ATL COGS (Carrier Pay)</div>
+            <div className="kval" style={{ color:"#ff5252" }}>{fd(fiq.total_cogs, 0)}</div>
+            <div className="ksub">{fiq.total_revenue > 0 ? fp(fiq.total_cogs / fiq.total_revenue * 100) : "—"} of revenue</div>
+          </div>
+          <div className="kpi" style={{ borderTop:"3px solid #4fc3f7" }}>
+            <div className="klbl">ATL Gross Profit</div>
+            <div className="kval" style={{ color:"#4fc3f7" }}>{fd(fiq.gross_profit, 0)}</div>
+            <div className="ksub">{fiq.total_revenue > 0 ? fp(fiq.gross_profit / fiq.total_revenue * 100) : "—"} GP margin</div>
+          </div>
+          <div className="kpi" style={{ borderTop:`3px solid ${fiq.net_income >= 0 ? "#3ddc84" : "#ff5252"}` }}>
+            <div className="klbl">ATL Net Income</div>
+            <div className="kval" style={{ color: fiq.net_income >= 0 ? "#3ddc84" : "#ff5252" }}>{fd(fiq.net_income, 0)}</div>
+            <div className="ksub">{fiq.total_revenue > 0 ? fp(fiq.net_income / fiq.total_revenue * 100) : "—"} net margin</div>
+          </div>
+        </div>
+      )}
 
       {/* Top KPIs */}
       <div className="g4" style={{ marginBottom:14 }}>

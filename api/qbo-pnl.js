@@ -5,6 +5,7 @@ import { getSupabase, getValidToken, qboFetch, parsePnlReport } from './_qbo-hel
 //   ?company=ce_sf_combined (default) | ce_east
 //   ?period=ytd | this_week | last_week | jan | feb | mar | apr | may | ...
 //   ?start_date=YYYY-MM-DD  ?end_date=YYYY-MM-DD  (override)
+//   ?class=ATL  (optional — filters P&L to transactions tagged with this QB class)
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -60,7 +61,32 @@ export default async function handler(req, res) {
       }
     }
 
-    const report = await qboFetch(tokenData, `/reports/ProfitAndLoss?start_date=${startDate}&end_date=${endDate}&minorversion=73`);
+    // Optional QB class filter — look up Class ID by name, then pass classid
+    // to the ProfitAndLoss report so the response is limited to transactions
+    // tagged with that class.
+    let classParam = '';
+    let classInfo = null;
+    const className = String(req.query.class || '').trim();
+    if (className) {
+      try {
+        const safeName = className.replace(/'/g, "''");
+        const queryResp = await qboFetch(
+          tokenData,
+          `/query?query=${encodeURIComponent(`SELECT Id, Name FROM Class WHERE Name = '${safeName}'`)}&minorversion=73`,
+        );
+        const cls = queryResp.QueryResponse?.Class?.[0];
+        if (cls) {
+          classInfo = { id: cls.Id, name: cls.Name };
+          classParam = `&classid=${encodeURIComponent(cls.Id)}`;
+        } else {
+          return res.status(404).json({ error: `QB class '${className}' not found in ${company}`, company });
+        }
+      } catch (e) {
+        return res.status(500).json({ error: `class lookup failed: ${e.message}`, company });
+      }
+    }
+
+    const report = await qboFetch(tokenData, `/reports/ProfitAndLoss?start_date=${startDate}&end_date=${endDate}${classParam}&minorversion=73`);
     const parsed = parsePnlReport(report);
 
     // Extract FreightIQ-specific fields from parsed data
@@ -95,6 +121,7 @@ export default async function handler(req, res) {
     res.json({
       company,
       period: { start_date: startDate, end_date: endDate, label: req.query.period || 'ytd' },
+      class: classInfo,
       fiq,
       parsed,
     });
