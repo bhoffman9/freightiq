@@ -7991,23 +7991,36 @@ function AtlOperations() {
   const atlContractors = CONTRACTORS.filter(c => c.entity === "ATL");
 
   // Live ATL P&L from QB class 'ATL' on the ce_sf_combined company.
-  // Headline KPIs (Revenue, COGS, GP, Net) come from QBO; the entity-tag
-  // tables below provide per-driver / per-contractor granularity that the
-  // class P&L doesn't expose.
-  const [atlPnl, setAtlPnl]         = useState(null);
+  // We fetch BOTH the class-filtered and unfiltered P&L; if they match exactly
+  // QBO is returning unfiltered data because no transactions actually carry
+  // the class tag (data hygiene issue, not a real ATL P&L). In that case we
+  // suppress the live KPI row and surface a setup-status note instead.
+  const [atlPnl, setAtlPnl]               = useState(null);
+  const [fullPnl, setFullPnl]             = useState(null);
   const [atlPnlLoading, setAtlPnlLoading] = useState(false);
   const [atlPnlError, setAtlPnlError]     = useState(null);
 
   useEffect(() => {
     setAtlPnlLoading(true); setAtlPnlError(null);
-    fetch("/api/qbo-pnl?company=ce_sf_combined&period=ytd&class=ATL")
-      .then(r => r.json())
-      .then(d => { if (d.error) throw new Error(d.error); setAtlPnl(d); })
+    Promise.all([
+      fetch("/api/qbo-pnl?company=ce_sf_combined&period=ytd&class=ATL").then(r => r.json()),
+      fetch("/api/qbo-pnl?company=ce_sf_combined&period=ytd").then(r => r.json()),
+    ])
+      .then(([atl, full]) => {
+        if (atl.error) throw new Error(atl.error);
+        setAtlPnl(atl); setFullPnl(full);
+      })
       .catch(e => setAtlPnlError(e.message || String(e)))
       .finally(() => setAtlPnlLoading(false));
   }, []);
 
   const fiq = atlPnl?.fiq || null;
+  const fullFiq = fullPnl?.fiq || null;
+  // Detect QBO's silent fallthrough: class filter returned same numbers as
+  // unfiltered. That means no (or very few) transactions are actually tagged
+  // with the class — the displayed values would be misleading.
+  const classFilterWorked = !!(fiq && fullFiq) &&
+    Math.abs(fiq.total_revenue - fullFiq.total_revenue) > 0.01;
 
   // Per-driver ATL-period numbers: current YTD minus preATL snapshot.
   // Manar/Tucker/Johnson have no preATL → full YTD = ATL.
@@ -8052,12 +8065,21 @@ function AtlOperations() {
       <div className="psub">
         Atlanta operations · launched May 11, 2026 · {atlDrivers.length} W2 drivers · {atlContractors.length} 1099 contractor{atlContractors.length===1?"":"s"}
         {atlPnlLoading && <span style={{ color:"var(--bl)", marginLeft:8, fontSize:10 }}>● loading QB class P&L…</span>}
-        {fiq && <span style={{ color:"var(--gn)", marginLeft:8, fontSize:10 }}>● Live from QB class 'ATL'</span>}
+        {classFilterWorked && <span style={{ color:"var(--gn)", marginLeft:8, fontSize:10 }}>● Live from QB class 'ATL'</span>}
         {atlPnlError && <span style={{ color:"var(--ye)", marginLeft:8, fontSize:10 }}>● class P&L unavailable: {atlPnlError}</span>}
       </div>
 
-      {/* Live ATL P&L headline (QB class) */}
-      {fiq && (
+      {/* Setup notice when QB class isn't being applied to transactions yet */}
+      {fiq && !classFilterWorked && !atlPnlError && (
+        <div className="ibox" style={{ marginBottom:14, borderColor:"rgba(245,197,66,.5)", background:"rgba(245,197,66,.08)" }}>
+          <strong style={{ color:"var(--ye)" }}>⚙ QB class 'ATL' pending data tagging.</strong> The class is created in QBO but ATL-related
+          transactions (driver payroll, fuel, carrier pay, etc.) aren't tagged with it yet — the API returned the full company P&L
+          instead of an ATL-filtered subset. Backfill the May 11+ ATL transactions in QBO and the live KPI row will appear here automatically on the next page load. Until then, the entity-tag tables below are the source of truth.
+        </div>
+      )}
+
+      {/* Live ATL P&L headline (QB class) — only shown when the class filter actually filtered */}
+      {classFilterWorked && (
         <div className="g4" style={{ marginBottom:14 }}>
           <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
             <div className="klbl">ATL Revenue</div>
