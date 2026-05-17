@@ -161,11 +161,6 @@
       "totalCost": 7387.28
     },
     {
-      "name": "Wainwright Michael W",
-      "hours": 1125.68,
-      "totalCost": 33793.26
-    },
-    {
       "name": "Watkins Shawn",
       "hours": 581.06,
       "totalCost": 16758.52
@@ -342,11 +337,11 @@
   ],
   "period": "Jan 1 - May 16, 2026",
   "totals": {
-    "driverLabor": 710597.4,
-    "driverCount": 40,
+    "driverLabor": 676804.14,
+    "driverCount": 39,
     "officeTotal": 302212.23999999993,
     "warehouseTotal": 49888.369999999995,
     "contractorTotal": 249770.61000000002,
-    "grandTotal": 1312468.6199999999
+    "grandTotal": 1278675.3599999999
   }
 }

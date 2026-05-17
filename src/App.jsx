@@ -29,8 +29,8 @@ let PAYROLL = [
   { name: "Clark Rettick",         hours: 255.06, totalCost: 7377.62 },   // *inactive
   { name: "Cotton Kejlon",         hours: 320.32, totalCost: 11677.82 },  // *inactive
   { name: "Daniels Gerald W",      hours: 321.49, totalCost: 9590.94 },
-  { name: "Davis Anthoni D",       hours: 1365.32,totalCost: 47625.27, entity: "ATL", atlPreYtd: { hours: 1289.53, totalCost: 44926.45 } },  // ATL since May 11 (preATL = thru May 10)
-  { name: "Denman Samuel E",       hours: 1169.18,totalCost: 37557.11, entity: "ATL", atlPreYtd: { hours: 1093.61, totalCost: 35215.81 } },  // ATL since May 11 (preATL = thru May 10)
+  { name: "Davis Anthoni D",       hours: 1365.32,totalCost: 47625.27, entity: "ATL", atlPreYtd: { hours: 1255.85, totalCost: 42516.31 } },  // ATL since May 4 (preATL = thru May 3)
+  { name: "Denman Samuel E",       hours: 1169.18,totalCost: 37557.11, entity: "ATL", atlPreYtd: { hours: 1046.79, totalCost: 33147.67 } },  // ATL since May 4 (preATL = thru May 3)
   { name: "Dotch Brandon C",       hours: 495.01, totalCost: 14832.95 },
   { name: "Gutierrez Danny",       hours: 1021.00,totalCost: 31710.17 },
   { name: "Guzman Jose",           hours: 1309.41,totalCost: 46889.62 },
@@ -55,7 +55,7 @@ let PAYROLL = [
   { name: "Striplin Lamareh",      hours: 620.80, totalCost: 19084.79 },
   { name: "Thorne Richard",        hours: 254.53, totalCost: 7387.28 },   // *inactive
   { name: "Tucker Robert",         hours: 28.15,  totalCost: 861.21,   entity: "ATL" },  // NEW · ATL
-  { name: "Wainwright Michael W",  hours: 1125.68,totalCost: 33793.26 },
+  { name: "Wainwright Michael W",  hours: 1125.68,totalCost: 33793.26, entity: "ATL", atlPreYtd: { hours: 1006.91, totalCost: 30376.36 } },  // ATL since May 4 (preATL = thru May 3)
   { name: "Watkins Shawn",         hours: 581.06, totalCost: 16758.52 },
   { name: "Watson Dahnifu S",      hours: 1068.45,totalCost: 30649.59 },
   { name: "Whipple Wallace",       hours: 1146.98,totalCost: 37303.48 },
@@ -83,8 +83,8 @@ let FUEL = {
   "Cotton Kejlon":         { fuel: 235.78,   gallons: 61.10 },    // card 87401 split (*inactive — frozen)
   "Cowsky Andy":           { fuel: 8536.89,  gallons: 1359.16 },  // card 77457
   "Daniels Gerald W":      { fuel: 3531.31,  gallons: 614.36 },   // card 47402 split (active, absorbs deltas over Christian)
-  "Davis Anthoni D":       { fuel: 32971.68, gallons: 6174.23, entity: "ATL", atlPreYtd: { fuel: 31456.85, gallons: 5908.98 } },  // card 27406 · ATL since May 11 (preATL = thru May 10)
-  "Denman Samuel E":       { fuel: 18614.48, gallons: 3963.43, entity: "ATL", atlPreYtd: { fuel: 16747.55, gallons: 3637.30 } },  // cards 47405 + 37403 · ATL since May 11 (preATL = thru May 10)
+  "Davis Anthoni D":       { fuel: 32971.68, gallons: 6174.23, entity: "ATL", atlPreYtd: { fuel: 29703.87, gallons: 5580.08 } },  // card 27406 · ATL since May 4 (preATL = thru May 3)
+  "Denman Samuel E":       { fuel: 18614.48, gallons: 3963.43, entity: "ATL", atlPreYtd: { fuel: 16116.06, gallons: 3516.30 } },  // cards 47405 + 37403 · ATL since May 4 (preATL = thru May 3)
   "Dotch Brandon C":       { fuel: 12032.86, gallons: 1880.68 },  // cards 07405 (Anderson-frozen split) + 17468
   "Gutierrez Danny":       { fuel: 8217.75,  gallons: 1712.39 },  // card 47404
   "Guzman Jose":           { fuel: 9963.89,  gallons: 2014.40 },  // card 77401
@@ -109,7 +109,7 @@ let FUEL = {
   "Striplin Lamareh":      { fuel: 10101.58, gallons: 1793.84 },  // card 87407 (UNCHANGED WoW)
   "Thorne Richard":        { fuel: 5514.29,  gallons: 938.16 },   // card 87401 split (*inactive — frozen)
   "Tucker Robert":         { fuel: 1894.77,  gallons: 328.88, entity: "ATL" },  // NEW · ATL · card 47458 (reassigned from Wright misattribution)
-  "Wainwright Michael W":  { fuel: 26321.68, gallons: 5468.16 },  // card 67463
+  "Wainwright Michael W":  { fuel: 26321.68, gallons: 5468.16, entity: "ATL", atlPreYtd: { fuel: 24792.97, gallons: 5211.16 } },  // card 67463 · ATL since May 4 (preATL = thru May 3)
   "Watkins Shawn":         { fuel: 29185.91, gallons: 5130.34 },  // cards 57401 + 57464
   "Watson Dahnifu S":      { fuel: 10819.93, gallons: 2003.45 },  // card 97406 (Shaq)
   "Whipple Wallace":       { fuel: 19682.58, gallons: 4275.87 },  // card 57403
@@ -8145,7 +8145,7 @@ function AtlOperations() {
           </thead>
           <tbody>
             {atlFuelRows.sort((a,b) => (b.totalCost + b.fuel) - (a.totalCost + a.fuel)).map((r, i) => {
-              const transferred = ["Davis Anthoni D","Denman Samuel E"].includes(r.name);
+              const transferred = ["Davis Anthoni D","Denman Samuel E","Wainwright Michael W"].includes(r.name);
               const newATL = ["Alshamaa Manar","Tucker Robert"].includes(r.name);
               const pending = r.name === "Johnson Christopher";
               return (
