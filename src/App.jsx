@@ -2344,9 +2344,9 @@ function FleetOverview() {
           <div className="kpi"><div className="klbl">Labor CPM</div><div className="kval" style={{ fontSize: 18, color: "#f47820" }}>{fd(lCPM, 3)}</div></div>
           <div className="kpi"><div className="klbl">Fuel CPM</div><div className="kval" style={{ fontSize: 18, color: "#f5c542" }}>{fd(fCPM, 3)}</div></div>
           <div className="kpi"><div className="klbl">Insurance CPM</div><div className="kval" style={{ fontSize: 18, color: "#b39ddb" }}>{fd(iCPM, 3)}</div></div>
-          <div className="kpi"><div className="klbl">Truck CPM</div><div className="kval" style={{ fontSize: 18, color: "#4fc3f7" }}>{fd(TRUCK_TOT/MILES_EST, 3)}</div></div>
-          <div className="kpi"><div className="klbl">Trailer CPM</div><div className="kval" style={{ fontSize: 18, color: "#3ddc84" }}>{fd(TRAILER_TOT/MILES_EST, 3)}</div></div>
-          <div className="kpi"><div className="klbl">Maint+Stor CPM</div><div className="kval" style={{ fontSize: 18, color: "#d97706" }}>{fd(MAINT_TOT/MILES_EST, 3)}</div></div>
+          <div className="kpi"><div className="klbl">Truck CPM</div><div className="kval" style={{ fontSize: 18, color: "#4fc3f7" }}>{fd(TRUCK_TOT/MILES, 3)}</div></div>
+          <div className="kpi"><div className="klbl">Trailer CPM</div><div className="kval" style={{ fontSize: 18, color: "#3ddc84" }}>{fd(TRAILER_TOT/MILES, 3)}</div></div>
+          <div className="kpi"><div className="klbl">Maint+Stor CPM</div><div className="kval" style={{ fontSize: 18, color: "#d97706" }}>{fd(MAINT_TOT/MILES, 3)}</div></div>
           <div className="kpi"><div className="klbl">Avg Fuel Price</div><div className="kval" style={{ fontSize: 18, color: "#4fc3f7" }}>{fd(FUEL_TOT / GALLONS, 3)}/gal</div></div>
         </div>
       </div>
