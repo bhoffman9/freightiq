@@ -53,29 +53,39 @@ export default async function handler(req, res) {
       `/reports/ProfitAndLossDetail?start_date=${startDate}&end_date=${endDate}`,
     );
 
+    // Resolve column indexes from the report's Columns metadata. QBO returns
+    // typical defaults: tx_date, txn_type, doc_num, is_no_post, name, memo,
+    // account_name, split_acc, subt_nat_amount (= Amount), rbal_nat_amount
+    // (= Balance). We want Amount, NOT Balance — earlier code was pulling
+    // the trailing Balance column which gave running totals, not txn amounts.
+    const colMeta = report.Columns?.Column || [];
+    const idx = (typeId) => colMeta.findIndex(c => c.ColType === typeId);
+    const dateIdx   = idx('tx_date') >= 0 ? idx('tx_date') : 0;
+    const vendorIdx = idx('vend_name') >= 0 ? idx('vend_name') : (idx('cust_name') >= 0 ? idx('cust_name') : (idx('emp_name') >= 0 ? idx('emp_name') : 4));
+    const memoIdx   = idx('memo') >= 0 ? idx('memo') : 5;
+    // Amount column = subt_nat_amount (signed transaction amount).
+    let amountIdx = colMeta.findIndex(c => /amount/i.test(c.ColTitle || '') && !/balance/i.test(c.ColTitle || ''));
+    if (amountIdx < 0) amountIdx = colMeta.findIndex(c => c.ColType === 'subt_nat_amount');
+    if (amountIdx < 0) amountIdx = colMeta.length - 2;  // fallback: second-to-last
+
     const wantedSet = new Set(accounts.map(a => a.toLowerCase()));
     const rows = [];
 
-    // The report's Rows[].Rows[] structure groups transactions under
-    // section headers. Each section's Header.ColData[0] is the account name.
-    // Walk recursively and harvest detail rows under matching account headers.
+    // Walk recursively. Each section's Header.ColData[0] is the account name;
+    // detail rows under that section get assigned to it.
     function walk(rowList, currentAccount) {
       if (!rowList) return;
       for (const row of rowList) {
-        // Account section header
         const sectionAccount = row.Header?.ColData?.[0]?.value;
         const nextAccount = sectionAccount || currentAccount;
 
-        // Detail row: ColData = [date, txn_type, doc_num, posting, name, memo, account, split_acc, amount]
-        // Field order varies by QBO; the report header defines columns. Defaults often:
-        // 0=Date, 1=Transaction Type, 2=No., 3=Posting, 4=Name, 5=Memo/Description, 6=Account, 7=Split, 8=Amount
         if (row.ColData && !row.Summary && !row.Header && wantedSet.has((currentAccount || '').toLowerCase())) {
           const cells = row.ColData;
-          const date  = cells[0]?.value || '';
-          const vendor = cells[4]?.value || cells[1]?.value || '';
-          const memo  = cells[5]?.value || '';
-          const amountStr = cells[cells.length - 1]?.value || '0';
-          const amount = parseFloat(String(amountStr).replace(/,/g, '')) || 0;
+          const date    = cells[dateIdx]?.value   || '';
+          const vendor  = cells[vendorIdx]?.value || cells[1]?.value || '';
+          const memo    = cells[memoIdx]?.value   || '';
+          const amountStr = cells[amountIdx]?.value || '0';
+          const amount  = parseFloat(String(amountStr).replace(/,/g, '')) || 0;
           if (date) rows.push({ date, vendor, memo, amount });
         }
 
