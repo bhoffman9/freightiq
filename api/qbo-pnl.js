@@ -122,6 +122,7 @@ export default async function handler(req, res) {
       company,
       period: { start_date: startDate, end_date: endDate, label: req.query.period || 'ytd' },
       class: classInfo,
+      reportHeader: report.Header,  // exposes Option[] so we can see which filters QBO actually applied
       fiq,
       parsed,
     });
