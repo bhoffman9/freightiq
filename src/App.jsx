@@ -437,26 +437,30 @@ let FLEET_REGIONAL = 255338.9;
 const DETAIL = {
   labor: {
     label: "Labor — Driver Payroll",
-    thru: "May 2, 2026",
-    note: "All-in employer cost: gross wages + SS + Medicare + NV SUI + FUTA + 401K match",
+    thru: null,  // derived from PERIOD_END at render time
+    note: "All-in employer cost: gross wages + SS + Medicare + NV SUI + FUTA + 401K match. Live from PAYROLL constant.",
+    live: "client",  // rendered from DRIVERS array, no API fetch needed
     total: LABOR,
     cols: ["Driver", "Hours", "Employer Cost"],
     rows: DRIVERS.map(d => [d.name, d.hours.toFixed(2), d.totalCost]),
   },
   fuel: {
-    label: "Fuel — EFS",
-    thru: "May 2, 2026",
-    note: "From EFS fuel card export only — NOT QuickBooks. No Mudflap charges this period.",
+    label: "Fuel — EFS (per driver)",
+    thru: null,
+    note: "From EFS fuel card export only — NOT QuickBooks. Per-driver totals from live FUEL{} mapping.",
+    live: "client",
     total: FUEL_TOT,
-    cols: ["Card", "Amount", "Gallons", "Avg $/Gal"],
-    rows: [
-      ["EFS Carrier Card", 216949.15, 44923.55, 4.83],
-    ],
+    cols: ["Driver", "Amount", "Gallons", "Avg $/Gal"],
+    rows: Object.entries(FUEL)
+      .filter(([,v]) => v.fuel > 0)
+      .sort((a,b) => b[1].fuel - a[1].fuel)
+      .map(([name, v]) => [name, v.fuel, v.gallons, v.gallons > 0 ? v.fuel / v.gallons : 0]),
   },
   insurance: {
     label: "Insurance — SF Truck Insurance",
-    thru: "May 2, 2026",
-    note: "SF Truck Insurance only (CPM). Weekly $6,375 premium.",
+    thru: null,
+    note: "SF Truck Insurance only (CPM). Live from QuickBooks transaction detail.",
+    live: "qbo",
     total: INS_TOT,
     cols: ["Date", "Vendor", "Amount"],
     rows: [
@@ -479,8 +483,9 @@ const DETAIL = {
   },
   trucks: {
     label: "Truck Payments",
-    thru: "May 2, 2026",
-    note: "QuickBooks: Truck Rentals — Penske + TEC/Transco + TCI + Ryder",
+    thru: null,
+    note: "QuickBooks: Truck Rentals — Penske + TEC/Transco + TCI + Ryder. Live from QBO transaction detail.",
+    live: "qbo",
     total: TRUCK_TOT,
     cols: ["Date", "Vendor", "Amount"],
     rows: [
@@ -508,8 +513,9 @@ const DETAIL = {
   },
   trailers: {
     label: "Trailer Payments",
-    thru: "May 2, 2026",
-    note: "QuickBooks: McKinney + Xtra + Utility + Premier + Boxwheel + Ten Trailer",
+    thru: null,
+    note: "QuickBooks: McKinney + Xtra + Utility + Premier + Boxwheel + Ten Trailer. Live from QBO transaction detail.",
+    live: "qbo",
     total: TRAILER_TOT,
     cols: ["Date", "Vendor", "Amount"],
     rows: [
@@ -538,8 +544,9 @@ const DETAIL = {
   },
   truckMaint: {
     label: "Truck Maintenance",
-    thru: "May 2, 2026",
-    note: "Two AutoForce credits netted in (-$140.33, -$503.18)",
+    thru: null,
+    note: "Live from QBO transaction detail.",
+    live: "qbo",
     total: TRUCK_MAINT,
     cols: ["Date", "Vendor", "Amount"],
     rows: [
@@ -559,8 +566,9 @@ const DETAIL = {
   },
   trailerMaint: {
     label: "Trailer Maintenance",
-    thru: "May 2, 2026",
-    note: "2 vendors this period",
+    thru: null,
+    note: "Live from QBO transaction detail.",
+    live: "qbo",
     total: TRAIL_MAINT,
     cols: ["Date", "Vendor", "Amount"],
     rows: [
@@ -571,8 +579,9 @@ const DETAIL = {
   },
   uniforms: {
     label: "Worker Uniforms",
-    thru: "May 2, 2026",
-    note: "Unifirst monthly service + Safety Guard Shoe",
+    thru: null,
+    note: "Unifirst monthly service + Safety Guard Shoe. Live from QBO transaction detail.",
+    live: "qbo",
     total: UNIFORMS,
     cols: ["Date", "Vendor", "Amount"],
     rows: [
@@ -585,8 +594,9 @@ const DETAIL = {
   },
   storage: {
     label: "Storage / Parking",
-    thru: "May 2, 2026",
-    note: "Total Transportation recurring $3,100/period",
+    thru: null,
+    note: "Live from QBO transaction detail.",
+    live: "qbo",
     total: STORAGE,
     cols: ["Date", "Vendor", "Amount"],
     rows: [
@@ -630,12 +640,47 @@ const TABS = [
 
 // ── DETAIL MODAL ──────────────────────────────────────────────
 function DetailModal({ id, onClose }) {
+  const [liveRows, setLiveRows] = useState(null);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [liveError, setLiveError] = useState(null);
+
+  // Fetch QBO transaction detail when a QBO-sourced bucket opens. Client-side
+  // buckets (labor, fuel) render from their static rows derived from live arrays.
+  useEffect(() => {
+    if (!id) { setLiveRows(null); setLiveError(null); return; }
+    const d = DETAIL[id];
+    if (!d || d.live !== "qbo") return;
+    setLiveLoading(true); setLiveError(null); setLiveRows(null);
+    fetch(`/api/qbo-detail?bucket=${encodeURIComponent(id)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { setLiveError(data.error); return; }
+        setLiveRows(data.rows || []);
+      })
+      .catch(e => setLiveError(e.message || String(e)))
+      .finally(() => setLiveLoading(false));
+  }, [id]);
+
   if (!id) return null;
   const d = DETAIL[id];
   if (!d) return null;
 
   const isMoney = v => typeof v === "number" && (Math.abs(v) > 1 || v === 0);
   const isDriver = id === "labor";
+
+  // Resolve the rows + columns to render: live rows from QBO override static
+  // when present. For QBO buckets we display [Date, Vendor, Memo, Amount].
+  let displayRows = d.rows;
+  let displayCols = d.cols;
+  if (d.live === "qbo") {
+    if (liveRows) {
+      displayRows = liveRows.map(r => [r.date, r.vendor, r.memo || "", r.amount]);
+      displayCols = ["Date", "Vendor", "Memo", "Amount"];
+    }
+    // While loading, keep the static rows so the modal isn't empty.
+  }
+
+  const thruLabel = d.thru || (typeof PERIOD_END === "string" ? PERIOD_END : "");
 
   return (
     <div style={{
@@ -663,7 +708,10 @@ function DetailModal({ id, onClose }) {
             </div>
             <div style={{ fontSize: 10, color: "var(--mu)", letterSpacing: 2,
               textTransform: "uppercase", marginTop: 3 }}>
-              through {d.thru}
+              through {thruLabel}
+              {liveLoading && <span style={{ marginLeft: 10, color: "var(--bl)" }}>● loading live…</span>}
+              {liveError && <span style={{ marginLeft: 10, color: "var(--ye)" }}>● live fetch failed — showing static</span>}
+              {liveRows && !liveLoading && <span style={{ marginLeft: 10, color: "var(--gn)" }}>● live QBO</span>}
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -695,11 +743,16 @@ function DetailModal({ id, onClose }) {
           <table className="tbl" style={{ fontSize: 12 }}>
             <thead>
               <tr>
-                {d.cols.map(c => <th key={c} style={{ position: "sticky", top: 0, background: "var(--s2)", textAlign: c === d.cols[0] || c === "Driver" || c === "Vendor" || c === "Description" || c === "Card" ? "left" : "right" }}>{c}</th>)}
+                {displayCols.map(c => <th key={c} style={{ position: "sticky", top: 0, background: "var(--s2)", textAlign: c === displayCols[0] || c === "Driver" || c === "Vendor" || c === "Description" || c === "Card" || c === "Date" || c === "Memo" ? "left" : "right" }}>{c}</th>)}
               </tr>
             </thead>
             <tbody>
-              {d.rows.map((row, i) => (
+              {displayRows.length === 0 && (
+                <tr><td colSpan={displayCols.length} style={{ textAlign:"center", color:"var(--mu)", padding:"24px" }}>
+                  {liveLoading ? "Loading live transactions…" : "No transactions for this period"}
+                </td></tr>
+              )}
+              {displayRows.map((row, i) => (
                 <tr key={i}>
                   {row.map((cell, j) => {
                     const isAmt = typeof cell === "number";
@@ -720,9 +773,9 @@ function DetailModal({ id, onClose }) {
             </tbody>
             <tfoot>
               <tr>
-                {d.cols.map((c, j) => (
+                {displayCols.map((c, j) => (
                   <td key={c} style={{ textAlign: j === 0 ? "left" : "right" }}>
-                    {j === 0 ? "TOTAL" : j === d.cols.length - 1 ? fd(d.total, 0) : ""}
+                    {j === 0 ? "TOTAL" : j === displayCols.length - 1 ? fd(d.total, 0) : ""}
                   </td>
                 ))}
               </tr>
