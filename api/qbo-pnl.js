@@ -77,7 +77,10 @@ export default async function handler(req, res) {
         const cls = queryResp.QueryResponse?.Class?.[0];
         if (cls) {
           classInfo = { id: cls.Id, name: cls.Name };
-          classParam = `&classid=${encodeURIComponent(cls.Id)}`;
+          // QBO's ProfitAndLoss report uses 'class' as the filter param
+          // (not 'classid' — that name is silently ignored, returning the
+          // full unfiltered P&L). Confirmed via Header.Option diagnostic.
+          classParam = `&class=${encodeURIComponent(cls.Id)}`;
         } else {
           return res.status(404).json({ error: `QB class '${className}' not found in ${company}`, company });
         }
