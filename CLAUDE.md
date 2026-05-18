@@ -398,14 +398,47 @@ Tag any partial-month row with an inline `// partial — May 1-3 only` comment s
 4a. **Scan subtitle / explanatory labels next to dollar values, not just the dollars.** The numbers can be right while the prose surrounding them silently lies. Anything hardcoded with a quarter ("Q1 2026"), a day count ("72-day period"), or a date should be derived from `PERIOD` / `PERIOD_DAYS` — never typed in directly. If you see a hand-typed quarter/day-count anywhere, that's a future regression about to happen; replace with a derived value.
 4b. **Quick `grep` for drift hotspots before commit:**
     ```bash
+    # Hand-typed periods, quarters, "thru <month>"
     grep -nE '\b[0-9]{2,3}-day\b|\bQ[1-4] 20[2-9][0-9]\b|thru (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]+' src/App.jsx | grep -v 'PERIOD_DAYS\|^\s*\*\|fixed\|incoming-freightiq'
+
+    # Hardcoded month-range strings in subtitles (e.g. "Feb–Mar 2026", "Jan-Apr")
+    grep -nE '\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s*[-–]\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b' src/App.jsx | grep -v 'INCOME_2025\|q1\|isPartialLast'
+
+    # MILES_EST used anywhere except fuel-price math (line ~122)
+    grep -nE '/\s*MILES_EST' src/App.jsx | grep -v 'fuel|gallons|PPG|avg|FUEL_TOT / GALLONS'
+
+    # Hardcoded total inside a DETAIL[] row (should be live constants like LABOR, TRUCK_TOT, etc.)
+    grep -nE 'total:\s*[0-9]+\.[0-9]+' src/App.jsx | head -5
     ```
-    Any hits are hand-typed period strings that should either be derived or deliberately annotated (e.g. inline `// partial — May 1-3 only` comments are fine; `"72-day period"` strings are not).
+    Any hits are hand-typed period strings or live-data divergences that should either be derived or deliberately annotated (e.g. inline `// partial — May 1-3 only` comments are fine; `"72-day period"` strings are not). MILES_EST is fuel-only (avg $/gal calc) — never use it for any CPM display; CPM always divides by `MILES` (live Samsara).
 5. **No new entities silently absorbed.** New EFS card numbers, new vendor lines in the QB transaction report, new drivers in the payroll XLS — all must be either mapped in the appropriate constant OR explicitly noted in the commit message as "excluded from per-driver mapping" (e.g. card 17408 = Andres / warehouse).
 6. **No stale partial-month rows.** `INCOME_2026.months[]` and `MONTHLY_REVENUE` last entries should either be a full closed month OR a partial flagged with an inline `// partial — May 1-3 only` comment. A closed prior month showing < 50% of the typical run is a stale row.
 7. **Cross-repo fixes are pushed, not just local.** If a fix touches a sibling repo (e.g. `ap-aging` for CORS), `git status` in that repo to confirm clean. The nightly stale-repos cron (`~/Desktop/_stale-repos.md`) catches drift but should never be the first time you discover an uncommitted fix.
 8. **Downstream consumers still work.** CFO Dashboard fetches `metrics.json` + `payroll-summary.json`; Per Load CPM fetches `metrics.json` + `/api/alvys-loads`. Visit each at least once after the deploy lands to confirm they hydrated with new numbers.
 9. **Clear `incoming-freightiq/`** only AFTER all of the above pass.
+
+### Drift patterns Ben should NEVER have to catch (you catch them first)
+
+Ben paying attention to dashboard details is the LAST line of defense, not the first. Every time he spots a mismatch and has to point it out, that's a process failure. These are the classes of bugs that have bitten before — actively look for them before declaring weekly done:
+
+**A. Numerator/denominator mismatches in CPM displays.** Every CPM (cost-per-mile) tile on every tab must divide by `MILES` (live Samsara), never `MILES_EST` (gallons × 6.5 — fuel-price math only). If you see two CPM panels showing the same metric with different values, that's the bug. Run the `/MILES_EST` grep above before commit; the only legitimate hit is the avg $/gal display.
+
+**B. Hardcoded period strings outside `PERIOD` / `PERIOD_DAYS` / `PERIOD_END`.** Subtitles, tab headers, sub-view labels, modal `thru:` fields — none of these should contain a hand-typed month/quarter/date. If a label needs to reflect "current period," derive it from `PERIOD` so it auto-rolls. Examples that bit us:
+- `"Feb–Mar 2026"` baked into Trucks + Trailers subtitles (caught May 17)
+- `"thru May 2"` baked into DetailModal rows (caught May 16)
+- `"122-day period"` in Insurance subtitle (caught weeks ago)
+
+**C. Stale rows behind a live header.** Modals/panels that show a live total in the header but hardcoded line items below — when totals diverge from row sums by 3+ weeks of activity, the user notices. Pattern: either (a) make the rows live too via QBO/Supabase/array-derived data, or (b) hide the rows entirely behind a loading state. Never flash stale rows while a live fetch is in flight (DetailModal `displayRows = []` while `liveLoading`).
+
+**D. Constants that drift silently because they're computed elsewhere.** A bucket showing `total: 233765.59` hardcoded inside DETAIL when the actual Owner Draws is now $247,082 — that's a stale literal. Whenever a tile has a "Total" header that references a live constant (LABOR, INS_TOT, etc.), the rows feeding into it should be similarly live or explicitly flagged stale.
+
+**E. Tab subtitles that lie about data source.** "Live from X" badges, "thru May Y" labels, "N drivers" counts — these should reflect what's actually being displayed. If a subtitle says "Feb–Mar 2026" but the table below shows YTD-thru-May data, the subtitle is wrong. Always make subtitles either live-derived or explicitly flagged with `// historical snapshot — refresh weekly`.
+
+**F. QBO API filters silently dropping.** When using class/customer/vendor/department filters on QBO reports, **always check `Header.Option[]` in the response** to confirm QBO recognized the filter. If your filter isn't in the Option list, the API ignored it and returned the full unfiltered report. Sanity-check by comparing filtered total to unfiltered total — if equal, your filter didn't filter. See `reference_qbo_class_filter.md` memory.
+
+**G. Cross-app data ownership.** If a tab depends on a sibling repo (AP Aging, expense-calendar, etc.) and that repo's data shape changes or its publishing stops, FreightIQ falls back silently to hardcoded data. Check the cross-app fetch status banners on each tab; if a banner says "fetch failed" or shows stale data, it counts as broken.
+
+**H. Constants frozen at first commit then never refreshed.** `DETAIL[]`, `MONTHLY_REVENUE` historical rows, vendor-specific blocks (TCI / Penske / TEC / McKinney). When the live data source for one of these changes, the hardcoded copy still ships unless you explicitly refresh or replace it. Search for "thru" comments next to any hardcoded constant — those are tells of frozen-in-time data.
 
 ### Office vs Driver split (SF Payroll):
 **Office staff** (excluded from PAYROLL/CPM): Arias Adrian, Eagleton Gentry J (warehouse), Figueroa Andres (warehouse), Fissehaye Biniyam G, Gonzalez Gabriel, Grosser Scot E, Naruszewicz Bartosz, Rivera Cecilia I, Youngblood Nathan. Everyone else = drivers. (Encoded in `scripts/parse_weekly_drop.py` — keep in sync.)
