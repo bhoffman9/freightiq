@@ -325,6 +325,11 @@ For ATL drivers/contractors, also confirm whether each is **transferred from CE-
 - **Alvys TMS loads** — live via `/api/alvys-loads` (Revenue tab)
 - **AP Aging equipment** — live via `https://ap-aging-v4.vercel.app/api/equipment` (Trucks + Trailers tabs). Cross-origin fetch — relies on global CORS in `ap-aging/next.config.js`. If Trucks/Trailers go blank, check the red error banner in the tab footer and the AP Aging deploy status.
 
+### Atlanta billing (one extra file, dropped alongside the rest)
+- **`2026-Atlanta Billing.xlsx`** — Atlanta load-level revenue spreadsheet, sheet name `as of <date>`. Columns: Driver · Load $ · REF # · PO # · Customer · Invoice Amount · Carrier · Carrier Amount · Assigned · Notes. Only rows where **Assigned = `ATL`** count as ATL revenue; `ASSIGNED TO CORP` (19 in week 1) and `ASSIGNED TO CEE` (2 in week 1) are ATL drivers running freight billed under SF/CEE, NOT ATL revenue.
+
+Parse it with `python scripts/parse_atl_billing.py` — outputs the `ATL_BILLING` constant block to paste into `src/App.jsx` (replace existing). First-name → PAYROLL name mapping is in the script's `NAME_MAP` dict; extend when new ATL drivers appear in the sheet.
+
 ### Manual file drops (into `Desktop/Freight/freightiq/incoming-freightiq/`):
 1. **EFS Transaction Report PDF** — per-driver fuel (no API available).
    **CRITICAL: Download the PDF directly from the EFS portal — never "Print to PDF" via Windows.** Print-to-PDF produces a raster/image-only file with no text layer; pdfplumber returns 0 chars across all pages and the parser silently outputs `$0.00`. Producer field will say "Microsoft: Print To PDF" — that's the giveaway. Real EFS exports are ~150 KB; print-to-PDF balloons to ~10 MB.

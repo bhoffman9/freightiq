@@ -7208,6 +7208,31 @@ const AGENTS = [
   { name:"Kevin Deveraux", dba:"Nixon Graye Associates", weekly:500, payments:1, weeklyTotal:500, total:500, note:"$500/wk · Agent · paid via Owner Draws in QBO · started May 11 2026" },
 ];
 
+// ── ATL BILLING (Atlanta load-level revenue) ────────────────
+// Source of truth: "2026-Atlanta Billing.xlsx" — drop into incoming-freightiq/
+// each week. Run scripts/parse_atl_billing.py to regenerate these totals.
+// Counts ONLY loads where "Assigned" column = "ATL" (other rows are ATL
+// drivers running freight billed under Corp/SF or CE East, NOT ATL revenue).
+// First-name → PAYROLL name map: Anthoni→Davis Anthoni D, Sam→Denman Samuel E,
+// Michael→Wainwright Michael W, CJ→Johnson Christopher, Manar→Alshamaa Manar,
+// Robert→Tucker Robert.
+const ATL_BILLING = {
+  asOf: "May 17, 2026",
+  loads: 18,
+  revenue: 57450.00,      // sum of Invoice Amount
+  carrierPay: 43652.50,   // sum of Carrier Amount (COGS)
+  grossProfit: 13797.50,
+  grossMargin: 24.0,      // %
+  byDriver: [
+    { name: "Davis Anthoni D",     short: "Anthoni", loads: 4, revenue: 18900.00, carrier: 13840.00, gross: 5060.00 },
+    { name: "Denman Samuel E",     short: "Sam",     loads: 3, revenue: 11900.00, carrier: 10100.00, gross: 1800.00 },
+    { name: "Wainwright Michael W",short: "Michael", loads: 3, revenue: 11000.00, carrier:  7372.50, gross: 3627.50 },
+    { name: "Johnson Christopher", short: "CJ",      loads: 4, revenue:  7900.00, carrier:  6700.00, gross: 1200.00 },
+    { name: "Alshamaa Manar",      short: "Manar",   loads: 2, revenue:  6000.00, carrier:  3890.00, gross: 2110.00 },
+    { name: "Tucker Robert",       short: "Robert",  loads: 2, revenue:  1750.00, carrier:  1750.00, gross:    0.00 },
+  ],
+};
+
 // ── OFFICE STAFF COMPONENT ───────────────────────────────────
 function OfficeStaff() {
   const [view, setView] = useState("summary");
@@ -8138,7 +8163,31 @@ function AtlOperations() {
         </div>
       )}
 
-      {/* Top KPIs */}
+      {/* ATL Billing — load-level revenue (source: 2026-Atlanta Billing.xlsx, refreshed weekly) */}
+      <div className="g4" style={{ marginBottom:14 }}>
+        <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
+          <div className="klbl">ATL Revenue</div>
+          <div className="kval" style={{ color:"#3ddc84" }}>{fd(ATL_BILLING.revenue, 0)}</div>
+          <div className="ksub">{ATL_BILLING.loads} loads · as of {ATL_BILLING.asOf}</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #ff5252" }}>
+          <div className="klbl">ATL Carrier Pay (COGS)</div>
+          <div className="kval" style={{ color:"#ff5252" }}>{fd(ATL_BILLING.carrierPay, 0)}</div>
+          <div className="ksub">{fp(ATL_BILLING.carrierPay / ATL_BILLING.revenue * 100)} of revenue</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #4fc3f7" }}>
+          <div className="klbl">ATL Gross Profit</div>
+          <div className="kval" style={{ color:"#4fc3f7" }}>{fd(ATL_BILLING.grossProfit, 0)}</div>
+          <div className="ksub">{fp(ATL_BILLING.grossMargin)} margin</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #fbbf24" }}>
+          <div className="klbl">Avg Revenue / Load</div>
+          <div className="kval" style={{ color:"#fbbf24" }}>{fd(ATL_BILLING.revenue / ATL_BILLING.loads, 0)}</div>
+          <div className="ksub">avg carrier {fd(ATL_BILLING.carrierPay / ATL_BILLING.loads, 0)} · avg GP {fd(ATL_BILLING.grossProfit / ATL_BILLING.loads, 0)}</div>
+        </div>
+      </div>
+
+      {/* Operational KPIs (driver labor / contractor / fuel) */}
       <div className="g4" style={{ marginBottom:14 }}>
         <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
           <div className="klbl">ATL Driver Labor</div>
@@ -8162,9 +8211,57 @@ function AtlOperations() {
         </div>
       </div>
 
+      {/* ATL Loads & Billing — per-driver breakdown from the XLSX */}
+      <div className="card" style={{ marginBottom:14 }}>
+        <div className="ctit" style={{ fontSize:13 }}>💰 ATL Loads & Billing · per-driver · as of {ATL_BILLING.asOf}</div>
+        <table className="tbl" style={{ fontSize:13 }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign:"left", fontSize:10 }}>Driver</th>
+              <th style={{ fontSize:10 }}>Loads</th>
+              <th style={{ fontSize:10 }}>Revenue</th>
+              <th style={{ fontSize:10 }}>Carrier Pay</th>
+              <th style={{ fontSize:10 }}>Gross Profit</th>
+              <th style={{ fontSize:10 }}>Margin</th>
+              <th style={{ fontSize:10 }}>Avg / Load</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...ATL_BILLING.byDriver].sort((a,b)=>b.revenue-a.revenue).map((r, i) => {
+              const margin = r.revenue > 0 ? r.gross / r.revenue * 100 : 0;
+              return (
+                <tr key={r.name} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
+                  <td style={{ padding:"10px 9px", borderLeft:"4px solid #3ddc84", fontWeight:600 }}>{r.name} <span style={{ color:"#9aa4b3", fontSize:10 }}>({r.short})</span></td>
+                  <td style={{ padding:"10px 9px", color:"#9aa4b3" }}>{r.loads}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#3ddc84", fontWeight:700 }}>{fd(r.revenue, 0)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#ff5252" }}>{fd(r.carrier, 0)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#4fc3f7" }}>{fd(r.gross, 0)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color: margin >= 20 ? "#3ddc84" : margin >= 10 ? "#fbbf24" : "#ff5252", fontWeight:700 }}>{fp(margin)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#9aa4b3" }}>{fd(r.revenue / r.loads, 0)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td style={{ padding:"12px 9px", fontSize:13 }}>TOTAL · {ATL_BILLING.byDriver.length} drivers</td>
+              <td style={{ padding:"12px 9px", fontSize:13 }}>{ATL_BILLING.loads}</td>
+              <td style={{ padding:"12px 9px", fontSize:14, fontWeight:900, color:"#3ddc84" }}>{fd(ATL_BILLING.revenue, 0)}</td>
+              <td style={{ padding:"12px 9px", fontSize:13, color:"#ff5252" }}>{fd(ATL_BILLING.carrierPay, 0)}</td>
+              <td style={{ padding:"12px 9px", fontSize:14, fontWeight:900, color:"#4fc3f7" }}>{fd(ATL_BILLING.grossProfit, 0)}</td>
+              <td style={{ padding:"12px 9px", fontSize:13, fontWeight:700 }}>{fp(ATL_BILLING.grossMargin)}</td>
+              <td style={{ padding:"12px 9px", fontSize:13 }}>{fd(ATL_BILLING.revenue / ATL_BILLING.loads, 0)}</td>
+            </tr>
+          </tfoot>
+        </table>
+        <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>
+          Source: <span style={{ color:"#4fc3f7" }}>2026-Atlanta Billing.xlsx</span> · 18 loads tagged <code>ATL</code>; excludes 19 loads tagged <code>ASSIGNED TO CORP</code> (ATL drivers running SF freight) and 2 tagged <code>ASSIGNED TO CEE</code>. Refresh weekly via <code>scripts/parse_atl_billing.py</code>.
+        </div>
+      </div>
+
       {/* ATL Drivers table */}
       <div className="card" style={{ marginBottom:14 }}>
-        <div className="ctit" style={{ fontSize:13 }}>🚚 ATL Drivers · since May 11</div>
+        <div className="ctit" style={{ fontSize:13 }}>🚚 ATL Drivers · labor + fuel since May 4</div>
         <table className="tbl" style={{ fontSize:13 }}>
           <thead>
             <tr>
