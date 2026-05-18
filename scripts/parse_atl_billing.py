@@ -5,9 +5,10 @@ the ATL_BILLING constant block to paste into src/App.jsx.
 Usage:
   python scripts/parse_atl_billing.py
 
-Counts ONLY loads where the "Assigned" column = "ATL". Loads tagged
-"ASSIGNED TO CORP" (ATL drivers running SF freight) and "ASSIGNED TO CEE"
-(CE East) are excluded — they are NOT ATL revenue.
+Counts EVERY load in the sheet. The "Assigned" column has values like
+'ATL', 'ASSIGNED TO CORP', 'ASSIGNED TO CEE' that reflect QBO booking
+routing, but per Ben every load in the sheet is ATL revenue regardless
+of where it's invoiced from. Don't filter by Assigned.
 
 First-name → PAYROLL name mapping (extend if new ATL drivers appear):
   Anthoni → Davis Anthoni D
@@ -65,8 +66,9 @@ def parse(path):
         if not r or not r[0]: continue
         assigned = (str(r[8]).strip().upper() if r[8] else "")
         assigned_counts[assigned] += 1
-        if assigned == "ATL":
-            atl_rows.append(r)
+        # Every load in this sheet counts as ATL revenue regardless of
+        # 'Assigned' column (which only reflects QBO booking routing).
+        atl_rows.append(r)
 
     by_driver = defaultdict(lambda: {"count": 0, "revenue": 0.0, "carrier": 0.0})
     total_rev = 0.0
@@ -104,10 +106,9 @@ def emit(data):
     print(f"  Gross profit: ${data['gross_profit']:>12,.2f}")
     print(f"  Gross margin: {data['gross_margin']}%")
     print()
-    print("  Assigned breakdown (all loads in sheet):")
+    print("  Assigned breakdown (all loads count as ATL revenue per Ben):")
     for k, n in sorted(data["assigned_counts"].items(), key=lambda x: -x[1]):
-        flag = "  <- ATL revenue" if k == "ATL" else ""
-        print(f"    {k or '(blank)':35s}  {n}{flag}")
+        print(f"    {k or '(blank)':35s}  {n}")
     print()
     print("  Per-driver ATL:")
     for d, t in sorted(data["by_driver"].items(), key=lambda x: -x[1]["revenue"]):

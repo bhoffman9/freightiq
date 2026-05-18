@@ -7211,25 +7211,26 @@ const AGENTS = [
 // ── ATL BILLING (Atlanta load-level revenue) ────────────────
 // Source of truth: "2026-Atlanta Billing.xlsx" — drop into incoming-freightiq/
 // each week. Run scripts/parse_atl_billing.py to regenerate these totals.
-// Counts ONLY loads where "Assigned" column = "ATL" (other rows are ATL
-// drivers running freight billed under Corp/SF or CE East, NOT ATL revenue).
+// EVERY load in the sheet counts as ATL revenue, regardless of the
+// "Assigned" column (which only reflects QBO booking routing — some loads
+// are invoiced under SF/Corp or CE East, but the load itself is ATL ops).
 // First-name → PAYROLL name map: Anthoni→Davis Anthoni D, Sam→Denman Samuel E,
 // Michael→Wainwright Michael W, CJ→Johnson Christopher, Manar→Alshamaa Manar,
 // Robert→Tucker Robert.
 const ATL_BILLING = {
   asOf: "May 17, 2026",
-  loads: 18,
-  revenue: 57450.00,      // sum of Invoice Amount
-  carrierPay: 43652.50,   // sum of Carrier Amount (COGS)
-  grossProfit: 13797.50,
-  grossMargin: 24.0,      // %
+  loads: 39,
+  revenue: 99700.00,      // sum of Invoice Amount
+  carrierPay: 79832.50,   // sum of Carrier Amount (COGS)
+  grossProfit: 19867.50,
+  grossMargin: 19.9,      // %
   byDriver: [
-    { name: "Davis Anthoni D",     short: "Anthoni", loads: 4, revenue: 18900.00, carrier: 13840.00, gross: 5060.00 },
-    { name: "Denman Samuel E",     short: "Sam",     loads: 3, revenue: 11900.00, carrier: 10100.00, gross: 1800.00 },
-    { name: "Wainwright Michael W",short: "Michael", loads: 3, revenue: 11000.00, carrier:  7372.50, gross: 3627.50 },
-    { name: "Johnson Christopher", short: "CJ",      loads: 4, revenue:  7900.00, carrier:  6700.00, gross: 1200.00 },
-    { name: "Alshamaa Manar",      short: "Manar",   loads: 2, revenue:  6000.00, carrier:  3890.00, gross: 2110.00 },
-    { name: "Tucker Robert",       short: "Robert",  loads: 2, revenue:  1750.00, carrier:  1750.00, gross:    0.00 },
+    { name: "Davis Anthoni D",     short: "Anthoni", loads: 8, revenue: 24400.00, carrier: 18740.00, gross: 5660.00 },
+    { name: "Wainwright Michael W",short: "Michael", loads: 8, revenue: 19800.00, carrier: 15422.50, gross: 4377.50 },
+    { name: "Denman Samuel E",     short: "Sam",     loads: 8, revenue: 17650.00, carrier: 15850.00, gross: 1800.00 },
+    { name: "Alshamaa Manar",      short: "Manar",   loads: 5, revenue: 16950.00, carrier: 12080.00, gross: 4870.00 },
+    { name: "Tucker Robert",       short: "Robert",  loads: 4, revenue: 10900.00, carrier:  8940.00, gross: 1960.00 },
+    { name: "Johnson Christopher", short: "CJ",      loads: 6, revenue: 10000.00, carrier:  8800.00, gross: 1200.00 },
   ],
 };
 
@@ -8255,7 +8256,7 @@ function AtlOperations() {
           </tfoot>
         </table>
         <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>
-          Source: <span style={{ color:"#4fc3f7" }}>2026-Atlanta Billing.xlsx</span> · 18 loads tagged <code>ATL</code>; excludes 19 loads tagged <code>ASSIGNED TO CORP</code> (ATL drivers running SF freight) and 2 tagged <code>ASSIGNED TO CEE</code>. Refresh weekly via <code>scripts/parse_atl_billing.py</code>.
+          Source: <span style={{ color:"#4fc3f7" }}>2026-Atlanta Billing.xlsx</span> · all {ATL_BILLING.loads} loads count as ATL revenue (the <code>Assigned</code> column only reflects QBO booking routing — some loads invoiced under SF/Corp or CE East, but the load itself is ATL ops). Refresh weekly via <code>scripts/parse_atl_billing.py</code>.
         </div>
       </div>
 
