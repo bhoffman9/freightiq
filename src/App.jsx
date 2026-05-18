@@ -8037,37 +8037,15 @@ function AtlOperations() {
   // W2 pay for May 4-10 (before he transitioned to ENM Trucking 1099).
   const atlOfficeW2 = OFFICE_W2.filter(e => e.atlEntity === "ATL");
 
-  // Live ATL P&L from QB class 'ATL' on the ce_sf_combined company.
-  // We fetch BOTH the class-filtered and unfiltered P&L; if they match exactly
-  // QBO is returning unfiltered data because no transactions actually carry
-  // the class tag (data hygiene issue, not a real ATL P&L). In that case we
-  // suppress the live KPI row and surface a setup-status note instead.
-  const [atlPnl, setAtlPnl]               = useState(null);
-  const [fullPnl, setFullPnl]             = useState(null);
-  const [atlPnlLoading, setAtlPnlLoading] = useState(false);
-  const [atlPnlError, setAtlPnlError]     = useState(null);
-
-  useEffect(() => {
-    setAtlPnlLoading(true); setAtlPnlError(null);
-    Promise.all([
-      fetch("/api/qbo-pnl?company=ce_sf_combined&period=ytd&class=ATL").then(r => r.json()),
-      fetch("/api/qbo-pnl?company=ce_sf_combined&period=ytd").then(r => r.json()),
-    ])
-      .then(([atl, full]) => {
-        if (atl.error) throw new Error(atl.error);
-        setAtlPnl(atl); setFullPnl(full);
-      })
-      .catch(e => setAtlPnlError(e.message || String(e)))
-      .finally(() => setAtlPnlLoading(false));
-  }, []);
-
-  const fiq = atlPnl?.fiq || null;
-  const fullFiq = fullPnl?.fiq || null;
-  // Detect QBO's silent fallthrough: class filter returned same numbers as
-  // unfiltered. That means no (or very few) transactions are actually tagged
-  // with the class — the displayed values would be misleading.
-  const classFilterWorked = !!(fiq && fullFiq) &&
-    Math.abs(fiq.total_revenue - fullFiq.total_revenue) > 0.01;
+  // TODO (when QBO class tagging is consistent across all ATL transactions):
+  // re-enable the live QB class P&L block. The /api/qbo-pnl?class=ATL endpoint
+  // is still wired (uses the correct `class` filter param — see
+  // reference_qbo_class_filter memory). The block was removed because the
+  // Atlanta Billing XLSX (ATL_BILLING constant) is the current source of
+  // truth and the QBO class data was only partial (~$2K vs $99.7K actual).
+  // To restore: fetch class-filtered + unfiltered P&L, compare via
+  // classFilterWorked guard, then render a 4-tile KPI row alongside the
+  // ATL_BILLING tiles.
 
   // Per-driver ATL-period numbers: current YTD minus preATL snapshot.
   // Manar/Tucker/Johnson have no preATL → full YTD = ATL.
@@ -8124,45 +8102,7 @@ function AtlOperations() {
       <div className="ptitle">🍑 ATL Operations</div>
       <div className="psub">
         Atlanta operations · launched May 4, 2026 · {atlDrivers.length} W2 drivers · {atlContractors.length} 1099 contractor{atlContractors.length===1?"":"s"}{atlOfficeRows.length>0?` · ${atlOfficeRows.length} J&A office W2`:""}
-        {atlPnlLoading && <span style={{ color:"var(--bl)", marginLeft:8, fontSize:10 }}>● loading QB class P&L…</span>}
-        {classFilterWorked && <span style={{ color:"var(--gn)", marginLeft:8, fontSize:10 }}>● Live from QB class 'ATL'</span>}
-        {atlPnlError && <span style={{ color:"var(--ye)", marginLeft:8, fontSize:10 }}>● class P&L unavailable: {atlPnlError}</span>}
       </div>
-
-      {/* Setup notice when QB class isn't being applied to transactions yet */}
-      {fiq && !classFilterWorked && !atlPnlError && (
-        <div className="ibox" style={{ marginBottom:14, borderColor:"rgba(245,197,66,.5)", background:"rgba(245,197,66,.08)" }}>
-          <strong style={{ color:"var(--ye)" }}>⚙ QB class 'ATL' pending data tagging.</strong> The class is created in QBO but ATL-related
-          transactions (driver payroll, fuel, carrier pay, etc.) aren't tagged with it yet — the API returned the full company P&L
-          instead of an ATL-filtered subset. Backfill the May 11+ ATL transactions in QBO and the live KPI row will appear here automatically on the next page load. Until then, the entity-tag tables below are the source of truth.
-        </div>
-      )}
-
-      {/* Live ATL P&L headline (QB class) — only shown when the class filter actually filtered */}
-      {classFilterWorked && (
-        <div className="g4" style={{ marginBottom:14 }}>
-          <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
-            <div className="klbl">ATL Revenue</div>
-            <div className="kval" style={{ color:"#3ddc84" }}>{fd(fiq.total_revenue, 0)}</div>
-            <div className="ksub">CE {fd(fiq.revenue_ce, 0)} · SF {fd(fiq.revenue_sf, 0)}</div>
-          </div>
-          <div className="kpi" style={{ borderTop:"3px solid #ff5252" }}>
-            <div className="klbl">ATL COGS (Carrier Pay)</div>
-            <div className="kval" style={{ color:"#ff5252" }}>{fd(fiq.total_cogs, 0)}</div>
-            <div className="ksub">{fiq.total_revenue > 0 ? fp(fiq.total_cogs / fiq.total_revenue * 100) : "—"} of revenue</div>
-          </div>
-          <div className="kpi" style={{ borderTop:"3px solid #4fc3f7" }}>
-            <div className="klbl">ATL Gross Profit</div>
-            <div className="kval" style={{ color:"#4fc3f7" }}>{fd(fiq.gross_profit, 0)}</div>
-            <div className="ksub">{fiq.total_revenue > 0 ? fp(fiq.gross_profit / fiq.total_revenue * 100) : "—"} GP margin</div>
-          </div>
-          <div className="kpi" style={{ borderTop:`3px solid ${fiq.net_income >= 0 ? "#3ddc84" : "#ff5252"}` }}>
-            <div className="klbl">ATL Net Income</div>
-            <div className="kval" style={{ color: fiq.net_income >= 0 ? "#3ddc84" : "#ff5252" }}>{fd(fiq.net_income, 0)}</div>
-            <div className="ksub">{fiq.total_revenue > 0 ? fp(fiq.net_income / fiq.total_revenue * 100) : "—"} net margin</div>
-          </div>
-        </div>
-      )}
 
       {/* ATL Billing — load-level revenue (source: 2026-Atlanta Billing.xlsx, refreshed weekly) */}
       <div className="g4" style={{ marginBottom:14 }}>
