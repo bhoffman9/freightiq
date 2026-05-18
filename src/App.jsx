@@ -7174,7 +7174,7 @@ const OFFICE_W2 = [
   { name:"Debra Adamson",       entity:"J&A", gross:8750,     taxes:934.68,  contrib:0,       totalCost:9684.68,  salary:8750,     bonus:0,       reimb:0,      commission:0,       note:"*Former · W2 → Contractor", dual:true },
   { name:"Elizabeth Delgado",   entity:"J&A", gross:8541.11,  taxes:852.13,  contrib:0,       totalCost:9393.24,  salary:5940,     bonus:0,       reimb:898.35, commission:1702.76, note:"*Former · W2 → Contractor · commission", dual:true },
   { name:"Abigail Dillon",      entity:"J&A", gross:3596.13,  taxes:402.77,  contrib:0,       totalCost:3998.90,  salary:0,        bonus:0,       reimb:0,      commission:0,       note:"Hourly" },
-  { name:"Biniyam Fissehaye",   entity:"J&A", gross:19077.07, taxes:2045.40, contrib:0,       totalCost:21122.47, salary:18900,    bonus:0,       reimb:177.07, commission:0,       note:"*Former · W2 → 1099 ENM Trucking LLC (transitioned mid-May, ATL ops) · J&A side only; SF side $1,501.88", dual:true },
+  { name:"Biniyam Fissehaye",   entity:"J&A", atlEntity:"ATL", atlPreYtd:{ gross:17727.07, totalCost:19629.38 }, gross:19077.07, taxes:2045.40, contrib:0, totalCost:21122.47, salary:18900, bonus:0, reimb:177.07, commission:0, note:"*Former · J&A W2 → 1099 ENM Trucking LLC (transitioned May 11, ATL ops) · J&A side only; SF side $1,501.88 · ATL since May 4 (W2 only May 4-10, then ENM Trucking)", dual:true },
   { name:"Kirsten Hall",        entity:"J&A", gross:2250,     taxes:252.01,  contrib:0,       totalCost:2502.01,  salary:2250,     bonus:0,       reimb:0,      commission:0,       note:"*Former employee" },
   { name:"Ben Hoffman",         entity:"J&A", gross:25617.04, taxes:2753.17, contrib:376.95,  totalCost:28747.16, salary:24500.11, bonus:0,       reimb:40,     commission:0,       note:"Salary + 401K + PTO" },
   { name:"Branden Parnell",     entity:"J&A", gross:5769.20,  taxes:646.15,  contrib:0,       totalCost:6415.35,  salary:5769.20,  bonus:0,       reimb:0,      commission:0,       note:"*Former employee" },
@@ -7189,7 +7189,7 @@ const WAREHOUSE = [
 
 const CONTRACTORS = [
   { name:"Jon Marcus Zengotita", dba:"", weekly:2800, payments:19, weeklyTotal:53200, car:350, carPayments:5, carTotal:1750, commission:0, healthIns:0, healthInsTotal:0, other:0, total:54950, note:"$2,800/wk + $350/mo car (5 months)" },
-  { name:"Mellody Abrego",       dba:"Neon Vibes Enterprise", weekly:2250, payments:19, weeklyTotal:40950, car:334.86, carPayments:5, carTotal:1674.30, commission:3033.21, healthIns:368.34, healthInsTotal:6998.46, other:0, total:52655.97, entity:"ATL", atlPreYtd: { weeklyTotal: 38700, carTotal: 1674.30, commission: 3033.21, healthInsTotal: 6630.12, total: 50037.63 }, note:"$2,150 → $2,250/wk new normal May 11 + $334.86/mo car (5mo) + commission YTD \\$3,033 (NOT ATL-related, excluded from ATL portion) + health ins $368.34/wk (19wk) · ATL ops since May 11" },
+  { name:"Mellody Abrego",       dba:"Neon Vibes Enterprise", weekly:2250, payments:19, weeklyTotal:40950, car:334.86, carPayments:5, carTotal:1674.30, commission:3033.21, healthIns:368.34, healthInsTotal:6998.46, other:0, total:52655.97, entity:"ATL", atlPreYtd: { weeklyTotal: 36550, carTotal: 1674.30, commission: 3033.21, healthInsTotal: 6261.78, total: 47519.29 }, note:"$2,150 → $2,250/wk new normal May 11 + $334.86/mo car (5mo, all pre-ATL) + commission YTD \\$3,033 (NOT ATL-related, excluded from ATL portion) + health ins $368.34/wk (19wk) · ATL ops since May 4 (preATL = thru May 3, 17 paychecks)" },
   { name:"Gabriel Colon",        dba:"", weekly:0, payments:19, weeklyTotal:42871.92, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:42871.92, note:"Variable weekly — $2,331.63 (May 15) + $2,000 (May 8) + $2,210.64 (May 1) + $2,247.64 (Apr 24) + $2,000 (Apr 17) + $2,500 (Apr 10) + $2,833.30 (Apr 3) + $2,199.98 (Mar 27)" },
   { name:"Hilda Salman",         dba:"Salman Enterprises LLC", weekly:1730, payments:19, weeklyTotal:32870, car:0, carPayments:0, carTotal:0, commission:0, healthIns:118.82, healthInsTotal:2257.58, other:0, total:35127.58, note:"$1,730/wk + health ins $118.82/wk" },
   { name:"Maria Con",            dba:"", weekly:650, payments:19, weeklyTotal:11350, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:11350, note:"$550/wk → $650/wk starting Mar 2026" },
@@ -8006,6 +8006,10 @@ function CashFlowDashboard() {
 function AtlOperations() {
   const atlDrivers = PAYROLL.filter(p => p.entity === "ATL");
   const atlContractors = CONTRACTORS.filter(c => c.entity === "ATL");
+  // Office W2 entries flagged ATL via atlEntity (separate field from `entity`
+  // since OFFICE_W2's `entity` already carries SF/J&A). Example: Bini's J&A
+  // W2 pay for May 4-10 (before he transitioned to ENM Trucking 1099).
+  const atlOfficeW2 = OFFICE_W2.filter(e => e.atlEntity === "ATL");
 
   // Live ATL P&L from QB class 'ATL' on the ce_sf_combined company.
   // We fetch BOTH the class-filtered and unfiltered P&L; if they match exactly
@@ -8073,14 +8077,27 @@ function AtlOperations() {
     };
   });
   const atlContractorYTD = atlContractorRows.reduce((s, c) => s + c.atlTotal, 0);
-  const atlAllInLabor = atlLaborYTD + atlContractorYTD;
+
+  // Office W2 ATL contributions (e.g. Bini's J&A W2 pay May 4-10 before
+  // he became ENM Trucking 1099 on May 11).
+  const atlOfficeRows = atlOfficeW2.map(e => {
+    const pre = e.atlPreYtd || {};
+    return {
+      ...e,
+      atlTotalCost: Math.max(0, (e.totalCost || 0) - (pre.totalCost || 0)),
+      atlGross:     Math.max(0, (e.gross     || 0) - (pre.gross     || 0)),
+    };
+  });
+  const atlOfficeYTD = atlOfficeRows.reduce((s, r) => s + r.atlTotalCost, 0);
+
+  const atlAllInLabor = atlLaborYTD + atlContractorYTD + atlOfficeYTD;
   const allInCpm = atlMilesEst > 0 ? (atlAllInLabor + atlFuelYTD) / atlMilesEst : null;
 
   return (
     <div>
       <div className="ptitle">🍑 ATL Operations</div>
       <div className="psub">
-        Atlanta operations · launched May 11, 2026 · {atlDrivers.length} W2 drivers · {atlContractors.length} 1099 contractor{atlContractors.length===1?"":"s"}
+        Atlanta operations · launched May 4, 2026 · {atlDrivers.length} W2 drivers · {atlContractors.length} 1099 contractor{atlContractors.length===1?"":"s"}{atlOfficeRows.length>0?` · ${atlOfficeRows.length} J&A office W2`:""}
         {atlPnlLoading && <span style={{ color:"var(--bl)", marginLeft:8, fontSize:10 }}>● loading QB class P&L…</span>}
         {classFilterWorked && <span style={{ color:"var(--gn)", marginLeft:8, fontSize:10 }}>● Live from QB class 'ATL'</span>}
         {atlPnlError && <span style={{ color:"var(--ye)", marginLeft:8, fontSize:10 }}>● class P&L unavailable: {atlPnlError}</span>}
@@ -8126,12 +8143,12 @@ function AtlOperations() {
         <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
           <div className="klbl">ATL Driver Labor</div>
           <div className="kval" style={{ color:"#f47820" }}>{fd(atlLaborYTD, 0)}</div>
-          <div className="ksub">{atlDrivers.length} drivers · {fn(atlHoursYTD, 0)} hrs · since May 11</div>
+          <div className="ksub">{atlDrivers.length} drivers · {fn(atlHoursYTD, 0)} hrs · since May 4</div>
         </div>
         <div className="kpi" style={{ borderTop:"3px solid #f5c542" }}>
-          <div className="klbl">ATL Contractor Labor</div>
-          <div className="kval" style={{ color:"#fbbf24" }}>{fd(atlContractorYTD, 0)}</div>
-          <div className="ksub">{atlContractors.map(c => c.name.split(" ")[0]).join(", ") || "—"}</div>
+          <div className="klbl">ATL Non-Driver Labor</div>
+          <div className="kval" style={{ color:"#fbbf24" }}>{fd(atlContractorYTD + atlOfficeYTD, 0)}</div>
+          <div className="ksub">{atlContractors.map(c => c.name.split(" ")[0]).join(", ")}{atlOfficeRows.length>0?`, ${atlOfficeRows.map(r=>r.name.split(" ")[0]).join(", ")} (W2)`:""}</div>
         </div>
         <div className="kpi" style={{ borderTop:"3px solid #ff8a65" }}>
           <div className="klbl">ATL Fuel</div>
@@ -8245,6 +8262,37 @@ function AtlOperations() {
                 <td></td>
               </tr>
             </tfoot>
+          </table>
+        </div>
+      )}
+
+      {/* ATL Office W2 (transitional) — e.g. Bini's J&A W2 May 4-10 before ENM 1099 */}
+      {atlOfficeRows.length > 0 && (
+        <div className="card" style={{ marginBottom:14 }}>
+          <div className="ctit" style={{ fontSize:13 }}>🏢 ATL Office W2 (transitional) · since May 4</div>
+          <table className="tbl" style={{ fontSize:13 }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign:"left", fontSize:10 }}>Employee</th>
+                <th style={{ textAlign:"left", fontSize:10 }}>Entity</th>
+                <th style={{ fontSize:10 }}>Gross (ATL period)</th>
+                <th style={{ fontSize:10 }}>Total Cost (ATL period)</th>
+                <th style={{ fontSize:10 }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {atlOfficeRows.map((r, i) => (
+                <tr key={r.name} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
+                  <td style={{ padding:"10px 9px", borderLeft:"4px solid #ec4899", fontWeight:600 }}>{r.name}</td>
+                  <td style={{ padding:"10px 9px", color:"#9aa4b3" }}>{r.entity}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums" }}>{fd(r.atlGross, 0)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:800, color:"#ec4899" }}>{fd(r.atlTotalCost, 0)}</td>
+                  <td style={{ padding:"10px 9px", fontSize:10 }}>
+                    <span style={{ color:"#4fc3f7", border:"1px solid #4fc3f7", padding:"2px 6px", borderRadius:2 }}>W2 → 1099 TRANSITIONED MAY 11</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       )}

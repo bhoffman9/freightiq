@@ -255,7 +255,7 @@
     {
       "name": "Biniyam Fissehaye",
       "entity": "J&A",
-      "totalCost": 21122.47
+      "totalCost": 19629.38
     },
     {
       "name": "Kirsten Hall",
@@ -339,9 +339,9 @@
   "totals": {
     "driverLabor": 676804.14,
     "driverCount": 39,
-    "officeTotal": 302212.23999999993,
+    "officeTotal": 300719.14999999997,
     "warehouseTotal": 49888.369999999995,
     "contractorTotal": 249770.61000000002,
-    "grandTotal": 1278675.3599999999
+    "grandTotal": 1277182.27
   }
 }
