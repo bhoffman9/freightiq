@@ -668,16 +668,25 @@ function DetailModal({ id, onClose }) {
   const isMoney = v => typeof v === "number" && (Math.abs(v) > 1 || v === 0);
   const isDriver = id === "labor";
 
-  // Resolve the rows + columns to render: live rows from QBO override static
-  // when present. For QBO buckets we display [Date, Vendor, Memo, Amount].
+  // Resolve the rows + columns to render:
+  //   - "client" buckets (labor, fuel): always render static rows derived
+  //     from live arrays (DRIVERS / FUEL{}).
+  //   - "qbo" buckets: show empty (with loading message) until liveRows
+  //     arrives, then show those. Falls back to static only on hard error.
+  //     Never flash the stale May-2 hardcoded rows while loading.
   let displayRows = d.rows;
   let displayCols = d.cols;
   if (d.live === "qbo") {
     if (liveRows) {
       displayRows = liveRows.map(r => [r.date, r.vendor, r.memo || "", r.amount]);
       displayCols = ["Date", "Vendor", "Memo", "Amount"];
+    } else if (liveLoading || !liveError) {
+      // Loading (or just-opened, before fetch resolves): show empty with
+      // the "Loading live transactions…" placeholder row instead of stale rows.
+      displayRows = [];
+      displayCols = ["Date", "Vendor", "Memo", "Amount"];
     }
-    // While loading, keep the static rows so the modal isn't empty.
+    // liveError + no liveRows: fall through to d.rows (static fallback)
   }
 
   const thruLabel = d.thru || (typeof PERIOD_END === "string" ? PERIOD_END : "");
