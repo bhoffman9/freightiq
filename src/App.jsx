@@ -128,7 +128,7 @@ let LABOR     = 797630.40;  // QuickBooks: total driver payroll cost (gross+taxe
 let FUEL_TOT  = 396098.95;  // EFS only — thru May 16 (no Mudflap this period)
 let GALLONS   = 74018.74;   // EFS 74,018.74
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
-let MILES     = 480000.0;     // Samsara GPS, Jan 1 – May 16, 2026 (static baseline = last live snapshot; live /api/samsara-miles refines on each page load)
+let MILES     = 464000.0;     // Samsara GPS, Jan 1 – May 17, 2026 (static baseline = last live snapshot, refreshed weekly; live /api/samsara-miles refines on each page load)
 let TRUCK_COUNT = 45;       // Active fleet trucks (3 new in May: Manar + Tucker + Christopher J ATL drivers) — refined on App mount from /api/samsara-miles truckCount
 let TOTAL_HRS  = 25639.05;  // Payroll hours — driver-only (office excluded), thru May 16
 let INS_WEEK  = 6375;
@@ -9179,8 +9179,15 @@ export default function App() {
   // then fetch fresh and refresh. Avoids the 5-10s cold-load window where
   // the static baseline is shown and looks "wrong".
   useEffect(() => {
-    const CACHE_KEY = "fiq_fleet_miles_v1";
-    const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24h
+    // Bump CACHE_KEY version to invalidate prior caches when changing semantics.
+    // v2 = 1h TTL (was 24h). Stale values lingered for a full day if Samsara
+    // returned different numbers between visits or if a browser failed the
+    // fetch silently.
+    const CACHE_KEY = "fiq_fleet_miles_v2";
+    const MAX_AGE_MS = 60 * 60 * 1000; // 1h
+    // Best-effort: clear the old key so users transitioning from v1 don't
+    // hydrate a stale 480K from yesterday's cache.
+    try { localStorage.removeItem("fiq_fleet_miles_v1"); } catch (e) {}
     try {
       const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
       if (cached && typeof cached.miles === "number" && cached.miles > 0
