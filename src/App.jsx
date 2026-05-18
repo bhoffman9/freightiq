@@ -2823,7 +2823,11 @@ function TrucksTab() {
   return (
     <div>
       <div className="ptitle">Trucks</div>
-      <div className="psub">TEC Equipment · Penske · TCI Leasing · Feb–Mar 2026 · Lease · Rental · Service</div>
+      <div className="psub">
+        {equipment?.units?.length
+          ? `${equipment.units.filter(u => u.category === "truck").length} trucks · ${new Set(equipment.units.filter(u => u.category === "truck").map(u => u.vendor)).size} vendors · live from AP Aging · ${PERIOD}`
+          : `TEC Equipment · Penske · TCI Leasing · ${PERIOD}`}
+      </div>
 
       {/* Grand summary KPIs */}
       {(() => {
@@ -3676,7 +3680,11 @@ function TrailerFleet() {
   return (
     <div>
       <div className="ptitle">Trailers</div>
-      <div className="psub">McKinney · XTRA Lease · Mountain West · Feb–Mar 2026 · 58 units across 3 vendors</div>
+      <div className="psub">
+        {equipment?.units?.length
+          ? `${equipment.units.filter(u => u.category === "trailer").length} trailers · ${new Set(equipment.units.filter(u => u.category === "trailer").map(u => u.vendor)).size} vendors · live from AP Aging · ${PERIOD}`
+          : `McKinney · XTRA Lease · Mountain West · ${PERIOD}`}
+      </div>
 
       {/* View toggle */}
       <div style={{ display:"flex",gap:8,marginBottom:14 }}>
