@@ -1,0 +1,360 @@
+- generic [ref=e721]:
+  - banner [ref=e722]:
+    - generic [ref=e723]: ⬡ FreightIQ
+    - generic [ref=e724]: Show Freight Inc · Jan 1 - May 24, 2026
+    - generic [ref=e725]:
+      - generic [ref=e726]: Labor $855,376
+      - generic [ref=e727]: Fuel $432,474
+      - generic [ref=e728]: Ins $128,624
+      - generic [ref=e729]: Equip $432,893
+      - generic [ref=e730]: Basic $3.620
+      - generic [ref=e731]: All-In $4.050
+  - navigation [ref=e732]:
+    - button "🏢 Fleet Overview" [ref=e733] [cursor=pointer]
+    - button "🧮 CPM Calculator" [ref=e734] [cursor=pointer]
+    - button "📦 Per Load CPM" [ref=e735] [cursor=pointer]
+    - button "📊 Revenue" [ref=e736] [cursor=pointer]
+    - button "🚛 Driver Detail" [ref=e737] [cursor=pointer]
+    - button "📍 Trucks & Mileage" [ref=e738] [cursor=pointer]
+    - button "🛢 Fuel Analysis" [ref=e739] [cursor=pointer]
+    - button "🚛 Trucks" [ref=e740] [cursor=pointer]
+    - button "🚜 Trailers" [ref=e741] [cursor=pointer]
+    - button "🏢 Office Staff" [ref=e742] [cursor=pointer]
+    - button "💵 Income" [ref=e743] [cursor=pointer]
+    - button "🏦 CE East" [ref=e744] [cursor=pointer]
+    - button "🍑 ATL Ops" [ref=e745] [cursor=pointer]
+    - button "💰 Cash Flow" [ref=e746] [cursor=pointer]
+    - button "📋 Budgeting" [ref=e747] [cursor=pointer]
+    - button "📂 Upload" [ref=e748] [cursor=pointer]
+    - button "✅ Checklist" [ref=e749] [cursor=pointer]
+  - main [ref=e750]:
+    - generic [ref=e2731]:
+      - generic [ref=e2732]: Budgeting
+      - generic [ref=e2733]: QBO P&L weekly run rate · Jan 1 - May 24, 2026 (144 days / 20.6 weeks) · Live QB
+      - generic [ref=e2734]:
+        - generic [ref=e2735]:
+          - generic [ref=e2736]: Total Weekly Spend
+          - generic [ref=e2737]: $418,666
+          - generic [ref=e2738]: $21,830,424 annualized
+        - generic [ref=e2739]:
+          - generic [ref=e2740]: Weekly Revenue (avg)
+          - generic [ref=e2741]: $453,960
+          - generic [ref=e2742]: 20.6 weeks · $9,338,598 YTD
+        - generic [ref=e2743]:
+          - generic [ref=e2744]: Net Income Margin
+          - generic [ref=e2745]: 8.6%
+          - generic [ref=e2746]: $39,068/wk net income · $803,687 YTD
+        - generic [ref=e2747]:
+          - generic [ref=e2748]: With What-Ifs
+          - generic [ref=e2749]: 6.2%
+          - generic [ref=e2750]: $28,218/wk clearing · 6 active scenarios
+      - generic [ref=e2751]:
+        - generic [ref=e2752]: 📋 Weekly Budget by Category · QBO P&L (sorted by size)
+        - table [ref=e2753]:
+          - rowgroup [ref=e2754]:
+            - row "Category YTD (144d) Weekly Monthly (~4.33wk) Annualized % of Weekly Rev" [ref=e2755]:
+              - columnheader "Category" [ref=e2756]
+              - columnheader "YTD (144d)" [ref=e2757]
+              - columnheader "Weekly" [ref=e2758]
+              - columnheader "Monthly (~4.33wk)" [ref=e2759]
+              - columnheader "Annualized" [ref=e2760]
+              - columnheader "% of Weekly Rev" [ref=e2761]
+          - rowgroup [ref=e2762]:
+            - row "📦 Carrier Pay (COGS) $4,835,451 $235,057 $1,017,795 $12,256,524 51.8%" [ref=e2763]:
+              - cell "📦 Carrier Pay (COGS)" [ref=e2764]:
+                - generic [ref=e2765]: 📦
+                - text: Carrier Pay (COGS)
+              - cell "$4,835,451" [ref=e2766]
+              - cell "$235,057" [ref=e2767]
+              - cell "$1,017,795" [ref=e2768]
+              - cell "$12,256,524" [ref=e2769]
+              - cell "51.8%" [ref=e2770]
+            - row "🚚 Driver Labor $635,719 $30,903 $133,810 $1,611,371 6.8%" [ref=e2771]:
+              - cell "🚚 Driver Labor" [ref=e2772]:
+                - generic [ref=e2773]: 🚚
+                - text: Driver Labor
+              - cell "$635,719" [ref=e2774]
+              - cell "$30,903" [ref=e2775]
+              - cell "$133,810" [ref=e2776]
+              - cell "$1,611,371" [ref=e2777]
+              - cell "6.8%" [ref=e2778]
+            - row "⛽ Fuel $467,944 $22,747 $98,496 $1,186,108 5.0%" [ref=e2779]:
+              - cell "⛽ Fuel" [ref=e2780]:
+                - generic [ref=e2781]: ⛽
+                - text: Fuel
+              - cell "$467,944" [ref=e2782]
+              - cell "$22,747" [ref=e2783]
+              - cell "$98,496" [ref=e2784]
+              - cell "$1,186,108" [ref=e2785]
+              - cell "5.0%" [ref=e2786]
+            - row "📋 Contractor Payroll $365,138 $17,750 $76,856 $925,523 3.9%" [ref=e2787]:
+              - cell "📋 Contractor Payroll" [ref=e2788]:
+                - generic [ref=e2789]: 📋
+                - text: Contractor Payroll
+              - cell "$365,138" [ref=e2790]
+              - cell "$17,750" [ref=e2791]
+              - cell "$76,856" [ref=e2792]
+              - cell "$925,523" [ref=e2793]
+              - cell "3.9%" [ref=e2794]
+            - row "💼 Payroll Taxes & Benefits $345,866 $16,813 $72,800 $876,675 3.7%" [ref=e2795]:
+              - cell "💼 Payroll Taxes & Benefits" [ref=e2796]:
+                - generic [ref=e2797]: 💼
+                - text: Payroll Taxes & Benefits
+              - cell "$345,866" [ref=e2798]
+              - cell "$16,813" [ref=e2799]
+              - cell "$72,800" [ref=e2800]
+              - cell "$876,675" [ref=e2801]
+              - cell "3.7%" [ref=e2802]
+            - row "🚛 Truck Rentals $280,290 $13,625 $58,997 $710,458 3.0%" [ref=e2803]:
+              - cell "🚛 Truck Rentals" [ref=e2804]:
+                - generic [ref=e2805]: 🚛
+                - text: Truck Rentals
+              - cell "$280,290" [ref=e2806]
+              - cell "$13,625" [ref=e2807]
+              - cell "$58,997" [ref=e2808]
+              - cell "$710,458" [ref=e2809]
+              - cell "3.0%" [ref=e2810]
+            - row "🏢 Office Labor $263,478 $12,808 $55,458 $667,844 2.8%" [ref=e2811]:
+              - cell "🏢 Office Labor" [ref=e2812]:
+                - generic [ref=e2813]: 🏢
+                - text: Office Labor
+              - cell "$263,478" [ref=e2814]
+              - cell "$12,808" [ref=e2815]
+              - cell "$55,458" [ref=e2816]
+              - cell "$667,844" [ref=e2817]
+              - cell "2.8%" [ref=e2818]
+            - row "👑 Owner Draws + Purchases $261,156 $12,695 $54,970 $661,957 2.8%" [ref=e2819]:
+              - cell "👑 Owner Draws + Purchases" [ref=e2820]:
+                - generic [ref=e2821]: 👑
+                - text: Owner Draws + Purchases
+              - cell "$261,156" [ref=e2822]
+              - cell "$12,695" [ref=e2823]
+              - cell "$54,970" [ref=e2824]
+              - cell "$661,957" [ref=e2825]
+              - cell "2.8%" [ref=e2826]
+            - row "🚜 Trailer Rentals $152,603 $7,418 $32,121 $386,805 1.6%" [ref=e2827]:
+              - cell "🚜 Trailer Rentals" [ref=e2828]:
+                - generic [ref=e2829]: 🚜
+                - text: Trailer Rentals
+              - cell "$152,603" [ref=e2830]
+              - cell "$7,418" [ref=e2831]
+              - cell "$32,121" [ref=e2832]
+              - cell "$386,805" [ref=e2833]
+              - cell "1.6%" [ref=e2834]
+            - row "💻 Tech & Marketing $144,119 $7,006 $30,335 $365,303 1.5%" [ref=e2835]:
+              - cell "💻 Tech & Marketing" [ref=e2836]:
+                - generic [ref=e2837]: 💻
+                - text: Tech & Marketing
+              - cell "$144,119" [ref=e2838]
+              - cell "$7,006" [ref=e2839]
+              - cell "$30,335" [ref=e2840]
+              - cell "$365,303" [ref=e2841]
+              - cell "1.5%" [ref=e2842]
+            - row "🏦 CE East Operations $133,572 $6,493 $28,115 $338,568 1.4%" [ref=e2843]:
+              - cell "🏦 CE East Operations" [ref=e2844]:
+                - generic [ref=e2845]: 🏦
+                - text: CE East Operations
+              - cell "$133,572" [ref=e2846]
+              - cell "$6,493" [ref=e2847]
+              - cell "$28,115" [ref=e2848]
+              - cell "$338,568" [ref=e2849]
+              - cell "1.4%" [ref=e2850]
+            - row "🛡 Truck Insurance $128,624 $6,253 $27,074 $326,027 1.4%" [ref=e2851]:
+              - cell "🛡 Truck Insurance" [ref=e2852]:
+                - generic [ref=e2853]: 🛡
+                - text: Truck Insurance
+              - cell "$128,624" [ref=e2854]
+              - cell "$6,253" [ref=e2855]
+              - cell "$27,074" [ref=e2856]
+              - cell "$326,027" [ref=e2857]
+              - cell "1.4%" [ref=e2858]
+            - row "🏠 Facilities & Utilities $117,650 $5,719 $24,764 $298,211 1.3%" [ref=e2859]:
+              - cell "🏠 Facilities & Utilities" [ref=e2860]:
+                - generic [ref=e2861]: 🏠
+                - text: Facilities & Utilities
+              - cell "$117,650" [ref=e2862]
+              - cell "$5,719" [ref=e2863]
+              - cell "$24,764" [ref=e2864]
+              - cell "$298,211" [ref=e2865]
+              - cell "1.3%" [ref=e2866]
+            - row "📎 G&A Other $113,914 $5,538 $23,977 $288,741 1.2%" [ref=e2867]:
+              - cell "📎 G&A Other" [ref=e2868]:
+                - generic [ref=e2869]: 📎
+                - text: G&A Other
+              - cell "$113,914" [ref=e2870]
+              - cell "$5,538" [ref=e2871]
+              - cell "$23,977" [ref=e2872]
+              - cell "$288,741" [ref=e2873]
+              - cell "1.2%" [ref=e2874]
+            - row "💸 Bad Debt $87,000 $4,229 $18,312 $220,521 0.9%" [ref=e2875]:
+              - cell "💸 Bad Debt" [ref=e2876]:
+                - generic [ref=e2877]: 💸
+                - text: Bad Debt
+              - cell "$87,000" [ref=e2878]
+              - cell "$4,229" [ref=e2879]
+              - cell "$18,312" [ref=e2880]
+              - cell "$220,521" [ref=e2881]
+              - cell "0.9%" [ref=e2882]
+            - row "🏥 Other Insurance $86,021 $4,182 $18,106 $218,039 0.9%" [ref=e2883]:
+              - cell "🏥 Other Insurance" [ref=e2884]:
+                - generic [ref=e2885]: 🏥
+                - text: Other Insurance
+              - cell "$86,021" [ref=e2886]
+              - cell "$4,182" [ref=e2887]
+              - cell "$18,106" [ref=e2888]
+              - cell "$218,039" [ref=e2889]
+              - cell "0.9%" [ref=e2890]
+            - row "🚙 Asset Loan Payments $74,959 $3,644 $15,778 $190,000 0.8%" [ref=e2891]:
+              - cell "🚙 Asset Loan Payments" [ref=e2892]:
+                - generic [ref=e2893]: 🚙
+                - text: Asset Loan Payments
+              - cell "$74,959" [ref=e2894]
+              - cell "$3,644" [ref=e2895]
+              - cell "$15,778" [ref=e2896]
+              - cell "$190,000" [ref=e2897]
+              - cell "0.8%" [ref=e2898]
+            - row "⚖ Legal & Professional $69,015 $3,355 $14,527 $174,933 0.7%" [ref=e2899]:
+              - cell "⚖ Legal & Professional" [ref=e2900]:
+                - generic [ref=e2901]: ⚖
+                - text: Legal & Professional
+              - cell "$69,015" [ref=e2902]
+              - cell "$3,355" [ref=e2903]
+              - cell "$14,527" [ref=e2904]
+              - cell "$174,933" [ref=e2905]
+              - cell "0.7%" [ref=e2906]
+            - row "🔧 Maint & Storage $49,032 $2,383 $10,320 $124,281 0.5%" [ref=e2907]:
+              - cell "🔧 Maint & Storage" [ref=e2908]:
+                - generic [ref=e2909]: 🔧
+                - text: Maint & Storage
+              - cell "$49,032" [ref=e2910]
+              - cell "$2,383" [ref=e2911]
+              - cell "$10,320" [ref=e2912]
+              - cell "$124,281" [ref=e2913]
+              - cell "0.5%" [ref=e2914]
+            - row "🤝 Agent Payments $1,000 $49 $210 $2,535 0.0%" [ref=e2915]:
+              - cell "🤝 Agent Payments" [ref=e2916]:
+                - generic [ref=e2917]: 🤝
+                - text: Agent Payments
+              - cell "$1,000" [ref=e2918]
+              - cell "$49" [ref=e2919]
+              - cell "$210" [ref=e2920]
+              - cell "$2,535" [ref=e2921]
+              - cell "0.0%" [ref=e2922]
+          - rowgroup [ref=e2923]:
+            - row "TOTAL · 20 categories $8,612,551 $418,666 $1,812,822 $21,830,424 92.2%" [ref=e2924]:
+              - cell "TOTAL · 20 categories" [ref=e2925]
+              - cell "$8,612,551" [ref=e2926]
+              - cell "$418,666" [ref=e2927]
+              - cell "$1,812,822" [ref=e2928]
+              - cell "$21,830,424" [ref=e2929]
+              - cell "92.2%" [ref=e2930]
+      - generic [ref=e2931]:
+        - generic [ref=e2932]: 🎯 What-If Simulator · Add hypothetical expenses
+        - generic [ref=e2933]:
+          - generic [ref=e2934]:
+            - generic [ref=e2935]: Add Scenario
+            - generic [ref=e2936]:
+              - generic [ref=e2937]: Label
+              - textbox "e.g. New dispatcher" [ref=e2938]
+            - generic [ref=e2939]:
+              - generic [ref=e2940]:
+                - generic [ref=e2941]: Amount ($)
+                - spinbutton [ref=e2942]
+              - generic [ref=e2943]:
+                - generic [ref=e2944]: Frequency
+                - combobox [ref=e2945] [cursor=pointer]:
+                  - option "Weekly" [selected]
+                  - option "Monthly"
+            - button "Add Scenario" [disabled] [ref=e2946]
+          - generic [ref=e2947]:
+            - generic [ref=e2948]: Combined Impact (active only)
+            - generic [ref=e2949]:
+              - generic [ref=e2950]:
+                - generic [ref=e2951]: Added /wk
+                - generic [ref=e2952]: $10,850
+                - generic [ref=e2953]: $46,981/mo · $564,200/yr
+              - generic [ref=e2954]:
+                - generic [ref=e2955]: Net Margin Δ
+                - generic [ref=e2956]: "-2.4 pts"
+                - generic [ref=e2957]: 8.6% → 6.2%
+              - generic [ref=e2958]:
+                - generic [ref=e2959]: Weekly Clearing (after)
+                - generic [ref=e2960]: $28,218
+                - generic [ref=e2961]: before $39,068 · Δ −$10,850
+              - generic [ref=e2962]:
+                - generic [ref=e2963]: Annual Clearing (after)
+                - generic [ref=e2964]: $1,467,341
+                - generic [ref=e2965]: before $2,031,541 · Δ −$564,200
+        - generic [ref=e2966]:
+          - generic [ref=e2967]: Saved Scenarios · 6 total · 6 active
+          - table [ref=e2968]:
+            - rowgroup [ref=e2969]:
+              - row "Label Amount Frequency Weekly Equivalent Annualized Active" [ref=e2970]:
+                - columnheader "Label" [ref=e2971]
+                - columnheader "Amount" [ref=e2972]
+                - columnheader "Frequency" [ref=e2973]
+                - columnheader "Weekly Equivalent" [ref=e2974]
+                - columnheader "Annualized" [ref=e2975]
+                - columnheader "Active" [ref=e2976]
+                - columnheader [ref=e2977]
+            - rowgroup [ref=e2978]:
+              - row "Agent Model - Investment $5,000.00 weekly $5,000/wk $260,000 ✓ ON ×" [ref=e2979]:
+                - cell "Agent Model - Investment" [ref=e2980]
+                - cell "$5,000.00" [ref=e2981]
+                - cell "weekly" [ref=e2982]
+                - cell "$5,000/wk" [ref=e2983]
+                - cell "$260,000" [ref=e2984]
+                - cell "✓ ON" [ref=e2985]:
+                  - button "✓ ON" [ref=e2986] [cursor=pointer]
+                - cell "×" [ref=e2987]:
+                  - button "×" [ref=e2988] [cursor=pointer]
+              - row "Bini Raise $600.00 weekly $600/wk $31,200 ✓ ON ×" [ref=e2989]:
+                - cell "Bini Raise" [ref=e2990]
+                - cell "$600.00" [ref=e2991]
+                - cell "weekly" [ref=e2992]
+                - cell "$600/wk" [ref=e2993]
+                - cell "$31,200" [ref=e2994]
+                - cell "✓ ON" [ref=e2995]:
+                  - button "✓ ON" [ref=e2996] [cursor=pointer]
+                - cell "×" [ref=e2997]:
+                  - button "×" [ref=e2998] [cursor=pointer]
+              - row "Worm Payroll - Addition $200.00 weekly $200/wk $10,400 ✓ ON ×" [ref=e2999]:
+                - cell "Worm Payroll - Addition" [ref=e3000]
+                - cell "$200.00" [ref=e3001]
+                - cell "weekly" [ref=e3002]
+                - cell "$200/wk" [ref=e3003]
+                - cell "$10,400" [ref=e3004]
+                - cell "✓ ON" [ref=e3005]:
+                  - button "✓ ON" [ref=e3006] [cursor=pointer]
+                - cell "×" [ref=e3007]:
+                  - button "×" [ref=e3008] [cursor=pointer]
+              - row "Joshua Law $2,600.00 weekly $2,600/wk $135,200 ✓ ON ×" [ref=e3009]:
+                - cell "Joshua Law" [ref=e3010]
+                - cell "$2,600.00" [ref=e3011]
+                - cell "weekly" [ref=e3012]
+                - cell "$2,600/wk" [ref=e3013]
+                - cell "$135,200" [ref=e3014]
+                - cell "✓ ON" [ref=e3015]:
+                  - button "✓ ON" [ref=e3016] [cursor=pointer]
+                - cell "×" [ref=e3017]:
+                  - button "×" [ref=e3018] [cursor=pointer]
+              - row "Agent $1,250.00 weekly $1,250/wk $65,000 ✓ ON ×" [ref=e3019]:
+                - cell "Agent" [ref=e3020]
+                - cell "$1,250.00" [ref=e3021]
+                - cell "weekly" [ref=e3022]
+                - cell "$1,250/wk" [ref=e3023]
+                - cell "$65,000" [ref=e3024]
+                - cell "✓ ON" [ref=e3025]:
+                  - button "✓ ON" [ref=e3026] [cursor=pointer]
+                - cell "×" [ref=e3027]:
+                  - button "×" [ref=e3028] [cursor=pointer]
+              - row "New Dispatcher $1,200.00 weekly $1,200/wk $62,400 ✓ ON ×" [ref=e3029]:
+                - cell "New Dispatcher" [ref=e3030]
+                - cell "$1,200.00" [ref=e3031]
+                - cell "weekly" [ref=e3032]
+                - cell "$1,200/wk" [ref=e3033]
+                - cell "$62,400" [ref=e3034]
+                - cell "✓ ON" [ref=e3035]:
+                  - button "✓ ON" [ref=e3036] [cursor=pointer]
+                - cell "×" [ref=e3037]:
+                  - button "×" [ref=e3038] [cursor=pointer]

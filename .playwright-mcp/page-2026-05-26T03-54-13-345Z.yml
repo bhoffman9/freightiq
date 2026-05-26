@@ -1,0 +1,183 @@
+- generic [ref=e721]:
+  - banner [ref=e722]:
+    - generic [ref=e723]: ⬡ FreightIQ
+    - generic [ref=e724]: Show Freight Inc · Jan 1 - May 24, 2026
+    - generic [ref=e725]:
+      - generic [ref=e726]: Labor $855,376
+      - generic [ref=e727]: Fuel $432,474
+      - generic [ref=e728]: Ins $128,624
+      - generic [ref=e729]: Equip $432,893
+      - generic [ref=e730]: Basic $3.620
+      - generic [ref=e731]: All-In $4.050
+  - navigation [ref=e732]:
+    - button "🏢 Fleet Overview" [ref=e733] [cursor=pointer]
+    - button "🧮 CPM Calculator" [ref=e734] [cursor=pointer]
+    - button "📦 Per Load CPM" [ref=e735] [cursor=pointer]
+    - button "📊 Revenue" [ref=e736] [cursor=pointer]
+    - button "🚛 Driver Detail" [ref=e737] [cursor=pointer]
+    - button "📍 Trucks & Mileage" [ref=e738] [cursor=pointer]
+    - button "🛢 Fuel Analysis" [ref=e739] [cursor=pointer]
+    - button "🚛 Trucks" [ref=e740] [cursor=pointer]
+    - button "🚜 Trailers" [ref=e741] [cursor=pointer]
+    - button "🏢 Office Staff" [ref=e742] [cursor=pointer]
+    - button "💵 Income" [ref=e743] [cursor=pointer]
+    - button "🏦 CE East" [ref=e744] [cursor=pointer]
+    - button "🍑 ATL Ops" [ref=e745] [cursor=pointer]
+    - button "💰 Cash Flow" [ref=e746] [cursor=pointer]
+    - button "📋 Budgeting" [ref=e747] [cursor=pointer]
+    - button "📂 Upload" [ref=e748] [cursor=pointer]
+    - button "✅ Checklist" [ref=e749] [cursor=pointer]
+  - main [ref=e750]:
+    - generic [ref=e2414]:
+      - generic [ref=e2415]: Income
+      - generic [ref=e2416]: CE + SF + DI Combined · Jan 1 – May 24, 2026 vs Full Year 2025
+      - generic [ref=e2417]:
+        - button "⚡ Live QB" [ref=e2418] [cursor=pointer]
+        - button "📊 Overview" [ref=e2419] [cursor=pointer]
+        - button "📈 Weekly Trend" [ref=e2420] [cursor=pointer]
+        - button "🔄 YoY Comparison" [ref=e2421] [cursor=pointer]
+      - generic [ref=e2422]:
+        - button "YTD" [ref=e2423] [cursor=pointer]
+        - button "This Week" [ref=e2424] [cursor=pointer]
+        - button "Last Week" [ref=e2425] [cursor=pointer]
+        - button "Jan" [ref=e2426] [cursor=pointer]
+        - button "Feb" [ref=e2427] [cursor=pointer]
+        - button "Mar" [ref=e2428] [cursor=pointer]
+        - button "Apr" [ref=e2429] [cursor=pointer]
+        - button "May" [ref=e2430] [cursor=pointer]
+        - button "Jun" [ref=e2431] [cursor=pointer]
+        - button "Jul" [ref=e2432] [cursor=pointer]
+        - button "Aug" [ref=e2433] [cursor=pointer]
+        - button "Sep" [ref=e2434] [cursor=pointer]
+        - button "Oct" [ref=e2435] [cursor=pointer]
+        - button "Nov" [ref=e2436] [cursor=pointer]
+        - button "Dec" [ref=e2437] [cursor=pointer]
+      - generic [ref=e2438]: QuickBooks Live — 2026-01-01 to 2026-05-26
+      - generic [ref=e2439]:
+        - generic [ref=e2440]:
+          - generic [ref=e2441]: CE Revenue
+          - generic [ref=e2442]: $6,621,776
+          - generic [ref=e2443]: 70.9% of total
+        - generic [ref=e2444]:
+          - generic [ref=e2445]: SF Revenue
+          - generic [ref=e2446]: $2,387,227
+          - generic [ref=e2447]: 25.6% of total
+        - generic [ref=e2448]:
+          - generic [ref=e2449]: DI Revenue
+          - generic [ref=e2450]: $43,102
+          - generic [ref=e2451]: 0.5% of total
+      - generic [ref=e2452]:
+        - generic [ref=e2453]:
+          - generic [ref=e2454]: Total Revenue
+          - generic [ref=e2455]: $9,338,598
+        - generic [ref=e2456]:
+          - generic [ref=e2457]: Gross Profit
+          - generic [ref=e2458]: $4,503,147
+          - generic [ref=e2459]: 48.2% margin
+        - generic [ref=e2460]:
+          - generic [ref=e2461]: Net Op Income
+          - generic [ref=e2462]: $727,047
+        - generic [ref=e2463]:
+          - generic [ref=e2464]: Net Income
+          - generic [ref=e2465]: $803,687
+      - generic [ref=e2466]:
+        - generic [ref=e2467]:
+          - generic [ref=e2468]: Cost of Goods Sold
+          - table [ref=e2469]:
+            - rowgroup [ref=e2470]:
+              - row "Carrier Pay $4,762,427.84" [ref=e2471]:
+                - cell "Carrier Pay" [ref=e2472]
+                - cell "$4,762,427.84" [ref=e2473]
+              - row "Flexent Fees $17,943.30" [ref=e2474]:
+                - cell "Flexent Fees" [ref=e2475]
+                - cell "$17,943.30" [ref=e2476]
+              - row "Triumph Merchant Fees $55,079.60" [ref=e2477]:
+                - cell "Triumph Merchant Fees" [ref=e2478]
+                - cell "$55,079.60" [ref=e2479]
+              - row "Total COGS $4,835,450.74" [ref=e2480]:
+                - cell "Total COGS" [ref=e2481]
+                - cell "$4,835,450.74" [ref=e2482]
+        - generic [ref=e2483]:
+          - generic [ref=e2484]: Truck / Trailer (CPM Components)
+          - table [ref=e2485]:
+            - rowgroup [ref=e2486]:
+              - row "SF Truck Insurance $128,624.45" [ref=e2487]:
+                - cell "SF Truck Insurance" [ref=e2488]
+                - cell "$128,624.45" [ref=e2489]
+              - row "Truck Rentals $280,290.24" [ref=e2490]:
+                - cell "Truck Rentals" [ref=e2491]
+                - cell "$280,290.24" [ref=e2492]
+              - row "Trailer Rentals $152,602.63" [ref=e2493]:
+                - cell "Trailer Rentals" [ref=e2494]
+                - cell "$152,602.63" [ref=e2495]
+              - row "Truck Maintenance $5,858.37" [ref=e2496]:
+                - cell "Truck Maintenance" [ref=e2497]
+                - cell "$5,858.37" [ref=e2498]
+              - row "Trailer Maintenance $4,410.04" [ref=e2499]:
+                - cell "Trailer Maintenance" [ref=e2500]
+                - cell "$4,410.04" [ref=e2501]
+              - row "Storage/Parking $30,839.62" [ref=e2502]:
+                - cell "Storage/Parking" [ref=e2503]
+                - cell "$30,839.62" [ref=e2504]
+              - row "Uniforms $7,923.56" [ref=e2505]:
+                - cell "Uniforms" [ref=e2506]
+                - cell "$7,923.56" [ref=e2507]
+              - row "Fuel (QB) $467,943.81" [ref=e2508]:
+                - cell "Fuel (QB)" [ref=e2509]
+                - cell "$467,943.81" [ref=e2510]
+      - generic [ref=e2511]: "CE East Revenue: $286,492"
+      - generic [ref=e2512]: Live from QuickBooks · CE & SF Combined P&L · Updated in real-time
+      - generic [ref=e2513]:
+        - generic [ref=e2514]:
+          - generic [ref=e2515]:
+            - generic [ref=e2516]: Revenue Simulator
+            - generic [ref=e2517]: What if we add straight revenue? See the impact on net income.
+          - generic [ref=e2518]:
+            - generic [ref=e2519]: $
+            - spinbutton [ref=e2520]: "300000"
+        - generic [ref=e2521]:
+          - button "$100,000" [ref=e2522] [cursor=pointer]
+          - button "$200,000" [ref=e2523] [cursor=pointer]
+          - button "$300,000" [ref=e2524] [cursor=pointer]
+          - button "$500,000" [ref=e2525] [cursor=pointer]
+          - button "$1,000,000" [ref=e2526] [cursor=pointer]
+        - generic [ref=e2527]:
+          - generic [ref=e2528]:
+            - generic [ref=e2529]: Current
+            - generic [ref=e2530]:
+              - generic [ref=e2531]: Revenue
+              - generic [ref=e2532]: $9,338,598
+            - generic [ref=e2533]:
+              - generic [ref=e2534]: Gross Profit
+              - generic [ref=e2535]: $4,503,147
+            - generic [ref=e2536]:
+              - generic [ref=e2537]: Expenses
+              - generic [ref=e2538]: $3,776,100
+            - generic [ref=e2539]:
+              - generic [ref=e2540]: Net Income
+              - generic [ref=e2541]: $803,687
+            - generic [ref=e2542]:
+              - generic [ref=e2543]: Net Margin
+              - generic [ref=e2544]: 8.6%
+          - generic [ref=e2546]: →
+          - generic [ref=e2547]:
+            - generic [ref=e2548]: + $300,000 Revenue
+            - generic [ref=e2549]:
+              - generic [ref=e2550]: Revenue
+              - generic [ref=e2551]: $9,638,598
+            - generic [ref=e2552]:
+              - generic [ref=e2553]: Gross Profit
+              - generic [ref=e2554]: $4,803,147
+            - generic [ref=e2555]:
+              - generic [ref=e2556]: Expenses
+              - generic [ref=e2557]: $3,776,100
+            - generic [ref=e2558]:
+              - generic [ref=e2559]: Net Income
+              - generic [ref=e2560]: $1,103,687
+            - generic [ref=e2561]:
+              - generic [ref=e2562]: Net Margin
+              - generic [ref=e2563]: 11.5%
+        - generic [ref=e2564]:
+          - generic [ref=e2565]: Net Income Impact
+          - generic [ref=e2566]: $1,103,687
+          - generic [ref=e2567]: from $803,687 → +$300,000 straight revenue

@@ -20,45 +20,50 @@ function useEquipment() { return useContext(EquipmentContext); }
 // ATL designation is week-to-week (see ATL_WEEKLY_LOG below) — no longer
 // tagged here. The entity:"ATL" + atlPreYtd pattern was dropped May 25, 2026
 // after Ben clarified that ATL designations toggle weekly and aren't sticky.
+//
+// active: false marks a driver whose YTD is frozen (no recent activity).
+// Used by ACTIVE_PAYROLL filter — UI shows only active drivers in counts.
+// Frozen YTD still counts toward LABOR / TOTAL_HRS so fleet totals reconcile
+// to QBO; only the COUNT displays are filtered.
 let PAYROLL = [
   { name: "Alexander Christopher", hours: 1029.33,totalCost: 30209.33 },
   { name: "Cowsky Andy",           hours: 327.37, totalCost: 9460.11 },
-  { name: "Allwine Brian A",       hours: 181.34, totalCost: 5043.53 },   // *inactive (UNCHANGED WoW)
-  { name: "Alshamaa Manar",        hours: 104.47, totalCost: 3196.14 },   // NEW since May 11
-  { name: "Anderson Justin M",     hours: 79.01,  totalCost: 2285.37 },   // *inactive (UNCHANGED WoW)
-  { name: "Brown Jr Marcellus",    hours: 77.08,  totalCost: 2143.78 },   // *inactive (UNCHANGED WoW)
-  { name: "Butler Richard",        hours: 382.40, totalCost: 11493.27 },  // *inactive (UNCHANGED WoW)
-  { name: "Christian Norman L",    hours: 100.08, totalCost: 2894.81 },   // *inactive (UNCHANGED WoW)
-  { name: "Clark Rettick",         hours: 255.06, totalCost: 7377.62 },   // *inactive (UNCHANGED WoW)
-  { name: "Cotton Kejlon",         hours: 320.32, totalCost: 11677.82 },  // *inactive (UNCHANGED WoW)
+  { name: "Allwine Brian A",       hours: 181.34, totalCost: 5043.53,   active: false }, // *inactive (UNCHANGED WoW)
+  { name: "Alshamaa Manar",        hours: 104.47, totalCost: 3196.14 },                   // NEW since May 11
+  { name: "Anderson Justin M",     hours: 79.01,  totalCost: 2285.37,   active: false }, // *inactive (UNCHANGED WoW)
+  { name: "Brown Jr Marcellus",    hours: 77.08,  totalCost: 2143.78,   active: false }, // *inactive (UNCHANGED WoW)
+  { name: "Butler Richard",        hours: 382.40, totalCost: 11493.27,  active: false }, // *inactive (UNCHANGED WoW)
+  { name: "Christian Norman L",    hours: 100.08, totalCost: 2894.81,   active: false }, // *inactive (UNCHANGED WoW)
+  { name: "Clark Rettick",         hours: 255.06, totalCost: 7377.62,   active: false }, // *inactive (UNCHANGED WoW)
+  { name: "Cotton Kejlon",         hours: 320.32, totalCost: 11677.82,  active: false }, // *inactive (UNCHANGED WoW)
   { name: "Daniels Gerald W",      hours: 414.03, totalCost: 12253.23 },
   { name: "Davis Anthoni D",       hours: 1427.34,totalCost: 50118.25 },
   { name: "Denman Samuel E",       hours: 1226.89,totalCost: 39823.08 },
   { name: "Dotch Brandon C",       hours: 540.11, totalCost: 16130.43 },
   { name: "Gutierrez Danny",       hours: 1101.05,totalCost: 34328.85 },
   { name: "Guzman Jose",           hours: 1393.39,totalCost: 49908.95 },
-  { name: "Howell Lawrence",       hours: 85.33,  totalCost: 2373.24 },   // *inactive (UNCHANGED WoW)
+  { name: "Howell Lawrence",       hours: 85.33,  totalCost: 2373.24,   active: false }, // *inactive (UNCHANGED WoW)
   { name: "Ibarra Jose Pablo",     hours: 1356.59,totalCost: 48033.29 },
-  { name: "Johnson Christopher",   hours: 71.08,  totalCost: 2174.60 },   // NEW · started May 17
-  { name: "Juarez Angel",          hours: 376.15, totalCost: 10863.46 },  // *inactive (UNCHANGED WoW)
-  { name: "Kelly Kirk D",          hours: 801.82, totalCost: 23044.55 },  // *inactive (UNCHANGED WoW)
-  { name: "Lucero Andrew",         hours: 149.53, totalCost: 4325.15 },   // (UNCHANGED WoW)
-  { name: "Matthews Ron A",        hours: 464.44, totalCost: 13126.62 },  // *inactive (UNCHANGED WoW)
+  { name: "Johnson Christopher",   hours: 71.08,  totalCost: 2174.60 },                   // NEW · started May 17
+  { name: "Juarez Angel",          hours: 376.15, totalCost: 10863.46,  active: false }, // *inactive (UNCHANGED WoW)
+  { name: "Kelly Kirk D",          hours: 801.82, totalCost: 23044.55,  active: false }, // *inactive (UNCHANGED WoW)
+  { name: "Lucero Andrew",         hours: 149.53, totalCost: 4325.15 },                   // (UNCHANGED WoW)
+  { name: "Matthews Ron A",        hours: 464.44, totalCost: 13126.62,  active: false }, // *inactive (UNCHANGED WoW)
   { name: "Mcclam Michael A",      hours: 716.67, totalCost: 21534.88 },
   { name: "McNamara John",         hours: 1334.51,totalCost: 43940.86 },
-  { name: "Memolo Dominick",       hours: 0,      totalCost: 0 },         // *inactive
-  { name: "Negrete Arturo",        hours: 371.01, totalCost: 11053.06 },  // *inactive (UNCHANGED WoW)
+  { name: "Memolo Dominick",       hours: 0,      totalCost: 0,         active: false }, // *inactive
+  { name: "Negrete Arturo",        hours: 371.01, totalCost: 11053.06,  active: false }, // *inactive (UNCHANGED WoW)
   { name: "Ponce Carlos",          hours: 433.79, totalCost: 12896.71 },
   { name: "Restrepo Julian E",     hours: 486.90, totalCost: 15309.36 },
   { name: "Reyes Corey",           hours: 382.07, totalCost: 11033.77 },
   { name: "Robinson Animashaun",   hours: 613.25, totalCost: 18184.60 },
   { name: "Ronkov Martin P",       hours: 1230.15,totalCost: 35157.86 },
-  { name: "Secrest Jermelle",      hours: 613.67, totalCost: 17708.58 },  // (UNCHANGED WoW)
-  { name: "Stringer Adam E",       hours: 203.46, totalCost: 5885.08 },   // (UNCHANGED WoW)
+  { name: "Secrest Jermelle",      hours: 613.67, totalCost: 17708.58 },                  // (UNCHANGED WoW)
+  { name: "Stringer Adam E",       hours: 203.46, totalCost: 5885.08 },                   // (UNCHANGED WoW)
   { name: "Striplin Lamareh",      hours: 653.62, totalCost: 20028.99 },
-  { name: "Thorne Richard",        hours: 254.53, totalCost: 7387.28 },   // *inactive (UNCHANGED WoW)
-  { name: "Tucker Robert",         hours: 99.20,  totalCost: 3034.92 },   // NEW since May 11
-  { name: "Vue CJ Z",              hours: 3.00,   totalCost: 86.78 },     // NEW · first appearance May 18-24
+  { name: "Thorne Richard",        hours: 254.53, totalCost: 7387.28,   active: false }, // *inactive (UNCHANGED WoW)
+  { name: "Tucker Robert",         hours: 99.20,  totalCost: 3034.92 },                   // NEW since May 11
+  { name: "Vue CJ Z",              hours: 3.00,   totalCost: 86.78 },                     // NEW · first appearance May 18-24
   { name: "Wainwright Michael W",  hours: 1199.40,totalCost: 35914.10 },
   { name: "Watkins Shawn",         hours: 647.48, totalCost: 19394.36 },
   { name: "Watson Dahnifu S",      hours: 1132.46,totalCost: 32491.10 },
@@ -66,8 +71,12 @@ let PAYROLL = [
   { name: "Williams Tadaryl C",    hours: 1206.55,totalCost: 35437.32 },
   { name: "Williams Will",         hours: 698.22, totalCost: 20854.09 },
   { name: "Willis Wali A",         hours: 1397.74,totalCost: 47702.45 },
-  { name: "Wright Robert",         hours: 260.66, totalCost: 9443.88 },   // *inactive (UNCHANGED WoW)
+  { name: "Wright Robert",         hours: 260.66, totalCost: 9443.88,   active: false }, // *inactive (UNCHANGED WoW)
 ];
+
+// Active driver count — used everywhere a "how many drivers" display number
+// matters. Frozen/inactive YTD still counts toward LABOR; this is for counts only.
+const ACTIVE_DRIVERS_COUNT = PAYROLL.filter(p => p.active !== false).length;
 
 // ── FUEL DATA (EFS only) ──────────────────────────────────────
 // ATL designation dropped here too — see ATL_WEEKLY_LOG. Cards still mapped
@@ -130,7 +139,7 @@ let FUEL = {
 // All other costs come from QuickBooks P&L.
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
-let LABOR     = 855375.91;  // QuickBooks: total driver payroll cost (gross+taxes+401k) thru May 24 — 45 drivers active (Memolo still 0; SF total $1,076,067.85 minus 9 office)
+let LABOR     = 855375.91;  // QuickBooks: total driver payroll cost (gross+taxes+401k) thru May 24 — 31 drivers active (45 with YTD hours incl 14 frozen/*inactive + Memolo at 0; SF total $1,076,067.85 minus 9 office)
 let FUEL_TOT  = 432474.42;  // EFS only — thru May 24 (no Mudflap this period)
 let GALLONS   = 80310.87;   // EFS 80,310.87
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
@@ -1417,7 +1426,7 @@ function BasicCPM() {
             <div className="sseg" style={{ width:`${INS_TOT/BASIC_COST*100}%`,  background:"#7c5cbf" }}>Ins {fp(INS_TOT/BASIC_COST*100)}</div>
           </div>
           {[
-            { label:"Labor",         val:LABOR,    cpm:lCPM, color:"#f47820", sub:PAYROLL.length + " drivers · all-in employer cost" },
+            { label:"Labor",         val:LABOR,    cpm:lCPM, color:"#f47820", sub:ACTIVE_DRIVERS_COUNT + " drivers · all-in employer cost" },
             { label:"Fuel",          val:FUEL_TOT, cpm:fCPM, color:"#f5c542", sub:"EFS + Mudflap · "+fn(GALLONS,0)+" gal" },
             { label:"Truck Rentals", val:TRUCK_TOT,cpm:tCPM, color:"#4fc3f7", sub:"Penske + TEC/Transco + TCI" },
             { label:"Insurance",     val:INS_TOT,  cpm:iCPM, color:"#b39ddb", sub:"$"+fn(INS_WEEK,0)+"/wk · "+PERIOD_DAYS+"-day period" },
@@ -2233,7 +2242,7 @@ function FleetOverview() {
     <div>
       <DetailModal id={modal} onClose={() => setModal(null)} />
       <div className="ptitle">Fleet Overview</div>
-      <div className="psub">Show Freight Inc · {PERIOD} · {PAYROLL.length} Drivers</div>
+      <div className="psub">Show Freight Inc · {PERIOD} · {ACTIVE_DRIVERS_COUNT} Drivers</div>
 
       <div className="sbox">
         <strong style={{ color: "#4fc3f7" }}>Data sources (QuickBooks + EFS):</strong>
@@ -4798,8 +4807,8 @@ function IncomeDashboard() {
                   </div>
                   <div className="kpi">
                     <div className="klbl">Revenue per Driver/Wk</div>
-                    <div className="kval" style={{ color:"#b39ddb", fontSize:20 }}>{fd(weeklyAvgRev / PAYROLL.length,0)}</div>
-                    <div className="ksub">{PAYROLL.length} drivers · {fd(weeklyAvgGP / PAYROLL.length,0)} GP each</div>
+                    <div className="kval" style={{ color:"#b39ddb", fontSize:20 }}>{fd(weeklyAvgRev / ACTIVE_DRIVERS_COUNT,0)}</div>
+                    <div className="ksub">{ACTIVE_DRIVERS_COUNT} drivers · {fd(weeklyAvgGP / ACTIVE_DRIVERS_COUNT,0)} GP each</div>
                   </div>
                 </div>
 

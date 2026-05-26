@@ -11,44 +11,9 @@
       "totalCost": 9460.11
     },
     {
-      "name": "Allwine Brian A",
-      "hours": 181.34,
-      "totalCost": 5043.53
-    },
-    {
       "name": "Alshamaa Manar",
       "hours": 104.47,
       "totalCost": 3196.14
-    },
-    {
-      "name": "Anderson Justin M",
-      "hours": 79.01,
-      "totalCost": 2285.37
-    },
-    {
-      "name": "Brown Jr Marcellus",
-      "hours": 77.08,
-      "totalCost": 2143.78
-    },
-    {
-      "name": "Butler Richard",
-      "hours": 382.4,
-      "totalCost": 11493.27
-    },
-    {
-      "name": "Christian Norman L",
-      "hours": 100.08,
-      "totalCost": 2894.81
-    },
-    {
-      "name": "Clark Rettick",
-      "hours": 255.06,
-      "totalCost": 7377.62
-    },
-    {
-      "name": "Cotton Kejlon",
-      "hours": 320.32,
-      "totalCost": 11677.82
     },
     {
       "name": "Daniels Gerald W",
@@ -81,11 +46,6 @@
       "totalCost": 49908.95
     },
     {
-      "name": "Howell Lawrence",
-      "hours": 85.33,
-      "totalCost": 2373.24
-    },
-    {
       "name": "Ibarra Jose Pablo",
       "hours": 1356.59,
       "totalCost": 48033.29
@@ -96,24 +56,9 @@
       "totalCost": 2174.6
     },
     {
-      "name": "Juarez Angel",
-      "hours": 376.15,
-      "totalCost": 10863.46
-    },
-    {
-      "name": "Kelly Kirk D",
-      "hours": 801.82,
-      "totalCost": 23044.55
-    },
-    {
       "name": "Lucero Andrew",
       "hours": 149.53,
       "totalCost": 4325.15
-    },
-    {
-      "name": "Matthews Ron A",
-      "hours": 464.44,
-      "totalCost": 13126.62
     },
     {
       "name": "Mcclam Michael A",
@@ -124,16 +69,6 @@
       "name": "McNamara John",
       "hours": 1334.51,
       "totalCost": 43940.86
-    },
-    {
-      "name": "Memolo Dominick",
-      "hours": 0,
-      "totalCost": 0
-    },
-    {
-      "name": "Negrete Arturo",
-      "hours": 371.01,
-      "totalCost": 11053.06
     },
     {
       "name": "Ponce Carlos",
@@ -174,11 +109,6 @@
       "name": "Striplin Lamareh",
       "hours": 653.62,
       "totalCost": 20028.99
-    },
-    {
-      "name": "Thorne Richard",
-      "hours": 254.53,
-      "totalCost": 7387.28
     },
     {
       "name": "Tucker Robert",
@@ -224,11 +154,6 @@
       "name": "Willis Wali A",
       "hours": 1397.74,
       "totalCost": 47702.45
-    },
-    {
-      "name": "Wright Robert",
-      "hours": 260.66,
-      "totalCost": 9443.88
     }
   ],
   "office": [
@@ -372,11 +297,11 @@
   ],
   "period": "Jan 1 - May 24, 2026",
   "totals": {
-    "driverLabor": 855375.9099999998,
-    "driverCount": 46,
+    "driverLabor": 735167.6199999999,
+    "driverCount": 31,
     "officeTotal": 317370.64999999997,
     "warehouseTotal": 49888.369999999995,
     "contractorTotal": 262912.31,
-    "grandTotal": 1485547.2399999998
+    "grandTotal": 1365338.9499999997
   }
 }

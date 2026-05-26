@@ -1,0 +1,214 @@
+- generic [ref=e721]:
+  - banner [ref=e722]:
+    - generic [ref=e723]: ⬡ FreightIQ
+    - generic [ref=e724]: Show Freight Inc · Jan 1 - May 24, 2026
+    - generic [ref=e725]:
+      - generic [ref=e726]: Labor $855,376
+      - generic [ref=e727]: Fuel $432,474
+      - generic [ref=e728]: Ins $128,624
+      - generic [ref=e729]: Equip $432,893
+      - generic [ref=e730]: Basic $3.620
+      - generic [ref=e731]: All-In $4.050
+  - navigation [ref=e732]:
+    - button "🏢 Fleet Overview" [ref=e733] [cursor=pointer]
+    - button "🧮 CPM Calculator" [ref=e734] [cursor=pointer]
+    - button "📦 Per Load CPM" [ref=e735] [cursor=pointer]
+    - button "📊 Revenue" [ref=e736] [cursor=pointer]
+    - button "🚛 Driver Detail" [ref=e737] [cursor=pointer]
+    - button "📍 Trucks & Mileage" [ref=e738] [cursor=pointer]
+    - button "🛢 Fuel Analysis" [ref=e739] [cursor=pointer]
+    - button "🚛 Trucks" [ref=e740] [cursor=pointer]
+    - button "🚜 Trailers" [ref=e741] [cursor=pointer]
+    - button "🏢 Office Staff" [ref=e742] [cursor=pointer]
+    - button "💵 Income" [ref=e743] [cursor=pointer]
+    - button "🏦 CE East" [ref=e744] [cursor=pointer]
+    - button "🍑 ATL Ops" [ref=e745] [cursor=pointer]
+    - button "💰 Cash Flow" [ref=e746] [cursor=pointer]
+    - button "📋 Budgeting" [ref=e747] [cursor=pointer]
+    - button "📂 Upload" [ref=e748] [cursor=pointer]
+    - button "✅ Checklist" [ref=e749] [cursor=pointer]
+  - main [ref=e750]:
+    - generic [ref=e3039]:
+      - generic [ref=e3040]: CE East
+      - generic [ref=e3041]: Capacity Express East LLC
+      - generic [ref=e3042]:
+        - button "⚡ Live QB" [ref=e3043] [cursor=pointer]
+        - button "📊 Owner Payback" [ref=e3044] [cursor=pointer]
+      - generic [ref=e3045]:
+        - button "YTD" [ref=e3046] [cursor=pointer]
+        - button "This Week" [ref=e3047] [cursor=pointer]
+        - button "Last Week" [ref=e3048] [cursor=pointer]
+        - button "Jan" [ref=e3049] [cursor=pointer]
+        - button "Feb" [ref=e3050] [cursor=pointer]
+        - button "Mar" [ref=e3051] [cursor=pointer]
+        - button "Apr" [ref=e3052] [cursor=pointer]
+        - button "May" [ref=e3053] [cursor=pointer]
+        - button "Jun" [ref=e3054] [cursor=pointer]
+        - button "Jul" [ref=e3055] [cursor=pointer]
+        - button "Aug" [ref=e3056] [cursor=pointer]
+        - button "Sep" [ref=e3057] [cursor=pointer]
+        - button "Oct" [ref=e3058] [cursor=pointer]
+        - button "Nov" [ref=e3059] [cursor=pointer]
+        - button "Dec" [ref=e3060] [cursor=pointer]
+      - generic [ref=e3061]: QuickBooks Live — CE East — 2026-01-01 to 2026-05-26
+      - generic [ref=e3062]:
+        - generic [ref=e3063]:
+          - generic [ref=e3064]: Revenue
+          - generic [ref=e3065]: $892,223
+        - generic [ref=e3066]:
+          - generic [ref=e3067]: Gross Profit
+          - generic [ref=e3068]: $199,966
+          - generic [ref=e3069]: 22.4% margin
+        - generic [ref=e3070]:
+          - generic [ref=e3071]: Total Expenses
+          - generic [ref=e3072]: $91,569
+        - generic [ref=e3073]:
+          - generic [ref=e3074]: Net Income
+          - generic [ref=e3075]: $108,397
+      - generic [ref=e3076]:
+        - generic [ref=e3077]:
+          - generic [ref=e3078]: Income
+          - table [ref=e3079]:
+            - rowgroup [ref=e3080]:
+              - row "Revenue $892,523.02" [ref=e3081]:
+                - cell "Revenue" [ref=e3082]
+                - cell "$892,523.02" [ref=e3083]
+              - row "Revenue Loss $-300.00" [ref=e3084]:
+                - cell "Revenue Loss" [ref=e3085]
+                - cell "$-300.00" [ref=e3086]
+              - row "Total Income $892,223.02" [ref=e3087]:
+                - cell "Total Income" [ref=e3088]
+                - cell "$892,223.02" [ref=e3089]
+        - generic [ref=e3090]:
+          - generic [ref=e3091]: Cost of Goods Sold
+          - table [ref=e3092]:
+            - rowgroup [ref=e3093]:
+              - row "Carrier Pay $684,494.75" [ref=e3094]:
+                - cell "Carrier Pay" [ref=e3095]
+                - cell "$684,494.75" [ref=e3096]
+              - row "Triumph/Flexent Fees $7,762.00" [ref=e3097]:
+                - cell "Triumph/Flexent Fees" [ref=e3098]
+                - cell "$7,762.00" [ref=e3099]
+              - row "Total COGS $692,256.75" [ref=e3100]:
+                - cell "Total COGS" [ref=e3101]
+                - cell "$692,256.75" [ref=e3102]
+      - generic [ref=e3103]:
+        - generic [ref=e3104]: Expenses
+        - table [ref=e3105]:
+          - rowgroup [ref=e3106]:
+            - row "Salaries & Wages - Colombia Staff $35,070.00" [ref=e3107]:
+              - cell "Salaries & Wages - Colombia Staff" [ref=e3108]
+              - cell "$35,070.00" [ref=e3109]
+            - row "Freight Insurance $9,653.65" [ref=e3110]:
+              - cell "Freight Insurance" [ref=e3111]
+              - cell "$9,653.65" [ref=e3112]
+            - row "Computers & Software $9,497.28" [ref=e3113]:
+              - cell "Computers & Software" [ref=e3114]
+              - cell "$9,497.28" [ref=e3115]
+            - row "Salaries & Wages - Nelly $9,428.00" [ref=e3116]:
+              - cell "Salaries & Wages - Nelly" [ref=e3117]
+              - cell "$9,428.00" [ref=e3118]
+            - row "Sales Commission $6,847.06" [ref=e3119]:
+              - cell "Sales Commission" [ref=e3120]
+              - cell "$6,847.06" [ref=e3121]
+            - row "Rent/Lease of Office $6,590.00" [ref=e3122]:
+              - cell "Rent/Lease of Office" [ref=e3123]
+              - cell "$6,590.00" [ref=e3124]
+            - row "Salaries & Wages - CE Employees $5,200.00" [ref=e3125]:
+              - cell "Salaries & Wages - CE Employees" [ref=e3126]
+              - cell "$5,200.00" [ref=e3127]
+            - row "Flights $3,522.59" [ref=e3128]:
+              - cell "Flights" [ref=e3129]
+              - cell "$3,522.59" [ref=e3130]
+            - row "Utilities $2,718.14" [ref=e3131]:
+              - cell "Utilities" [ref=e3132]
+              - cell "$2,718.14" [ref=e3133]
+            - row "Hotels/Lodging $1,049.18" [ref=e3134]:
+              - cell "Hotels/Lodging" [ref=e3135]
+              - cell "$1,049.18" [ref=e3136]
+            - row "Legal & Professional Fees $825.00" [ref=e3137]:
+              - cell "Legal & Professional Fees" [ref=e3138]
+              - cell "$825.00" [ref=e3139]
+            - row "Meals & Entertainment $523.11" [ref=e3140]:
+              - cell "Meals & Entertainment" [ref=e3141]
+              - cell "$523.11" [ref=e3142]
+            - row "UBER/Ridesharing/Rentals $250.13" [ref=e3143]:
+              - cell "UBER/Ridesharing/Rentals" [ref=e3144]
+              - cell "$250.13" [ref=e3145]
+            - row "Parking $205.00" [ref=e3146]:
+              - cell "Parking" [ref=e3147]
+              - cell "$205.00" [ref=e3148]
+            - row "Bank Charges & Fees $190.00" [ref=e3149]:
+              - cell "Bank Charges & Fees" [ref=e3150]
+              - cell "$190.00" [ref=e3151]
+            - row "Total Expenses $91,569.14" [ref=e3152]:
+              - cell "Total Expenses" [ref=e3153]
+              - cell "$91,569.14" [ref=e3154]
+      - generic [ref=e3155]: Balance Sheet — as of 2026-05-26
+      - generic [ref=e3156]:
+        - generic [ref=e3157]:
+          - generic [ref=e3158]: Assets
+          - table [ref=e3159]:
+            - rowgroup [ref=e3160]:
+              - row "PLAT BUS CHECKING (6053) - 1 $10,398.33" [ref=e3161]:
+                - cell "PLAT BUS CHECKING (6053) - 1" [ref=e3162]
+                - cell "$10,398.33" [ref=e3163]
+              - row "Total Bank Accounts $10,398.33" [ref=e3164]:
+                - cell "Total Bank Accounts" [ref=e3165]
+                - cell "$10,398.33" [ref=e3166]
+              - row "Flexent Reserves $19,864.53" [ref=e3167]:
+                - cell "Flexent Reserves" [ref=e3168]
+                - cell "$19,864.53" [ref=e3169]
+              - row "Total Accounts Receivable $19,864.53" [ref=e3170]:
+                - cell "Total Accounts Receivable" [ref=e3171]
+                - cell "$19,864.53" [ref=e3172]
+              - row "Due from Shareholder - Anthony $31,000.00" [ref=e3173]:
+                - cell "Due from Shareholder - Anthony" [ref=e3174]
+                - cell "$31,000.00" [ref=e3175]
+              - row "Total Other Current Assets $31,000.00" [ref=e3176]:
+                - cell "Total Other Current Assets" [ref=e3177]
+                - cell "$31,000.00" [ref=e3178]
+              - row "Total Current Assets $61,262.86" [ref=e3179]:
+                - cell "Total Current Assets" [ref=e3180]
+                - cell "$61,262.86" [ref=e3181]
+              - row "TOTAL ASSETS $61,262.86" [ref=e3182]:
+                - cell "TOTAL ASSETS" [ref=e3183]
+                - cell "$61,262.86" [ref=e3184]
+        - generic [ref=e3185]:
+          - generic [ref=e3186]: Liabilities
+          - table [ref=e3187]:
+            - rowgroup [ref=e3188]:
+              - row "No liabilities" [ref=e3189]:
+                - cell "No liabilities" [ref=e3190]
+              - row "TOTAL LIABILITIES $0.00" [ref=e3191]:
+                - cell "TOTAL LIABILITIES" [ref=e3192]
+                - cell "$0.00" [ref=e3193]
+        - generic [ref=e3194]:
+          - generic [ref=e3195]: Equity
+          - table [ref=e3196]:
+            - rowgroup [ref=e3197]:
+              - row "Retained Earnings $-51,572.93" [ref=e3198]:
+                - cell "Retained Earnings" [ref=e3199]
+                - cell "$-51,572.93" [ref=e3200]
+              - row "Shareholder Contributions - Chris $26,438.66" [ref=e3201]:
+                - cell "Shareholder Contributions - Chris" [ref=e3202]
+                - cell "$26,438.66" [ref=e3203]
+              - row "Shareholder Distributions - Anthony $-9,900.00" [ref=e3204]:
+                - cell "Shareholder Distributions - Anthony" [ref=e3205]
+                - cell "$-9,900.00" [ref=e3206]
+              - row "Shareholder Distributions - Chris $-9,900.00" [ref=e3207]:
+                - cell "Shareholder Distributions - Chris" [ref=e3208]
+                - cell "$-9,900.00" [ref=e3209]
+              - row "Shareholder Distributions - Gabriel $-880.00" [ref=e3210]:
+                - cell "Shareholder Distributions - Gabriel" [ref=e3211]
+                - cell "$-880.00" [ref=e3212]
+              - row "Shareholder Distributions - Jon $-1,320.00" [ref=e3213]:
+                - cell "Shareholder Distributions - Jon" [ref=e3214]
+                - cell "$-1,320.00" [ref=e3215]
+              - row "Net Income $108,397.13" [ref=e3216]:
+                - cell "Net Income" [ref=e3217]
+                - cell "$108,397.13" [ref=e3218]
+              - row "TOTAL EQUITY $61,262.86" [ref=e3219]:
+                - cell "TOTAL EQUITY" [ref=e3220]
+                - cell "$61,262.86" [ref=e3221]
+      - generic [ref=e3222]: Live from QuickBooks · CE East P&L + Balance Sheet · Updated in real-time

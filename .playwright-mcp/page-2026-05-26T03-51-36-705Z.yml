@@ -1,0 +1,412 @@
+- generic [ref=e721]:
+  - banner [ref=e722]:
+    - generic [ref=e723]: ⬡ FreightIQ
+    - generic [ref=e724]: Show Freight Inc · Jan 1 - May 24, 2026
+    - generic [ref=e725]:
+      - generic [ref=e726]: Labor $855,376
+      - generic [ref=e727]: Fuel $432,474
+      - generic [ref=e728]: Ins $128,624
+      - generic [ref=e729]: Equip $432,893
+      - generic [ref=e730]: Basic $3.620
+      - generic [ref=e731]: All-In $4.050
+  - navigation [ref=e732]:
+    - button "🏢 Fleet Overview" [ref=e733] [cursor=pointer]
+    - button "🧮 CPM Calculator" [ref=e734] [cursor=pointer]
+    - button "📦 Per Load CPM" [ref=e735] [cursor=pointer]
+    - button "📊 Revenue" [ref=e736] [cursor=pointer]
+    - button "🚛 Driver Detail" [ref=e737] [cursor=pointer]
+    - button "📍 Trucks & Mileage" [ref=e738] [cursor=pointer]
+    - button "🛢 Fuel Analysis" [ref=e739] [cursor=pointer]
+    - button "🚛 Trucks" [ref=e740] [cursor=pointer]
+    - button "🚜 Trailers" [ref=e741] [cursor=pointer]
+    - button "🏢 Office Staff" [ref=e742] [cursor=pointer]
+    - button "💵 Income" [ref=e743] [cursor=pointer]
+    - button "🏦 CE East" [ref=e744] [cursor=pointer]
+    - button "🍑 ATL Ops" [ref=e745] [cursor=pointer]
+    - button "💰 Cash Flow" [ref=e746] [cursor=pointer]
+    - button "📋 Budgeting" [ref=e747] [cursor=pointer]
+    - button "📂 Upload" [ref=e748] [cursor=pointer]
+    - button "✅ Checklist" [ref=e749] [cursor=pointer]
+  - main [ref=e750]:
+    - generic [ref=e751]:
+      - generic [ref=e752]: Trucks + Mileage
+      - generic [ref=e753]: Samsara GPS · Jan 1 - May 24, 2026 · 35 trucks · NV = Local · All other states = Regional
+      - generic [ref=e754]:
+        - button "⚡ Live Samsara" [ref=e755] [cursor=pointer]
+        - button "📁 Static Data" [ref=e756] [cursor=pointer]
+        - generic [ref=e757]: Loading...
+      - generic [ref=e758]:
+        - generic [ref=e759]:
+          - generic [ref=e760]: Total Fleet Miles
+          - generic [ref=e761]: 468,725
+          - generic [ref=e762]: 35 trucks
+        - generic [ref=e763]:
+          - generic [ref=e764]: Local Miles (NV)
+          - generic [ref=e765]: 72,523
+          - generic [ref=e766]: 15.5% of fleet
+        - generic [ref=e767]:
+          - generic [ref=e768]: Regional Miles
+          - generic [ref=e769]: 255,339
+          - generic [ref=e770]: 54.5% of fleet
+        - generic [ref=e771]:
+          - generic [ref=e772]: Avg Miles / Truck
+          - generic [ref=e773]: 13,392
+          - generic [ref=e774]: 2,072 local · 7,295 regional
+      - generic [ref=e775]:
+        - generic [ref=e776]: Local vs Regional Split — Fleet Total
+        - generic [ref=e777]:
+          - generic [ref=e778]: Local (NV) 15.5%
+          - generic [ref=e779]: Regional 54.5%
+        - generic [ref=e780]:
+          - generic [ref=e781]: "■ Local (NV): 72,523 mi"
+          - generic [ref=e782]: "■ Regional (all other states): 255,339 mi"
+          - generic [ref=e783]: "Total: 468,725 mi"
+      - generic [ref=e784]:
+        - button "🚛 Per-Truck Detail" [ref=e785] [cursor=pointer]
+        - button "📈 Monthly Trend" [ref=e786] [cursor=pointer]
+        - button "🏷️ Day Cab vs Sleeper" [ref=e787] [cursor=pointer]
+      - generic [ref=e788]:
+        - generic [ref=e789]:
+          - text: Per-Truck Breakdown — click any row for state detail
+          - combobox [ref=e790] [cursor=pointer]:
+            - 'option "Sort: Total Miles" [selected]'
+            - 'option "Sort: Local Miles"'
+            - 'option "Sort: Regional Miles"'
+            - 'option "Sort: Local %"'
+            - 'option "Sort: Truck #"'
+        - table [ref=e792]:
+          - rowgroup [ref=e793]:
+            - row "# Truck Local (NV) Local % Regional Regional % Total Miles Split" [ref=e794]:
+              - columnheader "#" [ref=e795]
+              - columnheader "Truck" [ref=e796]
+              - columnheader "Local (NV)" [ref=e797]
+              - columnheader "Local %" [ref=e798]
+              - columnheader "Regional" [ref=e799]
+              - columnheader "Regional %" [ref=e800]
+              - columnheader "Total Miles" [ref=e801]
+              - columnheader "Split" [ref=e802]
+          - rowgroup [ref=e803]:
+            - 'row "🥇 #120 2,345 9.0% 23,605 91.0% 25,949" [ref=e804] [cursor=pointer]':
+              - cell "🥇" [ref=e805]
+              - cell "#120" [ref=e806]
+              - cell "2,345" [ref=e807]
+              - cell "9.0%" [ref=e808]
+              - cell "23,605" [ref=e809]
+              - cell "91.0%" [ref=e810]
+              - cell "25,949" [ref=e811]
+              - cell [ref=e812]
+            - 'row "🥈 #951 4,284 21.5% 15,667 78.5% 19,951" [ref=e816] [cursor=pointer]':
+              - cell "🥈" [ref=e817]
+              - cell "#951" [ref=e818]
+              - cell "4,284" [ref=e819]
+              - cell "21.5%" [ref=e820]
+              - cell "15,667" [ref=e821]
+              - cell "78.5%" [ref=e822]
+              - cell "19,951" [ref=e823]
+              - cell [ref=e824]
+            - 'row "🥉 #568 4,477 25.3% 13,238 74.7% 17,714" [ref=e828] [cursor=pointer]':
+              - cell "🥉" [ref=e829]
+              - cell "#568" [ref=e830]
+              - cell "4,477" [ref=e831]
+              - cell "25.3%" [ref=e832]
+              - cell "13,238" [ref=e833]
+              - cell "74.7%" [ref=e834]
+              - cell "17,714" [ref=e835]
+              - cell [ref=e836]
+            - 'row "4 #728 2,923 16.8% 14,439 83.2% 17,362" [ref=e840] [cursor=pointer]':
+              - cell "4" [ref=e841]
+              - cell "#728" [ref=e842]
+              - cell "2,923" [ref=e843]
+              - cell "16.8%" [ref=e844]
+              - cell "14,439" [ref=e845]
+              - cell "83.2%" [ref=e846]
+              - cell "17,362" [ref=e847]
+              - cell [ref=e848]
+            - 'row "5 #738 2,517 14.8% 14,477 85.2% 16,993" [ref=e852] [cursor=pointer]':
+              - cell "5" [ref=e853]
+              - cell "#738" [ref=e854]
+              - cell "2,517" [ref=e855]
+              - cell "14.8%" [ref=e856]
+              - cell "14,477" [ref=e857]
+              - cell "85.2%" [ref=e858]
+              - cell "16,993" [ref=e859]
+              - cell [ref=e860]
+            - 'row "6 #574 3,355 20.2% 13,267 79.8% 16,622" [ref=e864] [cursor=pointer]':
+              - cell "6" [ref=e865]
+              - cell "#574" [ref=e866]
+              - cell "3,355" [ref=e867]
+              - cell "20.2%" [ref=e868]
+              - cell "13,267" [ref=e869]
+              - cell "79.8%" [ref=e870]
+              - cell "16,622" [ref=e871]
+              - cell [ref=e872]
+            - 'row "7 #577 3,441 21.0% 12,963 79.0% 16,404" [ref=e876] [cursor=pointer]':
+              - cell "7" [ref=e877]
+              - cell "#577" [ref=e878]
+              - cell "3,441" [ref=e879]
+              - cell "21.0%" [ref=e880]
+              - cell "12,963" [ref=e881]
+              - cell "79.0%" [ref=e882]
+              - cell "16,404" [ref=e883]
+              - cell [ref=e884]
+            - 'row "8 #731 2,991 19.0% 12,735 81.0% 15,726" [ref=e888] [cursor=pointer]':
+              - cell "8" [ref=e889]
+              - cell "#731" [ref=e890]
+              - cell "2,991" [ref=e891]
+              - cell "19.0%" [ref=e892]
+              - cell "12,735" [ref=e893]
+              - cell "81.0%" [ref=e894]
+              - cell "15,726" [ref=e895]
+              - cell [ref=e896]
+            - 'row "9 #730 1,947 16.2% 10,042 83.8% 11,989" [ref=e900] [cursor=pointer]':
+              - cell "9" [ref=e901]
+              - cell "#730" [ref=e902]
+              - cell "1,947" [ref=e903]
+              - cell "16.2%" [ref=e904]
+              - cell "10,042" [ref=e905]
+              - cell "83.8%" [ref=e906]
+              - cell "11,989" [ref=e907]
+              - cell [ref=e908]
+            - 'row "10 #149 2,047 19.0% 8,712 81.0% 10,760" [ref=e912] [cursor=pointer]':
+              - cell "10" [ref=e913]
+              - cell "#149" [ref=e914]
+              - cell "2,047" [ref=e915]
+              - cell "19.0%" [ref=e916]
+              - cell "8,712" [ref=e917]
+              - cell "81.0%" [ref=e918]
+              - cell "10,760" [ref=e919]
+              - cell [ref=e920]
+            - 'row "11 #127 1,393 13.7% 8,799 86.3% 10,192" [ref=e924] [cursor=pointer]':
+              - cell "11" [ref=e925]
+              - cell "#127" [ref=e926]
+              - cell "1,393" [ref=e927]
+              - cell "13.7%" [ref=e928]
+              - cell "8,799" [ref=e929]
+              - cell "86.3%" [ref=e930]
+              - cell "10,192" [ref=e931]
+              - cell [ref=e932]
+            - 'row "12 #418 1,291 12.8% 8,825 87.2% 10,116" [ref=e936] [cursor=pointer]':
+              - cell "12" [ref=e937]
+              - cell "#418" [ref=e938]
+              - cell "1,291" [ref=e939]
+              - cell "12.8%" [ref=e940]
+              - cell "8,825" [ref=e941]
+              - cell "87.2%" [ref=e942]
+              - cell "10,116" [ref=e943]
+              - cell [ref=e944]
+            - 'row "13 #476 2,832 29.3% 6,843 70.7% 9,675" [ref=e948] [cursor=pointer]':
+              - cell "13" [ref=e949]
+              - cell "#476" [ref=e950]
+              - cell "2,832" [ref=e951]
+              - cell "29.3%" [ref=e952]
+              - cell "6,843" [ref=e953]
+              - cell "70.7%" [ref=e954]
+              - cell "9,675" [ref=e955]
+              - cell [ref=e956]
+            - 'row "14 #417 1,072 11.3% 8,451 88.7% 9,523" [ref=e960] [cursor=pointer]':
+              - cell "14" [ref=e961]
+              - cell "#417" [ref=e962]
+              - cell "1,072" [ref=e963]
+              - cell "11.3%" [ref=e964]
+              - cell "8,451" [ref=e965]
+              - cell "88.7%" [ref=e966]
+              - cell "9,523" [ref=e967]
+              - cell [ref=e968]
+            - 'row "15 #020 7,090 76.3% 2,197 23.7% 9,287" [ref=e972] [cursor=pointer]':
+              - cell "15" [ref=e973]
+              - cell "#020" [ref=e974]
+              - cell "7,090" [ref=e975]
+              - cell "76.3%" [ref=e976]
+              - cell "2,197" [ref=e977]
+              - cell "23.7%" [ref=e978]
+              - cell "9,287" [ref=e979]
+              - cell [ref=e980]
+            - 'row "16 #573 5,081 55.3% 4,101 44.7% 9,182" [ref=e984] [cursor=pointer]':
+              - cell "16" [ref=e985]
+              - cell "#573" [ref=e986]
+              - cell "5,081" [ref=e987]
+              - cell "55.3%" [ref=e988]
+              - cell "4,101" [ref=e989]
+              - cell "44.7%" [ref=e990]
+              - cell "9,182" [ref=e991]
+              - cell [ref=e992]
+            - 'row "17 #937 168 1.9% 8,776 98.1% 8,944" [ref=e996] [cursor=pointer]':
+              - cell "17" [ref=e997]
+              - cell "#937" [ref=e998]
+              - cell "168" [ref=e999]
+              - cell "1.9%" [ref=e1000]
+              - cell "8,776" [ref=e1001]
+              - cell "98.1%" [ref=e1002]
+              - cell "8,944" [ref=e1003]
+              - cell [ref=e1004]
+            - 'row "18 #539 1,032 12.0% 7,566 88.0% 8,597" [ref=e1008] [cursor=pointer]':
+              - cell "18" [ref=e1009]
+              - cell "#539" [ref=e1010]
+              - cell "1,032" [ref=e1011]
+              - cell "12.0%" [ref=e1012]
+              - cell "7,566" [ref=e1013]
+              - cell "88.0%" [ref=e1014]
+              - cell "8,597" [ref=e1015]
+              - cell [ref=e1016]
+            - 'row "19 #496 733 9.0% 7,447 91.0% 8,181" [ref=e1020] [cursor=pointer]':
+              - cell "19" [ref=e1021]
+              - cell "#496" [ref=e1022]
+              - cell "733" [ref=e1023]
+              - cell "9.0%" [ref=e1024]
+              - cell "7,447" [ref=e1025]
+              - cell "91.0%" [ref=e1026]
+              - cell "8,181" [ref=e1027]
+              - cell [ref=e1028]
+            - 'row "20 #419 1,177 15.2% 6,584 84.8% 7,761" [ref=e1032] [cursor=pointer]':
+              - cell "20" [ref=e1033]
+              - cell "#419" [ref=e1034]
+              - cell "1,177" [ref=e1035]
+              - cell "15.2%" [ref=e1036]
+              - cell "6,584" [ref=e1037]
+              - cell "84.8%" [ref=e1038]
+              - cell "7,761" [ref=e1039]
+              - cell [ref=e1040]
+            - 'row "21 #440 2,812 37.3% 4,735 62.7% 7,547" [ref=e1044] [cursor=pointer]':
+              - cell "21" [ref=e1045]
+              - cell "#440" [ref=e1046]
+              - cell "2,812" [ref=e1047]
+              - cell "37.3%" [ref=e1048]
+              - cell "4,735" [ref=e1049]
+              - cell "62.7%" [ref=e1050]
+              - cell "7,547" [ref=e1051]
+              - cell [ref=e1052]
+            - 'row "22 #441 2,558 33.9% 4,981 66.1% 7,539" [ref=e1056] [cursor=pointer]':
+              - cell "22" [ref=e1057]
+              - cell "#441" [ref=e1058]
+              - cell "2,558" [ref=e1059]
+              - cell "33.9%" [ref=e1060]
+              - cell "4,981" [ref=e1061]
+              - cell "66.1%" [ref=e1062]
+              - cell "7,539" [ref=e1063]
+              - cell [ref=e1064]
+            - 'row "23 #463 831 11.2% 6,585 88.8% 7,416" [ref=e1068] [cursor=pointer]':
+              - cell "23" [ref=e1069]
+              - cell "#463" [ref=e1070]
+              - cell "831" [ref=e1071]
+              - cell "11.2%" [ref=e1072]
+              - cell "6,585" [ref=e1073]
+              - cell "88.8%" [ref=e1074]
+              - cell "7,416" [ref=e1075]
+              - cell [ref=e1076]
+            - 'row "24 #353 1,925 26.6% 5,309 73.4% 7,235" [ref=e1080] [cursor=pointer]':
+              - cell "24" [ref=e1081]
+              - cell "#353" [ref=e1082]
+              - cell "1,925" [ref=e1083]
+              - cell "26.6%" [ref=e1084]
+              - cell "5,309" [ref=e1085]
+              - cell "73.4%" [ref=e1086]
+              - cell "7,235" [ref=e1087]
+              - cell [ref=e1088]
+            - 'row "25 #569 2,806 48.1% 3,029 51.9% 5,835" [ref=e1092] [cursor=pointer]':
+              - cell "25" [ref=e1093]
+              - cell "#569" [ref=e1094]
+              - cell "2,806" [ref=e1095]
+              - cell "48.1%" [ref=e1096]
+              - cell "3,029" [ref=e1097]
+              - cell "51.9%" [ref=e1098]
+              - cell "5,835" [ref=e1099]
+              - cell [ref=e1100]
+            - 'row "26 #676 4,110 72.4% 1,567 27.6% 5,676" [ref=e1104] [cursor=pointer]':
+              - cell "26" [ref=e1105]
+              - cell "#676" [ref=e1106]
+              - cell "4,110" [ref=e1107]
+              - cell "72.4%" [ref=e1108]
+              - cell "1,567" [ref=e1109]
+              - cell "27.6%" [ref=e1110]
+              - cell "5,676" [ref=e1111]
+              - cell [ref=e1112]
+            - 'row "27 #502 723 14.4% 4,296 85.6% 5,020" [ref=e1116] [cursor=pointer]':
+              - cell "27" [ref=e1117]
+              - cell "#502" [ref=e1118]
+              - cell "723" [ref=e1119]
+              - cell "14.4%" [ref=e1120]
+              - cell "4,296" [ref=e1121]
+              - cell "85.6%" [ref=e1122]
+              - cell "5,020" [ref=e1123]
+              - cell [ref=e1124]
+            - 'row "28 #498 384 8.8% 4,004 91.2% 4,388" [ref=e1128] [cursor=pointer]':
+              - cell "28" [ref=e1129]
+              - cell "#498" [ref=e1130]
+              - cell "384" [ref=e1131]
+              - cell "8.8%" [ref=e1132]
+              - cell "4,004" [ref=e1133]
+              - cell "91.2%" [ref=e1134]
+              - cell "4,388" [ref=e1135]
+              - cell [ref=e1136]
+            - 'row "29 #510 451 11.8% 3,369 88.2% 3,819" [ref=e1140] [cursor=pointer]':
+              - cell "29" [ref=e1141]
+              - cell "#510" [ref=e1142]
+              - cell "451" [ref=e1143]
+              - cell "11.8%" [ref=e1144]
+              - cell "3,369" [ref=e1145]
+              - cell "88.2%" [ref=e1146]
+              - cell "3,819" [ref=e1147]
+              - cell [ref=e1148]
+            - 'row "30 #869 135 4.0% 3,282 96.0% 3,417" [ref=e1152] [cursor=pointer]':
+              - cell "30" [ref=e1153]
+              - cell "#869" [ref=e1154]
+              - cell "135" [ref=e1155]
+              - cell "4.0%" [ref=e1156]
+              - cell "3,282" [ref=e1157]
+              - cell "96.0%" [ref=e1158]
+              - cell "3,417" [ref=e1159]
+              - cell [ref=e1160]
+            - 'row "31 #402 546 16.7% 2,729 83.3% 3,275" [ref=e1164] [cursor=pointer]':
+              - cell "31" [ref=e1165]
+              - cell "#402" [ref=e1166]
+              - cell "546" [ref=e1167]
+              - cell "16.7%" [ref=e1168]
+              - cell "2,729" [ref=e1169]
+              - cell "83.3%" [ref=e1170]
+              - cell "3,275" [ref=e1171]
+              - cell [ref=e1172]
+            - 'row "32 #570 1,567 76.3% 486 23.7% 2,054" [ref=e1176] [cursor=pointer]':
+              - cell "32" [ref=e1177]
+              - cell "#570" [ref=e1178]
+              - cell "1,567" [ref=e1179]
+              - cell "76.3%" [ref=e1180]
+              - cell "486" [ref=e1181]
+              - cell "23.7%" [ref=e1182]
+              - cell "2,054" [ref=e1183]
+              - cell [ref=e1184]
+            - 'row "33 #189 394 25.4% 1,155 74.6% 1,548" [ref=e1188] [cursor=pointer]':
+              - cell "33" [ref=e1189]
+              - cell "#189" [ref=e1190]
+              - cell "394" [ref=e1191]
+              - cell "25.4%" [ref=e1192]
+              - cell "1,155" [ref=e1193]
+              - cell "74.6%" [ref=e1194]
+              - cell "1,548" [ref=e1195]
+              - cell [ref=e1196]
+            - 'row "34 #462 100 8.5% 1,081 91.5% 1,181" [ref=e1200] [cursor=pointer]':
+              - cell "34" [ref=e1201]
+              - cell "#462" [ref=e1202]
+              - cell "100" [ref=e1203]
+              - cell "8.5%" [ref=e1204]
+              - cell "1,081" [ref=e1205]
+              - cell "91.5%" [ref=e1206]
+              - cell "1,181" [ref=e1207]
+              - cell [ref=e1208]
+            - 'row "35 #589 986 100.0% — — 986" [ref=e1212] [cursor=pointer]':
+              - cell "35" [ref=e1213]
+              - cell "#589" [ref=e1214]
+              - cell "986" [ref=e1215]
+              - cell "100.0%" [ref=e1216]
+              - cell "—" [ref=e1217]
+              - cell "—" [ref=e1218]
+              - cell "986" [ref=e1219]
+              - cell [ref=e1220]
+          - rowgroup [ref=e1223]:
+            - row "FLEET TOTAL 72,523 15.5% 255,339 54.5% 468,725" [ref=e1224]:
+              - cell "FLEET TOTAL" [ref=e1225]
+              - cell "72,523" [ref=e1226]
+              - cell "15.5%" [ref=e1227]
+              - cell "255,339" [ref=e1228]
+              - cell "54.5%" [ref=e1229]
+              - cell "468,725" [ref=e1230]
+              - cell [ref=e1231]
