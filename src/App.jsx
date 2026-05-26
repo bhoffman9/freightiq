@@ -7261,11 +7261,7 @@ const ATL_WEEKLY_LOG = [
       { name: "Mellody Abrego",   entity: "Neon Vibes Enterprise (1 paycheck for May 11-17 work, paid May 22)", base: 2250, commission: 300, car: 0, health: 368.34, total: 2918.34 },
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC (Biniyam Fissehaye 1099 phase)", total: 1850 },
     ],
-    agents: [
-      { name: "Kevin Deveraux", entity: "Nixon Graye Associates", total: 500 },
-    ],
     contractorPay: 4768.34,
-    agentPay: 500,
     note: "Denman + Mellody ATL this week only (week-to-week designation).",
   },
   {
@@ -7279,27 +7275,24 @@ const ATL_WEEKLY_LOG = [
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
     ],
-    agents: [
-      { name: "Kevin Deveraux", entity: "Nixon Graye Associates", total: 500 },
-    ],
     contractorPay: 1850,
-    agentPay: 500,
     note: "Current week — exact deltas from weekly drop (May 24 vs May 16 PAYROLL/FUEL).",
   },
 ];
 
 // Aggregate accessors — used by AtlOperations() to roll up the per-week log.
+// Agents (Kevin/Nixon Graye) are NOT tracked here — they're a completely
+// separate bucket (AGENTS[] + Budgeting tab), unrelated to ATL or any entity.
 function atlSum() {
-  const sum = { driverPay: 0, driverHours: 0, fuelAmt: 0, fuelGallons: 0, contractorPay: 0, agentPay: 0, weeks: ATL_WEEKLY_LOG.length };
+  const sum = { driverPay: 0, driverHours: 0, fuelAmt: 0, fuelGallons: 0, contractorPay: 0, weeks: ATL_WEEKLY_LOG.length };
   for (const w of ATL_WEEKLY_LOG) {
     sum.driverPay      += w.driverPay      || 0;
     sum.driverHours    += w.driverHours    || 0;
     sum.fuelAmt        += w.fuelAmt        || 0;
     sum.fuelGallons    += w.fuelGallons    || 0;
     sum.contractorPay  += w.contractorPay  || 0;
-    sum.agentPay       += w.agentPay       || 0;
   }
-  sum.total = sum.driverPay + sum.fuelAmt + sum.contractorPay + sum.agentPay;
+  sum.total = sum.driverPay + sum.fuelAmt + sum.contractorPay;
   return sum;
 }
 
@@ -8126,13 +8119,13 @@ function CashFlowDashboard() {
 function AtlOperations() {
   const cum = atlSum();
   const atlMilesEst = cum.fuelGallons * 6.5;
-  const allInLaborFuel = cum.driverPay + cum.fuelAmt + cum.contractorPay + cum.agentPay;
+  const allInLaborFuel = cum.driverPay + cum.fuelAmt + cum.contractorPay;
   const allInCpm = atlMilesEst > 0 ? allInLaborFuel / atlMilesEst : null;
 
-  // Collect unique driver names across all weeks (for the roster summary)
+  // Collect unique driver names across all weeks (for the roster summary).
+  // Agents (Kevin) are not part of ATL — they're a separate bucket entirely.
   const allDriverNames = Array.from(new Set(ATL_WEEKLY_LOG.flatMap(w => w.drivers || [])));
   const allContractorNames = Array.from(new Set(ATL_WEEKLY_LOG.flatMap(w => (w.contractors || []).map(c => c.name))));
-  const allAgentNames = Array.from(new Set(ATL_WEEKLY_LOG.flatMap(w => (w.agents || []).map(a => a.name))));
 
   // TODO (when QBO class tagging is consistent across all ATL transactions):
   // re-enable the live QB class P&L block. The /api/qbo-pnl?class=ATL endpoint
@@ -8145,7 +8138,7 @@ function AtlOperations() {
     <div>
       <div className="ptitle">🍑 ATL Operations</div>
       <div className="psub">
-        Atlanta operations · launched May 4, 2026 · {ATL_WEEKLY_LOG.length} weeks logged · {allDriverNames.length} unique drivers · {allContractorNames.length} unique contractor{allContractorNames.length===1?"":"s"}{allAgentNames.length>0?` · ${allAgentNames.length} agent${allAgentNames.length===1?"":"s"}`:""}
+        Atlanta operations · launched May 4, 2026 · {ATL_WEEKLY_LOG.length} weeks logged · {allDriverNames.length} unique drivers · {allContractorNames.length} unique contractor{allContractorNames.length===1?"":"s"}
       </div>
 
       {/* ATL Billing — load-level revenue (source: 2026-Atlanta Billing.xlsx, refreshed weekly) */}
@@ -8180,9 +8173,9 @@ function AtlOperations() {
           <div className="ksub">{fn(cum.driverHours, 0)} hrs · {cum.weeks} weeks</div>
         </div>
         <div className="kpi" style={{ borderTop:"3px solid #f5c542" }}>
-          <div className="klbl">ATL Non-Driver Labor</div>
-          <div className="kval" style={{ color:"#fbbf24" }}>{fd(cum.contractorPay + cum.agentPay, 0)}</div>
-          <div className="ksub">{cum.contractorPay>0?`contractors ${fd(cum.contractorPay,0)}`:""}{cum.agentPay>0?` · agents ${fd(cum.agentPay,0)}`:""}</div>
+          <div className="klbl">ATL Contractors</div>
+          <div className="kval" style={{ color:"#fbbf24" }}>{fd(cum.contractorPay, 0)}</div>
+          <div className="ksub">{allContractorNames.map(n => n.split(" ")[0]).join(", ") || "—"}</div>
         </div>
         <div className="kpi" style={{ borderTop:"3px solid #ff8a65" }}>
           <div className="klbl">ATL Fuel</div>
@@ -8256,7 +8249,6 @@ function AtlOperations() {
               <th style={{ fontSize:10 }}>Hours</th>
               <th style={{ fontSize:10 }}>Fuel</th>
               <th style={{ fontSize:10 }}>Contractors</th>
-              <th style={{ fontSize:10 }}>Agents</th>
               <th style={{ fontSize:10 }}>Week Total</th>
             </tr>
           </thead>
@@ -8264,13 +8256,11 @@ function AtlOperations() {
             {ATL_WEEKLY_LOG.map((w, i) => {
               const driverShorts = (w.drivers || []).map(d => d.split(" ")[0]).join(", ");
               const contractorShorts = (w.contractors || []).map(c => c.name.split(" ")[0]).join(", ");
-              const agentShorts = (w.agents || []).map(a => a.name.split(" ")[0]).join(", ");
               const rosterTxt = [
                 `${(w.drivers||[]).length}W2: ${driverShorts || "—"}`,
                 contractorShorts ? `${(w.contractors||[]).length}C: ${contractorShorts}` : null,
-                agentShorts ? `${(w.agents||[]).length}A: ${agentShorts}` : null,
               ].filter(Boolean).join(" · ");
-              const wkTotal = (w.driverPay||0) + (w.fuelAmt||0) + (w.contractorPay||0) + (w.agentPay||0);
+              const wkTotal = (w.driverPay||0) + (w.fuelAmt||0) + (w.contractorPay||0);
               return (
                 <tr key={`${w.weekStart}-${w.weekEnd}`} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                   <td style={{ padding:"10px 9px", borderLeft:"4px solid #f47820", fontWeight:700, fontFamily:"var(--f2)" }}>
@@ -8281,7 +8271,6 @@ function AtlOperations() {
                   <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#9aa4b3" }}>{fn(w.driverHours||0,0)}</td>
                   <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#ff8a65" }}>{fd(w.fuelAmt||0,0)}</td>
                   <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#fbbf24" }}>{w.contractorPay>0?fd(w.contractorPay,0):"—"}</td>
-                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#a78bfa" }}>{w.agentPay>0?fd(w.agentPay,0):"—"}</td>
                   <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:800 }}>{fd(wkTotal,0)}</td>
                 </tr>
               );
@@ -8294,13 +8283,12 @@ function AtlOperations() {
               <td style={{ padding:"12px 9px", fontSize:12 }}>{fn(cum.driverHours,0)}</td>
               <td style={{ padding:"12px 9px", fontSize:13, color:"#ff8a65", fontWeight:800 }}>{fd(cum.fuelAmt,0)}</td>
               <td style={{ padding:"12px 9px", fontSize:13, color:"#fbbf24", fontWeight:800 }}>{fd(cum.contractorPay,0)}</td>
-              <td style={{ padding:"12px 9px", fontSize:13, color:"#a78bfa", fontWeight:800 }}>{fd(cum.agentPay,0)}</td>
               <td style={{ padding:"12px 9px", fontSize:14, fontWeight:900 }}>{fd(allInLaborFuel,0)}</td>
             </tr>
           </tfoot>
         </table>
         <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>
-          Source: <code>ATL_WEEKLY_LOG</code> — per-week roster + contribution amounts. Historical weeks (May 4-10, May 11-17) are best-effort allocations; the latest week is exact (PAYROLL/FUEL YTD delta). ATL designation toggles week-to-week — each weekly drop, confirm the roster with Ben before updating.
+          Source: <code>ATL_WEEKLY_LOG</code> — per-week roster + contribution amounts. Agents are tracked separately on the Budgeting tab (not part of ATL or any specific company). Historical weeks (May 4-10, May 11-17) are best-effort allocations; the latest week is exact (PAYROLL/FUEL YTD delta). ATL designation toggles week-to-week — confirm the roster with Ben each drop.
         </div>
       </div>
     </div>
