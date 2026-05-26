@@ -146,7 +146,7 @@ freightiq/
 | Office Staff | `OfficeStaff()` | Office/warehouse/contractor payroll |
 | Income | `IncomeDashboard()` | Live QB P&L + weekly/monthly income with YoY comparison |
 | CE East | `CEEast()` | Live QBO P&L + Balance Sheet for the CE East entity. Uses a separate QBO token (`ce_east`) in the shared `qbo_tokens` table — when this token expires (401s in the console), re-auth via the CFO Dashboard (see "Re-authorizing QBO" below) |
-| ATL Ops | `AtlOperations()` | Atlanta operations launched May 11, 2026. Sums entries tagged `entity:"ATL"` in PAYROLL/FUEL/CONTRACTORS. Transferred drivers/contractors carry an `atlPreYtd` snapshot so the tab shows since-launch only, not YTD. **Every week ask Ben which drivers + contractors were ATL — it's fluid, not a fixed roster.** See `feedback_atl_weekly` memory + the data layer notes below |
+| ATL Ops | `AtlOperations()` | Atlanta operations launched May 4, 2026. Reads `ATL_WEEKLY_LOG[]` — per-week roster + contribution amounts (drivers, contractors, driverPay/driverHours/fuelAmt/fuelGallons/contractorPay). NO sticky `entity:"ATL"` tags anymore — designations toggle week-to-week. **Every week ask Ben which drivers + contractors were ATL FOR THAT WEEK.** Agents (Kevin) are NOT in ATL_WEEKLY_LOG — separate bucket entirely. See `feedback_atl_weekly`, `feedback_atl_no_generalize`, and the data layer section below |
 | Cash Flow | `CashFlowDashboard()` | Weekly cash snapshot. Bank-balance accounts are hardcoded in `CASH_SNAPSHOTS` (no Supabase table tracks them). Scheduled payments pull live from `/api/cash-flow` which queries the budget-calendar's `w_*` Supabase tables. Subtitle shows "Live from budget calendar (Supabase)" when the fetch succeeds |
 | Budgeting | `Budgeting()` | QBO P&L rolled into 19 weekly-budget buckets + Agent bucket + Supabase-backed what-if simulator. See "Budgeting tab" section below for bucket-mapping rules. Agent bucket pulls from `AGENTS[]` (NOT subtracted from owner — Kevin's draws are a separate QBO category) |
 | Upload | `DataSettings()` | Drop CSV/XLSX files, AI auto-maps columns |
@@ -188,26 +188,48 @@ The Budgeting tab (`Budgeting()` component in App.jsx) rolls every QBO P&L expen
 
 **Supabase what-if persistence:** scenarios live in `freightiq_budget_whatifs` (uuid id, label, amount, frequency, active, created_at, updated_at). RLS enabled with permissive policy (service key bypasses anyway). Migration SQL in `supabase/migrations/freightiq_budget_whatifs.sql` — run manually in the Supabase SQL editor; the read-only MCP can't create tables. The API returns `503 { error: 'table-not-found' }` until the migration is applied, and the UI surfaces that as a yellow setup banner so it's obvious what to do.
 
-### ATL Operations + Agent — entity tagging data layer
+### ATL Operations — per-week roster data layer (`ATL_WEEKLY_LOG`)
 
-ATL Operations (Atlanta, launched May 11, 2026) and the Agent model (Kevin Deveraux / Nixon Graye Associates, launched May 11, 2026) are tracked as separate operational entities. The plumbing:
+ATL Operations (Atlanta, launched May 4, 2026) is tracked via a **per-week roster array** (`ATL_WEEKLY_LOG[]`), not sticky entity tags. ATL designations toggle week-to-week — a driver or contractor can be ATL one week and not the next.
 
-**`entity: "ATL"` tag** on `PAYROLL[]`, `FUEL{}`, `CONTRACTORS[]` entries. `AtlOperations()` filters by this tag.
+**Schema** (one entry per week):
+```js
+{
+  weekStart: "2026-05-18",
+  weekEnd:   "2026-05-24",
+  drivers:   ["Davis Anthoni D", "Wainwright Michael W", ...],   // names from PAYROLL[]
+  contractors: [
+    { name: "ENM Trucking LLC", entity: "ENM Trucking LLC (Biniyam Fissehaye 1099 phase)", total: 1850 },
+  ],
+  driverPay:     11168.86,   // sum of weekly delta in PAYROLL YTD for listed drivers (exact for the latest week; best-effort historical)
+  driverHours:   350.00,
+  fuelAmt:       8591.14,    // sum of weekly delta in FUEL YTD for listed drivers
+  fuelGallons:   1548.71,
+  contractorPay: 1850,
+  note: "Current week — exact deltas from weekly drop.",
+}
+```
 
-**`atlPreYtd` snapshot** on transferred drivers/contractors — stores their YTD as of the day before they transferred to ATL, so the ATL tab can subtract and show **since-launch only**, not YTD:
-- PAYROLL: `atlPreYtd: { hours, totalCost }`
-- FUEL: `atlPreYtd: { fuel, gallons }`
-- CONTRACTORS: `atlPreYtd: { weeklyTotal, carTotal, commission, healthInsTotal, total }` — per-component so the contractor table can break it out by base / commission / health / car
+**`atlSum()` helper** rolls all weeks into cumulative `{ driverPay, driverHours, fuelAmt, fuelGallons, contractorPay, weeks, total }`. `AtlOperations()` reads from this for headline KPIs and renders a per-week breakdown table.
 
-Native-ATL entries (drivers/contractors who started fresh in ATL): no `atlPreYtd` needed; full YTD = ATL contribution.
+**Rules:**
+- There are NO sticky `entity: "ATL"` tags on PAYROLL/FUEL/CONTRACTORS/OFFICE_W2 anymore. Don't add them.
+- Each week's roster is INDEPENDENT — never propagate a roster change to adjacent weeks. See `feedback_atl_no_generalize` memory.
+- The latest week's `driverPay/driverHours/fuelAmt/fuelGallons` are computed exactly from `(thisWeek_YTD − lastWeek_YTD)` per driver. Historical weeks are best-effort allocations (7/13, 6/13 day splits, etc.) — flag in the `note` field.
+- **Agents (Kevin / Nixon Graye) are NOT in ATL_WEEKLY_LOG.** Agent is a completely separate bucket — see `AGENTS[]` constant + Budgeting tab agent bucket. Do not nest agents under ATL or any other operating entity.
 
-**Initial ATL roster (May 11, 2026 launch):**
-- W2 drivers (`entity: "ATL"`): Samuel Denman + Anthoni Davis (transferred from CE/SF, atlPreYtd stored), Manar Alshamaa + Robert Tucker (NEW), Christopher Johnson (NEW — pending first paycheck, EFS card 37459 already active)
-- Contractors (`entity: "ATL"`): Mellody Abrego (transferred, atlPreYtd with components), ENM Trucking LLC = Biniyam Fissehaye (NEW — J&A W2 → 1099 same day)
+**Adding a new ATL week each weekly drop:**
+1. ASK Ben for the THIS-WEEK roster (drivers + contractors). Each role is per-week, not inherited.
+2. Compute `driverPay/driverHours/fuelAmt/fuelGallons` deltas from the PAYROLL/FUEL YTDs (this week vs prior).
+3. Append a new entry to `ATL_WEEKLY_LOG[]` at the bottom.
+4. AtlOperations() picks it up automatically — cumulative KPIs and the per-week table.
 
-**Agent layer (`AGENTS[]` array)** — separate top-level array NOT inside CONTRACTORS. Surfaced as its own bucket on the Budgeting tab (`agent` key, 🤝 icon). Agent payments are a **separate draw category in QBO** — NOT inside `Total for Owners Draw`. **Do NOT subtract agent total from the owner bucket** — they don't overlap in QBO.
+**Agent (Kevin Deveraux / Nixon Graye Associates)** — completely separate from ATL or any operating entity. Lives only in:
+- `AGENTS[]` top-level array (parallel to PAYROLL/CONTRACTORS, not nested)
+- Budgeting tab's standalone 🤝 agent bucket
+Agent payments are a separate draw category in QBO — **NOT inside `Total for Owners Draw`**. Do NOT subtract agent total from the owner bucket. See `reference_agent_draw_category` memory.
 
-Card-47458 footnote: previously misattributed to Wright Robert (frozen) — reassigned to Tucker Robert ATL in the May 16 update. Wright stays frozen at $2,170.77 (his card 37405 portion only).
+Card-47458 footnote: previously misattributed to Wright Robert (frozen) — reassigned to Tucker Robert in the May 16 update. Wright stays frozen at $2,170.77 (his card 37405 portion only).
 
 ### Re-authorizing QBO (when CE East or another company shows 401s)
 
@@ -316,7 +338,9 @@ ATL and Agent are fluid week-to-week. The QBO P&L files and payroll exports don'
 2. **ATL Contractors** — which contractor payments were ATL this week? (Default-tagged ATL: Mellody, ENM Trucking)
 3. **Agent payments** — which agents got paid this week? Any new agents? Same $/wk? (Default: Kevin Deveraux / Nixon Graye $500/wk)
 
-For ATL drivers/contractors, also confirm whether each is **transferred from CE-SF** (needs `atlPreYtd` snapshot of YTD-as-of-day-before-transfer) or **native ATL** (no preATL — full YTD = ATL contribution). See `feedback_atl_weekly` memory for the full implementation.
+**ATL is strictly per-week** — don't generalize one week's roster to adjacent weeks. Each `ATL_WEEKLY_LOG[]` entry is independent. If Ben says "X was ATL for week Y", apply only to week Y. See `feedback_atl_no_generalize`.
+
+For the per-week driver/fuel deltas in the new entry, subtract the PAYROLL/FUEL YTDs from the prior week's snapshot for the named drivers — that gives exact this-week contribution. Historical weeks can stay as best-effort allocations.
 
 ### Automated (live feeds — no file drops needed):
 - **CE & SF Combined P&L** — live from QuickBooks via `/api/qbo-pnl` (Income tab → Live QB)
@@ -379,7 +403,14 @@ Touch these (real data each week):
 
 **If you find yourself hand-typing a quarter, day count, or partial date anywhere in `App.jsx` outside of `PERIOD`, stop.** That's a future regression. Wire it through `PERIOD` / `PERIOD_DAYS` / `INCOME_2026.months` instead.
 
-**Build will fail silently on the `drivers: 0` regression** if the `LABOR` comment doesn't have a digit adjacent to the word "drivers". The `extract-metrics.js` regex is `/(\d+)\s*drivers/i` — phrasings like "41 active drivers" break it. Use "41 drivers active" or "— 41 drivers (…)" instead.
+**Build will fail silently on the `drivers: 0` (or wrong-number) regression.** The `extract-metrics.js` regex is `/(\d+)\s*drivers/i` — it matches the FIRST `<digit>+ space + drivers` pattern in App.jsx. Two failure modes:
+
+1. **LABOR comment phrasing**: "41 active drivers" breaks the regex. Use "41 drivers active" or "— 41 drivers (…)" so the digit sits adjacent to the word.
+2. **Phrase shadowing elsewhere**: any earlier `<digit>+ drivers` in the file overrides the LABOR comment. Watch for comments like "// to W2 drivers" — the `2` gets matched as the count. Fix by rewording (e.g. "fleet drivers") so no spurious `\d+ drivers` appears before the LABOR comment. Caught May 25 2026 (`drivers: 2` regression).
+
+**Display-vs-record distinction:** "active drivers" displayed on the dashboard ≠ `PAYROLL.length`. PAYROLL[] contains BOTH active and frozen (`active: false`) drivers — frozen YTDs still contribute to LABOR/TOTAL_HRS (so the QBO total reconciles) but don't count toward count displays. The derived const `ACTIVE_DRIVERS_COUNT = PAYROLL.filter(p => p.active !== false).length` is what the Fleet Overview subtitle, Labor card subtitle, and Revenue-per-driver tile use. When the active driver count changes:
+- Add/remove `active: false` field on the relevant PAYROLL entries
+- Update the `LABOR` comment's "N drivers active" digit (drives `metrics.json drivers:N` via the regex)
 
 Build verifies + regenerates `public/metrics.json` and `public/payroll-summary.json` which feed CFO Dashboard + Per Load CPM. Commit + push → Vercel auto-deploys (~2 min). Clear `incoming-freightiq/` after **all** consumers (CFO Dashboard, Per Load CPM) confirmed pulling new metrics.
 
