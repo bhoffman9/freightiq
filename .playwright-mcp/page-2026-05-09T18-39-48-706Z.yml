@@ -1,0 +1,248 @@
+- generic [ref=e682]:
+  - banner [ref=e683]:
+    - generic [ref=e684]: ⬡ FreightIQ
+    - generic [ref=e685]: Show Freight Inc · Jan 1 - May 9, 2026
+    - generic [ref=e686]:
+      - generic [ref=e687]: Labor $744,852
+      - generic [ref=e688]: Fuel $364,415
+      - generic [ref=e689]: Ins $128,624
+      - generic [ref=e690]: Equip $375,022
+      - generic [ref=e691]: Basic $3.296
+      - generic [ref=e692]: All-In $3.656
+  - navigation [ref=e693]:
+    - button "🏢 Fleet Overview" [ref=e694] [cursor=pointer]
+    - button "🧮 CPM Calculator" [active] [ref=e695] [cursor=pointer]
+    - button "📦 Per Load CPM" [ref=e696] [cursor=pointer]
+    - button "📊 Revenue" [ref=e697] [cursor=pointer]
+    - button "🚛 Driver Detail" [ref=e698] [cursor=pointer]
+    - button "📍 Trucks & Mileage" [ref=e699] [cursor=pointer]
+    - button "🛢 Fuel Analysis" [ref=e700] [cursor=pointer]
+    - button "🚛 Trucks" [ref=e701] [cursor=pointer]
+    - button "🚜 Trailers" [ref=e702] [cursor=pointer]
+    - button "🏢 Office Staff" [ref=e703] [cursor=pointer]
+    - button "💵 Income" [ref=e704] [cursor=pointer]
+    - button "🏦 CE East" [ref=e705] [cursor=pointer]
+    - button "💰 Cash Flow" [ref=e706] [cursor=pointer]
+    - button "📂 Upload" [ref=e707] [cursor=pointer]
+    - button "✅ Checklist" [ref=e708] [cursor=pointer]
+  - main [ref=e709]:
+    - generic [ref=e1354]:
+      - generic [ref=e1355]: CPM Calculator
+      - generic [ref=e1356]: Basic (4 core costs) vs All-In (9 categories) · 454,030 Samsara miles
+      - generic [ref=e1357]:
+        - generic [ref=e1358]:
+          - generic [ref=e1360]: Basic CPM
+          - generic [ref=e1361]: $3.296
+          - generic [ref=e1362]: Labor · Fuel · Truck Rentals · Insurance
+          - generic [ref=e1363]: $1,496,346 · 454,030 mi
+          - generic [ref=e1364]: 4 core categories
+        - generic [ref=e1365]:
+          - generic [ref=e1367]: All-In CPM
+          - generic [ref=e1368]: $3.656
+          - generic [ref=e1369]: + Trailers · Maint · Storage · Uniforms
+          - generic [ref=e1370]: $1,660,095 · +$163,749 above basic
+          - generic [ref=e1371]: 9 categories · +$0.361/mi
+      - generic [ref=e1372]:
+        - generic [ref=e1373]:
+          - generic [ref=e1374]: Basic CPM — 4 Components
+          - generic [ref=e1375]:
+            - generic [ref=e1376]: Labor 49.8%
+            - generic [ref=e1377]: Fuel 24.4%
+            - generic [ref=e1378]: Trucks 17.3%
+            - generic [ref=e1379]: Ins 8.6%
+          - generic [ref=e1380]:
+            - generic [ref=e1381]:
+              - generic [ref=e1382]: Labor
+              - generic [ref=e1383]: $744,852
+              - generic [ref=e1384]: 42 drivers · all-in employer cost
+            - generic [ref=e1385]:
+              - generic [ref=e1386]: $1.641
+              - generic [ref=e1387]: per mile · 49.8%
+          - generic [ref=e1388]:
+            - generic [ref=e1389]:
+              - generic [ref=e1390]: Fuel
+              - generic [ref=e1391]: $364,415
+              - generic [ref=e1392]: EFS + Mudflap · 68,738 gal
+            - generic [ref=e1393]:
+              - generic [ref=e1394]: $0.803
+              - generic [ref=e1395]: per mile · 24.4%
+          - generic [ref=e1396]:
+            - generic [ref=e1397]:
+              - generic [ref=e1398]: Truck Rentals
+              - generic [ref=e1399]: $258,455
+              - generic [ref=e1400]: Penske + TEC/Transco + TCI
+            - generic [ref=e1401]:
+              - generic [ref=e1402]: $0.569
+              - generic [ref=e1403]: per mile · 17.3%
+          - generic [ref=e1404]:
+            - generic [ref=e1405]:
+              - generic [ref=e1406]: Insurance
+              - generic [ref=e1407]: $128,624
+              - generic [ref=e1408]: $6,375/wk · 129-day period
+            - generic [ref=e1409]:
+              - generic [ref=e1410]: $0.283
+              - generic [ref=e1411]: per mile · 8.6%
+          - generic [ref=e1412]:
+            - generic [ref=e1413]: BASIC TOTAL
+            - generic [ref=e1414]:
+              - generic [ref=e1415]: $3.296
+              - generic [ref=e1416]: $1,496,346
+        - generic [ref=e1418]:
+          - generic [ref=e1419]: Rate/Mile Needed by Margin Target
+          - generic [ref=e1420]:
+            - generic [ref=e1421]: 10%
+            - generic [ref=e1422]:
+              - generic [ref=e1423]: Basic
+              - generic [ref=e1424]: $3.662
+            - generic [ref=e1426]:
+              - generic [ref=e1427]: All-In
+              - generic [ref=e1428]: $4.063
+          - generic [ref=e1429]:
+            - generic [ref=e1430]: 15%
+            - generic [ref=e1431]:
+              - generic [ref=e1432]: Basic
+              - generic [ref=e1433]: $3.877
+            - generic [ref=e1435]:
+              - generic [ref=e1436]: All-In
+              - generic [ref=e1437]: $4.302
+          - generic [ref=e1438]:
+            - generic [ref=e1439]: 20%
+            - generic [ref=e1440]:
+              - generic [ref=e1441]: Basic
+              - generic [ref=e1442]: $4.120
+            - generic [ref=e1444]:
+              - generic [ref=e1445]: All-In
+              - generic [ref=e1446]: $4.570
+          - generic [ref=e1447]:
+            - generic [ref=e1448]: 25%
+            - generic [ref=e1449]:
+              - generic [ref=e1450]: Basic
+              - generic [ref=e1451]: $4.394
+            - generic [ref=e1453]:
+              - generic [ref=e1454]: All-In
+              - generic [ref=e1455]: $4.875
+          - generic [ref=e1456]:
+            - generic [ref=e1457]: 30%
+            - generic [ref=e1458]:
+              - generic [ref=e1459]: Basic
+              - generic [ref=e1460]: $4.708
+            - generic [ref=e1462]:
+              - generic [ref=e1463]: All-In
+              - generic [ref=e1464]: $5.223
+      - generic [ref=e1465]:
+        - generic [ref=e1466]:
+          - generic [ref=e1467]:
+            - generic [ref=e1468]: CPM Simulator
+            - generic [ref=e1469]: Pick any combination of cost categories to see the CPM impact
+          - generic [ref=e1470]:
+            - button "All (9)" [ref=e1471] [cursor=pointer]
+            - button "Basic (4)" [ref=e1472] [cursor=pointer]
+            - button "None" [ref=e1473] [cursor=pointer]
+        - generic [ref=e1474]:
+          - generic [ref=e1475]:
+            - generic [ref=e1476] [cursor=pointer]:
+              - generic [ref=e1477]: ✓
+              - generic [ref=e1479]: Labor (Payroll)
+              - generic [ref=e1480]:
+                - generic [ref=e1481]: $744,852
+                - generic [ref=e1482]: $1.641/mi
+            - generic [ref=e1483] [cursor=pointer]:
+              - generic [ref=e1484]: ✓
+              - generic [ref=e1486]: Fuel (EFS + Mudflap)
+              - generic [ref=e1487]:
+                - generic [ref=e1488]: $364,415
+                - generic [ref=e1489]: $0.803/mi
+            - generic [ref=e1490] [cursor=pointer]:
+              - generic [ref=e1491]: ✓
+              - generic [ref=e1493]: Truck Rentals
+              - generic [ref=e1494]:
+                - generic [ref=e1495]: $258,455
+                - generic [ref=e1496]: $0.569/mi
+            - generic [ref=e1497] [cursor=pointer]:
+              - generic [ref=e1498]: ✓
+              - generic [ref=e1500]: Trailer Rentals
+              - generic [ref=e1501]:
+                - generic [ref=e1502]: $116,566
+                - generic [ref=e1503]: $0.257/mi
+            - generic [ref=e1504] [cursor=pointer]:
+              - generic [ref=e1505]: ✓
+              - generic [ref=e1507]: Insurance
+              - generic [ref=e1508]:
+                - generic [ref=e1509]: $128,624
+                - generic [ref=e1510]: $0.283/mi
+            - generic [ref=e1511] [cursor=pointer]:
+              - generic [ref=e1512]: ✓
+              - generic [ref=e1514]: Truck Maintenance
+              - generic [ref=e1515]:
+                - generic [ref=e1516]: $4,849
+                - generic [ref=e1517]: $0.011/mi
+            - generic [ref=e1518] [cursor=pointer]:
+              - generic [ref=e1519]: ✓
+              - generic [ref=e1521]: Trailer Maintenance
+              - generic [ref=e1522]:
+                - generic [ref=e1523]: $3,842
+                - generic [ref=e1524]: $0.008/mi
+            - generic [ref=e1525] [cursor=pointer]:
+              - generic [ref=e1526]: ✓
+              - generic [ref=e1528]: Storage / Parking
+              - generic [ref=e1529]:
+                - generic [ref=e1530]: $30,569
+                - generic [ref=e1531]: $0.067/mi
+            - generic [ref=e1532] [cursor=pointer]:
+              - generic [ref=e1533]: ✓
+              - generic [ref=e1535]: Uniforms
+              - generic [ref=e1536]:
+                - generic [ref=e1537]: $7,924
+                - generic [ref=e1538]: $0.017/mi
+          - generic [ref=e1539]:
+            - generic [ref=e1540]:
+              - generic [ref=e1541]: Custom CPM — 9 of 9
+              - generic [ref=e1542]: $3.656
+              - generic [ref=e1543]: $1,660,095 / 454,030 mi
+            - generic [ref=e1544]:
+              - generic [ref=e1545]: Cost Composition
+              - generic [ref=e1546]:
+                - generic [ref=e1547]: Labor 44.9%
+                - generic [ref=e1548]: Fuel 22.0%
+                - generic [ref=e1549]: Truck 15.6%
+            - generic [ref=e1556]:
+              - generic [ref=e1557]:
+                - generic [ref=e1558]: vs Basic (4)
+                - generic [ref=e1559]: +$0.361
+                - generic [ref=e1560]: "Basic: $3.296"
+              - generic [ref=e1561]:
+                - generic [ref=e1562]: vs All-In (9)
+                - generic [ref=e1563]: $0.000
+                - generic [ref=e1564]: "All-In: $3.656"
+            - generic [ref=e1565]:
+              - generic [ref=e1566]: Per-Mile Breakdown
+              - generic [ref=e1567]:
+                - generic [ref=e1570]: Labor (Payroll)
+                - generic [ref=e1571]: $1.641
+              - generic [ref=e1572]:
+                - generic [ref=e1575]: Fuel (EFS + Mudflap)
+                - generic [ref=e1576]: $0.803
+              - generic [ref=e1577]:
+                - generic [ref=e1580]: Truck Rentals
+                - generic [ref=e1581]: $0.569
+              - generic [ref=e1582]:
+                - generic [ref=e1585]: Trailer Rentals
+                - generic [ref=e1586]: $0.257
+              - generic [ref=e1587]:
+                - generic [ref=e1590]: Insurance
+                - generic [ref=e1591]: $0.283
+              - generic [ref=e1592]:
+                - generic [ref=e1595]: Truck Maintenance
+                - generic [ref=e1596]: $0.011
+              - generic [ref=e1597]:
+                - generic [ref=e1600]: Trailer Maintenance
+                - generic [ref=e1601]: $0.008
+              - generic [ref=e1602]:
+                - generic [ref=e1605]: Storage / Parking
+                - generic [ref=e1606]: $0.067
+              - generic [ref=e1607]:
+                - generic [ref=e1610]: Uniforms
+                - generic [ref=e1611]: $0.017
+              - generic [ref=e1612]:
+                - generic [ref=e1613]: TOTAL CPM
+                - generic [ref=e1614]: $3.656

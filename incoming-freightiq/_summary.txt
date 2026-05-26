@@ -1,0 +1,116 @@
+======================================================================
+WEEKLY DROP SUMMARY
+======================================================================
+
+[SF PAYROLL] From Jan 01, 2026 to Dec 31, 2026 for all employees from all locations
+  Total (all staff):   33687.84 hrs  $1,076,067.85
+  Drivers only (CPM):  27390.60 hrs  $  855,375.91
+  Active driver count: 45
+  Office excluded:     9 (Arias Adrian, Eagleton Gentry J, Figueroa Andres, Fissehaye Biniyam G, Gonzalez Gabriel, Grosser Scot E, Naruszewicz Bartosz, Rivera Cecilia I, Youngblood Nathan)
+
+  Per-driver:
+    Alexander Christopher         1029.33  $ 30,209.33
+    Allwine Brian A                181.34  $  5,043.53
+    Alshamaa Manar                 104.47  $  3,196.14
+    Anderson Justin M               79.01  $  2,285.37
+    Brown Jr Marcellus              77.08  $  2,143.78
+    Butler Richard                 382.40  $ 11,493.27
+    Christian Norman L             100.08  $  2,894.81
+    Clark Rettick                  255.06  $  7,377.62
+    Cotton Kejlon                  320.32  $ 11,677.82
+    Cowsky Andrew                  327.37  $  9,460.11
+    Daniels Gerald W               414.03  $ 12,253.23
+    Davis Anthoni D               1427.34  $ 50,118.25
+    Denman Samuel E               1226.89  $ 39,823.08
+    Dotch Brandon C                540.11  $ 16,130.43
+    Gutierrez Danny               1101.05  $ 34,328.85
+    Guzman Jose                   1393.39  $ 49,908.95
+    Howell Lawrence                 85.33  $  2,373.24
+    Ibarra Jose Pablo             1356.59  $ 48,033.29
+    Johnson Christopher M           71.08  $  2,174.60
+    Juarez Angel                   376.15  $ 10,863.46
+    Kelly Kirk D                   801.82  $ 23,044.55
+    Lucero Andrew                  149.53  $  4,325.15
+    Matthews Ron A                 464.44  $ 13,126.62
+    Mcclam Michael A               716.67  $ 21,534.88
+    McNamara John                 1334.51  $ 43,940.86
+    Memolo Dominick                  0.00  $      0.00
+    Negrete Arturo                 371.01  $ 11,053.06
+    Ponce Carlos                   433.79  $ 12,896.71
+    Restrepo Julian E              486.90  $ 15,309.36
+    Reyes Corey                    382.07  $ 11,033.77
+    Robinson Animashaun            613.25  $ 18,184.60
+    Ronkov Martin P               1230.15  $ 35,157.86
+    Secrest Jermelle               613.67  $ 17,708.58
+    Stringer Adam E                203.46  $  5,885.08
+    Striplin Lamareh               653.62  $ 20,028.99
+    Thorne Richard                 254.53  $  7,387.28
+    Tucker Robert                   99.20  $  3,034.92
+    Vue CJ Z                         3.00  $     86.78
+    Wainwright Michael W          1199.40  $ 35,914.10
+    Watkins Shawn                  647.48  $ 19,394.36
+    Watson Dahnifu S              1132.46  $ 32,491.10
+    Whipple Wallace               1188.05  $ 38,610.40
+    Williams Tadaryl C            1206.55  $ 35,437.32
+    Williams Will                  698.22  $ 20,854.09
+    Willis Wali A                 1397.74  $ 47,702.45
+    Wright Robert                  260.66  $  9,443.88
+
+[CE&SF TRANSACTIONS — YTD category totals]
+  Fuel                            $  467,943.81
+  SF Truck Insurance              $  128,624.45
+  Storage/Parking                 $   30,839.62
+  Trailer Maintenance             $    4,410.04
+  Trailer Rentals                 $  152,602.63
+  Truck Maintenance               $    5,858.37
+  Truck Rentals                   $  280,290.24
+  Worker Uniforms                 $    7,923.56
+  Truck/Trailer with sub-accounts  $1,078,492.72
+
+[EFS — per-card totals, aggregated from Group summary blocks]
+    CARD  DRIVER                                   AMT         GAL
+   27406  Anthoni Davis                   $  34,874.81    6,520.40
+   67463  Michael M                       $  28,231.43    5,811.19
+   57403  Wallace                         $  21,413.26    4,575.77
+   77409  Christopher                     $  20,066.83    3,310.47
+   57401  Shaun                           $  19,510.81    3,476.17
+   17407  John Macnamara                  $  18,568.49    4,018.74
+   07407  Michael Mcclam                  $  17,510.33    2,588.68
+   37402  Tadaryl                         $  16,521.00    3,143.61
+   77402  Kirk                            $  16,480.64    3,352.30
+   27405  Williams                        $  15,833.68    2,680.25
+   37405  Robert wright                   $  15,826.48    2,827.14
+   97406  Shaq                            $  12,578.77    2,310.50
+   47405  Sam                             $  11,850.91    2,875.66
+   77457  Andy Cowsky                     $  11,623.29    1,877.18
+   57464  Shaun                           $  11,600.90    1,995.27
+   37466  Carlos Ponce                    $  11,129.89    1,698.64
+   87400  Wali                            $  10,779.45    1,920.47
+   27404  Mell                            $  10,674.08    1,534.96
+   77401  Jose Guzman                     $  10,513.37    2,110.82
+   87407  Lamareh                         $  10,101.58    1,793.84
+   47404  Danny                           $   9,470.39    1,931.09
+   97409  Jose Pablo                      $   7,752.51    1,526.01
+   37403  Samuel                          $   7,734.76    1,255.80
+   67400  Richard                         $   7,248.06    1,300.88
+   87401  Kejlon                          $   7,231.37    1,210.09
+   17468  Brandon                         $   6,366.04      967.74
+   57404  Arturo                          $   6,348.68    1,511.56
+   07405  Justin                          $   6,117.42      988.94
+   47402  Norman                          $   6,097.87    1,057.09
+   07408  Brian Allwine                   $   6,093.18    1,528.68
+   67403  Martin                          $   5,263.72    1,056.50
+   07469  Corey                           $   4,565.49      693.21
+   17408  Andres                          $   4,430.11    1,041.02
+   47458  Robert                          $   4,193.46      734.01
+   37404  Jermelle                        $   4,078.35      696.19
+   97453  Corey                           $   3,105.78      414.54
+   87461  Angel Juarez                    $   2,961.21      429.11
+   87454  Manar                           $   2,662.47      482.57
+   37459  Christopher J                   $   2,660.76      486.91
+   77462  Marcellus                       $   1,282.90      307.66
+   67402  ?                               $     752.83      185.55
+   47465  ?                               $     277.05       64.38
+   27467  Nathan                          $      90.01       19.28
+   TOTAL                                  $ 432,474.42   80,310.87
+

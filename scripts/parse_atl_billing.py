@@ -27,6 +27,8 @@ INCOMING = os.path.join(BASE, "incoming-freightiq")
 
 NAME_MAP = {
     "Anthoni": "Davis Anthoni D",
+    "ANTHONI": "Davis Anthoni D",  # casing variant
+    "Anthony": "Davis Anthoni D",  # spelling variant
     "Sam":     "Denman Samuel E",
     "Michael": "Wainwright Michael W",
     "CJ":      "Johnson Christopher",
@@ -36,10 +38,14 @@ NAME_MAP = {
 
 
 def find_billing_file():
-    pat = os.path.join(INCOMING, "*Atlanta Billing*.xlsx")
-    matches = glob.glob(pat)
+    # Accept either old name (2026-Atlanta Billing.xlsx) or new short name (ATL.xlsx)
+    patterns = ["*Atlanta Billing*.xlsx", "ATL.xlsx", "*ATL*.xlsx"]
+    matches = []
+    for pat in patterns:
+        matches += glob.glob(os.path.join(INCOMING, pat))
+    matches = list(set(matches))
     if not matches:
-        print(f"No 'Atlanta Billing' XLSX in {INCOMING}/")
+        print(f"No ATL billing XLSX in {INCOMING}/ (looked for 'Atlanta Billing' or 'ATL.xlsx')")
         sys.exit(1)
     return max(matches, key=os.path.getmtime)
 
@@ -54,11 +60,14 @@ def parse(path):
         months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
         as_of = f"{months[int(m)]} {int(d)}, 20{y}"
     else:
-        as_of = "(unknown)"
+        # Fall back to mtime of the file
+        import datetime
+        mtime = datetime.datetime.fromtimestamp(os.path.getmtime(path))
+        as_of = mtime.strftime("%b %-d, %Y") if os.name != "nt" else mtime.strftime("%b %#d, %Y")
 
     rows = list(sh.iter_rows(values_only=True))
     # Header row is row 0
-    # Columns: Driver | Load $ | REF # | PO # | Customer | Invoice Amount | Carrier | Carrier Amount | Assigned | Notes
+    # Columns: Driver | Load # | REF # | PO # | Customer | Invoice Amount | Carrier | Carrier Amount | OFFICE | Notes
 
     atl_rows = []
     assigned_counts = defaultdict(int)
@@ -67,10 +76,11 @@ def parse(path):
         assigned = (str(r[8]).strip().upper() if r[8] else "")
         assigned_counts[assigned] += 1
         # Every load in this sheet counts as ATL revenue regardless of
-        # 'Assigned' column (which only reflects QBO booking routing).
+        # OFFICE / Assigned column (which only reflects QBO booking routing).
         atl_rows.append(r)
 
-    by_driver = defaultdict(lambda: {"count": 0, "revenue": 0.0, "carrier": 0.0})
+    # Aggregate by FULL NAME (after NAME_MAP) so casing/spelling variants roll up
+    by_full = defaultdict(lambda: {"count": 0, "revenue": 0.0, "carrier": 0.0, "shorts": set()})
     total_rev = 0.0
     total_car = 0.0
     for r in atl_rows:
@@ -78,11 +88,20 @@ def parse(path):
         full_name = NAME_MAP.get(driver_short, f"<UNMAPPED: {driver_short}>")
         invoice = float(r[5]) if isinstance(r[5], (int, float)) else 0
         carrier = float(r[7]) if isinstance(r[7], (int, float)) else 0
-        by_driver[driver_short]["count"] += 1
-        by_driver[driver_short]["revenue"] += invoice
-        by_driver[driver_short]["carrier"] += carrier
+        by_full[full_name]["count"] += 1
+        by_full[full_name]["revenue"] += invoice
+        by_full[full_name]["carrier"] += carrier
+        by_full[full_name]["shorts"].add(driver_short)
         total_rev += invoice
         total_car += carrier
+    # Map back to driver_short-keyed dict for emit (use first short variant as the short label)
+    by_driver = {}
+    for full_name, t in by_full.items():
+        # Use the canonical short (first entry in NAME_MAP that maps to this full_name) if known
+        canonical_short = next((k for k, v in NAME_MAP.items() if v == full_name and k[0].isupper() and k[1:].islower()), None)
+        if canonical_short is None:
+            canonical_short = sorted(t["shorts"])[0] if t["shorts"] else ""
+        by_driver[canonical_short] = {"count": t["count"], "revenue": t["revenue"], "carrier": t["carrier"]}
 
     return {
         "as_of": as_of,

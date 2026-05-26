@@ -471,6 +471,7 @@ No test framework configured. No automated tests.
 ## Related Projects
 
 - **Per Load CPM** (`perload-cpm.vercel.app`) — Standalone booking tool, fetches metrics.json + /api/alvys-loads from this app
+- **Atlanta CPM** (`atlanta-cpm.vercel.app`) — ATL planning calculator. Local path: `Desktop/Freight/atlanta-cpm`, has its own CLAUDE.md. **Broader audience than FreightIQ** — when copying ATL operating numbers into atlanta-cpm: (1) driver wages only (no office/contractor/agent), (2) no revenue/GP/margin (cost tool only), (3) never add a UI link back to freightiq-nine-two from atlanta-cpm. The `metrics.json` fetch is fine; rendered links are not. See `feedback_atlanta_cpm_audience` memory.
 - **AP Aging** (`ap-aging-v4.vercel.app`) — AP Aging dashboard (Next.js + Supabase), feeds equipment data into FreightIQ via EquipmentContext
 - **CFO Dashboard** (`cfo-dashboard-eta.vercel.app`) — Executive financial dashboard (React + Tailwind + Supabase), fetches metrics.json + payroll-summary.json from this app. Local path: `Desktop/Freight/cfo-dashboard`, no GitHub repo — deployed via `npx vercel deploy --prod --yes`. Has per-source status bar, section quick-nav, safeDivide guards, dynamic period/truck count. Known debt: monolithic App.jsx, RLS wide open, no endpoint auth, hardcoded business data.
 - **Samsara Agent** (`Desktop/Freight/samsara-agent`) — Autonomous agent pulling Samsara fleet data on cron

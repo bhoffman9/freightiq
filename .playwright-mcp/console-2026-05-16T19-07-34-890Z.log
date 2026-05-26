@@ -1,0 +1,7 @@
+[   31712ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://freightiq-nine-two.vercel.app/api/qbo-pnl?company=ce_east&period=mar:0
+[   31827ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://freightiq-nine-two.vercel.app/api/qbo-pnl?company=ce_east&period=feb:0
+[   31828ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://freightiq-nine-two.vercel.app/api/qbo-pnl?company=ce_east&start_date=2024-01-01&end_date=2026-05-16:0
+[   31829ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://freightiq-nine-two.vercel.app/api/qbo-pnl?company=ce_east&period=ytd:0
+[   31859ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://freightiq-nine-two.vercel.app/api/qbo-pnl?company=ce_east&period=jan:0
+[   31860ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://freightiq-nine-two.vercel.app/api/qbo-pnl?company=ce_east&period=may:0
+[   32038ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://raw.githubusercontent.com/bhoffman9/expense-calendar/main/current-week.json?t=1778958486634:0

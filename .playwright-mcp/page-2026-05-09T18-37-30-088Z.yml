@@ -1,0 +1,6 @@
+- generic [ref=e2]:
+  - generic [ref=e3]: ⬡ FREIGHTIQ
+  - generic [ref=e4]: Show Freight Inc · Authorized Access
+  - textbox "Password" [active] [ref=e5]
+  - button "Unlock" [ref=e6] [cursor=pointer]
+  - generic [ref=e7]: Stays unlocked for 30 days on this device
