@@ -7234,38 +7234,39 @@ const ATL_WEEKLY_LOG = [
     weekStart: "2026-05-04",
     weekEnd: "2026-05-10",
     drivers: ["Davis Anthoni D", "Denman Samuel E", "Wainwright Michael W"],
-    // Manar + Tucker started May 11 → not in May 4-10 roster
+    // Manar/Tucker started May 11 → not in this week.
     driverPay: 6966.01,        // best-effort: 7/13 of May 4-16 ATL labor (Davis+Denman+Wainwright)
     driverHours: 188.81,
     fuelAmt: 3928.05,          // 7/13 of May 4-16 ATL fuel (same 3 drivers)
     fuelGallons: 699.00,
     contractors: [
-      { name: "Mellody Abrego",   entity: "Neon Vibes Enterprise",      base: 2150, commission: 0, car: 0, health: 368.34, total: 2518.34 },
+      { name: "Mellody Abrego",   entity: "Neon Vibes Enterprise (pre-rate-change at $2,150/wk)", base: 2150, commission: 0, car: 0, health: 368.34, total: 2518.34 },
       { name: "Biniyam Fissehaye",entity: "J&A W2 (last week before 1099 transition)", total: 1902.31 },
     ],
     agents: [],                // Kevin started May 11
     contractorPay: 4420.65,
     agentPay: 0,
-    note: "Historical estimate — first ATL week. Mellody at $2,150/wk (pre-rate-change). Bini's final W2 phase week.",
+    note: "First ATL week. Mellody at $2,150/wk pre-rate-change. Bini's final W2 phase.",
   },
   {
     weekStart: "2026-05-11",
     weekEnd: "2026-05-17",
-    drivers: ["Davis Anthoni D", "Wainwright Michael W", "Alshamaa Manar", "Tucker Robert", "Johnson Christopher"],
-    // Per Ben correction (May 25): Denman + Mellody NOT ATL last week
-    driverPay: 7181.00,        // best-effort: May 11-16 driver totals + 1/8 of May 18-24 delta (for May 17)
-    driverHours: 205.30,
-    fuelAmt: 4150.00,          // best-effort similar allocation
-    fuelGallons: 720.00,
+    drivers: ["Davis Anthoni D", "Denman Samuel E", "Wainwright Michael W", "Alshamaa Manar", "Tucker Robert", "Johnson Christopher"],
+    // Denman + Mellody ATL only this week (per Ben).
+    driverPay: 9499.30,        // best-effort: May 11-16 driver totals + 1/8 of May 18-24 delta (for May 17) — incl Denman
+    driverHours: 268.84,
+    fuelAmt: 5424.06,          // best-effort similar allocation incl Denman
+    fuelGallons: 933.69,
     contractors: [
+      { name: "Mellody Abrego",   entity: "Neon Vibes Enterprise (1 paycheck for May 11-17 work, paid May 22)", base: 2250, commission: 300, car: 0, health: 368.34, total: 2918.34 },
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC (Biniyam Fissehaye 1099 phase)", total: 1850 },
     ],
     agents: [
       { name: "Kevin Deveraux", entity: "Nixon Graye Associates", total: 500 },
     ],
-    contractorPay: 1850,
+    contractorPay: 4768.34,
     agentPay: 500,
-    note: "Roster correction: Denman + Mellody dropped from ATL retroactive to this week.",
+    note: "Denman + Mellody ATL this week only (week-to-week designation).",
   },
   {
     weekStart: "2026-05-18",
