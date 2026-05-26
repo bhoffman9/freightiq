@@ -71,7 +71,7 @@ let PAYROLL = [
 
 // ── FUEL DATA (EFS only) ──────────────────────────────────────
 // ATL designation dropped here too — see ATL_WEEKLY_LOG. Cards still mapped
-// to W2 drivers; ATL fuel for a given week is computed via per-week roster.
+// to fleet drivers; ATL fuel for a given week is computed via per-week roster.
 let FUEL = {
   // EFS only, Jan 1 – May 24, 2026 — $432,474.42 (80,310.87 gal) per EFS Transaction Report
   // No Mudflap charges this period
