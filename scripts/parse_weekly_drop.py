@@ -33,6 +33,7 @@ SF_OFFICE = {
     "Arias Adrian", "Eagleton Gentry J", "Figueroa Andres",
     "Fissehaye Biniyam G", "Gonzalez Gabriel", "Grosser Scot E",
     "Naruszewicz Bartosz", "Rivera Cecilia I", "Youngblood Nathan",
+    "Kennon Jessica S",  # ATL office worker, terminated May 2026
 }
 
 
