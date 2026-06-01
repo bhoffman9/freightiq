@@ -146,8 +146,8 @@ let LABOR     = 910880.51;  // QuickBooks: total driver payroll cost (gross+taxe
 let FUEL_TOT  = 459253.57;  // EFS only — thru May 29 (no Mudflap this period)
 let GALLONS   = 84760.17;   // EFS 84,760.17
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
-let MILES     = 566822.4;     // Samsara GPS, Jan 1 – May 30, 2026 (Vehicle Mileage report — 43 trucks; live /api/samsara-miles refines on each page load when available)
-let TRUCK_COUNT = 45;       // Active fleet trucks — refined on App mount from /api/samsara-miles truckCount
+let MILES     = 566822.4;     // Samsara Vehicle Mileage report, Jan 1 – May 30, 2026 (43 trucks; updated from manual xlsx drop via scripts/parse_samsara_mileage.py)
+let TRUCK_COUNT = 43;       // Active fleet trucks (from Vehicle Mileage report)
 let TOTAL_HRS  = 29149.84;  // Payroll hours — driver-only (office excluded), thru May 29
 let INS_WEEK  = 6375;
 let INS_TOT    = 147678.87;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru May 30 — caught up from prior unchanged streak
@@ -410,46 +410,58 @@ const TRUCK_TYPE = {
   // 589 returned 1/14/2026 — removed from active fleet
 };
 
-// ── SAMSARA MILEAGE DATA (Jan 1 – May 2, 2026 static fallback; live /api/samsara-miles supersedes) ──
+// ── SAMSARA MILEAGE DATA ──────────────────────────────────────
+// Source: Samsara Vehicle Mileage report (manually dropped into
+// incoming-freightiq/ each week). Run `python scripts/parse_samsara_mileage.py`
+// to regenerate MILES + TRUCK_COUNT + FLEET_LOCAL + FLEET_REGIONAL + TRUCK_MILES.
+// Local = NV; Regional = everything else.
 let TRUCK_MILES = [
-  { truck:"120", local:2344.5, regional:23604.7, miles:25949.2, states:{"CA":12495.4,"NV":2344.5,"AZ":2068.6,"TX":1638.4,"NM":1494.8,"OK":1259.1,"GA":1032.1,"AR":1017.5,"AL":991.4,"MS":663.7,"TN":407.8,"LA":399.3,"SC":136.6} },
-  { truck:"951", local:4284.4, regional:15666.5, miles:19950.9, states:{"CA":14582.8,"NV":4284.4,"AZ":1083.7} },
-  { truck:"568", local:4476.7, regional:13237.6, miles:17714.3, states:{"CA":10801.9,"NV":4476.7,"AZ":2435.6} },
+  { truck:"120", local:3268.2, regional:30389.7, miles:33657.9, states:{"CA":18397.2,"NV":3268.2,"AZ":2634.0,"TX":1638.4,"NM":1494.8,"OK":1259.1,"GA":1032.1,"AR":1017.5,"AL":991.4,"MS":663.7,"TN":407.8,"LA":399.3,"UT":317.8,"SC":136.6} },
+  { truck:"568", local:5588.5, regional:18380.0, miles:23968.5, states:{"CA":13236.5,"NV":5588.5,"AZ":4390.2,"UT":753.2} },
+  { truck:"951", local:6644.1, regional:17136.8, miles:23781.0, states:{"CA":16053.1,"NV":6644.1,"AZ":1083.7} },
+  { truck:"417", local:2866.7, regional:19771.5, miles:22638.2, states:{"CA":19188.5,"NV":2866.7,"AZ":583.0} },
+  { truck:"418", local:2970.2, regional:19189.7, miles:22160.0, states:{"CA":19189.7,"NV":2970.2} },
+  { truck:"496", local:2235.2, regional:19687.8, miles:21923.0, states:{"CA":15250.0,"NV":2235.2,"AZ":2181.4,"TX":888.4,"NM":748.6,"UT":619.4} },
+  { truck:"419", local:2835.4, regional:18306.7, miles:21142.1, states:{"CA":15964.2,"NV":2835.4,"AZ":1002.7,"UT":727.7,"CO":612.2} },
+  { truck:"574", local:4236.6, regional:16352.2, miles:20588.8, states:{"CA":15339.6,"NV":4236.6,"AZ":1012.6} },
+  { truck:"577", local:4296.6, regional:15391.6, miles:19688.2, states:{"CA":13093.8,"NV":4296.6,"AZ":2297.8} },
+  { truck:"869", local:135.1, regional:17773.3, miles:17908.3, states:{"TN":3104.0,"GA":2170.7,"IL":1648.5,"FL":1348.7,"VA":1289.2,"WI":1230.3,"NY":1183.6,"PA":1106.4,"NJ":604.8,"TX":604.1,"IN":556.7,"CA":464.8,"KY":464.7,"AZ":382.4,"NM":373.5,"MN":278.8,"MS":202.5,"LA":192.8,"NV":135.1,"NC":127.6,"SC":109.9,"MO":106.5,"WV":104.3,"AL":70.7,"MD":47.8} },
+  { truck:"502", local:2133.3, regional:15737.8, miles:17871.1, states:{"CA":15188.8,"NV":2133.3,"AZ":549.0} },
+  { truck:"127", local:2435.1, regional:15251.8, miles:17686.9, states:{"CA":14057.0,"NV":2435.1,"UT":623.5,"AZ":571.4} },
   { truck:"728", local:2922.7, regional:14438.8, miles:17361.5, states:{"CA":11505.6,"AZ":2933.2,"NV":2922.7} },
   { truck:"738", local:2516.6, regional:14476.5, miles:16993.1, states:{"CA":13218.9,"NV":2516.6,"AZ":638.1,"UT":619.4} },
-  { truck:"574", local:3354.5, regional:13267.0, miles:16621.5, states:{"CA":12796.3,"NV":3354.5,"AZ":470.7} },
-  { truck:"577", local:3440.8, regional:12962.9, miles:16403.7, states:{"CA":11331.6,"NV":3440.8,"AZ":1631.4} },
+  { truck:"498", local:1905.3, regional:14903.3, miles:16808.6, states:{"CA":13263.1,"NV":1905.3,"AZ":1640.2} },
+  { truck:"441", local:5228.8, regional:11543.4, miles:16772.3, states:{"CA":11543.4,"NV":5228.8} },
+  { truck:"402", local:2100.9, regional:13909.8, miles:16010.7, states:{"CA":12850.9,"NV":2100.9,"AZ":1058.8} },
   { truck:"731", local:2991.3, regional:12734.9, miles:15726.2, states:{"CA":11120.1,"NV":2991.3,"AZ":1614.8} },
+  { truck:"508", local:1940.4, regional:11580.1, miles:13520.5, states:{"CA":9773.6,"NV":1940.4,"AZ":1149.7,"UT":656.8} },
+  { truck:"573", local:7692.0, regional:5817.2, miles:13509.2, states:{"NV":7692.0,"CA":5817.2} },
+  { truck:"020", local:10816.8, regional:2686.5, miles:13503.3, states:{"NV":10816.8,"CA":2686.5} },
+  { truck:"353", local:3999.4, regional:8275.8, miles:12275.2, states:{"CA":8275.8,"NV":3999.4} },
   { truck:"730", local:1946.8, regional:10041.7, miles:11988.5, states:{"CA":10041.7,"NV":1946.8} },
+  { truck:"463", local:1111.7, regional:10683.1, miles:11794.8, states:{"CA":7323.7,"TX":1311.0,"AZ":1297.9,"NV":1111.7,"NM":750.6} },
+  { truck:"870", local:1676.8, regional:10106.1, miles:11782.9, states:{"CA":8207.2,"NV":1676.8,"UT":1248.2,"AZ":650.7} },
+  { truck:"440", local:6500.7, regional:4735.2, miles:11235.9, states:{"NV":6500.7,"CA":4735.2} },
   { truck:"149", local:2047.3, regional:8712.3, miles:10759.6, states:{"CA":8712.3,"NV":2047.3} },
-  { truck:"127", local:1393.2, regional:8798.9, miles:10192.1, states:{"CA":8798.9,"NV":1393.2} },
-  { truck:"418", local:1290.9, regional:8824.7, miles:10115.6, states:{"CA":8824.7,"NV":1290.9} },
+  { truck:"569", local:5847.8, regional:4161.6, miles:10009.5, states:{"NV":5847.8,"CA":4161.6} },
   { truck:"476", local:2831.8, regional:6843.0, miles:9674.8, states:{"CA":6270.1,"NV":2831.8,"AZ":572.9} },
-  { truck:"417", local:1072.2, regional:8451.3, miles:9523.4, states:{"CA":7868.2,"NV":1072.2,"AZ":583.0} },
-  { truck:"020", local:7089.9, regional:2197.1, miles:9286.9, states:{"NV":7089.9,"CA":2197.1} },
-  { truck:"573", local:5081.0, regional:4101.2, miles:9182.2, states:{"NV":5081.0,"CA":4101.2} },
   { truck:"937", local:168.4, regional:8775.7, miles:8944.0, states:{"TX":1691.9,"CA":1176.2,"AZ":959.1,"AL":649.9,"LA":584.1,"NM":542.5,"MS":472.8,"OK":455.8,"GA":451.8,"MO":297.6,"MD":294.4,"VA":276.9,"OH":227.5,"NV":168.4,"IL":160.9,"IN":159.9,"NC":127.5,"SC":107.9,"WV":83.9,"PA":55.2} },
   { truck:"539", local:1031.8, regional:7565.5, miles:8597.4, states:{"CA":2853.6,"NV":1031.8,"AZ":934.4,"GA":700.1,"OK":669.3,"NM":635.8,"AR":575.8,"AL":384.9,"TX":355.3,"MS":264.8,"SC":165.3,"TN":26.2} },
-  { truck:"496", local:733.3, regional:7447.3, miles:8180.5, states:{"CA":7447.3,"NV":733.3} },
-  { truck:"419", local:1177.2, regional:6583.9, miles:7761.2, states:{"CA":4659.1,"NV":1177.2,"UT":727.7,"CO":612.2,"AZ":585.0} },
-  { truck:"440", local:2811.8, regional:4735.2, miles:7547.0, states:{"CA":4735.2,"NV":2811.8} },
-  { truck:"441", local:2558.0, regional:4980.7, miles:7538.7, states:{"CA":4980.7,"NV":2558.0} },
-  { truck:"463", local:831.3, regional:6585.0, miles:7416.3, states:{"CA":6050.9,"NV":831.3,"AZ":534.0} },
-  { truck:"353", local:1925.4, regional:5309.4, miles:7234.8, states:{"CA":5309.4,"NV":1925.4} },
-  { truck:"569", local:2806.4, regional:3028.7, miles:5835.1, states:{"CA":3028.7,"NV":2806.4} },
+  { truck:"510", local:921.4, regional:7450.6, miles:8371.9, states:{"CA":7450.6,"NV":921.4} },
+  { truck:"570", local:6016.3, regional:2184.3, miles:8200.6, states:{"NV":6016.3,"CA":2184.3} },
+  { truck:"686", local:0.0, regional:6470.4, miles:6470.4, states:{"GA":1888.6,"TN":1629.4,"VA":1319.0,"MD":403.5,"FL":397.4,"NJ":244.6,"NC":236.9,"PA":166.4,"SC":107.0,"WV":26.1,"NY":19.9,"DE":19.5,"DC":12.2} },
+  { truck:"674", local:0.0, regional:6048.1, miles:6048.1, states:{"GA":1740.0,"TN":1129.9,"IN":589.3,"VA":578.7,"FL":491.3,"KY":276.3,"NJ":240.2,"MD":236.4,"NC":236.0,"MI":168.7,"IL":149.7,"SC":108.6,"NY":36.9,"DC":33.0,"DE":32.9} },
   { truck:"676", local:4109.6, regional:1566.8, miles:5676.4, states:{"NV":4109.6,"CA":1566.8} },
-  { truck:"502", local:723.4, regional:4296.2, miles:5019.6, states:{"CA":3747.2,"NV":723.4,"AZ":549.0} },
-  { truck:"498", local:384.0, regional:4004.0, miles:4388.0, states:{"CA":4004.0,"NV":384.0} },
-  { truck:"510", local:450.6, regional:3368.6, miles:3819.2, states:{"CA":3368.6,"NV":450.6} },
-  { truck:"869", local:135.1, regional:3281.9, miles:3417.0, states:{"FL":991.1,"TX":604.1,"CA":464.8,"AZ":382.4,"NM":373.5,"MS":202.5,"LA":192.8,"NV":135.1,"AL":70.7} },
-  { truck:"402", local:546.3, regional:2728.6, miles:3274.8, states:{"CA":2728.6,"NV":546.3} },
-  { truck:"570", local:1567.3, regional:486.4, miles:2053.7, states:{"NV":1567.3,"CA":486.4} },
-  { truck:"189", local:393.5, regional:1154.9, miles:1548.4, states:{"CA":1154.9,"NV":393.5} },
+  { truck:"685", local:0.0, regional:5005.9, miles:5005.9, states:{"GA":2104.9,"AL":1171.6,"TN":849.0,"MS":423.8,"NC":188.3,"LA":180.0,"SC":88.3} },
+  { truck:"673", local:0.0, regional:4952.0, miles:4952.0, states:{"GA":2121.5,"TN":1059.3,"IN":556.3,"AL":547.3,"KY":278.2,"MS":156.5,"LA":121.9,"IL":110.8} },
+  { truck:"669", local:0.0, regional:4832.3, miles:4832.3, states:{"GA":1583.2,"TN":1324.6,"VA":576.0,"NC":372.3,"SC":252.1,"MD":248.5,"NJ":226.2,"KY":94.8,"IL":88.0,"NY":33.7,"DE":32.9} },
+  { truck:"503", local:350.4, regional:2509.3, miles:2859.7, states:{"AZ":1325.1,"CA":1184.2,"NV":350.4} },
+  { truck:"189", local:801.6, regional:1154.9, miles:1956.5, states:{"CA":1154.9,"NV":801.6} },
   { truck:"462", local:99.8, regional:1081.1, miles:1180.9, states:{"CA":1081.1,"NV":99.8} },
-  { truck:"589", local:985.5, regional:0, miles:985.5, states:{"NV":985.5} },
+  { truck:"589", local:985.5, regional:0.0, miles:985.5, states:{"NV":985.5} },
 ];
-let FLEET_LOCAL    = 72523.2;
-let FLEET_REGIONAL = 255338.9;
+let FLEET_LOCAL    = 118207.1;   // NV miles
+let FLEET_REGIONAL = 448615.2;   // non-NV miles
 
 // ── TRANSACTION DETAIL DATA ──────────────────────────────────
 const DETAIL = {
@@ -821,34 +833,14 @@ function TrucksMileage() {
   const [sortKey, setSortKey]   = useState("miles");
   const [filter, setFilter]     = useState("all");
   const [view, setView]         = useState("detail"); // detail | trend
-  const [dataSource, setDataSource] = useState("live"); // live | static
-  const [liveData, setLiveData] = useState(null);
-  const [liveLoading, setLiveLoading] = useState(false);
-  const [liveError, setLiveError] = useState(null);
 
-  useEffect(() => {
-    if (dataSource !== "live") return;
-    setLiveLoading(true); setLiveError(null);
-    fetch("/api/samsara-miles?year=2026")
-      .then(r => r.json())
-      .then(d => { if (d.error) { setLiveError(d.error); setLiveData(null); } else setLiveData(d); })
-      .catch(e => setLiveError(e.message))
-      .finally(() => setLiveLoading(false));
-  }, [dataSource]);
-
-  // Use live data if available, otherwise fall back to static constants
-  const activeTrucks = dataSource === "live" && liveData ? liveData.trucks : TRUCK_MILES;
-  const activeLocal = dataSource === "live" && liveData ? liveData.fleetLocal : FLEET_LOCAL;
-  const activeRegional = dataSource === "live" && liveData ? liveData.fleetRegional : FLEET_REGIONAL;
-  const activeTotal = dataSource === "live" && liveData ? liveData.fleetTotal : MILES;
-  const activeLabel = (() => {
-    if (!(dataSource === "live" && liveData)) return `Samsara GPS · ${PERIOD} · ${TRUCK_MILES.length} trucks`;
-    const finalized = liveData.quartersLoaded?.length ? liveData.quartersLoaded.join(" + ") : "none";
-    const ip = liveData.inProgressQuarter && liveData.inProgressSource
-      ? ` + ${liveData.inProgressQuarter} odometer (in progress)`
-      : "";
-    return `Samsara Live · ${finalized}${ip} 2026 · ${liveData.truckCount} trucks`;
-  })();
+  // Static-only as of June 2026 (Samsara API retired — manual Vehicle Mileage
+  // xlsx drop, parsed via scripts/parse_samsara_mileage.py each week).
+  const activeTrucks   = TRUCK_MILES;
+  const activeLocal    = FLEET_LOCAL;
+  const activeRegional = FLEET_REGIONAL;
+  const activeTotal    = MILES;
+  const activeLabel    = `Samsara Vehicle Mileage · ${PERIOD} · ${TRUCK_MILES.length} trucks`;
 
   const sorted = useMemo(() => {
     const arr = [...activeTrucks];
@@ -877,21 +869,6 @@ function TrucksMileage() {
     <div>
       <div className="ptitle">Trucks + Mileage</div>
       <div className="psub">{activeLabel} · NV = Local · All other states = Regional</div>
-
-      {/* Data source toggle */}
-      <div style={{ display:"flex",gap:8,marginBottom:14 }}>
-        {[["live","⚡ Live Samsara"],["static","📁 Static Data"]].map(([id,lbl]) => (
-          <button key={id} onClick={() => setDataSource(id)} style={{
-            padding:"7px 16px",borderRadius:3,cursor:"pointer",
-            fontFamily:"var(--f2)",fontSize:12,fontWeight:700,letterSpacing:1,textTransform:"uppercase",
-            background:dataSource===id?"#3ddc84":"transparent",
-            color:dataSource===id?"#0b0d10":"var(--mu)",
-            border:`1px solid ${dataSource===id?"#3ddc84":"var(--bd)"}`,
-          }}>{lbl}</button>
-        ))}
-        {liveLoading && <span style={{ fontSize:11,color:"var(--mu)",alignSelf:"center" }}>Loading...</span>}
-        {liveError && <span style={{ fontSize:11,color:"#ff5252",alignSelf:"center" }}>{liveError}</span>}
-      </div>
 
       {/* Fleet summary KPIs */}
       <div className="g4" style={{ marginBottom:14 }}>
@@ -8782,7 +8759,7 @@ function Checklist() {
       { id: "w_carrier_pay", label: "Verify carrier pay / COGS for the week", sub: "Gross profit calculation" },
     ]},
     { section: "Trucks & Mileage", icon: "📍", color: "#4fc3f7", source: "Samsara", items: [
-      { id: "w_samsara", label: "Export Samsara GPS mileage report", sub: "Updates per-truck miles, local vs regional" },
+      { id: "w_samsara", label: "Drop Samsara Vehicle Mileage xlsx into incoming-freightiq/", sub: "Run scripts/parse_samsara_mileage.py to regenerate MILES + TRUCK_MILES" },
       { id: "w_verify_miles", label: "Verify MILES total matches Samsara", sub: "Used in CPM denominator — must be accurate" },
     ]},
     { section: "Driver Detail", icon: "🚛", color: "#f5c542", source: "Payroll + Fuel", items: [
@@ -9098,43 +9075,15 @@ export default function App() {
   const [equipmentData, setEquipmentData] = useState(null);
   const [equipmentError, setEquipmentError] = useState(null);
 
-  // Pull live Samsara fleet miles. Hydrate synchronously from localStorage
-  // (if recent) so returning visitors see correct CPM on first paint —
-  // then fetch fresh and refresh. Avoids the 5-10s cold-load window where
-  // the static baseline is shown and looks "wrong".
+  // Best-effort one-time cleanup of old Samsara live-mileage caches.
+  // The API was retired in June 2026; MILES is now refreshed by manually
+  // dropping the Samsara Vehicle Mileage xlsx and running the parser. Clear
+  // any stale cached value so returning visitors don't get an old number.
   useEffect(() => {
-    // Bump CACHE_KEY version to invalidate prior caches when changing semantics.
-    // v2 = 1h TTL (was 24h). Stale values lingered for a full day if Samsara
-    // returned different numbers between visits or if a browser failed the
-    // fetch silently.
-    const CACHE_KEY = "fiq_fleet_miles_v2";
-    const MAX_AGE_MS = 60 * 60 * 1000; // 1h
-    // Best-effort: clear the old key so users transitioning from v1 don't
-    // hydrate a stale 480K from yesterday's cache.
-    try { localStorage.removeItem("fiq_fleet_miles_v1"); } catch (e) {}
     try {
-      const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
-      if (cached && typeof cached.miles === "number" && cached.miles > 0
-          && (Date.now() - cached.ts) < MAX_AGE_MS) {
-        MILES = cached.miles;
-        if (typeof cached.trucks === "number" && cached.trucks > 0) TRUCK_COUNT = cached.trucks;
-        recomputeDerived();
-        setDataVersion(v => v + 1);
-      }
+      localStorage.removeItem("fiq_fleet_miles_v1");
+      localStorage.removeItem("fiq_fleet_miles_v2");
     } catch (e) { /* localStorage unavailable */ }
-
-    fetch("/api/samsara-miles?year=2026")
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d && typeof d.fleetTotal === "number" && d.fleetTotal > 0) {
-          MILES = d.fleetTotal;
-          if (typeof d.truckCount === "number" && d.truckCount > 0) TRUCK_COUNT = d.truckCount;
-          recomputeDerived();
-          setDataVersion(v => v + 1);
-          try { localStorage.setItem(CACHE_KEY, JSON.stringify({ miles: d.fleetTotal, trucks: d.truckCount, ts: Date.now() })); } catch (e) {}
-        }
-      })
-      .catch(e => console.warn("Samsara live fetch failed:", e?.message || e));
   }, []);
 
   useEffect(() => {

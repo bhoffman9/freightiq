@@ -15,7 +15,7 @@ Real-time fleet cost-per-mile dashboard with AI-powered data uploads and live AP
 - **Data Parsing:** PapaParse (CSV), SheetJS/XLSX (Excel)
 - **APIs:** 7 Vercel serverless functions (see below)
 - **AI Model:** claude-sonnet-4-20250514 (via api/ai.js proxy)
-- **Live Data:** QuickBooks P&L + Balance Sheet, Samsara IFTA mileage, Alvys TMS loads
+- **Live Data:** QuickBooks P&L + Balance Sheet, Alvys TMS loads (Samsara mileage retired June 2026 — now manual weekly xlsx drop)
 - **Database:** Supabase (shared with CFO Dashboard — OAuth tokens in `qbo_tokens` table, IFTA mileage in `ifta_mileage` table)
 - **Hosting:** Vercel (auto-deploys on push to GitHub main)
 - **Styling:** Inline CSS-in-JS, dark theme, IBM Plex Mono + Barlow Condensed fonts
@@ -56,7 +56,6 @@ Prefer installed MCPs over `curl`/WebFetch/manual HTTP. See `reference_mcp_serve
 | `SUPABASE_SERVICE_KEY` | Vercel dashboard | Supabase service role key (for qbo_tokens table) |
 | `QBO_CLIENT_ID` | Vercel dashboard | QuickBooks OAuth — Intuit app client ID |
 | `QBO_CLIENT_SECRET` | Vercel dashboard | QuickBooks OAuth — Intuit app client secret |
-| `SAMSARA_API_TOKEN` | Vercel dashboard | Samsara fleet API bearer token |
 
 ## Authentication
 
@@ -77,7 +76,6 @@ freightiq/
 │   ├── distance.js          # Vercel serverless — Google Maps Distance Matrix proxy
 │   ├── qbo-pnl.js           # Vercel serverless — QuickBooks P&L with period selector
 │   ├── qbo-bs.js            # Vercel serverless — QuickBooks Balance Sheet
-│   └── samsara-miles.js     # Vercel serverless — Samsara IFTA mileage per truck/state
 ├── src/
 │   ├── main.jsx            # React entry point
 │   └── App.jsx             # Entire dashboard (~8,500 lines, monolithic)
@@ -105,7 +103,6 @@ freightiq/
 | `GET /api/qbo-bs?company=X` | GET | QuickBooks Balance Sheet — returns assets, liabilities, equity with account detail |
 | `GET/POST/PATCH/DELETE /api/budget-whatifs` | * | Supabase CRUD for Budgeting tab what-if scenarios. POST body `{ label, amount, frequency: 'weekly'\|'monthly' }`. Backed by `freightiq_budget_whatifs` table — returns 503 `table-not-found` until migration is applied |
 | `GET /api/cash-flow` | GET | Pulls this week's scheduled payments from the budget-calendar's shared Supabase tables (`w_custom_recurring` + `w_one_time_expenses` + `w_checked_items` + `w_categories`) and shapes them as `{ week, windowStart, windowEnd, payments: [{day, vendor, amount, status, cat}] }`. Used by Cash Flow tab. Replaces the old GitHub raw fetch of `current-week.json`. Bank account balances are NOT tracked in the calendar tables — UI falls back to hardcoded `CASH_SNAPSHOTS` for that side |
-| `GET /api/samsara-miles?year=2026` | GET | Samsara fleet mileage. **Hybrid:** finalized quarters via IFTA endpoint (per-state breakdown), in-progress quarter via `/fleet/vehicles/stats/history` odometer delta (no per-state breakdown until IFTA closes). Returns `inProgressQuarter`, `inProgressSource` (e.g. `"obd:31 + gps:0"`), per-truck `iftaMiles` + `inProgressMiles`. Drives fleet `MILES` constant + CPM at runtime via `recomputeDerived()` + `dataVersion` remount |
 
 **Other apps consume these endpoints:**
 - Per Load CPM (`perload-cpm.vercel.app`) fetches `metrics.json` and `/api/alvys-loads`
@@ -119,12 +116,11 @@ freightiq/
   1. **Live APIs** (real-time, no file drops needed):
      - QuickBooks P&L via `/api/qbo-pnl` — CE & SF Combined + CE East, with period selector
      - QuickBooks Balance Sheet via `/api/qbo-bs` — CE East assets/liabilities/equity
-     - Samsara fleet mileage via `/api/samsara-miles` — finalized quarters use IFTA per-state breakdown; in-progress quarter uses `gpsOdometerMeters`/`obdOdometerMeters` delta from `/fleet/vehicles/stats/history` (per-state breakdown only refreshes when IFTA closes at quarter end). Live `fleetTotal` mutates the module-level `MILES` constant on App mount → drives every fleet CPM display via `recomputeDerived()` + `key={dataVersion}` remount. localStorage cache (`fiq_fleet_miles_v1`, 24h TTL) hydrates synchronously on mount so returning visitors see correct CPM on first paint
      - Alvys TMS loads via `/api/alvys-loads` — live load pipeline
      - AP Aging equipment data via EquipmentContext
-  2. **Hardcoded constants** (updated from file drops — EFS fuel, payroll):
+  2. **Hardcoded constants** (updated from file drops — EFS fuel, payroll, Samsara mileage):
      - `PAYROLL[]`, `FUEL{}` — updated weekly from SF/J&A payroll XLS + EFS PDF
-     - `TRUCK_MILES[]` — static fallback when Samsara live unavailable
+     - `TRUCK_MILES[]` + `MILES` + `FLEET_LOCAL` + `FLEET_REGIONAL` — updated weekly from Samsara Vehicle Mileage xlsx via `scripts/parse_samsara_mileage.py` (Samsara API retired June 2026)
      - `INCOME_2026` — static fallback for weekly trend / YoY views
      - `CE_EAST{}` — static fallback for Owner Payback calculator
   3. User CSV/XLSX uploads parsed client-side (PapaParse + SheetJS)
@@ -139,7 +135,7 @@ freightiq/
 | Per Load CPM | `PerLoadCPM()` | Booking simulator, fleet cost cards, live Alvys loads |
 | Revenue | `RevenueDashboard()` | Revenue by company (CE/SF/DI), Alvys + Ascend data |
 | Driver Detail | `DriverDetail()` | Per-driver labor + fuel + combined CPM |
-| Trucks & Mileage | `TrucksMileage()` | Samsara GPS data, per-truck miles, state breakdown |
+| Trucks & Mileage | `TrucksMileage()` | Per-truck miles + state breakdown from Samsara Vehicle Mileage xlsx (static) |
 | Fuel Analysis | `FuelAnalysis()` | Per-driver fuel spend, avg $/gal |
 | Trucks | `TrucksTab()` | TEC, Penske, TCI lease details |
 | Trailers | `TrailerFleet()` | McKinney, Xtra, Utility trailer fleet |
@@ -254,19 +250,18 @@ Module-level `let` constants (`MILES`, `LABOR`, `FUEL_TOT`, `BASIC_CPM_V`, `ALLI
 
 Used by:
 - The Upload tab (constants pasted from QB exports)
-- App-mount Samsara fetch (`MILES` from `/api/samsara-miles` `fleetTotal`, see API table)
 
 If you're adding a new live data source that needs to drive CPM or other derived displays, follow this pattern instead of trying to wire prop drilling or context — the existing remount key already does the work.
 
-**Hydration cache:** when fetching live data on App mount, store the last good value in localStorage with a TTL and hydrate synchronously on next mount before the fresh fetch fires. Returning visitors then see correct values on first paint instead of the static baseline. See `fiq_fleet_miles_v1` in App.jsx for the reference implementation.
+(Historical: the Samsara live-fetch pattern + `fiq_fleet_miles_v1`/`v2` localStorage cache was retired in June 2026 when the API was killed; the App-mount cleanup-only effect still clears those stale keys for returning visitors.)
 
 ## Key Data Constants (hardcoded in App.jsx)
 
 - `PAYROLL[]` — 42 drivers with hours/cost (Memolo Dominick still 0; Kelly Kirk D / Butler Richard / Negrete Arturo / Whipple Wallace 57403 / Williams Will 27405 etc. *inactive markings) thru Apr 26, 2026. **Don't write "41 active drivers" in the LABOR comment — extract-metrics.js regex `(\d+)\s*drivers` needs the digit adjacent to "drivers" or `metrics.json` falls back to 0 (regression fixed week 16).**
 - `FUEL{}` — per-driver fuel spend + gallons (EFS only, thru Apr 26)
-- `MONTHLY_MILES[]` — Samsara GPS: per-month, per-truck local vs regional
-- `TRUCK_MILES[]` — per-truck per-state mileage static fallback (live via /api/samsara-miles supersedes — driven by IFTA + odometer delta, see API table)
-- `MILES` — fleet total miles **mutated at runtime** on App mount from `/api/samsara-miles` `fleetTotal`. Static baseline is the most recent live snapshot (~454K) so the pre-fetch frame is within 0.05% of truth. Don't extrapolate this manually anymore — set the static baseline to whatever Samsara returned at last build
+- `MONTHLY_MILES[]` — Samsara: per-month, per-truck local vs regional (currently Jan-Mar 2026 historical; no longer auto-refreshed — Samsara monthly XLS not provided in weekly drops)
+- `TRUCK_MILES[]` — per-truck per-state mileage from Samsara Vehicle Mileage xlsx. Run `python scripts/parse_samsara_mileage.py` after dropping a new xlsx to regenerate
+- `MILES`, `FLEET_LOCAL`, `FLEET_REGIONAL`, `TRUCK_COUNT` — fleet totals from the same Samsara Vehicle Mileage xlsx. Static now — no live API. Update via the parser script each week
 - `TCI_LEASING{}`, `PENSKE{}`, `TEC_EQUIPMENT{}` — truck lease data
 - `TRAILERS_INV{}`, `XTRA_LEASE{}` — trailer inventory/leases
 - `INCOME_2026`, `INCOME_2025` — weekly/monthly revenue + margins
@@ -326,7 +321,7 @@ If you're adding a new live data source that needs to drive CPM or other derived
 - **URL:** https://freightiq-nine-two.vercel.app (PERMANENT)
 - **GitHub:** github.com/bhoffman9/freightiq (private)
 - **Config:** `vercel.json` — framework: vite, buildCommand: npm run build, output: dist
-- **Serverless:** `api/ai.js`, `api/alvys-loads.js`, `api/distance.js`, `api/qbo-pnl.js`, `api/qbo-bs.js`, `api/samsara-miles.js` auto-deployed
+- **Serverless:** `api/ai.js`, `api/alvys-loads.js`, `api/distance.js`, `api/qbo-pnl.js`, `api/qbo-bs.js` auto-deployed
 
 ## Weekly Update Workflow
 
@@ -345,7 +340,7 @@ For the per-week driver/fuel deltas in the new entry, subtract the PAYROLL/FUEL 
 ### Automated (live feeds — no file drops needed):
 - **CE & SF Combined P&L** — live from QuickBooks via `/api/qbo-pnl` (Income tab → Live QB)
 - **CE East P&L + Balance Sheet** — live from QuickBooks (CE East tab → Live QB + Owner Payback)
-- **Samsara mileage** — live from Samsara IFTA API via `/api/samsara-miles` (Trucks & Mileage tab)
+- **Samsara mileage** — retired June 2026. Drop the **Samsara Vehicle Mileage xlsx** into `incoming-freightiq/` and run `python scripts/parse_samsara_mileage.py` to regenerate `MILES` + `TRUCK_MILES` + `FLEET_LOCAL`/`FLEET_REGIONAL` constants (Trucks & Mileage tab)
 - **Alvys TMS loads** — live via `/api/alvys-loads` (Revenue tab)
 - **AP Aging equipment** — live via `https://ap-aging-v4.vercel.app/api/equipment` (Trucks + Trailers tabs). Cross-origin fetch — relies on global CORS in `ap-aging/next.config.js`. If Trucks/Trailers go blank, check the red error banner in the tab footer and the AP Aging deploy status.
 
@@ -384,7 +379,7 @@ Touch these (real data each week):
 - `LABOR` / `TOTAL_HRS` ← SF drivers-only from `_summary.txt`
 - `FUEL_TOT` / `GALLONS` ← EFS total from `_summary.txt`
 - `INS_TOT` / `TRUCK_TOT` / `TRAILER_TOT` / `STORAGE` / `TRUCK_MAINT` / `TRAIL_MAINT` / `UNIFORMS` ← CE&SF category totals
-- `MILES` ← bump to whatever `/api/samsara-miles` returns for `fleetTotal` at update time (it'll be live-mutated on every page load too, but a stale baseline causes a wrong-CPM flicker on cold loads — keep within 1% of live)
+- `MILES`, `FLEET_LOCAL`, `FLEET_REGIONAL`, `TRUCK_COUNT`, `TRUCK_MILES[]` ← regenerate by running `python scripts/parse_samsara_mileage.py` after dropping the Samsara Vehicle Mileage xlsx into `incoming-freightiq/`. Paste the emitted block into the SAMSARA MILEAGE DATA section of App.jsx
 - `PAYROLL[]` ← paste per-driver rows from `_summary.txt`
 - `FUEL{}` ← match EFS cards to drivers; handle splits for shared cards
 - `INCOME_2026` top-level totals + `weeks[]` (append new week) + `months[]` (replace partial month with full + add new partial)
@@ -446,7 +441,7 @@ Tag any partial-month row with an inline `// partial — May 1-3 only` comment s
     # Hardcoded total inside a DETAIL[] row (should be live constants like LABOR, TRUCK_TOT, etc.)
     grep -nE 'total:\s*[0-9]+\.[0-9]+' src/App.jsx | head -5
     ```
-    Any hits are hand-typed period strings or live-data divergences that should either be derived or deliberately annotated (e.g. inline `// partial — May 1-3 only` comments are fine; `"72-day period"` strings are not). MILES_EST is fuel-only (avg $/gal calc) — never use it for any CPM display; CPM always divides by `MILES` (live Samsara).
+    Any hits are hand-typed period strings or live-data divergences that should either be derived or deliberately annotated (e.g. inline `// partial — May 1-3 only` comments are fine; `"72-day period"` strings are not). MILES_EST is fuel-only (avg $/gal calc) — never use it for any CPM display; CPM always divides by `MILES` (Samsara Vehicle Mileage xlsx).
 5. **No new entities silently absorbed.** New EFS card numbers, new vendor lines in the QB transaction report, new drivers in the payroll XLS — all must be either mapped in the appropriate constant OR explicitly noted in the commit message as "excluded from per-driver mapping" (e.g. card 17408 = Andres / warehouse).
 6. **No stale partial-month rows.** `INCOME_2026.months[]` and `MONTHLY_REVENUE` last entries should either be a full closed month OR a partial flagged with an inline `// partial — May 1-3 only` comment. A closed prior month showing < 50% of the typical run is a stale row.
 7. **Cross-repo fixes are pushed, not just local.** If a fix touches a sibling repo (e.g. `ap-aging` for CORS), `git status` in that repo to confirm clean. The nightly stale-repos cron (`~/Desktop/_stale-repos.md`) catches drift but should never be the first time you discover an uncommitted fix.
@@ -457,7 +452,7 @@ Tag any partial-month row with an inline `// partial — May 1-3 only` comment s
 
 Ben paying attention to dashboard details is the LAST line of defense, not the first. Every time he spots a mismatch and has to point it out, that's a process failure. These are the classes of bugs that have bitten before — actively look for them before declaring weekly done:
 
-**A. Numerator/denominator mismatches in CPM displays.** Every CPM (cost-per-mile) tile on every tab must divide by `MILES` (live Samsara), never `MILES_EST` (gallons × 6.5 — fuel-price math only). If you see two CPM panels showing the same metric with different values, that's the bug. Run the `/MILES_EST` grep above before commit; the only legitimate hit is the avg $/gal display.
+**A. Numerator/denominator mismatches in CPM displays.** Every CPM (cost-per-mile) tile on every tab must divide by `MILES` (Samsara Vehicle Mileage report), never `MILES_EST` (gallons × 6.5 — fuel-price math only). If you see two CPM panels showing the same metric with different values, that's the bug. Run the `/MILES_EST` grep above before commit; the only legitimate hit is the avg $/gal display.
 
 **B. Hardcoded period strings outside `PERIOD` / `PERIOD_DAYS` / `PERIOD_END`.** Subtitles, tab headers, sub-view labels, modal `thru:` fields — none of these should contain a hand-typed month/quarter/date. If a label needs to reflect "current period," derive it from `PERIOD` so it auto-rolls. Examples that bit us:
 - `"Feb–Mar 2026"` baked into Trucks + Trailers subtitles (caught May 17)

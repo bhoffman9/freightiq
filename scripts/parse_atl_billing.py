@@ -38,46 +38,91 @@ NAME_MAP = {
 
 
 def find_billing_file():
-    # Accept either old name (2026-Atlanta Billing.xlsx) or new short name (ATL.xlsx)
-    patterns = ["*Atlanta Billing*.xlsx", "ATL.xlsx", "*ATL*.xlsx"]
+    # Accept either old name (2026-Atlanta Billing.xlsx), short name (ATL.xlsx),
+    # or new naming ("ATLANTA 2026 (N).xlsx"). Pick the most recent match.
+    patterns = ["*Atlanta Billing*.xlsx", "ATL.xlsx", "*ATL*.xlsx", "ATLANTA*.xlsx"]
     matches = []
     for pat in patterns:
         matches += glob.glob(os.path.join(INCOMING, pat))
     matches = list(set(matches))
     if not matches:
-        print(f"No ATL billing XLSX in {INCOMING}/ (looked for 'Atlanta Billing' or 'ATL.xlsx')")
+        print(f"No ATL billing XLSX in {INCOMING}/ (looked for 'Atlanta Billing', 'ATL.xlsx', or 'ATLANTA*.xlsx')")
         sys.exit(1)
     return max(matches, key=os.path.getmtime)
 
 
+def pick_sheet(wb):
+    """Prefer 'ALL LOADS THRU' consolidated sheet (new format); fall back to 'as of <date>' (old format); else sheet 0."""
+    for sn in wb.sheetnames:
+        if sn.upper().startswith("ALL LOADS"):
+            return wb[sn]
+    for sn in wb.sheetnames:
+        if sn.lower().startswith("as of"):
+            return wb[sn]
+    return wb[wb.sheetnames[0]]
+
+
+def build_col_index(header_row):
+    """Map normalized header → column index. Handles trailing spaces, casing, and the
+    'Load #' vs 'Load $' variants. Returns dict with keys: driver, invoice, carrier, assigned."""
+    idx = {}
+    for i, h in enumerate(header_row):
+        if not h:
+            continue
+        s = str(h).strip().lower().rstrip("#$").strip()
+        if s == "driver":                   idx["driver"]   = i
+        elif s in ("invoice amount", "invoice"): idx["invoice"] = i
+        elif s in ("carrier amount",):      idx["carrier"]  = i
+        elif s == "carrier":
+            # The "Carrier" column (just the name) sits BEFORE "Carrier Amount".
+            # We want the amount, not the name — don't overwrite if already set.
+            idx.setdefault("_carrier_name", i)
+        elif s in ("assigned", "office"):   idx["assigned"] = i
+    # If we still have no "carrier" amount, we couldn't find it — caller will error.
+    return idx
+
+
 def parse(path):
     wb = openpyxl.load_workbook(path, data_only=True)
-    sh = wb[wb.sheetnames[0]]
-    # Extract "as of <date>" from sheet name like "as of 5-17-26"
-    as_of_match = re.search(r"as of (\d+)-(\d+)-(\d+)", sh.title)
+    sh = pick_sheet(wb)
+
+    # Extract "as of <date>" from sheet name or fall back to file mtime
+    as_of_match = re.search(r"(?:as of|THRU)\s*(\d+)[-./](\d+)(?:[-./](\d+))?", sh.title, re.IGNORECASE)
     if as_of_match:
         m, d, y = as_of_match.groups()
         months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-        as_of = f"{months[int(m)]} {int(d)}, 20{y}"
+        year = f"20{y}" if y else "2026"
+        as_of = f"{months[int(m)]} {int(d)}, {year}"
     else:
-        # Fall back to mtime of the file
         import datetime
         mtime = datetime.datetime.fromtimestamp(os.path.getmtime(path))
         as_of = mtime.strftime("%b %-d, %Y") if os.name != "nt" else mtime.strftime("%b %#d, %Y")
 
     rows = list(sh.iter_rows(values_only=True))
-    # Header row is row 0
-    # Columns: Driver | Load # | REF # | PO # | Customer | Invoice Amount | Carrier | Carrier Amount | OFFICE | Notes
+    cols = build_col_index(rows[0])
+    required = {"driver", "invoice", "carrier"}
+    missing = required - cols.keys()
+    if missing:
+        print(f"ERROR: required columns missing from sheet '{sh.title}': {missing}")
+        print(f"Headers found: {rows[0]}")
+        sys.exit(1)
 
     atl_rows = []
     assigned_counts = defaultdict(int)
     for r in rows[1:]:
-        if not r or not r[0]: continue
-        assigned = (str(r[8]).strip().upper() if r[8] else "")
+        if not r:
+            continue
+        driver_val = r[cols["driver"]] if cols["driver"] < len(r) else None
+        if not driver_val:
+            continue
+        assigned_idx = cols.get("assigned")
+        assigned = (str(r[assigned_idx]).strip().upper() if assigned_idx is not None and assigned_idx < len(r) and r[assigned_idx] else "")
         assigned_counts[assigned] += 1
-        # Every load in this sheet counts as ATL revenue regardless of
-        # OFFICE / Assigned column (which only reflects QBO booking routing).
-        atl_rows.append(r)
+        # Repackage into a fixed-position tuple so downstream code stays simple:
+        # (driver, _, _, _, _, invoice_amount, _, carrier_amount, assigned)
+        invoice = r[cols["invoice"]] if cols["invoice"] < len(r) else None
+        carrier = r[cols["carrier"]] if cols["carrier"] < len(r) else None
+        atl_rows.append((driver_val, None, None, None, None, invoice, None, carrier, assigned))
 
     # Aggregate by FULL NAME (after NAME_MAP) so casing/spelling variants roll up
     by_full = defaultdict(lambda: {"count": 0, "revenue": 0.0, "carrier": 0.0, "shorts": set()})
