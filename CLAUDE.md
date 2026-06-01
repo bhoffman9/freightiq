@@ -340,14 +340,8 @@ For the per-week driver/fuel deltas in the new entry, subtract the PAYROLL/FUEL 
 ### Automated (live feeds — no file drops needed):
 - **CE & SF Combined P&L** — live from QuickBooks via `/api/qbo-pnl` (Income tab → Live QB)
 - **CE East P&L + Balance Sheet** — live from QuickBooks (CE East tab → Live QB + Owner Payback)
-- **Samsara mileage** — retired June 2026. Drop the **Samsara Vehicle Mileage xlsx** into `incoming-freightiq/` and run `python scripts/parse_samsara_mileage.py` to regenerate `MILES` + `TRUCK_MILES` + `FLEET_LOCAL`/`FLEET_REGIONAL` constants (Trucks & Mileage tab)
 - **Alvys TMS loads** — live via `/api/alvys-loads` (Revenue tab)
 - **AP Aging equipment** — live via `https://ap-aging-v4.vercel.app/api/equipment` (Trucks + Trailers tabs). Cross-origin fetch — relies on global CORS in `ap-aging/next.config.js`. If Trucks/Trailers go blank, check the red error banner in the tab footer and the AP Aging deploy status.
-
-### Atlanta billing (one extra file, dropped alongside the rest)
-- **`2026-Atlanta Billing.xlsx`** — Atlanta load-level revenue spreadsheet, sheet name `as of <date>`. Columns: Driver · Load $ · REF # · PO # · Customer · Invoice Amount · Carrier · Carrier Amount · Assigned · Notes. Only rows where **Assigned = `ATL`** count as ATL revenue; `ASSIGNED TO CORP` (19 in week 1) and `ASSIGNED TO CEE` (2 in week 1) are ATL drivers running freight billed under SF/CEE, NOT ATL revenue.
-
-Parse it with `python scripts/parse_atl_billing.py` — outputs the `ATL_BILLING` constant block to paste into `src/App.jsx` (replace existing). First-name → PAYROLL name mapping is in the script's `NAME_MAP` dict; extend when new ATL drivers appear in the sheet.
 
 ### Manual file drops (into `Desktop/Freight/freightiq/incoming-freightiq/`):
 1. **EFS Transaction Report PDF** — per-driver fuel (no API available).
@@ -357,7 +351,10 @@ Parse it with `python scripts/parse_atl_billing.py` — outputs the `ATL_BILLING
 4. **CE & SF Transaction Report** (QuickBooks XLSX) — line-item detail for category totals (Fuel, Insurance, Truck/Trailer Rentals, Storage, Maintenance, Uniforms).
 5. **CE & SF Profit and Loss — Weekly** (QuickBooks XLSX with column headers like `Apr 27 - May 3 2026`) — feeds `INCOME_2026.weeks[]`.
 6. **CE & SF Profit and Loss — Monthly** (QuickBooks XLSX with column headers like `Jan 2026`, `Feb 2026`, … `May 1-3 2026`) — feeds `INCOME_2026.months[]` and `MONTHLY_REVENUE`.
-7. **Contractor payment detail** — usually given in chat (e.g. "$2,800 Jon Marcus, $2,150 Mellody, …"). Mention any car payments, commission, or one-offs explicitly.
+7. **Samsara Vehicle Mileage** (XLSX, e.g. `Vehicle Mileage - Jan 1, 12 AM - May 30, 11_59 PM.xlsx`) — per-truck per-state mileage. Columns: `Vehicle | Jurisdiction | Distance (mi) | Toll Distance (mi)`. Run `python scripts/parse_samsara_mileage.py` to regenerate `MILES` + `TRUCK_COUNT` + `FLEET_LOCAL` + `FLEET_REGIONAL` + `TRUCK_MILES[]`. Samsara API retired June 2026 — this xlsx is now the only mileage source.
+8. **Atlanta Billing** (XLSX, e.g. `ATLANTA 2026 (N).xlsx`) — Atlanta load-level revenue. Multi-sheet workbook: a consolidated `ALL LOADS THRU <MM.DD>` sheet plus per-day breakouts. Parser picks the consolidated sheet automatically. Run `python scripts/parse_atl_billing.py` — outputs the `ATL_BILLING` constant block to paste into `src/App.jsx`. First-name → PAYROLL name mapping is in the script's `NAME_MAP` dict; extend when new ATL drivers appear. Per Ben every load in the sheet counts as ATL revenue regardless of `Assigned` / `OFFICE` column values (which only reflect QBO booking routing).
+   - Spreadsheet format has changed twice already — parser is defensive (picks sheet by name prefix, builds column index from header row). If the format changes again, update `pick_sheet()` and `build_col_index()` in the parser rather than hardcoding positions.
+9. **Contractor payment detail** — usually given in chat (e.g. "$2,800 Jon Marcus, $2,150 Mellody, …"). Mention any car payments, commission, or one-offs explicitly.
 
 ### Weekly parse — one command
 ```bash
