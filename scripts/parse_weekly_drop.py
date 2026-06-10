@@ -34,6 +34,7 @@ SF_OFFICE = {
     "Fissehaye Biniyam G", "Gonzalez Gabriel", "Grosser Scot E",
     "Naruszewicz Bartosz", "Rivera Cecilia I", "Youngblood Nathan",
     "Kennon Jessica S",  # ATL office worker, terminated May 2026
+    "Mahan Tasha",       # office/warehouse, started Jun 2026 (no EFS card)
 }
 
 
