@@ -153,7 +153,7 @@ let FUEL_TOT  = 492903.81;  // EFS only — thru Jun 5 (no Mudflap this period)
 let GALLONS   = 90374.07;   // EFS 90,374.07
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
 let MILES     = 602494.3;     // Samsara Vehicle Mileage report, Jan 1 – Jun 6, 2026 (43 trucks; updated from manual xlsx drop via scripts/parse_samsara_mileage.py)
-let TRUCK_COUNT = 43;       // Active fleet trucks (from Vehicle Mileage report)
+let TRUCK_COUNT = 30;       // ACTIVE fleet trucks per Ben's truck-count sheet (16 TEC + 5 TCI + 2 Penske + 2 Ryder + 5 Idealease). NOTE: TRUCK_MILES has 43 entries — the extra 13 ran earlier in 2026 then departed; their cumulative miles stay (feed MILES + CPM) but they don't count toward the active fleet.
 let TOTAL_HRS  = 30955.47;  // Payroll hours — driver-only (office excluded), thru Jun 5
 let INS_WEEK  = 6375;
 let INS_TOT    = 148599.16;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru Jun 8
@@ -413,6 +413,9 @@ const TRUCK_TYPE = {
   // New trucks (2026)
   "419":"Sleeper","462":"Sleeper","463":"Sleeper","496":"Sleeper","502":"Sleeper",
   "510":"Sleeper","498":"Sleeper","869":"Sleeper","402":"Sleeper",
+  "508":"Sleeper","870":"Sleeper",
+  // Idealease (INTL) trucks — added Jun 2026
+  "669":"Sleeper","673":"Sleeper","674":"Sleeper","685":"Sleeper","686":"Sleeper",
   // 589 returned 1/14/2026 — removed from active fleet
 };
 
@@ -437,34 +440,34 @@ let TRUCK_MILES = [
   { truck:"127", local:2515.0, regional:16372.0, miles:18887.0, states:{"CA":15177.1,"NV":2515.0,"UT":623.5,"AZ":571.4} },
   { truck:"498", local:1984.7, regional:16114.8, miles:18099.6, states:{"CA":14474.6,"NV":1984.7,"AZ":1640.2} },
   { truck:"402", local:2215.3, regional:15260.4, miles:17475.7, states:{"CA":14201.6,"NV":2215.3,"AZ":1058.8} },
-  { truck:"728", local:2922.7, regional:14438.8, miles:17361.5, states:{"CA":11505.6,"AZ":2933.2,"NV":2922.7} },
-  { truck:"738", local:2516.6, regional:14476.5, miles:16993.1, states:{"CA":13218.9,"NV":2516.6,"AZ":638.1,"UT":619.4} },
-  { truck:"731", local:2991.3, regional:12734.9, miles:15726.2, states:{"CA":11120.1,"NV":2991.3,"AZ":1614.8} },
+  { truck:"728", local:2922.7, regional:14438.8, miles:17361.5, states:{"CA":11505.6,"AZ":2933.2,"NV":2922.7}, active:false },
+  { truck:"738", local:2516.6, regional:14476.5, miles:16993.1, states:{"CA":13218.9,"NV":2516.6,"AZ":638.1,"UT":619.4}, active:false },
+  { truck:"731", local:2991.3, regional:12734.9, miles:15726.2, states:{"CA":11120.1,"NV":2991.3,"AZ":1614.8}, active:false },
   { truck:"508", local:2119.3, regional:13366.4, miles:15485.7, states:{"CA":11559.9,"NV":2119.3,"AZ":1149.7,"UT":656.8} },
   { truck:"573", local:8001.7, regional:6595.0, miles:14596.8, states:{"NV":8001.7,"CA":6595.0} },
   { truck:"020", local:11377.8, regional:2686.5, miles:14064.3, states:{"NV":11377.8,"CA":2686.5} },
   { truck:"870", local:1719.5, regional:11254.2, miles:12973.7, states:{"CA":9355.3,"NV":1719.5,"UT":1248.2,"AZ":650.7} },
   { truck:"353", local:3999.4, regional:8275.8, miles:12275.2, states:{"CA":8275.8,"NV":3999.4} },
-  { truck:"730", local:1946.8, regional:10041.7, miles:11988.5, states:{"CA":10041.7,"NV":1946.8} },
-  { truck:"463", local:1111.7, regional:10683.1, miles:11794.8, states:{"CA":7323.7,"TX":1311.0,"AZ":1297.9,"NV":1111.7,"NM":750.6} },
+  { truck:"730", local:1946.8, regional:10041.7, miles:11988.5, states:{"CA":10041.7,"NV":1946.8}, active:false },
+  { truck:"463", local:1111.7, regional:10683.1, miles:11794.8, states:{"CA":7323.7,"TX":1311.0,"AZ":1297.9,"NV":1111.7,"NM":750.6}, active:false },
   { truck:"440", local:6500.7, regional:4735.2, miles:11235.9, states:{"NV":6500.7,"CA":4735.2} },
   { truck:"569", local:6467.2, regional:4648.2, miles:11115.4, states:{"NV":6467.2,"CA":4648.2} },
-  { truck:"149", local:2047.3, regional:8712.3, miles:10759.6, states:{"CA":8712.3,"NV":2047.3} },
-  { truck:"476", local:2831.8, regional:6843.0, miles:9674.8, states:{"CA":6270.1,"NV":2831.8,"AZ":572.9} },
+  { truck:"149", local:2047.3, regional:8712.3, miles:10759.6, states:{"CA":8712.3,"NV":2047.3}, active:false },
+  { truck:"476", local:2831.8, regional:6843.0, miles:9674.8, states:{"CA":6270.1,"NV":2831.8,"AZ":572.9}, active:false },
   { truck:"510", local:964.1, regional:8406.4, miles:9370.5, states:{"CA":8406.4,"NV":964.1} },
-  { truck:"937", local:168.4, regional:8775.7, miles:8944.0, states:{"TX":1691.9,"CA":1176.2,"AZ":959.1,"AL":649.9,"LA":584.1,"NM":542.5,"MS":472.8,"OK":455.8,"GA":451.8,"MO":297.6,"MD":294.4,"VA":276.9,"OH":227.5,"NV":168.4,"IL":160.9,"IN":159.9,"NC":127.5,"SC":107.9,"WV":83.9,"PA":55.2} },
+  { truck:"937", local:168.4, regional:8775.7, miles:8944.0, states:{"TX":1691.9,"CA":1176.2,"AZ":959.1,"AL":649.9,"LA":584.1,"NM":542.5,"MS":472.8,"OK":455.8,"GA":451.8,"MO":297.6,"MD":294.4,"VA":276.9,"OH":227.5,"NV":168.4,"IL":160.9,"IN":159.9,"NC":127.5,"SC":107.9,"WV":83.9,"PA":55.2}, active:false },
   { truck:"570", local:6510.7, regional:2184.3, miles:8695.0, states:{"NV":6510.7,"CA":2184.3} },
-  { truck:"539", local:1031.8, regional:7565.5, miles:8597.4, states:{"CA":2853.6,"NV":1031.8,"AZ":934.4,"GA":700.1,"OK":669.3,"NM":635.8,"AR":575.8,"AL":384.9,"TX":355.3,"MS":264.8,"SC":165.3,"TN":26.2} },
+  { truck:"539", local:1031.8, regional:7565.5, miles:8597.4, states:{"CA":2853.6,"NV":1031.8,"AZ":934.4,"GA":700.1,"OK":669.3,"NM":635.8,"AR":575.8,"AL":384.9,"TX":355.3,"MS":264.8,"SC":165.3,"TN":26.2}, active:false },
   { truck:"674", local:0.0, regional:8438.9, miles:8438.9, states:{"GA":2621.2,"TN":1563.0,"IN":954.4,"FL":920.4,"VA":578.7,"KY":558.7,"NJ":240.2,"MD":236.4,"NC":236.0,"MI":168.7,"IL":149.7,"SC":108.6,"NY":36.9,"DC":33.0,"DE":32.9} },
   { truck:"685", local:0.0, regional:7105.6, miles:7105.6, states:{"GA":3124.4,"TN":1364.0,"AL":1171.6,"SC":451.6,"MS":423.8,"NC":390.3,"LA":180.0} },
   { truck:"686", local:0.0, regional:6559.1, miles:6559.1, states:{"GA":1977.2,"TN":1629.4,"VA":1319.0,"MD":403.5,"FL":397.4,"NJ":244.6,"NC":236.9,"PA":166.4,"SC":107.0,"WV":26.1,"NY":19.9,"DE":19.5,"DC":12.2} },
   { truck:"669", local:0.0, regional:6514.2, miles:6514.2, states:{"TN":1803.1,"GA":1797.3,"IL":579.1,"VA":576.0,"NC":372.3,"IN":282.6,"SC":252.1,"MD":248.5,"KY":241.9,"NJ":226.2,"WI":68.4,"NY":33.7,"DE":32.9} },
   { truck:"673", local:0.0, regional:6005.7, miles:6005.7, states:{"GA":2747.9,"TN":1330.6,"IN":556.3,"AL":547.3,"KY":278.2,"MS":156.5,"SC":156.0,"LA":121.9,"IL":110.8} },
-  { truck:"676", local:4109.6, regional:1566.8, miles:5676.4, states:{"NV":4109.6,"CA":1566.8} },
-  { truck:"503", local:350.4, regional:2509.3, miles:2859.7, states:{"AZ":1325.1,"CA":1184.2,"NV":350.4} },
+  { truck:"676", local:4109.6, regional:1566.8, miles:5676.4, states:{"NV":4109.6,"CA":1566.8}, active:false },
+  { truck:"503", local:350.4, regional:2509.3, miles:2859.7, states:{"AZ":1325.1,"CA":1184.2,"NV":350.4}, active:false },
   { truck:"189", local:801.6, regional:1154.9, miles:1956.5, states:{"CA":1154.9,"NV":801.6} },
-  { truck:"462", local:99.8, regional:1081.1, miles:1180.9, states:{"CA":1081.1,"NV":99.8} },
-  { truck:"589", local:985.5, regional:0.0, miles:985.5, states:{"NV":985.5} },
+  { truck:"462", local:99.8, regional:1081.1, miles:1180.9, states:{"CA":1081.1,"NV":99.8}, active:false },
+  { truck:"589", local:985.5, regional:0.0, miles:985.5, states:{"NV":985.5}, active:false },
 ];
 let FLEET_LOCAL    = 122701.3;   // NV miles
 let FLEET_REGIONAL = 479793.0;   // non-NV miles
@@ -846,7 +849,9 @@ function TrucksMileage() {
   const activeLocal    = FLEET_LOCAL;
   const activeRegional = FLEET_REGIONAL;
   const activeTotal    = MILES;
-  const activeLabel    = `Samsara Vehicle Mileage · ${PERIOD} · ${TRUCK_MILES.length} trucks`;
+  const activeFleetCount = TRUCK_MILES.filter(t => t.active !== false).length; // 30 currently in service
+  const loggedCount      = TRUCK_MILES.length;                                  // 43 that ran YTD (incl departed)
+  const activeLabel    = `Samsara Vehicle Mileage · ${PERIOD} · ${activeFleetCount} active (${loggedCount} ran YTD)`;
 
   const sorted = useMemo(() => {
     const arr = [...activeTrucks];
@@ -869,7 +874,7 @@ function TrucksMileage() {
 
   const localPct    = activeLocal    / activeTotal * 100;
   const regionalPct = activeRegional / activeTotal * 100;
-  const truckCount  = activeTrucks.length;
+  const truckCount  = loggedCount;  // avg-per-truck divides by trucks that LOGGED miles (43), since the cumulative total includes departed trucks' miles
 
   return (
     <div>
@@ -881,7 +886,7 @@ function TrucksMileage() {
         <div className="kpi">
           <div className="klbl">Total Fleet Miles</div>
           <div className="kval" style={{ color:"#4fc3f7" }}>{fn(activeTotal,0)}</div>
-          <div className="ksub">{truckCount} trucks</div>
+          <div className="ksub">{activeFleetCount} active · {loggedCount} ran YTD</div>
         </div>
         <div className="kpi">
           <div className="klbl">Local Miles (NV)</div>
