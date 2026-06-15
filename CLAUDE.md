@@ -444,7 +444,8 @@ Tag any partial-month row with an inline `// partial — May 1-3 only` comment s
 6. **No stale partial-month rows.** `INCOME_2026.months[]` and `MONTHLY_REVENUE` last entries should either be a full closed month OR a partial flagged with an inline `// partial — May 1-3 only` comment. A closed prior month showing < 50% of the typical run is a stale row.
 7. **Cross-repo fixes are pushed, not just local.** If a fix touches a sibling repo (e.g. `ap-aging` for CORS), `git status` in that repo to confirm clean. The nightly stale-repos cron (`~/Desktop/_stale-repos.md`) catches drift but should never be the first time you discover an uncommitted fix.
 8. **Downstream consumers still work.** CFO Dashboard fetches `metrics.json` + `payroll-summary.json`; Per Load CPM fetches `metrics.json` + `/api/alvys-loads`. Visit each at least once after the deploy lands to confirm they hydrated with new numbers.
-9. **Clear `incoming-freightiq/`** only AFTER all of the above pass.
+9. **Report ATL weekly charges to Ben (ALWAYS, every weekly drop).** After the update lands, give Ben the total ATL operating charges for the week just added to `ATL_WEEKLY_LOG`: **driverPay + fuelAmt + contractorPay** (agents excluded — separate bucket). Show the 3-line breakdown + the week total, plus the running cumulative from `atlSum()`. This is a standing request (Ben, Jun 15 2026) — don't wait to be asked. See `feedback_atl_weekly_charges` memory.
+10. **Clear `incoming-freightiq/`** only AFTER all of the above pass.
 
 ### Drift patterns Ben should NEVER have to catch (you catch them first)
 
