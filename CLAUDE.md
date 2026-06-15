@@ -257,8 +257,8 @@ If you're adding a new live data source that needs to drive CPM or other derived
 
 ## Key Data Constants (hardcoded in App.jsx)
 
-- `PAYROLL[]` — 42 drivers with hours/cost (Memolo Dominick still 0; Kelly Kirk D / Butler Richard / Negrete Arturo / Whipple Wallace 57403 / Williams Will 27405 etc. *inactive markings) thru Apr 26, 2026. **Don't write "41 active drivers" in the LABOR comment — extract-metrics.js regex `(\d+)\s*drivers` needs the digit adjacent to "drivers" or `metrics.json` falls back to 0 (regression fixed week 16).**
-- `FUEL{}` — per-driver fuel spend + gallons (EFS only, thru Apr 26)
+- `PAYROLL[]` — 54 drivers logged / 39 active with hours/cost (Memolo Dominick still 0; ~14 *inactive/frozen drivers keep YTDs so LABOR reconciles to QBO) thru Jun 12, 2026. **Don't write "39 active drivers" in the LABOR comment — extract-metrics.js regex `(\d+)\s*drivers` needs the digit adjacent to "drivers" or `metrics.json` falls back to 0 (regression fixed week 16).**
+- `FUEL{}` — per-driver fuel spend + gallons (EFS only, thru Jun 12)
 - `MONTHLY_MILES[]` — Samsara: per-month, per-truck local vs regional (currently Jan-Mar 2026 historical; no longer auto-refreshed — Samsara monthly XLS not provided in weekly drops)
 - `TRUCK_MILES[]` — per-truck per-state mileage from Samsara Vehicle Mileage xlsx. Run `python scripts/parse_samsara_mileage.py` after dropping a new xlsx to regenerate
 - `MILES`, `FLEET_LOCAL`, `FLEET_REGIONAL`, `TRUCK_COUNT` — fleet totals from the same Samsara Vehicle Mileage xlsx. Static now — no live API. Update via the parser script each week
@@ -271,7 +271,7 @@ If you're adding a new live data source that needs to drive CPM or other derived
 - `ASCEND{}` — Historical Ascend TMS data (Jan-Mar 2026, no longer active)
 - `ALVYS{}` — Alvys TMS pipeline snapshot (also fetched live via /api/alvys-loads)
 
-**Current period:** Jan 1 – Apr 26, 2026 (116 days)
+**Current period:** Jan 1 – Jun 14, 2026 (165 days)
 
 ## CPM Definitions (CRITICAL)
 
