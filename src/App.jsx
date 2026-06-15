@@ -7365,9 +7365,9 @@ const ATL_BILLING = {
   asOf: "Jun 12, 2026",
   loads: 76,
   revenue: 176075.00,      // sum of Invoice Amount — driver-less spreadsheet format ("ATLANTA 2026 ALL LOADS THRU 6.12"), so per-driver breakdown below is HISTORICAL (May 4-29) and stale until format restores Driver column
-  carrierPay: 53231.25,    // sum of Carrier Amount — 54 of 76 loads still have no carrier $ recorded (pending reconciliation). Real margin will drop as carriers post.
-  grossProfit: 122843.75,  // INFLATED — see carrierPay note above
-  grossMargin: 69.8,       // % INFLATED — true margin will fall once carrier pay is reconciled on the 54 pending loads
+  carrierPay: 53231.25,    // sum of Carrier Amount = EXTERNAL carrier pay only. 54 of 76 loads have blank Carrier Amount because SF hauled them itself (SF IS the carrier) — those are full income with no external carrier cost (SF's cost is in LABOR/FUEL fleet buckets, not here). Blank ≠ pending.
+  grossProfit: 122843.75,  // revenue − external carrier pay. Correct — the SF-self-haul loads legitimately have no carrier deduction.
+  grossMargin: 69.8,       // % — real brokerage margin (high because most loads ran on SF's own trucks, not outside carriers)
   byDriver: [
     // HISTORICAL — these are the May 4-29 per-driver figures. The new ATL sheet
     // (Jun 9 drop) has no Driver column; can't refresh until format restores it.
