@@ -1,0 +1,128 @@
+======================================================================
+WEEKLY DROP SUMMARY
+======================================================================
+
+[SF PAYROLL] From Jan 01, 2026 to Dec 31, 2026 for all employees from all locations
+  Total (all staff):   40389.24 hrs  $1,292,274.11
+  Drivers only (CPM):  33063.01 hrs  $1,034,916.34
+  Active driver count: 53
+  Office excluded:     11 (Arias Adrian, Eagleton Gentry J, Figueroa Andres, Fissehaye Biniyam G, Gonzalez Gabriel, Grosser Scot E, Kennon Jessica S, Mahan Tasha, Naruszewicz Bartosz, Rivera Cecilia I, Youngblood Nathan)
+
+  Per-driver:
+    Alexander Christopher         1263.81  $ 38,291.98
+    Allwine Brian A                181.34  $  5,043.53
+    Alshamaa Manar                 293.16  $  8,962.52
+    Anderson Justin M               79.01  $  2,285.37
+    Brown Jr Marcellus              77.08  $  2,143.78
+    Butler Richard                 382.40  $ 11,493.27
+    Christian Norman L             100.08  $  2,894.81
+    Clark Rettick                  255.06  $  7,377.62
+    Cotton Kejlon                  320.32  $ 11,677.82
+    Cowsky Andrew                  552.09  $ 16,150.08
+    Daniels Gerald W               591.94  $ 17,371.52
+    Davis Anthoni D               1662.70  $ 58,205.63
+    Denman Samuel E               1375.23  $ 45,146.45
+    Dixon Deon A                    36.55  $  1,057.21
+    Dotch Brandon C                540.11  $ 16,130.43
+    Gray Stephen D                 109.88  $  3,178.28
+    Gutierrez Danny               1303.14  $ 41,192.75
+    Guzman Jose                   1592.83  $ 57,201.14
+    Howell Lawrence                 85.33  $  2,373.24
+    Ibarra Jose Pablo             1552.38  $ 55,240.67
+    Johnson Christopher M          276.85  $  8,506.83
+    Juarez Angel                   376.15  $ 10,863.46
+    Kelly Kirk D                   801.82  $ 23,044.55
+    Landreth James                 102.65  $  2,969.15
+    Logan LaDyle                   104.52  $  3,180.03
+    Lucero Andrew                  149.53  $  4,325.15
+    Magtee Christopher              39.47  $  1,141.68
+    Matthews Ron A                 464.44  $ 13,126.62
+    Mcclam Michael A               883.59  $ 26,937.00
+    McDaniels James                114.88  $  3,547.91
+    McNamara John                 1512.18  $ 50,224.26
+    Memolo Dominick                  0.00  $      0.00
+    Negrete Arturo                 371.01  $ 11,053.06
+    Ponce Carlos                   663.31  $ 20,174.77
+    Restrepo Julian E              711.22  $ 22,212.83
+    Reyes Corey                    568.78  $ 16,405.23
+    Robinson Animashaun            800.76  $ 23,579.08
+    Ronkov Martin P               1405.89  $ 40,314.13
+    Secrest Jermelle               613.67  $ 17,708.58
+    Stevenson Timothy              138.19  $  4,002.57
+    Stringer Adam E                203.46  $  5,885.08
+    Striplin Lamareh               653.62  $ 20,028.99
+    Thomas John                    114.40  $  3,567.84
+    Thorne Richard                 254.53  $  7,387.28
+    Tucker Robert                  321.01  $  9,831.81
+    Vue CJ Z                         3.00  $     86.78
+    Wainwright Michael W          1431.79  $ 42,599.73
+    Watkins Shawn                  783.17  $ 23,298.03
+    Watson Dahnifu S              1263.31  $ 36,480.52
+    Whipple Wallace               1424.50  $ 46,134.71
+    Williams Tadaryl C            1393.01  $ 41,111.07
+    Williams Will                  894.16  $ 26,941.10
+    Willis Wali A                 1609.04  $ 55,384.53
+    Wright Robert                  260.66  $  9,443.88
+
+[CE&SF TRANSACTIONS — YTD category totals]
+  Fuel                            $  561,938.03
+  SF Truck Insurance              $  148,599.16
+  Storage/Parking                 $   42,772.62
+  Trailer Maintenance             $    4,410.04
+  Trailer Rentals                 $  180,837.01
+  Truck Maintenance               $    5,858.37
+  Truck Rentals                   $  394,313.58
+  Worker Uniforms                 $    9,065.72
+  Truck/Trailer with sub-accounts  $1,347,794.53
+
+[EFS — per-card totals, aggregated from Group summary blocks]
+    CARD  DRIVER                                   AMT         GAL
+   27406  Anthoni Davis                   $  40,511.33    7,402.90
+   67463  Michael M                       $  32,753.66    6,639.25
+   57401  Shaun                           $  26,103.15    4,689.05
+   57403  Wallace                         $  25,595.43    5,244.57
+   77409  Christopher                     $  24,662.13    4,027.03
+   07407  Michael Mcclam                  $  20,993.64    3,104.13
+   17407  John Macnamara                  $  20,908.91    4,428.74
+   37405  Robert wright                   $  20,129.53    3,525.44
+   37402  Tadaryl                         $  19,452.34    3,629.81
+   27405  Williams                        $  18,695.66    3,125.93
+   77402  Kirk                            $  16,480.64    3,352.30
+   97406  Shaq                            $  15,412.49    2,782.80
+   77457  Andy Cowsky                     $  15,030.22    2,440.65
+   37466  Carlos Ponce                    $  13,783.28    2,147.20
+   37403  Samuel                          $  12,495.95    1,980.75
+   57464  Shaun                           $  12,283.89    2,123.20
+   87400  Wali                            $  12,265.87    2,189.03
+   47405  Sam                             $  11,850.91    2,875.66
+   77401  Jose Guzman                     $  11,522.63    2,294.54
+   27404  Mell                            $  10,899.82    1,567.45
+   87407  Lamareh                         $  10,631.09    1,890.84
+   47404  Danny                           $   9,470.39    1,931.09
+   97409  Jose Pablo                      $   8,728.37    1,705.72
+   47402  Norman                          $   8,336.88    1,407.58
+   47458  Robert                          $   7,652.67    1,413.06
+   67400  Richard                         $   7,248.06    1,300.88
+   87401  Kejlon                          $   7,231.37    1,210.09
+   67403  Martin                          $   6,601.48    1,297.76
+   17468  Brandon                         $   6,366.04      967.74
+   57404  Arturo                          $   6,348.68    1,511.56
+   37459  Christopher J                   $   6,306.81    1,187.28
+   07405  Justin                          $   6,117.42      988.94
+   07408  Brian Allwine                   $   6,093.18    1,528.68
+   97453  Corey                           $   6,010.96      827.73
+   87454  Manar                           $   5,680.93    1,055.67
+   17408  Andres                          $   5,337.52    1,225.49
+   07469  Corey                           $   4,565.49      693.21
+   37404  Jermelle                        $   4,078.35      696.19
+   87461  Angel Juarez                    $   2,961.21      429.11
+   57457  LaDyle                          $   2,327.26      452.63
+   07452  Timothy                         $   1,304.01      212.44
+   77462  Marcellus                       $   1,282.90      307.66
+   27403  Stephen Gray                    $   1,025.29      188.65
+   67402  ?                               $   1,005.41      237.73
+   47465  ?                               $     369.67       81.73
+   07409  Adrian                          $     332.35       60.88
+   27467  Nathan                          $      90.01       19.28
+   TOTAL                                  $ 515,335.28   94,400.05
+
