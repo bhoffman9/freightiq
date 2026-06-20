@@ -200,12 +200,12 @@
     {
       "name": "Adrian Arias",
       "entity": "SF",
-      "totalCost": 45191.28
+      "totalCost": 47078.42
     },
     {
       "name": "Gabriel Gonzalez",
       "entity": "SF",
-      "totalCost": 29786.76
+      "totalCost": 31114.56
     },
     {
       "name": "Scot Grosser",
@@ -215,32 +215,32 @@
     {
       "name": "Bartosz Naruszewicz",
       "entity": "SF",
-      "totalCost": 12269.05
+      "totalCost": 14391.2
     },
     {
       "name": "Cecilia Rivera",
       "entity": "SF",
-      "totalCost": 35244.42
+      "totalCost": 36964.17
     },
     {
       "name": "Nathan Youngblood",
       "entity": "SF",
-      "totalCost": 30581.4
+      "totalCost": 31909.2
     },
     {
       "name": "Tasha Mahan",
       "entity": "SF",
-      "totalCost": 2892.5
+      "totalCost": 4338.75
     },
     {
       "name": "Valeria Abrego",
       "entity": "J&A",
-      "totalCost": 21162.12
+      "totalCost": 22046.92
     },
     {
       "name": "Christopher Adamson",
       "entity": "J&A",
-      "totalCost": 43590
+      "totalCost": 45882
     },
     {
       "name": "Debra Adamson",
@@ -265,12 +265,12 @@
     {
       "name": "Harold Galvis",
       "entity": "J&A",
-      "totalCost": 2513.12
+      "totalCost": 3769.69
     },
     {
       "name": "Kidist Gelaw",
       "entity": "J&A",
-      "totalCost": 1256.57
+      "totalCost": 2513.12
     },
     {
       "name": "Kirsten Hall",
@@ -280,7 +280,7 @@
     {
       "name": "Ben Hoffman",
       "entity": "J&A",
-      "totalCost": 34702.56
+      "totalCost": 36191.42
     },
     {
       "name": "Branden Parnell",
@@ -301,62 +301,62 @@
   "warehouse": [
     {
       "name": "Gentry Eagleton",
-      "totalCost": 21890.8
+      "totalCost": 22820.15
     },
     {
       "name": "Andres Figueroa",
-      "totalCost": 39072.69
+      "totalCost": 40849.45
     }
   ],
   "contractors": [
     {
       "name": "Jon Marcus Zengotita",
-      "total": 66150
+      "total": 68950
     },
     {
       "name": "Mellody Abrego",
-      "total": 65014.19
+      "total": 67932.53
     },
     {
       "name": "Gabriel Colon",
-      "total": 49205.24
+      "total": 51205.24
     },
     {
       "name": "Hilda Salman",
-      "total": 42522.86
+      "total": 44371.68
     },
     {
       "name": "Maria Con",
-      "total": 13300
+      "total": 13950
     },
     {
       "name": "Logic Consultants",
-      "total": 11000
+      "total": 11500
     },
     {
       "name": "ENM Trucking",
-      "total": 9250
+      "total": 11100
     },
     {
       "name": "Elizabeth Delgado",
-      "total": 18129.61
+      "total": 19029.61
     },
     {
       "name": "Christopher Simpson",
-      "total": 17573.04
+      "total": 18461.8
     },
     {
       "name": "Debra Adamson",
-      "total": 22186.87
+      "total": 23990.66
     }
   ],
   "period": "Jan 1 - Jun 20, 2026",
   "totals": {
     "driverLabor": 968524.3499999999,
     "driverCount": 39,
-    "officeTotal": 362692.59,
-    "warehouseTotal": 60963.490000000005,
-    "contractorTotal": 314331.80999999994,
-    "grandTotal": 1706512.2399999998
+    "officeTotal": 379702.25999999995,
+    "warehouseTotal": 63669.6,
+    "contractorTotal": 330491.5199999999,
+    "grandTotal": 1742387.73
   }
 }
