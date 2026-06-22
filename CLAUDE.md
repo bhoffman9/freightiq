@@ -325,6 +325,9 @@ If you're adding a new live data source that needs to drive CPM or other derived
 
 ## Weekly Update Workflow
 
+### ⏳ Pending build (do this weekly cycle if not yet shipped)
+**Live EBITDA + Adjusted EBITDA tile** on the Income tab, fed from `/api/qbo-pnl?company=ce_sf_combined` so it self-updates. Unadjusted EBITDA ≈ net income + interest − interest income (D&A and income tax are both $0 — leased fleet, pass-through entity). Adjusted EBITDA adds back owner-discretionary spend buried in expenses (Owners Draw, personal-vehicle Asset Loan Payments, etc.). **Blocked on Ben:** (1) the exact add-back list, (2) whether to apply a normalized tax provision vs $0. Queued Jun 20 2026 — see the `project_freightiq_ebitda` memory for the YTD numbers and rationale. Remove this block once shipped.
+
 ### Step 0 — ASK Ben for the ATL + Agent rosters (do this FIRST, before any code changes)
 
 ATL and Agent are fluid week-to-week. The QBO P&L files and payroll exports don't carry the entity label, so you can't infer it from data alone — Ben is the source of truth. Three questions, every weekly drop:
