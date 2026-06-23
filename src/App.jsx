@@ -7242,30 +7242,30 @@ const CONTRACTORS = [
 // − last-week grandTotal). Regenerate history via scripts/_build_office_weekly.py.
 const OFFICE_WEEKLY = [
   { label:"Jan 1-4", total:1833.46 },
-  { label:"Jan 5-11", total:30184.44 },
-  { label:"Jan 12-18", total:30881.53 },
-  { label:"Jan 19-25", total:29530.11 },
-  { label:"Jan 26-F1", total:31511.35 },
-  { label:"Feb 2-8", total:31118.07 },
-  { label:"Feb 9-15", total:30724.15 },
-  { label:"Feb 16-22", total:32004.12 },
-  { label:"Feb 23-M1", total:29437.37 },
-  { label:"Mar 2-8", total:32745.18 },
-  { label:"Mar 9-15", total:29482.55 },
-  { label:"Mar 16-22", total:29997.57 },
-  { label:"Mar 23-29", total:29949.58 },
-  { label:"Mar 30-A5", total:30433.31 },
-  { label:"Apr 6-12", total:30398.64 },
-  { label:"Apr 13-19", total:29841.29 },
-  { label:"Apr 20-26", total:29729.34 },
-  { label:"Apr 27-M3", total:44170.74 },
-  { label:"May 4-10", total:33525.10 },
-  { label:"May 11-17", total:29879.55 },
-  { label:"May 18-24", total:34195.66 },
-  { label:"May 25-31", total:34626.34 },
-  { label:"Jun 1-7", total:35147.83 },
-  { label:"Jun 8-14", total:37122.96 },
-  { label:"Jun 15-20", total:35393.14 },
+  { label:"Jan 5-11", total:30649.19 },
+  { label:"Jan 12-18", total:31350.47 },
+  { label:"Jan 19-25", total:29979.44 },
+  { label:"Jan 26-F1", total:31976.80 },
+  { label:"Feb 2-8", total:31598.98 },
+  { label:"Feb 9-15", total:31193.79 },
+  { label:"Feb 16-22", total:32563.68 },
+  { label:"Feb 23-M1", total:30064.38 },
+  { label:"Mar 2-8", total:33533.86 },
+  { label:"Mar 9-15", total:30105.27 },
+  { label:"Mar 16-22", total:30600.83 },
+  { label:"Mar 23-29", total:30603.12 },
+  { label:"Mar 30-A5", total:31082.08 },
+  { label:"Apr 6-12", total:31021.31 },
+  { label:"Apr 13-19", total:30420.79 },
+  { label:"Apr 20-26", total:30334.12 },
+  { label:"Apr 27-M3", total:29988.77 },
+  { label:"May 4-10", total:34163.71 },
+  { label:"May 11-17", total:30480.16 },
+  { label:"May 18-24", total:34937.46 },
+  { label:"May 25-31", total:35438.35 },
+  { label:"Jun 1-7", total:35934.43 },
+  { label:"Jun 8-14", total:37874.00 },
+  { label:"Jun 15-20", total:36134.95 },
 ];
 
 // ── AGENTS ────────────────────────────────────────────────────
@@ -7513,7 +7513,7 @@ function OfficeStaff() {
         const wk = OFFICE_WEEKLY;
         const last = wk[wk.length-1], prev = wk[wk.length-2];
         const delta = prev ? last.total - prev.total : 0;
-        const full = wk.slice(1); // drop partial first week from the average
+        const full = wk.slice(1); // drop partial first week (4-day stub flattens the axis)
         const avg = full.reduce((s,w)=>s+w.total,0)/full.length;
         return (
           <div className="card" style={{ marginBottom:14 }}>
@@ -7531,13 +7531,13 @@ function OfficeStaff() {
               Total loaded cost (W2 + warehouse + contractors) per week · history reconstructed from QBO weekly P&amp;L
             </div>
             <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={wk} margin={{ top:6, right:12, left:4, bottom:4 }}>
+              <LineChart data={full} margin={{ top:6, right:12, left:4, bottom:4 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--bd)" vertical={false} />
-                <XAxis dataKey="label" tick={{ fontSize:9, fill:"var(--mu)" }} interval={2} angle={-25} textAnchor="end" height={42} />
-                <YAxis tick={{ fontSize:10, fill:"var(--mu)" }} tickFormatter={v=>"$"+(v/1000).toFixed(0)+"k"} width={44} />
+                <XAxis dataKey="label" tick={{ fontSize:9, fill:"var(--mu)" }} interval={1} angle={-25} textAnchor="end" height={42} />
+                <YAxis tick={{ fontSize:10, fill:"var(--mu)" }} tickFormatter={v=>"$"+(v/1000).toFixed(1)+"k"} width={48} domain={['dataMin - 2000', 'dataMax + 2000']} allowDecimals={false} />
                 <Tooltip content={<CustomTip />} />
-                <ReferenceLine y={avg} stroke="var(--mu)" strokeDasharray="4 4" />
-                <Line type="monotone" dataKey="total" name="Office cost" stroke="var(--or)" strokeWidth={2} dot={{ r:2 }} activeDot={{ r:4 }} />
+                <ReferenceLine y={avg} stroke="var(--mu)" strokeDasharray="4 4" label={{ value:`avg ${fd(avg,0)}`, position:'insideTopRight', fill:'var(--mu)', fontSize:9 }} />
+                <Line type="monotone" dataKey="total" name="Office cost" stroke="var(--or)" strokeWidth={2} dot={{ r:2.5 }} activeDot={{ r:4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
