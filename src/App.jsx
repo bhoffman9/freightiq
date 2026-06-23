@@ -7228,6 +7228,46 @@ const CONTRACTORS = [
   { name:"Debra Adamson",        dba:"", weekly:1750, payments:17, weeklyTotal:21714.73, car:0, carPayments:0, carTotal:0, commission:0, healthIns:53.79, healthInsTotal:1290.96, other:984.97, total:23990.66, note:"$985/wk (Chase) → $1,750/wk new normal May 2026 + $985 (QuickBooks) + health ins $53.79/wk (24wk) · excl $2K loan", dual:true },
 ];
 
+// ── OFFICE_WEEKLY — total loaded office-staff cost per week ───
+// Weekly trend for the Office Staff tab. total = full loaded cost
+// (W2 office gross+taxes+401k + warehouse + contractors incl
+// commission/car/health) for that week.
+// HISTORY is RECONSTRUCTED: weekly shape pulled from the CE&SF QBO P&L
+// (Salaries & Wages - Office + Contractor Payroll per week via
+// /api/qbo-pnl start_date/end_date) and grossed up by fixed factors
+// (office ×1.3932, contractor ×0.9858) so the series reconciles EXACTLY
+// to the tab grandTotal. The gross-up absorbs J&A office staff (a
+// separate entity not in the CE&SF P&L) + employer taxes/401k.
+// GOING FORWARD: append each week's exact delta = (this-week grandTotal
+// − last-week grandTotal). Regenerate history via scripts/_build_office_weekly.py.
+const OFFICE_WEEKLY = [
+  { label:"Jan 1-4", total:1833.46 },
+  { label:"Jan 5-11", total:30184.44 },
+  { label:"Jan 12-18", total:30881.53 },
+  { label:"Jan 19-25", total:29530.11 },
+  { label:"Jan 26-F1", total:31511.35 },
+  { label:"Feb 2-8", total:31118.07 },
+  { label:"Feb 9-15", total:30724.15 },
+  { label:"Feb 16-22", total:32004.12 },
+  { label:"Feb 23-M1", total:29437.37 },
+  { label:"Mar 2-8", total:32745.18 },
+  { label:"Mar 9-15", total:29482.55 },
+  { label:"Mar 16-22", total:29997.57 },
+  { label:"Mar 23-29", total:29949.58 },
+  { label:"Mar 30-A5", total:30433.31 },
+  { label:"Apr 6-12", total:30398.64 },
+  { label:"Apr 13-19", total:29841.29 },
+  { label:"Apr 20-26", total:29729.34 },
+  { label:"Apr 27-M3", total:44170.74 },
+  { label:"May 4-10", total:33525.10 },
+  { label:"May 11-17", total:29879.55 },
+  { label:"May 18-24", total:34195.66 },
+  { label:"May 25-31", total:34626.34 },
+  { label:"Jun 1-7", total:35147.83 },
+  { label:"Jun 8-14", total:37122.96 },
+  { label:"Jun 15-20", total:35393.14 },
+];
+
 // ── AGENTS ────────────────────────────────────────────────────
 // Agent payments are categorized as Owner Draws in QBO but tracked
 // separately on the dashboard because they're a distinct expense lens
@@ -7467,6 +7507,42 @@ function OfficeStaff() {
           <span>Health ins (company): {fd(healthInsTotal,0)}</span>
         </div>
       </div>
+
+      {/* Weekly cost trend */}
+      {(() => {
+        const wk = OFFICE_WEEKLY;
+        const last = wk[wk.length-1], prev = wk[wk.length-2];
+        const delta = prev ? last.total - prev.total : 0;
+        const full = wk.slice(1); // drop partial first week from the average
+        const avg = full.reduce((s,w)=>s+w.total,0)/full.length;
+        return (
+          <div className="card" style={{ marginBottom:14 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:4 }}>
+              <div className="ctit">Weekly Cost Trend</div>
+              <div style={{ fontSize:11, color:"var(--mu)" }}>
+                Latest <b style={{color:"var(--tx)"}}>{fd(last.total,0)}</b>
+                <span style={{ color: delta>0?"#ff5252":"#3ddc84", marginLeft:8 }}>
+                  {delta>0?"▲":"▼"} {fd(Math.abs(delta),0)} WoW
+                </span>
+                <span style={{ marginLeft:12 }}>avg {fd(avg,0)}/wk</span>
+              </div>
+            </div>
+            <div style={{ fontSize:10, color:"var(--mu)", marginBottom:8 }}>
+              Total loaded cost (W2 + warehouse + contractors) per week · history reconstructed from QBO weekly P&amp;L
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={wk} margin={{ top:6, right:12, left:4, bottom:4 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--bd)" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize:9, fill:"var(--mu)" }} interval={2} angle={-25} textAnchor="end" height={42} />
+                <YAxis tick={{ fontSize:10, fill:"var(--mu)" }} tickFormatter={v=>"$"+(v/1000).toFixed(0)+"k"} width={44} />
+                <Tooltip content={<CustomTip />} />
+                <ReferenceLine y={avg} stroke="var(--mu)" strokeDasharray="4 4" />
+                <Line type="monotone" dataKey="total" name="Office cost" stroke="var(--or)" strokeWidth={2} dot={{ r:2 }} activeDot={{ r:4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        );
+      })()}
 
       {/* View toggle */}
       <div style={{ display:"flex", gap:8, marginBottom:14 }}>
