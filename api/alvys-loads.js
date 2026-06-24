@@ -46,6 +46,20 @@ export default async function handler(req, res) {
     }
     const loadData = JSON.parse(loadText);
 
+    // TEMP debug: discover raw load shape (truck/tractor field) — remove after mapping
+    if (req.query?.debug === "1") {
+      const items = loadData.Items || [];
+      const keyUnion = {};
+      items.forEach(it => Object.keys(it).forEach(k => { keyUnion[k] = (keyUnion[k]||0)+1; }));
+      const sample = items.find(it => ["In Transit","Delivered","Invoiced"].includes(it.Status)) || items[0] || {};
+      // surface any truck/tractor/driver-ish fields specifically
+      const truckish = {};
+      Object.keys(sample).forEach(k => {
+        if (/truck|tractor|power|unit|driver|asset|carrier|fleet/i.test(k)) truckish[k] = sample[k];
+      });
+      return res.status(200).json({ total: loadData.Total, itemCount: items.length, keyUnion, sampleStatus: sample.Status, truckish, sampleFull: sample });
+    }
+
     const loads = (loadData.Items || []).map(l => {
       const stops = l.Stops || [];
       const orig = stops[0]?.Address || {};
