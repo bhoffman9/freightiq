@@ -7228,45 +7228,6 @@ const CONTRACTORS = [
   { name:"Debra Adamson",        dba:"", weekly:1750, payments:17, weeklyTotal:21714.73, car:0, carPayments:0, carTotal:0, commission:0, healthIns:53.79, healthInsTotal:1290.96, other:984.97, total:23990.66, note:"$985/wk (Chase) → $1,750/wk new normal May 2026 + $985 (QuickBooks) + health ins $53.79/wk (24wk) · excl $2K loan", dual:true },
 ];
 
-// ── OFFICE_WEEKLY — total loaded office-staff cost per week ───
-// Weekly trend for the Office Staff tab. total = full loaded cost
-// (W2 office gross+taxes+401k + warehouse + contractors incl
-// commission/car/health) for that week.
-// HISTORY is RECONSTRUCTED: weekly shape pulled from the CE&SF QBO P&L
-// (Salaries & Wages - Office + Contractor Payroll per week via
-// /api/qbo-pnl start_date/end_date) and grossed up by fixed factors
-// (office ×1.3932, contractor ×0.9858) so the series reconciles EXACTLY
-// to the tab grandTotal. The gross-up absorbs J&A office staff (a
-// separate entity not in the CE&SF P&L) + employer taxes/401k.
-// GOING FORWARD: append each week's exact delta = (this-week grandTotal
-// − last-week grandTotal). Regenerate history via scripts/_build_office_weekly.py.
-const OFFICE_WEEKLY = [
-  { label:"Jan 1-4", total:1833.46 },
-  { label:"Jan 5-11", total:30649.19 },
-  { label:"Jan 12-18", total:31350.47 },
-  { label:"Jan 19-25", total:29979.44 },
-  { label:"Jan 26-F1", total:31976.80 },
-  { label:"Feb 2-8", total:31598.98 },
-  { label:"Feb 9-15", total:31193.79 },
-  { label:"Feb 16-22", total:32563.68 },
-  { label:"Feb 23-M1", total:30064.38 },
-  { label:"Mar 2-8", total:33533.86 },
-  { label:"Mar 9-15", total:30105.27 },
-  { label:"Mar 16-22", total:30600.83 },
-  { label:"Mar 23-29", total:30603.12 },
-  { label:"Mar 30-A5", total:31082.08 },
-  { label:"Apr 6-12", total:31021.31 },
-  { label:"Apr 13-19", total:30420.79 },
-  { label:"Apr 20-26", total:30334.12 },
-  { label:"Apr 27-M3", total:29988.77 },
-  { label:"May 4-10", total:34163.71 },
-  { label:"May 11-17", total:30480.16 },
-  { label:"May 18-24", total:34937.46 },
-  { label:"May 25-31", total:35438.35 },
-  { label:"Jun 1-7", total:35934.43 },
-  { label:"Jun 8-14", total:37874.00 },
-  { label:"Jun 15-20", total:36134.95 },
-];
 
 // ── OFFICE_PAYCHECKS — per-employee weekly paycheck grid (QB Paycheck History) ──
 // Total pay (gross) per employee per week. Source: QB Paycheck History export
@@ -7516,7 +7477,8 @@ function OfficeStaff() {
 
       {/* Weekly cost trend */}
       {(() => {
-        const wk = OFFICE_WEEKLY;
+        const _PC = OFFICE_PAYCHECKS;
+        const wk = _PC.weeks.map(w => ({ label:w, total: _PC.sections.reduce((s,sec)=> s + (sec.totals[w]||0) + ((sec.ctotals&&sec.ctotals[w])||0), 0) }));
         const last = wk[wk.length-1], prev = wk[wk.length-2];
         const delta = prev ? last.total - prev.total : 0;
         const full = wk.slice(1); // drop partial first week (4-day stub flattens the axis)
@@ -7534,7 +7496,7 @@ function OfficeStaff() {
               </div>
             </div>
             <div style={{ fontSize:10, color:"var(--mu)", marginBottom:8 }}>
-              Total loaded cost (W2 + warehouse + contractors) per week · history reconstructed from QBO weekly P&amp;L
+              Total weekly payroll cost (W-2 loaded + 1099) — same data as the Weekly Checks grid below
             </div>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={full} margin={{ top:6, right:12, left:4, bottom:4 }}>
@@ -7575,6 +7537,7 @@ function OfficeStaff() {
         const PC = OFFICE_PAYCHECKS;
         const fc = v => v ? "$"+Math.round(v).toLocaleString() : "";
         const grand = PC.sections.reduce((s,sec)=> s + sec.rows.reduce((a,r)=>a+r.total,0), 0);
+        const wkTot = w => PC.sections.reduce((s,sec)=> s + (sec.totals[w]||0) + ((sec.ctotals&&sec.ctotals[w])||0), 0);
         const colW = 78, nameW = 150;
         const cell = { padding:"4px 8px", textAlign:"right", fontFamily:"var(--f3,Consolas,monospace)", fontSize:11, whiteSpace:"nowrap", borderBottom:"1px solid var(--bd)" };
         const nameCell = { ...cell, textAlign:"left", position:"sticky", left:0, background:"var(--s2)", minWidth:nameW, maxWidth:nameW, zIndex:1 };
@@ -7588,9 +7551,17 @@ function OfficeStaff() {
               <table style={{ borderCollapse:"collapse", minWidth:nameW + colW*(PC.weeks.length+1) }}>
                 <thead>
                   <tr>
-                    <th style={{ ...nameCell, top:0, zIndex:3, textTransform:"uppercase", fontSize:10, color:"var(--mu)", borderBottom:"2px solid var(--or)" }}>Employee</th>
-                    {PC.weeks.map(w => <th key={w} style={{ ...cell, minWidth:colW, color:"var(--or)", fontWeight:700, borderBottom:"2px solid var(--or)" }}>{w}</th>)}
-                    <th style={{ ...cell, minWidth:colW, color:"var(--tx)", fontWeight:700, borderBottom:"2px solid var(--or)" }}>Total</th>
+                    <th style={{ ...nameCell, top:0, zIndex:3, textTransform:"uppercase", fontSize:10, color:"var(--mu)", borderBottom:"2px solid var(--or)", verticalAlign:"bottom" }}>Employee</th>
+                    {PC.weeks.map(w => (
+                      <th key={w} style={{ ...cell, minWidth:colW, borderBottom:"2px solid var(--or)", verticalAlign:"top" }}>
+                        <div style={{ color:"var(--or)", fontWeight:700 }}>{w}</div>
+                        <div style={{ color:"var(--gr,#3ddc84)", fontWeight:700, fontSize:13, marginTop:2 }}>{fc(wkTot(w))}</div>
+                      </th>
+                    ))}
+                    <th style={{ ...cell, minWidth:colW, borderBottom:"2px solid var(--or)", verticalAlign:"top" }}>
+                      <div style={{ color:"var(--tx)", fontWeight:700 }}>Total</div>
+                      <div style={{ color:"var(--or)", fontWeight:700, fontSize:13, marginTop:2 }}>{fc(grand)}</div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
