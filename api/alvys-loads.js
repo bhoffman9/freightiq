@@ -46,6 +46,38 @@ export default async function handler(req, res) {
     }
     const loadData = JSON.parse(loadText);
 
+    // TEMP debug 2: probe other Alvys endpoints for truck linkage
+    if (req.query?.debug === "2") {
+      const base = "https://integrations.alvys.com/api/p/v1";
+      const probes = [
+        ["trips/search", { method:"POST", body: JSON.stringify({ pageSize: 5 }) }],
+        ["trucks/search", { method:"POST", body: JSON.stringify({ pageSize: 5 }) }],
+        ["drivers/search", { method:"POST", body: JSON.stringify({ pageSize: 5 }) }],
+        ["trips", { method:"POST", body: JSON.stringify({ pageSize: 5 }) }],
+      ];
+      const out = {};
+      for (const [path, opts] of probes) {
+        try {
+          const r = await fetch(`${base}/${path}`, {
+            method: opts.method,
+            headers: { authorization: `Bearer ${access_token}`, "content-type": "application/json" },
+            body: opts.body,
+          });
+          const t = await r.text();
+          let parsed = null; try { parsed = JSON.parse(t); } catch {}
+          const items = parsed?.Items || [];
+          out[path] = {
+            status: r.status,
+            total: parsed?.Total,
+            itemCount: items.length,
+            firstItemKeys: items[0] ? Object.keys(items[0]) : null,
+            sample: items[0] || (r.ok ? null : t.slice(0, 200)),
+          };
+        } catch (e) { out[path] = { error: e.message }; }
+      }
+      return res.status(200).json(out);
+    }
+
     // TEMP debug: discover raw load shape (truck/tractor field) — remove after mapping
     if (req.query?.debug === "1") {
       const items = loadData.Items || [];
