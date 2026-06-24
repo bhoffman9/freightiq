@@ -7571,7 +7571,7 @@ function OfficeStaff() {
                       <td colSpan={PC.weeks.length+1} style={{ ...cell, background:"var(--s1,#0e1116)" }}></td>
                     </tr>,
                     ...sec.rows.map(r => (
-                      <tr key={sec.name+r.name} style={{ opacity:r.former?0.5:1 }}>
+                      <tr key={sec.name+r.name} style={{ opacity:(r.former && !(r.camts && Object.keys(r.camts).length)) ? 0.5 : 1 }}>
                         <td style={nameCell}>{r.name}</td>
                         {PC.weeks.map(w => {
                           const a=r.amts[w], c=r.camts&&r.camts[w];
