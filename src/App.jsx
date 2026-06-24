@@ -7268,6 +7268,12 @@ const OFFICE_WEEKLY = [
   { label:"Jun 15-20", total:36134.95 },
 ];
 
+// ── OFFICE_PAYCHECKS — per-employee weekly paycheck grid (QB Paycheck History) ──
+// Total pay (gross) per employee per week. Source: QB Paycheck History export
+// (SF + J&A) dropped into incoming-freightiq/. Drivers excluded (office/warehouse
+// + J&A only). Refresh each weekly drop via scripts/_build_paycheck_grid.py.
+const OFFICE_PAYCHECKS = {"source": "QB Paycheck History \u2014 Total pay (gross) \u00b7 Jan 2 \u2013 Jun 19, 2026", "weeks": ["12/29", "1/5", "1/12", "1/19", "1/26", "2/2", "2/9", "2/16", "2/23", "3/2", "3/9", "3/16", "3/23", "3/30", "4/6", "4/13", "4/20", "4/27", "5/4", "5/11", "5/18", "5/25", "6/1", "6/8", "6/15"], "sections": [{"name": "Show Freight", "rows": [{"name": "Adrian Arias", "former": false, "amts": {"6/15": 1646.0, "6/8": 1646.0, "6/1": 1646.0, "5/25": 1646.0, "5/18": 1646.0, "5/11": 1646.0, "5/4": 1646.0, "4/27": 1920.0, "4/20": 1646.0, "4/13": 1646.0, "4/6": 1646.0, "3/30": 1646.0, "3/23": 1646.0, "3/16": 2371.0, "3/9": 1646.0, "3/2": 1646.0, "2/23": 1646.0, "2/16": 1646.0, "2/9": 1646.0, "2/2": 1646.0, "1/26": 1646.0, "1/19": 1920.33, "1/12": 1920.33, "1/5": 1646.0}, "total": 41051.66}, {"name": "Andres Figueroa", "former": false, "amts": {"6/15": 1625.0, "6/8": 1662.5, "6/1": 1662.5, "5/25": 1762.5, "5/18": 1425.0, "5/11": 1425.0, "5/4": 1425.0, "4/27": 1425.0, "4/20": 1425.0, "4/13": 1425.0, "4/6": 1425.0, "3/30": 1425.0, "3/23": 1425.0, "3/16": 1425.0, "3/9": 1425.0, "3/2": 1425.0, "2/23": 1425.0, "2/16": 1425.0, "2/9": 1425.0, "2/2": 1425.0, "1/26": 1425.0, "1/19": 1575.0, "1/12": 1425.0, "1/5": 1575.0, "12/29": 1425.0}, "total": 36937.5}, {"name": "Bartosz Naruszewicz", "former": false, "amts": {"6/15": 1917.9, "6/8": 1800.0, "6/1": 1800.0, "5/25": 1800.0, "5/18": 2100.0, "5/11": 1785.9, "5/4": 1764.3}, "total": 12968.1}, {"name": "Cecilia Rivera", "former": false, "amts": {"6/15": 1500.0, "6/8": 1550.0, "6/1": 1300.0, "5/25": 1300.0, "5/18": 1285.0, "5/11": 1285.0, "5/4": 1500.0, "4/27": 1285.0, "4/20": 1285.0, "4/13": 1285.0, "4/6": 1500.0, "3/30": 1285.0, "3/23": 1285.0, "3/16": 1285.0, "3/9": 1285.0, "3/2": 1285.0, "2/23": 1500.0, "2/16": 1500.0, "2/9": 1285.0, "2/2": 1285.0, "1/26": 1285.0, "1/19": 1285.0, "1/12": 1285.0, "1/5": 1285.0}, "total": 32210.0}, {"name": "Gabriel Gonzalez", "former": false, "amts": {"6/15": 1200.0, "6/8": 1200.0, "6/1": 1200.0, "5/25": 1200.0, "5/18": 1200.0, "5/11": 1200.0, "5/4": 1200.0, "4/27": 1200.0, "4/20": 1231.0, "4/13": 1200.0, "4/6": 1200.0, "3/30": 1200.0, "3/23": 1200.0, "3/16": 1200.0, "3/9": 1200.0, "3/2": 1200.0, "2/23": 1200.0, "2/16": 1057.69, "2/9": 1057.69, "2/2": 1057.69, "1/26": 1057.69, "1/19": 1307.69, "1/12": 1057.69, "1/5": 1057.69}, "total": 28084.83}, {"name": "Gentry Eagleton", "former": false, "amts": {"6/15": 839.9, "6/8": 924.2, "6/1": 822.5, "5/25": 905.6, "5/18": 863.6, "5/11": 802.7, "5/4": 852.2, "4/27": 855.2, "4/20": 855.2, "4/13": 881.0, "4/6": 958.1, "3/30": 917.5, "3/23": 841.5, "3/16": 811.6, "3/9": 916.1, "3/2": 817.6, "2/23": 790.9, "2/16": 805.2, "2/9": 814.0, "2/2": 661.8, "1/26": 872.3, "1/19": 832.1, "1/12": 1149.5, "1/5": 805.1}, "total": 20595.4}, {"name": "Nathan Youngblood", "former": false, "amts": {"6/15": 1200.0, "6/8": 1200.0, "6/1": 1200.0, "5/25": 1200.0, "5/18": 1200.0, "5/11": 1200.0, "5/4": 1200.0, "4/27": 1200.0, "4/20": 1200.0, "4/13": 1200.0, "4/6": 1200.0, "3/30": 1200.0, "3/23": 1200.0, "3/16": 1200.0, "3/9": 1200.0, "3/2": 1200.0, "2/23": 1200.0, "2/16": 1200.0, "2/9": 1200.0, "2/2": 1200.0, "1/26": 1200.0, "1/19": 1200.0, "1/12": 1200.0, "1/5": 1200.0}, "total": 28800.0}, {"name": "Tasha Mahan", "former": false, "amts": {"6/15": 1300.0, "6/8": 1300.0, "6/1": 1300.0}, "total": 3900.0}, {"name": "Scot Grosser", "former": true, "amts": {"5/18": 1867.0, "5/11": 1739.4, "5/4": 1905.31, "4/27": 1672.31, "4/20": 1672.31, "4/13": 1672.31, "4/6": 1672.31, "3/30": 1905.64, "3/23": 1672.31, "3/16": 1672.31, "3/9": 1672.31, "3/2": 1672.31, "2/23": 1672.31, "2/16": 1672.31, "2/9": 1672.31, "2/2": 1672.31, "1/26": 1672.31, "1/19": 1672.31, "1/12": 1672.31, "1/5": 1672.31}, "total": 34174.31}], "totals": {"12/29": 1425.0, "1/5": 9241.1, "1/12": 9709.83, "1/19": 9792.43, "1/26": 9158.3, "2/2": 8947.8, "2/9": 9100.0, "2/16": 9306.2, "2/23": 9434.21, "3/2": 9245.91, "3/9": 9344.41, "3/16": 9964.91, "3/23": 9269.81, "3/30": 9579.14, "4/6": 9601.41, "4/13": 9309.31, "4/20": 9314.51, "4/27": 9557.51, "5/4": 11492.81, "5/11": 11084.0, "5/18": 11586.6, "5/25": 9814.1, "6/1": 10931.0, "6/8": 11282.7, "6/15": 11228.8}}, {"name": "J&A", "rows": [{"name": "Abigail Dillon", "former": false, "amts": {"4/20": 200.0, "4/13": 657.63, "4/6": 475.5, "3/30": 127.5, "3/16": 153.0, "3/9": 401.25, "3/2": 249.75, "2/23": 170.5, "2/16": 51.25, "2/9": 246.75, "2/2": 244.25, "1/26": 157.0, "1/19": 168.75, "1/12": 293.0}, "total": 3596.13}, {"name": "Ben Hoffman", "former": false, "amts": {"6/15": 1346.16, "6/8": 1346.16, "6/1": 1346.16, "5/25": 1346.16, "5/18": 1346.16, "5/11": 1346.16, "5/4": 1346.16, "4/27": 1346.16, "4/20": 1386.16, "4/13": 1346.16, "4/6": 1346.16, "3/30": 1346.16, "3/23": 1346.16, "3/16": 1346.16, "3/9": 1346.16, "3/2": 1346.16, "2/23": 1346.16, "2/16": 1346.16, "2/9": 1346.16, "2/2": 1346.16, "1/26": 1346.16, "1/19": 1346.16, "1/12": 1346.16, "1/5": 1346.16}, "total": 32347.84}, {"name": "Christopher Adamson", "former": false, "amts": {"6/15": 2000.0, "6/8": 2000.0, "6/1": 2000.0, "5/25": 2000.0, "5/18": 2000.0, "5/11": 2000.0, "5/4": 2000.0, "4/27": 2000.0, "4/20": 2000.0, "4/13": 2000.0, "4/6": 2000.0, "3/30": 2000.0, "3/23": 2000.0, "3/16": 2000.0, "3/9": 2000.0, "3/2": 2000.0, "2/23": 2000.0, "2/16": 2000.0, "2/9": 2000.0, "2/2": 2000.0}, "total": 40000.0}, {"name": "Harold Galvis", "former": false, "amts": {"6/15": 1130.0, "6/8": 1130.0, "6/1": 1130.0}, "total": 3390.0}, {"name": "Kidist Gelaw", "former": false, "amts": {"6/15": 1130.0, "6/8": 1130.0}, "total": 2260.0}, {"name": "Valeria Abrego", "former": false, "amts": {"6/15": 800.0, "6/8": 900.0, "6/1": 1000.0, "5/25": 800.0, "5/18": 800.0, "5/11": 800.0, "5/4": 940.0, "4/27": 800.0, "4/20": 800.0, "4/13": 800.0, "4/6": 925.0, "3/30": 800.0, "3/23": 820.1, "3/16": 965.0, "3/9": 800.0, "3/2": 800.0, "2/23": 800.0, "2/16": 800.0, "2/9": 800.0, "2/2": 800.0, "1/26": 800.0, "1/19": 800.0, "1/12": 800.0, "1/5": 800.0}, "total": 19950.1}, {"name": "Ayelen Sanchez", "former": true, "amts": {"2/2": 676.76, "1/19": 262.5, "1/12": 445.0, "1/5": 425.0}, "total": 1809.26}, {"name": "Biniyam Fissehaye", "former": true, "amts": {"5/4": 1350.0, "4/27": 1500.0, "4/20": 1350.0, "4/13": 1350.0, "4/6": 1350.0, "3/30": 1350.0, "3/23": 1350.0, "3/16": 1350.0, "3/9": 1350.0, "3/2": 1350.0, "2/23": 1350.0, "2/16": 1350.0, "2/9": 1350.0, "2/2": 1377.07}, "total": 19077.07}, {"name": "Branden Parnell", "former": true, "amts": {"1/26": 2307.68, "1/19": 1153.84, "1/12": 1153.84, "1/5": 1153.84}, "total": 5769.2}, {"name": "Christopher Simpson", "former": true, "amts": {"2/16": 900.0, "2/9": 1238.43, "2/2": 1238.43, "1/26": 900.0, "1/19": 900.0, "1/12": 1910.8, "1/5": 1910.8}, "total": 8998.46}, {"name": "Debra Adamson", "former": true, "amts": {"2/16": 1250.0, "2/9": 1250.0, "2/2": 1250.0, "1/26": 1250.0, "1/19": 1250.0, "1/12": 1250.0, "1/5": 1250.0}, "total": 8750.0}, {"name": "Elizabeth Delgado", "former": true, "amts": {"2/16": 1659.9, "2/9": 1831.76, "2/2": 1047.96, "1/26": 1137.63, "1/19": 1205.73, "1/12": 758.13, "1/5": 900.0}, "total": 8541.11}, {"name": "Kirsten Hall", "former": true, "amts": {"1/19": 750.0, "1/12": 750.0, "1/5": 750.0}, "total": 2250.0}], "totals": {"1/5": 8535.8, "1/12": 8706.93, "1/19": 7836.98, "1/26": 7898.47, "2/2": 9980.63, "2/9": 10063.1, "2/16": 9357.31, "2/23": 5666.66, "3/2": 5745.91, "3/9": 5897.41, "3/16": 5814.16, "3/23": 5516.26, "3/30": 5623.66, "4/6": 6096.66, "4/13": 6153.79, "4/20": 5736.16, "4/27": 5646.16, "5/4": 5636.16, "5/11": 4146.16, "5/18": 4146.16, "5/25": 4146.16, "6/1": 5476.16, "6/8": 6506.16, "6/15": 6406.16}}]};
+
 // ── AGENTS ────────────────────────────────────────────────────
 // Agent payments are categorized as Owner Draws in QBO but tracked
 // separately on the dashboard because they're a distinct expense lens
@@ -7548,6 +7554,7 @@ function OfficeStaff() {
       <div style={{ display:"flex", gap:8, marginBottom:14 }}>
         {[
           ["summary","📊 Summary"],
+          ["weekly","📅 Weekly Checks"],
           ["w2","👔 W2 Office ("+OFFICE_W2.length+")"],
           ["warehouse","🏗️ Warehouse ("+WAREHOUSE.length+")"],
           ["contractors","📋 Contractors ("+CONTRACTORS.length+")"],
@@ -7562,6 +7569,58 @@ function OfficeStaff() {
           }}>{lbl}</button>
         ))}
       </div>
+
+      {/* ── WEEKLY CHECKS VIEW ── */}
+      {view === "weekly" && (() => {
+        const PC = OFFICE_PAYCHECKS;
+        const fc = v => v ? "$"+Math.round(v).toLocaleString() : "";
+        const grand = PC.sections.reduce((s,sec)=> s + sec.rows.reduce((a,r)=>a+r.total,0), 0);
+        const colW = 78, nameW = 150;
+        const cell = { padding:"4px 8px", textAlign:"right", fontFamily:"var(--f3,Consolas,monospace)", fontSize:11, whiteSpace:"nowrap", borderBottom:"1px solid var(--bd)" };
+        const nameCell = { ...cell, textAlign:"left", position:"sticky", left:0, background:"var(--s2)", minWidth:nameW, maxWidth:nameW, zIndex:1 };
+        return (
+          <div className="card" style={{ marginBottom:14, padding:0 }}>
+            <div style={{ padding:"12px 14px 8px" }}>
+              <div className="ctit">Weekly Paychecks — per employee</div>
+              <div style={{ fontSize:10, color:"var(--mu)", marginTop:2 }}>{PC.source} · {PC.weeks.length} weeks · drivers excluded · former employees dimmed</div>
+            </div>
+            <div style={{ overflowX:"auto", maxWidth:"100%" }}>
+              <table style={{ borderCollapse:"collapse", minWidth:nameW + colW*(PC.weeks.length+1) }}>
+                <thead>
+                  <tr>
+                    <th style={{ ...nameCell, top:0, zIndex:3, textTransform:"uppercase", fontSize:10, color:"var(--mu)", borderBottom:"2px solid var(--or)" }}>Employee</th>
+                    {PC.weeks.map(w => <th key={w} style={{ ...cell, minWidth:colW, color:"var(--or)", fontWeight:700, borderBottom:"2px solid var(--or)" }}>{w}</th>)}
+                    <th style={{ ...cell, minWidth:colW, color:"var(--tx)", fontWeight:700, borderBottom:"2px solid var(--or)" }}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PC.sections.map(sec => [
+                    <tr key={sec.name+"-h"}>
+                      <td style={{ ...nameCell, fontWeight:700, color:"var(--tx)", textTransform:"uppercase", fontSize:10, background:"var(--s1,#0e1116)" }}>{sec.name}</td>
+                      <td colSpan={PC.weeks.length+1} style={{ ...cell, background:"var(--s1,#0e1116)" }}></td>
+                    </tr>,
+                    ...sec.rows.map(r => (
+                      <tr key={sec.name+r.name} style={{ opacity:r.former?0.45:1 }}>
+                        <td style={nameCell}>{r.name}</td>
+                        {PC.weeks.map(w => <td key={w} style={{ ...cell, color:r.amts[w]?"var(--tx)":"var(--bd)" }}>{fc(r.amts[w])}</td>)}
+                        <td style={{ ...cell, fontWeight:700, color:"var(--gr,#3ddc84)" }}>{fc(r.total)}</td>
+                      </tr>
+                    )),
+                    <tr key={sec.name+"-t"}>
+                      <td style={{ ...nameCell, fontWeight:700, color:"var(--or)", textTransform:"uppercase", fontSize:10 }}>Total {sec.name}</td>
+                      {PC.weeks.map(w => <td key={w} style={{ ...cell, fontWeight:700, color:"var(--mu)", borderTop:"1px solid var(--or)" }}>{fc(sec.totals[w])}</td>)}
+                      <td style={{ ...cell, fontWeight:700, color:"var(--or)", borderTop:"1px solid var(--or)" }}>{fc(sec.rows.reduce((a,r)=>a+r.total,0))}</td>
+                    </tr>
+                  ])}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ padding:"8px 14px", fontSize:11, color:"var(--mu)" }}>
+              Grand total (gross, all weeks): <b style={{ color:"var(--tx)" }}>{fc(grand)}</b> · Contractors tracked separately in the Contractors tab
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── SUMMARY VIEW ── */}
       {view === "summary" && (() => {
