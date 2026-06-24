@@ -388,7 +388,7 @@ Touch these (real data each week):
 - `FUEL{}` ← match EFS cards to drivers; handle splits for shared cards
 - **`OFFICE_W2[]` + `WAREHOUSE[]`** ← per-person gross/taxes/contrib/totalCost from the **SF + J&A payroll XLS** (xlrd rows: "Gross pay - total", "Employer taxes - total", "Company contributions - total", "Total payroll cost"; salary = gross − bonus − reimb − commission). Names are "Last First" in the XLS vs "First Last" in App.jsx — map them. *Former/frozen staff come back UNCHANGED — that's the tell they're inactive, not a parse miss. **This half is easy to forget — it's NOT optional.**
 - **`CONTRACTORS[]`** ← per-contractor weekly amounts given by Ben **in chat** (no file carries them). Each entry: payments+1, weeklyTotal += weekly, bump commission/health/car where applicable, recompute `total` (= weeklyTotal + carTotal + commission + healthInsTotal + other). Reconcile the array sum vs the QBO "Contractor Payroll" P&L line (within ~1.5%). Ask for these as part of Step 0, alongside the ATL/Agent roster.
-- **`OFFICE_WEEKLY[]`** (Office Staff tab weekly trend) ← after OFFICE_W2/WAREHOUSE/CONTRACTORS are updated, append ONE new entry for the just-closed week: `{ label:"<same week label>", total:<this-week grandTotal − last-week grandTotal> }` where grandTotal = sum(OFFICE_W2.totalCost) + sum(WAREHOUSE.totalCost) + sum(CONTRACTORS.total). That delta is the exact loaded office cost for the week. (History before the first live week is a one-time QBO-reconstructed backfill — see the comment above the constant; don't rebuild it each week, just append.)
+- **`OFFICE_PAYCHECKS`** (Office Staff → Weekly Checks grid + the Weekly Cost Trend chart, which now derives from this same data) ← regenerated each week by `scripts/build_paycheck_grid.py`. See the "Office Staff Weekly Checks grid" section below for the full procedure.
 - `INCOME_2026` top-level totals + `weeks[]` (append new week) + `months[]` (replace partial month with full + add new partial)
 - `MONTHLY_REVENUE` ← matching row update for the just-closed month
 - Sweep any inline `thru <date>` comments next to category constants — these are still hand-typed annotations; keep them current
@@ -415,6 +415,26 @@ Touch these (real data each week):
 - Update the `LABOR` comment's "N drivers active" digit (drives `metrics.json drivers:N` via the regex)
 
 Build verifies + regenerates `public/metrics.json` and `public/payroll-summary.json` which feed CFO Dashboard + Per Load CPM. Commit + push → Vercel auto-deploys (~2 min). Clear `incoming-freightiq/` after **all** consumers (CFO Dashboard, Per Load CPM) confirmed pulling new metrics.
+
+### Office Staff Weekly Checks grid (`OFFICE_PAYCHECKS`) — weekly refresh
+
+The Office Staff tab has a **Weekly Checks** sub-tab: a per-employee × per-week grid of payroll cost, grouped by **company** (CE / SF / CE East / J&A), with a big per-week grand total in the header. The **Weekly Cost Trend** chart on the same tab derives from this same data. Refresh it every weekly drop:
+
+1. Drop these exports into `incoming-freightiq/` (filenames auto-detected by pattern):
+   - `ShowFreightInc_PaycheckHistory_*.xls` and `J&A*PaycheckHistory*.xls` — W-2 paycheck history (Pay date · Name · Total pay).
+   - `J&A*ContractorPayments*.xls` — QB contractor payments (dated, has Category col).
+   - `VendorEmployeePayments*.csv` — Chase vendor/employee payments (dated).
+2. Run `python scripts/build_paycheck_grid.py` — it rebuilds `OFFICE_PAYCHECKS` and writes it straight into `src/App.jsx`. Then `npm run build`, commit, push.
+
+**What the script does / rules it encodes (maintain these as people change — they're hardcoded in the script, not the files):**
+- **Cells:** W-2 = full loaded cost (gross × that person's employer-tax/401k factor from `OFFICE_W2`/`WAREHOUSE`) shown white; 1099 = actual dated contractor payments shown amber. Reconciles: W-2 portion = sum of `OFFICE_W2`+`WAREHOUSE` totalCost.
+- **Company map** (`W2DIV` + `canon()`): per-person CE/SF/CE East/J&A with 50/50 splits (Bart & Gabriel Colon = CE/SF; Harold & Kidist = CE/CE East; Nathan & Cecy = CE).
+- **Dual people** (W-2→1099): Delgado, Simpson, Debra, **Biniyam (= ENM Trucking)** merge into ONE row — W-2 weeks white, 1099 weeks amber. Payee aliases: Bill A→Deb, Neon Vibes→Mellody, Salman→Hilda, Christopher→Simpson, ENM→Biniyam.
+- **Excluded:** reimbursements (QB "Contractor Reimbursement" category), the agent (Nixon Graye / Kevin).
+- **Not in any file → hardcoded, MUST update manually:** Maria Con ($550/wk → $650 after Mar 10), Logic ($500/wk all year), **Mairena Tapias** (Jon Marcus's assistant, 100% CE — her dated payments are a literal list in the script; **append her new weekly payments each week**).
+- **Dimming:** a row dims only if former AND has no 1099 activity (still-active contractors stay full brightness).
+
+**Open gap:** CE East currently only contains Harold/Kidist's split halves (~$3K). If CE East gets its own staff, add a CE East paycheck export + extend the script.
 
 ### Monthly close protocol
 At month close (when month N is fully invoiced in QB), refresh BOTH spots in App.jsx that hold monthly numbers — they drift independently and there's no automatic check:
