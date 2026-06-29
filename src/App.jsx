@@ -79,12 +79,9 @@ let PAYROLL = [
   { name: "Williams Tadaryl C",    hours: 1503.72,totalCost: 44479.84 },
   { name: "Williams Will",         hours: 1035.88, totalCost: 31343.24 },
   { name: "Willis Wali A",         hours: 1739.47,totalCost: 59803.29 },
-  { name: "Wright Robert",         hours: 260.66, totalCost: 9443.88,   active: false }, // *inactive (UNCHANGED WoW)
-  { name: "Baker Anthony",         hours: 0.00,   totalCost: 2074.59 },                  // NEW · card 27450 · 0 hrs (signed, not yet driving)
-  { name: "Camacho Stephen B",     hours: 74.24,  totalCost: 2147.39 },                  // NEW · started Jun 2026 · no EFS card mapped yet
-  { name: "Dawson Brian",          hours: 0.00,   totalCost: 2896.28 },                  // NEW · card 17451 · 0 hrs (signed, not yet driving)
-  { name: "Lewis Steve",           hours: 63.44,  totalCost: 1835.01 },                  // NEW · card 97454
-  { name: "Pacitti Michael R",     hours: 75.09,  totalCost: 2464.36 },                  // NEW · card 87455
+  { name: "Wright Robert",         hours: 260.66, totalCost: 9443.88,   active: false }, // *inactive (UNCHANGED WoW),                  // NEW · card 27450 · 0 hrs (signed, not yet driving)
+  { name: "Camacho Stephen B",     hours: 74.24,  totalCost: 2147.39 },                  // NEW · started Jun 2026 · no EFS card mapped yet,                  // NEW · card 17451 · 0 hrs (signed, not yet driving)
+  { name: "Lewis Steve",           hours: 63.44,  totalCost: 1835.01 },                  // NEW · card 97454,                  // NEW · card 87455
   { name: "Wilson Antionette",     hours: 50.00,  totalCost: 1257.13 },                  // NEW · started Jun 2026 · no EFS card mapped yet
 ];
 
@@ -148,10 +145,7 @@ let FUEL = {
   "Williams Tadaryl C":    { fuel: 20686.40, gallons: 3906.65 },  // card 37402 (UNCHANGED WoW × 2)
   "Williams Will":         { fuel: 22924.67, gallons: 3932.88 },  // card 27405
   "Willis Wali A":         { fuel: 13159.83, gallons: 2385.92 },  // card 87400
-  "Wright Robert":         { fuel: 2170.77,  gallons: 538.08 },   // card 37405 split only (*inactive — frozen; 47458 reassigned to Tucker)
-  "Baker Anthony":         { fuel: 3809.62, gallons: 792.86 }, // NEW · card 27450
-  "Pacitti Michael R":     { fuel: 2941.04, gallons: 632.55 }, // NEW · card 87455
-  "Dawson Brian":          { fuel: 2725.89, gallons: 548.41 }, // NEW · card 17451
+  "Wright Robert":         { fuel: 2170.77,  gallons: 538.08 },   // card 37405 split only (*inactive — frozen; 47458 reassigned to Tucker), // NEW · card 27450, // NEW · card 87455, // NEW · card 17451
   "Lewis Steve":           { fuel: 979.82, gallons: 148.48 }, // NEW · card 97454
 };
 
@@ -160,13 +154,13 @@ let FUEL = {
 // All other costs come from QuickBooks P&L.
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
-let LABOR     = 1156998.78; // QuickBooks: total driver payroll cost (gross+taxes+401k) thru Jun 26 — 45 drivers active (60 with YTD hours incl 15 frozen/*inactive; SF drivers-only total per parse_weekly_drop _summary)
-let FUEL_TOT  = 596077.79;  // EFS only — thru Jun 26 (no Mudflap this period)
-let GALLONS   = 109737.02;  // EFS 109,737.02
+let LABOR     = 1149563.55; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru Jun 26 — 42 active (57 w/ YTD incl 15 frozen). EXCLUDES OTR drivers (Baker/Dawson/Pacitti $7,435 — see OTR_WEEKLY_LOG; carved out of fleet CPM)
+let FUEL_TOT  = 586601.24;  // EFS fleet only — thru Jun 26 (EFS report total $596,077.79 minus OTR cards 27450/17451/87455 $9,476.55; OTR carved out of CPM)
+let GALLONS   = 107763.20;  // EFS 109,737.02 minus OTR 1,973.82
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
 let MILES     = 737887.1;     // Samsara Vehicle Mileage report, Jan 1 – Jun 27, 2026 (49 logged; updated from manual xlsx drop via scripts/parse_samsara_mileage.py)
 let TRUCK_COUNT = 30;       // ACTIVE fleet trucks per Ben's truck-count sheet. NOTE: TRUCK_MILES now has 49 entries from the mileage report; cumulative miles feed MILES + CPM but departed/temp trucks don't count toward the active fleet. (Confirm active count with Ben.)
-let TOTAL_HRS  = 36767.90;  // Payroll hours — driver-only (office excluded), thru Jun 26
+let TOTAL_HRS  = 36692.81;  // Payroll hours — fleet drivers only (office + OTR excluded), thru Jun 26
 let INS_WEEK  = 6375;
 let INS_TOT    = 148599.16;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru Jun 28 (UNCHANGED WoW × 3 — flag, no June truck-ins posting yet)
 let TRUCK_TOT  = 457050.95;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI + Ryder) thru Jun 28 (+$62.7K WoW — June rentals posted)
@@ -689,6 +683,7 @@ const TABS = [
   { id: "income",  icon: "💵", label: "Income" },
   { id: "ceeast",   icon: "🏦", label: "CE East" },
   { id: "atl",      icon: "🍑", label: "ATL Ops" },
+  { id: "otr",      icon: "🛣️", label: "OTR Ops" },
   { id: "cashflow", icon: "💰", label: "Cash Flow" },
   { id: "budget",   icon: "📋", label: "Budgeting" },
   { id: "settings", icon: "📂", label: "Upload" },
@@ -7406,6 +7401,39 @@ function atlSum() {
   return sum;
 }
 
+// ── OTR_WEEKLY_LOG ──────────────────────────────────────────
+// Over-the-road drivers — a SEPARATE operation, like ATL. Per-week roster;
+// drivers move in/out week to week. OTR drivers are NOT in PAYROLL/FUEL and
+// are EXCLUDED from the fleet CPM (LABOR/FUEL_TOT/TOTAL_HRS carve them out).
+const OTR_WEEKLY_LOG = [
+  {
+    weekStart: "2026-06-22",
+    weekEnd: "2026-06-28",
+    drivers: ["Baker Anthony", "Dawson Brian", "Pacitti Michael R"],
+    driverPay: 7435.23,        // YTD-to-first-report (Baker $2,074.59 + Dawson $2,896.28 + Pacitti $2,464.36)
+    driverHours: 75.09,        // Pacitti 75.09; Baker & Dawson 0 hrs (signed/fueling, not yet logging hours)
+    fuelAmt: 9476.55,          // EFS cards 27450 (Baker) + 17451 (Dawson) + 87455 (Pacitti)
+    fuelGallons: 1973.82,
+    contractors: [],
+    contractorPay: 0,
+    note: "OTR launch week. Amounts are YTD-to-first-appearance in payroll/EFS. Per-week deltas from next drop forward.",
+  },
+];
+
+// Aggregate accessor for OtrOperations() — mirrors atlSum().
+function otrSum() {
+  const sum = { driverPay: 0, driverHours: 0, fuelAmt: 0, fuelGallons: 0, contractorPay: 0, weeks: OTR_WEEKLY_LOG.length };
+  for (const w of OTR_WEEKLY_LOG) {
+    sum.driverPay     += w.driverPay     || 0;
+    sum.driverHours   += w.driverHours   || 0;
+    sum.fuelAmt       += w.fuelAmt       || 0;
+    sum.fuelGallons   += w.fuelGallons   || 0;
+    sum.contractorPay += w.contractorPay || 0;
+  }
+  sum.total = sum.driverPay + sum.fuelAmt + sum.contractorPay;
+  return sum;
+}
+
 // ── ATL BILLING (Atlanta load-level revenue) ────────────────
 // Source of truth: "2026-Atlanta Billing.xlsx" — drop into incoming-freightiq/
 // each week. Run scripts/parse_atl_billing.py to regenerate these totals.
@@ -8333,6 +8361,75 @@ function CashFlowDashboard() {
 // per-week ATL_WEEKLY_LOG array — roster + contribution numbers per
 // week, since drivers/contractors can be ATL one week and not the next.
 // There are no sticky entity:"ATL" tags on PAYROLL/FUEL/CONTRACTORS.
+function OtrOperations() {
+  const cum = otrSum();
+  const milesEst = cum.fuelGallons * 6.5;
+  const allIn = cum.driverPay + cum.fuelAmt + cum.contractorPay;
+  const drivers = Array.from(new Set(OTR_WEEKLY_LOG.flatMap(w => w.drivers || [])));
+  return (
+    <div>
+      <div className="ptitle">🛣️ OTR Operations</div>
+      <div className="psub">
+        Over-the-road drivers · separate operation · {OTR_WEEKLY_LOG.length} week{OTR_WEEKLY_LOG.length===1?"":"s"} logged · {drivers.length} drivers · <b style={{color:"var(--or)"}}>excluded from fleet CPM</b> (own calcs TBD)
+      </div>
+
+      <div className="g4" style={{ marginBottom:14 }}>
+        <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
+          <div className="klbl">OTR Driver Labor</div>
+          <div className="kval" style={{ color:"#f47820" }}>{fd(cum.driverPay, 0)}</div>
+          <div className="ksub">{fn(cum.driverHours, 0)} hrs · {cum.weeks} week{cum.weeks===1?"":"s"}</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #ff8a65" }}>
+          <div className="klbl">OTR Fuel</div>
+          <div className="kval" style={{ color:"#ff8a65" }}>{fd(cum.fuelAmt, 0)}</div>
+          <div className="ksub">{fn(cum.fuelGallons, 0)} gal · {cum.fuelGallons>0?fd(cum.fuelAmt/cum.fuelGallons,3):"—"}/gal avg</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
+          <div className="klbl">OTR All-In Labor + Fuel</div>
+          <div className="kval" style={{ color:"#3ddc84" }}>{fd(allIn, 0)}</div>
+          <div className="ksub">{fn(milesEst, 0)} mi est (gal×6.5)</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #4fc3f7" }}>
+          <div className="klbl">OTR Drivers</div>
+          <div className="kval" style={{ color:"#4fc3f7" }}>{drivers.length}</div>
+          <div className="ksub">{drivers.map(n=>n.split(" ")[0]).join(", ") || "—"}</div>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginBottom:14 }}>
+        <div className="ctit" style={{ fontSize:13 }}>Per-week OTR roster + cost</div>
+        <table className="tbl" style={{ fontSize:13 }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign:"left", fontSize:10 }}>Week</th>
+              <th style={{ textAlign:"left", fontSize:10 }}>Drivers</th>
+              <th style={{ fontSize:10 }}>Driver Pay</th>
+              <th style={{ fontSize:10 }}>Hours</th>
+              <th style={{ fontSize:10 }}>Fuel</th>
+              <th style={{ fontSize:10 }}>Week Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...OTR_WEEKLY_LOG].reverse().map((w, i) => (
+              <tr key={w.weekStart} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
+                <td style={{ padding:"10px 9px", borderLeft:"4px solid #f47820", fontWeight:600, whiteSpace:"nowrap" }}>{w.weekStart.slice(5)} – {w.weekEnd.slice(5)}</td>
+                <td style={{ padding:"10px 9px", color:"#9aa4b3", fontSize:11 }}>{(w.drivers||[]).map(n=>n.split(" ")[0]+" "+(n.split(" ")[1]||"")).join(", ")}</td>
+                <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#f47820", fontWeight:700 }}>{fd(w.driverPay, 0)}</td>
+                <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#9aa4b3" }}>{fn(w.driverHours, 0)}</td>
+                <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#ff8a65" }}>{fd(w.fuelAmt, 0)}</td>
+                <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#3ddc84" }}>{fd((w.driverPay||0)+(w.fuelAmt||0)+(w.contractorPay||0), 0)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div style={{ fontSize:11, color:"var(--mu)", marginTop:8 }}>
+          Source: <code>OTR_WEEKLY_LOG</code>. OTR drivers are carved out of PAYROLL/FUEL and the fleet CPM (LABOR/FUEL_TOT exclude them). Per-week deltas computed from PAYROLL/FUEL YTD each drop. OTR-specific CPM / revenue calcs TBD.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AtlOperations() {
   const cum = atlSum();
   const atlMilesEst = cum.fuelGallons * 6.5;
@@ -9336,6 +9433,7 @@ export default function App() {
     if (tab === "ceeast")   return <CEEast />;
     if (tab === "cashflow") return <CashFlowDashboard />;
     if (tab === "atl")      return <AtlOperations />;
+    if (tab === "otr")      return <OtrOperations />;
     if (tab === "budget")   return <Budgeting />;
     if (tab === "office")   return <OfficeStaff />;
     if (tab === "settings") return <DataSettings />;

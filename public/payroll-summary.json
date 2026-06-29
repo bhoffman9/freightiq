@@ -196,29 +196,14 @@
       "totalCost": 59803.29
     },
     {
-      "name": "Baker Anthony",
-      "hours": 0,
-      "totalCost": 2074.59
-    },
-    {
       "name": "Camacho Stephen B",
       "hours": 74.24,
       "totalCost": 2147.39
     },
     {
-      "name": "Dawson Brian",
-      "hours": 0,
-      "totalCost": 2896.28
-    },
-    {
       "name": "Lewis Steve",
       "hours": 63.44,
       "totalCost": 1835.01
-    },
-    {
-      "name": "Pacitti Michael R",
-      "hours": 75.09,
-      "totalCost": 2464.36
     },
     {
       "name": "Wilson Antionette",
@@ -382,11 +367,11 @@
   ],
   "period": "Jan 1 - Jun 28, 2026",
   "totals": {
-    "driverLabor": 1036790.4900000001,
-    "driverCount": 45,
+    "driverLabor": 1029355.2600000001,
+    "driverCount": 42,
     "officeTotal": 397154.39,
     "warehouseTotal": 66679.5,
     "contractorTotal": 346941.87,
-    "grandTotal": 1847566.25
+    "grandTotal": 1840131.02
   }
 }
