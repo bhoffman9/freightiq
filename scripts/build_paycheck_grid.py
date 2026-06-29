@@ -130,11 +130,10 @@ for row in list(csv.reader(open(CHASE, encoding='utf-8-sig')))[1:]:
     ds = row[3]; add_contractor(datetime.date(int(ds[:4]), int(ds[4:6]), int(ds[6:8])), payto, a)
 
 # --- Hardcoded (not in any file) — maintain these as rates/people change ---
-# Maria Con: $550/wk through Mar 10, then $650/wk (23 weeks from 1/5)
-cutoff = datetime.date(2026,3,9); r = getrow('SF', ('con','MAR'), 'Maria Con · 1099', False); cnt = 0
+# Maria Con: $550/wk through Mar 10, then $650/wk — every week 1/5 -> latest
+cutoff = datetime.date(2026,3,9); r = getrow('SF', ('con','MAR'), 'Maria Con · 1099', False)
 for w in weeks[1:]:
-    if cnt >= 23: break
-    r['camts'][f"{w.month}/{w.day}"] = 550.0 if w <= cutoff else 650.0; cnt += 1
+    r['camts'][f"{w.month}/{w.day}"] = 550.0 if w <= cutoff else 650.0
 
 # Mairena Tapias (Jon Marcus assistant), 100% CE, paid as expense — APPEND new payments weekly
 r = getrow('CE', ('con','MAI'), 'Mairena Tapias · 1099', False)
@@ -144,6 +143,25 @@ for ds, amt in [('04/20/2026',193.04),('05/05/2026',900.0),('05/20/2026',882.0),
 # Logic Consultants: $500/wk entire year
 rL = getrow('J&A', ('con','LOGIC'), 'Logic Consultants · 1099', False)
 for w in weeks[1:]: rL['camts'][f"{w.month}/{w.day}"] = 500.0
+
+# CURRENT-WEEK contractor amounts (Ben's chat amounts) placed on the latest
+# grid week, used when fresh QB ContractorPayments/Chase exports lag the W-2
+# paycheck history. UPDATE THESE EACH WEEK to the latest week's amounts.
+LW = wlabel[-1]
+def add_latest(comp, rk, amt, disp):
+    ex = rows.get((comp, rk)); nm = ex['name'] if ex else disp
+    rr = getrow(comp, rk, nm, ex['former'] if ex else False)
+    rr['camts'][LW] = round(rr['camts'].get(LW, 0) + amt, 2)
+add_latest('CE',  ('con','JON'),      2800.0,  'Jon Marcus · 1099')
+add_latest('CE',  ('con','GAB'),      1145.32, 'Gabriel Colon · 1099 (50%)')
+add_latest('SF',  ('con','GAB'),      1145.32, 'Gabriel Colon · 1099 (50%)')
+add_latest('J&A', ('con','MEL'),      2550.0,  'Mellody Abrego · 1099')   # 2250 + 300 commission
+add_latest('J&A', ('con','HIL'),      1730.0,  'Hilda Salman · 1099')
+add_latest('J&A', ('fissehaye','b'),  1850.0,  'Biniyam Fissehaye')        # ENM
+add_latest('J&A', ('delgado','e'),    900.0,   'Elizabeth Delgado')
+add_latest('J&A', ('simpson','c'),    834.97,  'Christopher Simpson')
+add_latest('J&A', ('adamson','d'),    1750.0,  'Debra Adamson')
+# (Jon Marcus car, Maria $650, Logic $500, Mairena handled above by their rules)
 
 SECT = ['CE','SF','CE East','J&A']; out = []
 for s in SECT:
