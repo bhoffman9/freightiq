@@ -22,8 +22,10 @@ export default async function handler(req, res) {
     const token = authData.access_token;
     if (!token) return res.status(502).json({ error: "Alvys auth failed" });
 
-    // AR statuses: delivered + invoiced (open receivables) + in transit (coming due)
-    const statuses = ["In Transit", "Delivered", "Invoiced"];
+    // Everything except Queued / Released / Completed (per Ben). The AR view
+    // narrows to In Transit/Delivered/Invoiced with balance; the full set
+    // (incl Covered/Open) is returned as allRows for the Excel download.
+    const statuses = ["Covered", "Open", "In Transit", "Delivered", "Invoiced"];
     const items = [];
     for (let page = 0; page < 20; page++) {
       const r = await fetch("https://integrations.alvys.com/api/p/v1/loads/search", {
@@ -42,7 +44,7 @@ export default async function handler(req, res) {
     const amt = o => (o && typeof o.Amount === "number" ? o.Amount : 0);
     const days = d => (d ? Math.max(0, Math.floor((now - new Date(d).getTime()) / 86400000)) : null);
 
-    const rows = items.map(l => {
+    const allRows = items.map(l => {
       const stops = l.Stops || [];
       const o = stops[0]?.Address || {}, dst = stops[stops.length - 1]?.Address || {};
       const invoice = amt(l.CustomerRate) + amt(l.FuelSurcharge) + amt(l.CustomerAccessorials);
@@ -59,7 +61,9 @@ export default async function handler(req, res) {
         daysSinceDelivery: days(l.DeliveredAt),
         daysSinceInvoice: days(l.InvoicedAt),
       };
-    }).filter(r => r.balance > 0.01);
+    });
+    // AR = delivered/invoiced/in-transit with an outstanding balance
+    const rows = allRows.filter(r => ["In Transit", "Delivered", "Invoiced"].includes(r.status) && r.balance > 0.01);
 
     // aging by days since delivery (unbilled/uncollected)
     const buckets = { "0-3": 0, "4-7": 0, "8-14": 0, "15-30": 0, "31+": 0, "undelivered": 0 };
@@ -92,7 +96,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       totalAR, count: rows.length, avgDaysSinceDelivery: avgDays,
-      aging: buckets, byStatus, byCustomer, rows,
+      aging: buckets, byStatus, byCustomer, rows, allRows,
       note: "Carrier not available from Alvys load API. AR = delivered/invoiced/in-transit loads with outstanding balance (CustomerRate+FSC+accessorials − TotalPaid). Factored invoices move to Flexent once sold.",
       fetchedAt: new Date().toISOString(),
     });

@@ -8375,6 +8375,23 @@ function ArDashboard() {
   }, []);
   const ageColor = d => d == null ? "#4fc3f7" : d <= 7 ? "#3ddc84" : d <= 14 ? "#f5c542" : d <= 30 ? "#ff8a65" : "#ff5252";
   const stColor = s => s === "Invoiced" ? "#f5c542" : s === "Delivered" ? "#3ddc84" : "#4fc3f7";
+  const exportXlsx = () => {
+    const src = (data && data.allRows) || [];
+    const sheet = src.map(r => ({
+      "Load #": r.loadNumber, "Order #": r.orderNumber, "PO #": r.po, "Ref #": r.ref,
+      "Customer": r.customer, "Status": r.status, "Invoice As": r.invoiceAs,
+      "Origin": r.origin, "Destination": r.destination,
+      "Picked Up": r.pickedUpAt ? r.pickedUpAt.slice(0,10) : "",
+      "Delivered": r.deliveredAt ? r.deliveredAt.slice(0,10) : "",
+      "Invoiced": r.invoicedAt ? r.invoicedAt.slice(0,10) : "",
+      "Invoice $": r.invoice, "Paid $": r.paid, "Balance $": r.balance,
+      "Days Since Delivery": r.daysSinceDelivery, "Days Since Invoice": r.daysSinceInvoice,
+    }));
+    const ws = XLSX.utils.json_to_sheet(sheet);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "AR Report");
+    XLSX.writeFile(wb, `Alvys_AR_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
 
   return (
     <div>
@@ -8413,10 +8430,12 @@ function ArDashboard() {
           <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>{data.note}</div>
         </div>
 
-        <div style={{ display:"flex", gap:8, marginBottom:12 }}>
+        <div style={{ display:"flex", gap:8, marginBottom:12, alignItems:"center" }}>
           {[["detail","📄 Detail ("+data.count+")"],["customer","🏢 By Customer ("+data.byCustomer.length+")"]].map(([id,lbl]) => (
             <button key={id} onClick={() => setView(id)} style={{ padding:"7px 16px", borderRadius:3, cursor:"pointer", fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1, textTransform:"uppercase", background:view===id?"var(--or)":"transparent", color:view===id?"#fff":"var(--mu)", border:`1px solid ${view===id?"var(--or)":"var(--bd)"}` }}>{lbl}</button>
           ))}
+          <button onClick={exportXlsx} style={{ marginLeft:"auto", padding:"7px 16px", borderRadius:3, cursor:"pointer", fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1, textTransform:"uppercase", background:"#3ddc84", color:"#0b0d10", border:"1px solid #3ddc84" }}>⬇ Download Excel</button>
+          <span style={{ fontSize:10, color:"var(--mu)" }}>{(data.allRows||[]).length} loads (excl. queued/released/completed)</span>
         </div>
 
         {view === "customer" && (
