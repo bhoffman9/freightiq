@@ -154,7 +154,7 @@ let FUEL = {
 // All other costs come from QuickBooks P&L.
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
-let LABOR     = 1149563.55; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru Jun 26 — 42 active (57 w/ YTD incl 15 frozen). EXCLUDES OTR drivers (Baker/Dawson/Pacitti $7,435 — see OTR_WEEKLY_LOG; carved out of fleet CPM)
+let LABOR     = 1149563.55; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru Jun 26 — 42 drivers active (57 w/ YTD incl 15 frozen). EXCLUDES OTR drivers (Baker/Dawson/Pacitti $7,435 — see OTR_WEEKLY_LOG; carved out of fleet CPM)
 let FUEL_TOT  = 586601.24;  // EFS fleet only — thru Jun 26 (EFS report total $596,077.79 minus OTR cards 27450/17451/87455 $9,476.55; OTR carved out of CPM)
 let GALLONS   = 107763.20;  // EFS 109,737.02 minus OTR 1,973.82
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
