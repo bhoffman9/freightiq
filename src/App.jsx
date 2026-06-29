@@ -7373,6 +7373,21 @@ const ATL_WEEKLY_LOG = [
     contractorPay: 1850,
     note: "Same roster as prior week (Ben confirmed). Mon Jun 15 – Fri Jun 19 (5 days; payroll/EFS close Fri Jun 19). Mellody no longer ATL — ENM Trucking is the only ATL contractor.",
   },
+  {
+    weekStart: "2026-06-22",
+    weekEnd: "2026-06-28",
+    drivers: ["Alshamaa Manar", "Johnson Christopher", "Logan LaDyle", "Tucker Robert", "Wainwright Michael W"],
+    // Same 5 (Ben confirmed Jun 29). Manar had no pay/fuel activity this week ($0).
+    driverPay: 9323.37,        // exact: 5-driver delta Jun 26 vs Jun 19 PAYROLL YTD
+    driverHours: 309.32,
+    fuelAmt: 5883.41,          // exact: 5-driver delta Jun 26 vs Jun 19 FUEL YTD
+    fuelGallons: 1276.01,
+    contractors: [
+      { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
+    ],
+    contractorPay: 1850,
+    note: "Same roster. Mon Jun 22 – Fri Jun 26 (5 days; payroll/EFS close Fri Jun 26).",
+  },
 ];
 
 // Aggregate accessors — used by AtlOperations() to roll up the per-week log.
