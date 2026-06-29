@@ -46,6 +46,24 @@ export default async function handler(req, res) {
     }
     const loadData = JSON.parse(loadText);
 
+    // TEMP debug=ar: sample a Delivered load full record + trips shape (carrier linkage)
+    if (req.query?.debug === "ar") {
+      const items = loadData.Items || [];
+      const sample = items.find(it => it.Status === "Delivered") || items.find(it => it.Status === "Invoiced") || items[0] || {};
+      let trips = null;
+      try {
+        const tr = await fetch("https://integrations.alvys.com/api/p/v1/trips/search", {
+          method: "POST",
+          headers: { authorization: `Bearer ${access_token}`, "content-type": "application/json" },
+          body: JSON.stringify({ Status: ["Delivered","Invoiced","In Transit","Dispatched","Completed","Available","Open","Covered"], Page: 0, PageSize: 3 }),
+        });
+        const tt = await tr.text(); let tp=null; try{tp=JSON.parse(tt)}catch{}
+        const ti = tp?.Items || [];
+        trips = { status: tr.status, total: tp?.Total, count: ti.length, keys: ti[0]?Object.keys(ti[0]):null, sample: ti[0] || tt.slice(0,300) };
+      } catch(e){ trips = { error: e.message }; }
+      return res.status(200).json({ loadKeys: Object.keys(sample), loadSample: sample, trips });
+    }
+
     const loads = (loadData.Items || []).map(l => {
       const stops = l.Stops || [];
       const orig = stops[0]?.Address || {};
