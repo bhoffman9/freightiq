@@ -46,23 +46,6 @@ export default async function handler(req, res) {
     }
     const loadData = JSON.parse(loadText);
 
-    // TEMP debug=ar: sample a Delivered load full record + trips shape (carrier linkage)
-    if (req.query?.debug === "ar") {
-      const items = loadData.Items || [];
-      const sample = items.find(it => it.Status === "Delivered") || items.find(it => it.Status === "Invoiced") || items[0] || {};
-      let detail = null;
-      try {
-        const dr = await fetch(`https://integrations.alvys.com/api/p/v1/loads/${sample.Id}`, {
-          headers: { authorization: `Bearer ${access_token}` },
-        });
-        const dt = await dr.text(); let dj=null; try{dj=JSON.parse(dt)}catch{}
-        detail = { status: dr.status, keys: dj?Object.keys(dj):null,
-          carrierish: dj?Object.fromEntries(Object.entries(dj).filter(([k])=>/carrier|truck|driver|trip|dispatch|haul/i.test(k))):null,
-          raw: dj? null : dt.slice(0,300) };
-      } catch(e){ detail = { error: e.message }; }
-      return res.status(200).json({ loadKeys: Object.keys(sample), detail });
-    }
-
     const loads = (loadData.Items || []).map(l => {
       const stops = l.Stops || [];
       const orig = stops[0]?.Address || {};
