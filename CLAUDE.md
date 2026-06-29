@@ -420,11 +420,9 @@ Build verifies + regenerates `public/metrics.json` and `public/payroll-summary.j
 
 The Office Staff tab has a **Weekly Checks** sub-tab: a per-employee × per-week grid of payroll cost, grouped by **company** (CE / SF / CE East / J&A), with a big per-week grand total in the header. The **Weekly Cost Trend** chart on the same tab derives from this same data. Refresh it every weekly drop:
 
-1. Drop these exports into `incoming-freightiq/` (filenames auto-detected by pattern):
-   - `ShowFreightInc_PaycheckHistory_*.xls` and `J&A*PaycheckHistory*.xls` — W-2 paycheck history (Pay date · Name · Total pay).
-   - `J&A*ContractorPayments*.xls` — QB contractor payments (dated, has Category col).
-   - `VendorEmployeePayments*.csv` — Chase vendor/employee payments (dated).
-2. Run `python scripts/build_paycheck_grid.py` — it rebuilds `OFFICE_PAYCHECKS` and writes it straight into `src/App.jsx`. Then `npm run build`, commit, push.
+1. **Each week, Ben drops only the W-2 paycheck history** (`ShowFreightInc_PaycheckHistory_*.xls` + `J&A*PaycheckHistory*.xls`) and **gives the contractor amounts in chat** (per his Jun-29 2026 preference — he won't re-export contractor files weekly).
+2. **Contractors:** add a new week key to the `MANUAL_CONTRACTORS` dict in `build_paycheck_grid.py` with that week's chat amounts (Gabriel Colon split 50/50 CE/SF; Mellody = base + commission). The dated `J&A*ContractorPayments*.xls` (QB) + `VendorEmployeePayments*.csv` (Chase) files are the **FROZEN HISTORICAL base (~through 6/15)** — **leave them in `incoming-freightiq/`, do NOT delete them** (the script re-reads them every run for the back-weeks). From 6/22 forward, contractors come from `MANUAL_CONTRACTORS`.
+3. Run `python scripts/build_paycheck_grid.py` (auto-detects the latest paycheck-history files) → rebuilds `OFFICE_PAYCHECKS` into `src/App.jsx`. Then `npm run build`, commit, push.
 
 **What the script does / rules it encodes (maintain these as people change — they're hardcoded in the script, not the files):**
 - **Cells:** W-2 = full loaded cost (gross × that person's employer-tax/401k factor from `OFFICE_W2`/`WAREHOUSE`) shown white; 1099 = actual dated contractor payments shown amber. Reconciles: W-2 portion = sum of `OFFICE_W2`+`WAREHOUSE` totalCost.

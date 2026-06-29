@@ -144,24 +144,30 @@ for ds, amt in [('04/20/2026',193.04),('05/05/2026',900.0),('05/20/2026',882.0),
 rL = getrow('J&A', ('con','LOGIC'), 'Logic Consultants · 1099', False)
 for w in weeks[1:]: rL['camts'][f"{w.month}/{w.day}"] = 500.0
 
-# CURRENT-WEEK contractor amounts (Ben's chat amounts) placed on the latest
-# grid week, used when fresh QB ContractorPayments/Chase exports lag the W-2
-# paycheck history. UPDATE THESE EACH WEEK to the latest week's amounts.
-LW = wlabel[-1]
-def add_latest(comp, rk, amt, disp):
-    ex = rows.get((comp, rk)); nm = ex['name'] if ex else disp
-    rr = getrow(comp, rk, nm, ex['former'] if ex else False)
-    rr['camts'][LW] = round(rr['camts'].get(LW, 0) + amt, 2)
-add_latest('CE',  ('con','JON'),      2800.0,  'Jon Marcus · 1099')
-add_latest('CE',  ('con','GAB'),      1145.32, 'Gabriel Colon · 1099 (50%)')
-add_latest('SF',  ('con','GAB'),      1145.32, 'Gabriel Colon · 1099 (50%)')
-add_latest('J&A', ('con','MEL'),      2550.0,  'Mellody Abrego · 1099')   # 2250 + 300 commission
-add_latest('J&A', ('con','HIL'),      1730.0,  'Hilda Salman · 1099')
-add_latest('J&A', ('fissehaye','b'),  1850.0,  'Biniyam Fissehaye')        # ENM
-add_latest('J&A', ('delgado','e'),    900.0,   'Elizabeth Delgado')
-add_latest('J&A', ('simpson','c'),    834.97,  'Christopher Simpson')
-add_latest('J&A', ('adamson','d'),    1750.0,  'Debra Adamson')
-# (Jon Marcus car, Maria $650, Logic $500, Mairena handled above by their rules)
+# MANUAL contractor amounts by week (Ben gives these in chat each week, since
+# the QB ContractorPayments/Chase exports lag the W-2 paycheck history).
+# The dated QB+Chase files above are the FROZEN HISTORICAL base (~through 6/15);
+# from 6/22 forward, contractors are hand-placed here. EACH WEEK: add a new
+# week key with that week's amounts (Gabriel Colon split 50/50 CE/SF).
+# Maria ($650/wk), Logic ($500/wk), Mairena, Jon Marcus car handled by rules above.
+MANUAL_CONTRACTORS = {
+    '6/22': [
+        ('CE',  ('con','JON'),      2800.0,  'Jon Marcus · 1099'),
+        ('CE',  ('con','GAB'),      1145.32, 'Gabriel Colon · 1099 (50%)'),
+        ('SF',  ('con','GAB'),      1145.32, 'Gabriel Colon · 1099 (50%)'),
+        ('J&A', ('con','MEL'),      2550.0,  'Mellody Abrego · 1099'),   # 2250 + 300 commission
+        ('J&A', ('con','HIL'),      1730.0,  'Hilda Salman · 1099'),
+        ('J&A', ('fissehaye','b'),  1850.0,  'Biniyam Fissehaye'),        # ENM
+        ('J&A', ('delgado','e'),    900.0,   'Elizabeth Delgado'),
+        ('J&A', ('simpson','c'),    834.97,  'Christopher Simpson'),
+        ('J&A', ('adamson','d'),    1750.0,  'Debra Adamson'),
+    ],
+}
+for wl, items in MANUAL_CONTRACTORS.items():
+    for comp, rk, amt, disp in items:
+        ex = rows.get((comp, rk)); nm = ex['name'] if ex else disp
+        rr = getrow(comp, rk, nm, ex['former'] if ex else False)
+        rr['camts'][wl] = round(rr['camts'].get(wl, 0) + amt, 2)
 
 SECT = ['CE','SF','CE East','J&A']; out = []
 for s in SECT:
