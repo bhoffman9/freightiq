@@ -683,6 +683,7 @@ const TABS = [
   { id: "income",  icon: "💵", label: "Income" },
   { id: "ceeast",   icon: "🏦", label: "CE East" },
   { id: "atl",      icon: "🍑", label: "ATL Ops" },
+  { id: "ar",       icon: "📋", label: "A/R" },
   { id: "otr",      icon: "🛣️", label: "OTR Ops" },
   { id: "cashflow", icon: "💰", label: "Cash Flow" },
   { id: "budget",   icon: "📋", label: "Budgeting" },
@@ -8361,6 +8362,119 @@ function CashFlowDashboard() {
 // per-week ATL_WEEKLY_LOG array — roster + contribution numbers per
 // week, since drivers/contractors can be ATL one week and not the next.
 // There are no sticky entity:"ATL" tags on PAYROLL/FUEL/CONTRACTORS.
+function ArDashboard() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState(null);
+  const [view, setView] = useState("detail"); // detail | customer
+  useEffect(() => {
+    setLoading(true); setErr(null);
+    fetch("/api/alvys-ar").then(r => r.json())
+      .then(d => { if (d.error) setErr(d.error); else setData(d); })
+      .catch(e => setErr(e.message)).finally(() => setLoading(false));
+  }, []);
+  const ageColor = d => d == null ? "#4fc3f7" : d <= 7 ? "#3ddc84" : d <= 14 ? "#f5c542" : d <= 30 ? "#ff8a65" : "#ff5252";
+  const stColor = s => s === "Invoiced" ? "#f5c542" : s === "Delivered" ? "#3ddc84" : "#4fc3f7";
+
+  return (
+    <div>
+      <div className="ptitle">📋 Accounts Receivable</div>
+      <div className="psub">Live from Alvys · open delivered/invoiced/in-transit loads with outstanding balance{data ? ` · as of ${new Date(data.fetchedAt).toLocaleString()}` : ""}</div>
+
+      {loading && <div className="card" style={{ padding:20 }}>Loading A/R from Alvys…</div>}
+      {err && <div className="card" style={{ padding:16, color:"#ff5252" }}>⚠ Alvys A/R fetch failed: {err}</div>}
+
+      {data && (<>
+        <div className="g4" style={{ marginBottom:14 }}>
+          <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
+            <div className="klbl">Total A/R</div>
+            <div className="kval" style={{ color:"#f47820" }}>{fd(data.totalAR, 0)}</div>
+            <div className="ksub">{data.count} open invoices · avg {data.avgDaysSinceDelivery}d</div>
+          </div>
+          {["In Transit","Delivered","Invoiced"].map(s => (
+            <div key={s} className="kpi" style={{ borderTop:`3px solid ${stColor(s)}` }}>
+              <div className="klbl">{s}</div>
+              <div className="kval" style={{ color:stColor(s) }}>{fd((data.byStatus[s] && data.byStatus[s].balance) || 0, 0)}</div>
+              <div className="ksub">{(data.byStatus[s] && data.byStatus[s].loads) || 0} loads</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="card" style={{ marginBottom:14 }}>
+          <div className="ctit">Aging — by days since delivery</div>
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginTop:8 }}>
+            {Object.entries(data.aging).map(([k,v]) => (
+              <div key={k} style={{ flex:"1 1 120px", padding:"10px 12px", background:"var(--s2)", borderRadius:4, borderLeft:`3px solid ${k==="undelivered"?"#4fc3f7":k==="31+"?"#ff5252":k==="15-30"?"#ff8a65":k==="8-14"?"#f5c542":"#3ddc84"}` }}>
+                <div style={{ fontSize:10, color:"var(--mu)", textTransform:"uppercase" }}>{k==="undelivered"?"In transit":k+" days"}</div>
+                <div style={{ fontFamily:"var(--f3,Consolas,monospace)", fontWeight:700, fontSize:15 }}>{fd(v,0)}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>{data.note}</div>
+        </div>
+
+        <div style={{ display:"flex", gap:8, marginBottom:12 }}>
+          {[["detail","📄 Detail ("+data.count+")"],["customer","🏢 By Customer ("+data.byCustomer.length+")"]].map(([id,lbl]) => (
+            <button key={id} onClick={() => setView(id)} style={{ padding:"7px 16px", borderRadius:3, cursor:"pointer", fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1, textTransform:"uppercase", background:view===id?"var(--or)":"transparent", color:view===id?"#fff":"var(--mu)", border:`1px solid ${view===id?"var(--or)":"var(--bd)"}` }}>{lbl}</button>
+          ))}
+        </div>
+
+        {view === "customer" && (
+          <div className="card" style={{ padding:0, overflowX:"auto" }}>
+            <table className="tbl" style={{ fontSize:13, minWidth:560 }}>
+              <thead><tr>
+                <th style={{ textAlign:"left", fontSize:10 }}>Customer</th>
+                <th style={{ fontSize:10 }}>Loads</th><th style={{ fontSize:10 }}>Balance</th><th style={{ fontSize:10 }}>Oldest (days)</th>
+              </tr></thead>
+              <tbody>
+                {data.byCustomer.map((c,i) => (
+                  <tr key={c.customer} style={{ background:i%2?"transparent":"var(--s2)" }}>
+                    <td style={{ padding:"9px", fontWeight:600 }}>{c.customer}</td>
+                    <td style={{ padding:"9px", textAlign:"center", color:"var(--mu)" }}>{c.loads}</td>
+                    <td style={{ padding:"9px", textAlign:"right", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#f47820" }}>{fd(c.balance,0)}</td>
+                    <td style={{ padding:"9px", textAlign:"right", fontVariantNumeric:"tabular-nums", color:ageColor(c.oldest) }}>{c.oldest}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {view === "detail" && (
+          <div className="card" style={{ padding:0, overflowX:"auto" }}>
+            <table className="tbl" style={{ fontSize:12, minWidth:920 }}>
+              <thead><tr>
+                {["Load #","Customer","Status","Lane","Delivered","Days","Invoice","Paid","Balance"].map((h,i) => (
+                  <th key={h} style={{ fontSize:10, textAlign:i<4?"left":"right", whiteSpace:"nowrap" }}>{h}</th>
+                ))}
+              </tr></thead>
+              <tbody>
+                {data.rows.map((r,i) => (
+                  <tr key={r.loadNumber+"-"+i} style={{ background:i%2?"transparent":"var(--s2)" }}>
+                    <td style={{ padding:"8px 9px", fontWeight:600, whiteSpace:"nowrap" }}>{r.loadNumber}</td>
+                    <td style={{ padding:"8px 9px" }}>{r.customer}</td>
+                    <td style={{ padding:"8px 9px", color:stColor(r.status), fontWeight:600, whiteSpace:"nowrap" }}>{r.status}</td>
+                    <td style={{ padding:"8px 9px", color:"var(--mu)", fontSize:11, whiteSpace:"nowrap" }}>{r.origin} → {r.destination}</td>
+                    <td style={{ padding:"8px 9px", color:"var(--mu)", fontSize:11, whiteSpace:"nowrap" }}>{r.deliveredAt ? r.deliveredAt.slice(0,10) : "—"}</td>
+                    <td style={{ padding:"8px 9px", textAlign:"right", fontVariantNumeric:"tabular-nums", color:ageColor(r.daysSinceDelivery), fontWeight:700 }}>{r.daysSinceDelivery==null?"—":r.daysSinceDelivery}</td>
+                    <td style={{ padding:"8px 9px", textAlign:"right", fontVariantNumeric:"tabular-nums" }}>{fd(r.invoice,0)}</td>
+                    <td style={{ padding:"8px 9px", textAlign:"right", fontVariantNumeric:"tabular-nums", color:r.paid>0?"#3ddc84":"var(--mu)" }}>{r.paid>0?fd(r.paid,0):"—"}</td>
+                    <td style={{ padding:"8px 9px", textAlign:"right", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#f47820" }}>{fd(r.balance,0)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot><tr>
+                <td colSpan={8} style={{ padding:"10px 9px", fontWeight:700 }}>TOTAL · {data.count} open invoices</td>
+                <td style={{ padding:"10px 9px", textAlign:"right", fontWeight:900, color:"#f47820" }}>{fd(data.totalAR,0)}</td>
+              </tr></tfoot>
+            </table>
+          </div>
+        )}
+      </>)}
+    </div>
+  );
+}
+
 function OtrOperations() {
   const cum = otrSum();
   const milesEst = cum.fuelGallons * 6.5;
@@ -9433,6 +9547,7 @@ export default function App() {
     if (tab === "ceeast")   return <CEEast />;
     if (tab === "cashflow") return <CashFlowDashboard />;
     if (tab === "atl")      return <AtlOperations />;
+    if (tab === "ar")       return <ArDashboard />;
     if (tab === "otr")      return <OtrOperations />;
     if (tab === "budget")   return <Budgeting />;
     if (tab === "office")   return <OfficeStaff />;
