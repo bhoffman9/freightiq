@@ -50,18 +50,17 @@ export default async function handler(req, res) {
     if (req.query?.debug === "ar") {
       const items = loadData.Items || [];
       const sample = items.find(it => it.Status === "Delivered") || items.find(it => it.Status === "Invoiced") || items[0] || {};
-      let trips = null;
+      let detail = null;
       try {
-        const tr = await fetch("https://integrations.alvys.com/api/p/v1/trips/search", {
-          method: "POST",
-          headers: { authorization: `Bearer ${access_token}`, "content-type": "application/json" },
-          body: JSON.stringify({ Status: ["Delivered","Invoiced","In Transit","Dispatched","Completed","Available","Open","Covered"], Page: 0, PageSize: 3 }),
+        const dr = await fetch(`https://integrations.alvys.com/api/p/v1/loads/${sample.Id}`, {
+          headers: { authorization: `Bearer ${access_token}` },
         });
-        const tt = await tr.text(); let tp=null; try{tp=JSON.parse(tt)}catch{}
-        const ti = tp?.Items || [];
-        trips = { status: tr.status, total: tp?.Total, count: ti.length, keys: ti[0]?Object.keys(ti[0]):null, sample: ti[0] || tt.slice(0,300) };
-      } catch(e){ trips = { error: e.message }; }
-      return res.status(200).json({ loadKeys: Object.keys(sample), loadSample: sample, trips });
+        const dt = await dr.text(); let dj=null; try{dj=JSON.parse(dt)}catch{}
+        detail = { status: dr.status, keys: dj?Object.keys(dj):null,
+          carrierish: dj?Object.fromEntries(Object.entries(dj).filter(([k])=>/carrier|truck|driver|trip|dispatch|haul/i.test(k))):null,
+          raw: dj? null : dt.slice(0,300) };
+      } catch(e){ detail = { error: e.message }; }
+      return res.status(200).json({ loadKeys: Object.keys(sample), detail });
     }
 
     const loads = (loadData.Items || []).map(l => {
