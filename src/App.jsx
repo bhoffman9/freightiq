@@ -26,8 +26,8 @@ function useEquipment() { return useContext(EquipmentContext); }
 // Frozen YTD still counts toward LABOR / TOTAL_HRS so fleet totals reconcile
 // to QBO; only the COUNT displays are filtered.
 let PAYROLL = [
-  { name: "Alexander Christopher", hours: 1408.41,totalCost: 43036.97 },
-  { name: "Cowsky Andy",           hours: 658.04, totalCost: 19198.15 },                  // QB shows "Cowsky Andrew"
+  { name: "Alexander Christopher", hours: 1456.91,totalCost: 45064.19 },
+  { name: "Cowsky Andy",           hours: 697.70, totalCost: 20339.12 },                  // QB shows "Cowsky Andrew"
   { name: "Allwine Brian A",       hours: 181.34, totalCost: 5043.53,   active: false }, // *inactive (UNCHANGED WoW)
   { name: "Alshamaa Manar",        hours: 302.34, totalCost: 9368.45 },                   // ATL since May 11
   { name: "Anderson Justin M",     hours: 79.01,  totalCost: 2285.37,   active: false }, // *inactive (UNCHANGED WoW)
@@ -36,53 +36,53 @@ let PAYROLL = [
   { name: "Christian Norman L",    hours: 100.08, totalCost: 2894.81,   active: false }, // *inactive (UNCHANGED WoW)
   { name: "Clark Rettick",         hours: 255.06, totalCost: 7377.62,   active: false }, // *inactive (UNCHANGED WoW)
   { name: "Cotton Kejlon",         hours: 320.32, totalCost: 11677.82,  active: false }, // *inactive (UNCHANGED WoW)
-  { name: "Daniels Gerald W",      hours: 704.02, totalCost: 20595.96 },
-  { name: "Davis Anthoni D",       hours: 1820.86,totalCost: 63538.54 },                  // OFF ATL as of Jun 1 — back to CE/SF
-  { name: "Denman Samuel E",       hours: 1470.42,totalCost: 48320.63 },
+  { name: "Daniels Gerald W",      hours: 771.31, totalCost: 22531.82 },
+  { name: "Davis Anthoni D",       hours: 1901.80,totalCost: 66229.72 },                  // OFF ATL as of Jun 1 — back to CE/SF
+  { name: "Denman Samuel E",       hours: 1507.82,totalCost: 49929.37 },
   { name: "Dixon Deon A",         hours: 101.84,  totalCost: 3045.73 },                   // NEW · started Jun 2026 · no EFS card mapped yet
   { name: "Dotch Brandon C",       hours: 540.11, totalCost: 16130.43 },                  // (UNCHANGED WoW × 2)
-  { name: "Gray Stephen D",        hours: 224.84,  totalCost: 6733.50 },                   // NEW · started Jun 2026
-  { name: "Gutierrez Danny",       hours: 1370.70,totalCost: 43360.65 },
-  { name: "Guzman Jose",           hours: 1697.36,totalCost: 61058.31 },
+  { name: "Gray Stephen D",        hours: 255.56,  totalCost: 7622.08 },                   // NEW · started Jun 2026
+  { name: "Gutierrez Danny",       hours: 1410.42,totalCost: 44635.21 },
+  { name: "Guzman Jose",           hours: 1736.53,totalCost: 62566.70 },
   { name: "Howell Lawrence",       hours: 85.33,  totalCost: 2373.24,   active: false }, // *inactive (UNCHANGED WoW)
-  { name: "Ibarra Jose Pablo",     hours: 1673.14,totalCost: 59634.52 },
-  { name: "Johnson Christopher",   hours: 437.88, totalCost: 13631.78 },                   // ATL since May 18 · QB shows "Johnson Christopher M"
+  { name: "Ibarra Jose Pablo",     hours: 1728.21,totalCost: 61653.11 },
+  { name: "Johnson Christopher",   hours: 508.56, totalCost: 15782.49 },                   // ATL since May 18 · QB shows "Johnson Christopher M"
   { name: "Juarez Angel",          hours: 376.15, totalCost: 10863.46,  active: false }, // *inactive (UNCHANGED WoW)
   { name: "Kelly Kirk D",          hours: 801.82, totalCost: 23044.55,  active: false }, // *inactive (UNCHANGED WoW)
   { name: "Landreth James",        hours: 161.05,  totalCost: 4883.37 },                   // started May 25
-  { name: "Logan LaDyle",          hours: 255.26,  totalCost: 8016.74 },                   // NEW · ATL driver · started Jun 2026
+  { name: "Logan LaDyle",          hours: 323.31,  totalCost: 10088.24 },                   // NEW · ATL driver · started Jun 2026
   { name: "Lucero Andrew",         hours: 149.53, totalCost: 4325.15 },                   // (UNCHANGED WoW × 5)
   { name: "Magtee Christopher",    hours: 39.47,  totalCost: 1141.68 },                   // NEW · started Jun 2026 · no EFS card mapped yet
   { name: "Matthews Ron A",        hours: 464.44, totalCost: 13126.62,  active: false }, // *inactive (UNCHANGED WoW)
-  { name: "Mcclam Michael A",      hours: 1010.07, totalCost: 31225.71 },
-  { name: "McDaniels James",       hours: 198.80,  totalCost: 5975.29 },                   // started May 25
-  { name: "McNamara John",         hours: 1575.43,totalCost: 52479.27 },
+  { name: "Mcclam Michael A",      hours: 1078.09, totalCost: 33182.58 },
+  { name: "McDaniels James",       hours: 279.57,  totalCost: 8309.95 },                   // started May 25
+  { name: "McNamara John",         hours: 1630.93,totalCost: 54214.32 },
   { name: "Memolo Dominick",       hours: 0.00,      totalCost: 0.00,         active: false }, // *inactive
   { name: "Negrete Arturo",        hours: 371.01, totalCost: 11053.06,  active: false }, // *inactive (UNCHANGED WoW)
-  { name: "Ponce Carlos",          hours: 806.92, totalCost: 24918.79 },
-  { name: "Restrepo Julian E",     hours: 858.85, totalCost: 27285.00 },
-  { name: "Reyes Corey",           hours: 703.48, totalCost: 20280.41 },
-  { name: "Robinson Animashaun",   hours: 921.96, totalCost: 27065.87 },
-  { name: "Ronkov Martin P",       hours: 1510.39,totalCost: 43493.94 },
+  { name: "Ponce Carlos",          hours: 871.21, totalCost: 26993.35 },
+  { name: "Restrepo Julian E",     hours: 924.21, totalCost: 29615.34 },
+  { name: "Reyes Corey",           hours: 732.33, totalCost: 21110.40 },
+  { name: "Robinson Animashaun",   hours: 968.61, totalCost: 28407.95 },
+  { name: "Ronkov Martin P",       hours: 1566.97,totalCost: 45215.60 },
   { name: "Secrest Jermelle",      hours: 613.67, totalCost: 17708.58 },                  // (UNCHANGED WoW × 3)
-  { name: "Stevenson Timothy",     hours: 246.01,  totalCost: 7121.27 },                   // NEW · started Jun 2026
+  { name: "Stevenson Timothy",     hours: 333.14,  totalCost: 9631.52 },                   // NEW · started Jun 2026
   { name: "Stringer Adam E",       hours: 203.46, totalCost: 5885.08 },                   // (UNCHANGED WoW × 3)
   { name: "Striplin Lamareh",      hours: 653.62, totalCost: 20028.99 },                  // (UNCHANGED WoW × 2)
   { name: "Thomas John",           hours: 194.71,  totalCost: 6024.83 },                   // started May 25
   { name: "Thorne Richard",        hours: 254.53, totalCost: 7387.28,   active: false }, // *inactive (UNCHANGED WoW)
-  { name: "Tucker Robert",         hours: 495.72, totalCost: 15148.03 },                   // ATL since May 11
+  { name: "Tucker Robert",         hours: 559.91, totalCost: 17776.26 },                   // ATL since May 11
   { name: "Vue CJ Z",              hours: 3.00,   totalCost: 86.78 },                     // (UNCHANGED WoW × 2)
-  { name: "Wainwright Michael W",  hours: 1574.44,totalCost: 46703.63 },
-  { name: "Watkins Shawn",         hours: 846.72, totalCost: 25126.28 },
+  { name: "Wainwright Michael W",  hours: 1589.37,totalCost: 47133.16 },
+  { name: "Watkins Shawn",         hours: 862.89, totalCost: 25591.49 },
   { name: "Watson Dahnifu S",      hours: 1263.31,totalCost: 36480.52 },
-  { name: "Whipple Wallace",       hours: 1521.00,totalCost: 49430.53 },
-  { name: "Williams Tadaryl C",    hours: 1503.72,totalCost: 44479.84 },
-  { name: "Williams Will",         hours: 1035.88, totalCost: 31343.24 },
-  { name: "Willis Wali A",         hours: 1739.47,totalCost: 59803.29 },
+  { name: "Whipple Wallace",       hours: 1611.17,totalCost: 52262.72 },
+  { name: "Williams Tadaryl C",    hours: 1548.29,totalCost: 45836.06 },
+  { name: "Williams Will",         hours: 1109.03, totalCost: 33447.69 },
+  { name: "Willis Wali A",         hours: 1796.30,totalCost: 61706.82 },
   { name: "Wright Robert",         hours: 260.66, totalCost: 9443.88,   active: false }, // *inactive (UNCHANGED WoW),                  // NEW · card 27450 · 0 hrs (signed, not yet driving)
-  { name: "Camacho Stephen B",     hours: 74.24,  totalCost: 2147.39 },                  // NEW · started Jun 2026 · no EFS card mapped yet,                  // NEW · card 17451 · 0 hrs (signed, not yet driving)
-  { name: "Lewis Steve",           hours: 63.44,  totalCost: 1835.01 },                  // NEW · card 97454,                  // NEW · card 87455
-  { name: "Wilson Antionette",     hours: 50.00,  totalCost: 1257.13 },                  // NEW · started Jun 2026 · no EFS card mapped yet
+  { name: "Camacho Stephen B",     hours: 103.32,  totalCost: 2988.53 },                  // NEW · started Jun 2026 · no EFS card mapped yet,                  // NEW · card 17451 · 0 hrs (signed, not yet driving)
+  { name: "Lewis Steve",           hours: 94.43,  totalCost: 2731.38 },                  // NEW · card 97454,                  // NEW · card 87455
+  { name: "Wilson Antionette",     hours: 100.00,  totalCost: 2514.25 },                  // NEW · started Jun 2026 · no EFS card mapped yet
 ];
 
 // Active driver count — used everywhere a "how many drivers" display number
@@ -154,13 +154,13 @@ let FUEL = {
 // All other costs come from QuickBooks P&L.
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
-let LABOR     = 1149563.55; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru Jun 26 — 42 drivers active (57 w/ YTD incl 15 frozen). EXCLUDES OTR drivers (Baker/Dawson/Pacitti $7,435 — see OTR_WEEKLY_LOG; carved out of fleet CPM)
+let LABOR     = 1200429.30; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru ~Jul 2 (payroll-only refresh — payroll file runs ~1wk ahead of the Jun 28 PERIOD; fuel/miles/income still Jun 26-28). 42 drivers active. EXCLUDES OTR (Baker/Dawson/Pacitti $14,785.86 — see OTR_WEEKLY_LOG; carved out of fleet CPM)
 let FUEL_TOT  = 586601.24;  // EFS fleet only — thru Jun 26 (EFS report total $596,077.79 minus OTR cards 27450/17451/87455 $9,476.55; OTR carved out of CPM)
 let GALLONS   = 107763.20;  // EFS 109,737.02 minus OTR 1,973.82
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
 let MILES     = 737887.1;     // Samsara Vehicle Mileage report, Jan 1 – Jun 27, 2026 (49 logged; updated from manual xlsx drop via scripts/parse_samsara_mileage.py)
 let TRUCK_COUNT = 30;       // ACTIVE fleet trucks per Ben's truck-count sheet. NOTE: TRUCK_MILES now has 49 entries from the mileage report; cumulative miles feed MILES + CPM but departed/temp trucks don't count toward the active fleet. (Confirm active count with Ben.)
-let TOTAL_HRS  = 36692.81;  // Payroll hours — fleet drivers only (office + OTR excluded), thru Jun 26
+let TOTAL_HRS  = 38293.24;  // Payroll hours — fleet drivers only (office + OTR excluded), thru ~Jul 2
 let INS_WEEK  = 6375;
 let INS_TOT    = 148599.16;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru Jun 28 (UNCHANGED WoW × 3 — flag, no June truck-ins posting yet)
 let TRUCK_TOT  = 457050.95;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI + Ryder) thru Jun 28 (+$62.7K WoW — June rentals posted)
@@ -7208,39 +7208,40 @@ function DataSettings() {
 
 // ── OFFICE STAFF DATA ─────────────────────────────────────────
 // Combined from Show Freight Inc + J&A Management Group LLC
-// Period: Jan 1 – Jun 12, 2026
+// Period: Jan 1 – ~Jul 2, 2026 (payroll ~1wk ahead of Jun 28 dashboard baseline)
 // Categories: Office (salary), Warehouse (hourly/salary), Contractors
 
 // ATL designation moved to ATL_WEEKLY_LOG (per-week roster, not sticky tag).
 // Bini's atlEntity/atlPreYtd dropped here too.
 const OFFICE_W2 = [
-  // Show Freight Inc employees (thru Jun 26, 2026)
-  { name:"Adrian Arias",        entity:"SF",  gross:42972.66, taxes:4597.28, contrib:1710.90, totalCost:49280.84, salary:-1822.66,    bonus:1622.66, reimb:200.00,    commission:0.00,       note:"Salary + bonus" },
-  { name:"Gabriel Gonzalez",    entity:"SF",  gross:29284.83, taxes:3157.53, contrib:0.00,       totalCost:32442.36, salary:-281.00, bonus:250.00,     reimb:31.00,     commission:0.00,       note:"Salary + bonus" },
+  // Show Freight Inc employees (thru ~Jul 2, 2026)
+  { name:"Adrian Arias",        entity:"SF",  gross:44618.66, taxes:4751.03, contrib:1776.74, totalCost:51146.43, salary:42796.00,    bonus:1622.66, reimb:200.00,    commission:0.00,       note:"Salary + bonus" },
+  { name:"Gabriel Gonzalez",    entity:"SF",  gross:30484.83, taxes:3285.33, contrib:0.00,       totalCost:33770.16, salary:30203.83, bonus:250.00,     reimb:31.00,     commission:0.00,       note:"Salary + bonus" },
   { name:"Scot Grosser",        entity:"SF",  gross:34174.31, taxes:2727.60, contrib:1157.33, totalCost:38059.24, salary:-533.42,    bonus:5640.22, reimb:67.09,  commission:0.00,       note:"Salary + wellness + reimb" },
-  { name:"Bartosz Naruszewicz", entity:"SF",  gross:14847.30, taxes:1623.24, contrib:0.00,       totalCost:16470.54, salary:14847.30, bonus:0.00,     reimb:0.00,      commission:0.00,       note:"Hourly · new hire May 2026" },
-  { name:"Cecilia Rivera",      entity:"SF",  gross:33710.00,    taxes:3627.32, contrib:1346.60, totalCost:38683.92, salary:-1585.00,    bonus:1540.00,     reimb:45.00,     commission:0.00,       note:"Salary + bonus" },
-  { name:"Nathan Youngblood",   entity:"SF",  gross:30000.00,    taxes:3237.00, contrib:0.00,       totalCost:33237.00, salary:30000.00,    bonus:0.00,       reimb:0.00,      commission:0.00,       note:"Salary" },
-  { name:"Tasha Mahan",         entity:"SF",  gross:5200.00,     taxes:585.00,  contrib:0.00,       totalCost:5785.00,  salary:5200.00,     bonus:0.00,       reimb:0.00,      commission:0.00,       note:"NEW · started Jun 2026 · office/warehouse" },
-  // J&A Management employees (thru Jun 26, 2026 YTD)
-  { name:"Valeria Abrego",      entity:"J&A", gross:20750.10, taxes:2181.62, contrib:0.00,       totalCost:22931.72, salary:20185.10, bonus:0.00,       reimb:565.00,    commission:0.00,       note:"Hourly + OT" },
-  { name:"Christopher Adamson", entity:"J&A", gross:42000.00,    taxes:4494.00,    contrib:1680.00,    totalCost:48174.00,    salary:42000.00,    bonus:0.00,       reimb:0.00,      commission:0.00,       note:"Salary + 401K" },
+  { name:"Bartosz Naruszewicz", entity:"SF",  gross:16647.30, taxes:1814.94, contrib:0.00,       totalCost:18462.24, salary:16647.30, bonus:0.00,     reimb:0.00,      commission:0.00,       note:"Hourly · new hire May 2026" },
+  { name:"Cecilia Rivera",      entity:"SF",  gross:35210.00,    taxes:3787.07, contrib:1406.60, totalCost:40403.67, salary:33625.00,    bonus:1540.00,     reimb:45.00,     commission:0.00,       note:"Salary + bonus" },
+  { name:"Nathan Youngblood",   entity:"SF",  gross:31200.00,    taxes:3364.80, contrib:0.00,       totalCost:34564.80, salary:31200.00,    bonus:0.00,       reimb:0.00,      commission:0.00,       note:"Salary" },
+  { name:"Tasha Mahan",         entity:"SF",  gross:6500.00,     taxes:731.25,  contrib:0.00,       totalCost:7231.25,  salary:6500.00,     bonus:0.00,       reimb:0.00,      commission:0.00,       note:"NEW · started Jun 2026 · office/warehouse" },
+  // J&A Management employees (thru ~Jul 2, 2026 YTD)
+  { name:"Valeria Abrego",      entity:"J&A", gross:21550.10, taxes:2266.42, contrib:0.00,       totalCost:23816.52, salary:20985.10, bonus:0.00,       reimb:565.00,    commission:0.00,       note:"Hourly + OT" },
+  { name:"Christopher Adamson", entity:"J&A", gross:44000.00,    taxes:4697.15,    contrib:1760.00,    totalCost:50457.15,    salary:44000.00,    bonus:0.00,       reimb:0.00,      commission:0.00,       note:"Salary + 401K" },
   { name:"Debra Adamson",       entity:"J&A", gross:8750.00,     taxes:934.68,  contrib:0.00,       totalCost:9684.68,  salary:8750.00,     bonus:0.00,       reimb:0.00,      commission:0.00,       note:"*Former · W2 → Contractor (UNCHANGED WoW × 5)", dual:true },
   { name:"Elizabeth Delgado",   entity:"J&A", gross:8541.11,  taxes:852.13,  contrib:0.00,       totalCost:9393.24,  salary:5940.00,     bonus:0.00,       reimb:898.35, commission:1702.76, note:"*Former · W2 → Contractor · commission (UNCHANGED WoW × 5)", dual:true },
   { name:"Abigail Dillon",      entity:"J&A", gross:3596.13,  taxes:402.77,  contrib:0.00,       totalCost:3998.90,  salary:3596.13,  bonus:0.00,       reimb:0.00,      commission:0.00,       note:"Hourly (UNCHANGED WoW × 5)" },
   { name:"Biniyam Fissehaye",   entity:"J&A", gross:19077.07, taxes:2045.40, contrib:0.00,       totalCost:21122.47, salary:18900.00,    bonus:0.00,       reimb:177.07, commission:0.00,       note:"*Former · J&A W2 → 1099 ENM Trucking LLC (transitioned May 11) · J&A side only; SF side $1,501.88 (UNCHANGED WoW × 5)", dual:true },
-  { name:"Harold Galvis",       entity:"J&A", gross:4520.00,     taxes:506.24,  contrib:0.00,       totalCost:5026.24,  salary:4520.00,     bonus:0.00,       reimb:0.00,      commission:0.00,       note:"NEW · started Jun 2026" },
-  { name:"Kidist Gelaw",        entity:"J&A", gross:3390.00,     taxes:379.69,  contrib:0.00,       totalCost:3769.69,  salary:3390.00,     bonus:0.00,       reimb:0.00,      commission:0.00,       note:"NEW · started Jun 2026" },
+  { name:"Harold Galvis",       entity:"J&A", gross:5650.00,     taxes:632.81,  contrib:0.00,       totalCost:6282.81,  salary:5650.00,     bonus:0.00,       reimb:0.00,      commission:0.00,       note:"NEW · started Jun 2026" },
+  { name:"Kidist Gelaw",        entity:"J&A", gross:4520.00,     taxes:506.25,  contrib:0.00,       totalCost:5026.25,  salary:4520.00,     bonus:0.00,       reimb:0.00,      commission:0.00,       note:"NEW · started Jun 2026" },
   { name:"Kirsten Hall",        entity:"J&A", gross:2250.00,     taxes:252.01,  contrib:0.00,       totalCost:2502.01,  salary:2250.00,     bonus:0.00,       reimb:0.00,      commission:0.00,       note:"*Former employee" },
-  { name:"Ben Hoffman",         entity:"J&A", gross:33864.00, taxes:3609.32, contrib:376.95,  totalCost:37850.27, salary:33654.00, bonus:0.00,       reimb:210.00,     commission:0.00,       note:"Salary + 401K + PTO" },
+  { name:"Ben Hoffman",         entity:"J&A", gross:35210.16, taxes:3752.01, contrib:376.95,  totalCost:39339.12, salary:35000.16, bonus:0.00,       reimb:210.00,     commission:0.00,       note:"Salary + 401K + PTO" },
+  { name:"Joshua Law",         entity:"J&A", gross:2906.17,  taxes:258.47,  contrib:0.00,       totalCost:3164.64,  salary:2906.17,  bonus:0.00,       reimb:0.00,      commission:0.00,       note:"NEW · started Jun/Jul 2026" },
   { name:"Branden Parnell",     entity:"J&A", gross:5769.20,  taxes:646.15,  contrib:0.00,       totalCost:6415.35,  salary:5769.20,  bonus:0.00,       reimb:0.00,      commission:0.00,       note:"*Former employee (UNCHANGED WoW × 4)" },
   { name:"Ayelen Sanchez",      entity:"J&A", gross:1809.26,  taxes:198.25,  contrib:0.00,       totalCost:2007.51,  salary:1770.00,     bonus:0.00,       reimb:39.26,  commission:0.00,       note:"*Former · Hourly (UNCHANGED WoW × 4)" },
   { name:"Christopher Simpson", entity:"J&A", gross:8998.46,  taxes:961.01,  contrib:359.94,  totalCost:10319.41, salary:6300.00,     bonus:0.00,       reimb:0.00,      commission:2698.46, note:"*Former · W2 → Contractor · commission (UNCHANGED WoW × 5)", dual:true },
 ];
 
 const WAREHOUSE = [
-  { name:"Gentry Eagleton",  entity:"SF", gross:21653.10, taxes:2337.40, contrib:0.00, totalCost:23990.50, type:"Hourly", hours:1046.58, regHrs:984.43, otHrs:62.15, note:"Regular + OT" },
-  { name:"Andres Figueroa",  entity:"SF", gross:38600.00, taxes:4089.00, contrib:0.00, totalCost:42689.00, type:"Salary", hours:1040.00,    regHrs:0.00,      otHrs:0.00,     note:"Salary + PTO" },
+  { name:"Gentry Eagleton",  entity:"SF", gross:22620.50, taxes:2440.43, contrib:0.00, totalCost:25060.93, type:"Hourly", hours:1092.16, regHrs:1024.43, otHrs:67.73, note:"Regular + OT" },
+  { name:"Andres Figueroa",  entity:"SF", gross:40262.50, taxes:4266.07, contrib:0.00, totalCost:44528.57, type:"Salary", hours:1080.00,    regHrs:0.00,      otHrs:0.00,     note:"Salary + PTO" },
 ];
 
 // ATL designation tracked in ATL_WEEKLY_LOG (per-week roster).

@@ -37,6 +37,14 @@ SF_OFFICE = {
     "Mahan Tasha",       # office/warehouse, started Jun 2026 (no EFS card)
 }
 
+# OTR (over-the-road) drivers — carved OUT of fleet CPM (see CLAUDE.md "OTR Operations"
+# + OTR_WEEKLY_LOG in App.jsx). They ARE SF W2 so they appear in the payroll file, but
+# their pay/hours must NOT land in fleet LABOR/TOTAL_HRS — they get their own bucket.
+# Update this set when Ben moves a driver in/out of OTR (fluid, like ATL).
+SF_OTR = {
+    "Baker Anthony", "Dawson Brian", "Pacitti Michael R",
+}
+
 
 def find_file(*patterns):
     # Match patterns in priority order — exhaust each pattern across all
@@ -123,6 +131,7 @@ def summarize_sf_payroll(path):
         return None
     drivers = []
     office = []
+    otr = []
     total_hrs_all = hours_row[1] if isinstance(hours_row[1], (int, float)) else 0
     total_cost_all = cost_row[1] if isinstance(cost_row[1], (int, float)) else 0
     for c in range(2, len(header)):
@@ -130,7 +139,12 @@ def summarize_sf_payroll(path):
         if not name: continue
         hrs = hours_row[c] if isinstance(hours_row[c], (int, float)) else 0
         cost = cost_row[c] if isinstance(cost_row[c], (int, float)) else 0
-        bucket = office if name in SF_OFFICE else drivers
+        if name in SF_OFFICE:
+            bucket = office
+        elif name in SF_OTR:
+            bucket = otr
+        else:
+            bucket = drivers
         bucket.append({"name": name, "hours": round(hrs, 2), "totalCost": round(cost, 2)})
     drivers_hours = sum(d["hours"] for d in drivers)
     drivers_cost = sum(d["totalCost"] for d in drivers)
@@ -140,8 +154,11 @@ def summarize_sf_payroll(path):
         "all_cost": total_cost_all,
         "drivers": drivers,
         "office": office,
+        "otr": otr,
         "driver_total_hours": round(drivers_hours, 2),
         "driver_total_cost": round(drivers_cost, 2),
+        "otr_total_hours": round(sum(d["hours"] for d in otr), 2),
+        "otr_total_cost": round(sum(d["totalCost"] for d in otr), 2),
     }
 
 
@@ -230,9 +247,13 @@ def main():
         sfp = summarize_sf_payroll(sf_path)
         out_sum.write(f"[SF PAYROLL] {sfp['period']}\n")
         out_sum.write(f"  Total (all staff):   {sfp['all_hours']:>8.2f} hrs  ${sfp['all_cost']:>12,.2f}\n")
-        out_sum.write(f"  Drivers only (CPM):  {sfp['driver_total_hours']:>8.2f} hrs  ${sfp['driver_total_cost']:>12,.2f}\n")
+        out_sum.write(f"  Drivers only (CPM):  {sfp['driver_total_hours']:>8.2f} hrs  ${sfp['driver_total_cost']:>12,.2f}  (fleet LABOR — excl office + OTR)\n")
         out_sum.write(f"  Active driver count: {len([d for d in sfp['drivers'] if d['hours'] > 0])}\n")
-        out_sum.write(f"  Office excluded:     {len(sfp['office'])} ({', '.join(o['name'] for o in sfp['office'])})\n\n")
+        out_sum.write(f"  Office excluded:     {len(sfp['office'])} ({', '.join(o['name'] for o in sfp['office'])})\n")
+        otr = sfp.get('otr', [])
+        if otr:
+            out_sum.write(f"  OTR excluded:        {len(otr)} ({', '.join(o['name'] for o in otr)}) — ${sfp['otr_total_cost']:,.2f}, {sfp['otr_total_hours']:.2f} hrs → OTR_WEEKLY_LOG, NOT fleet LABOR\n")
+        out_sum.write("\n")
         out_sum.write("  Per-driver:\n")
         for d in sfp['drivers']:
             out_sum.write(f"    {d['name']:28s}  {d['hours']:>7.2f}  ${d['totalCost']:>10,.2f}\n")
