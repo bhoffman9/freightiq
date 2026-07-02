@@ -331,43 +331,43 @@
   "contractors": [
     {
       "name": "Jon Marcus Zengotita",
-      "total": 71750
+      "total": 74900
     },
     {
       "name": "Mellody Abrego",
-      "total": 70850.87
+      "total": 74104.07
     },
     {
       "name": "Gabriel Colon",
-      "total": 53495.88
+      "total": 55495.88
     },
     {
       "name": "Hilda Salman",
-      "total": 46220.5
+      "total": 48069.32
     },
     {
       "name": "Maria Con",
-      "total": 14600
+      "total": 15250
     },
     {
       "name": "Logic Consultants",
-      "total": 12000
+      "total": 12500
     },
     {
       "name": "ENM Trucking",
-      "total": 12950
+      "total": 14800
     },
     {
       "name": "Elizabeth Delgado",
-      "total": 19929.61
+      "total": 20829.61
     },
     {
       "name": "Christopher Simpson",
-      "total": 19350.56
+      "total": 20239.32
     },
     {
       "name": "Debra Adamson",
-      "total": 25794.45
+      "total": 27598.24
     }
   ],
   "period": "Jan 1 - Jun 28, 2026",
@@ -376,7 +376,7 @@
     "driverCount": 42,
     "officeTotal": 417167.85,
     "warehouseTotal": 69589.5,
-    "contractorTotal": 346941.87,
-    "grandTotal": 1913920.23
+    "contractorTotal": 363786.44,
+    "grandTotal": 1930764.7999999998
   }
 }
