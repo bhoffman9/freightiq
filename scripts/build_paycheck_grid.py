@@ -106,6 +106,31 @@ def addw2(checks, office_only, src):
 
 addw2(sf, True, 'SF'); addw2(ja, False, 'J&A')
 
+# --- Driver + OTR weekly series (for the owner-facing "This Week — All-In
+# Payroll" card on the Office Staff tab). Drivers are excluded from the grid
+# above, but the SF PaycheckHistory contains them. Bucket SF checks by pay
+# week: OTR (Baker/Dawson/Pacitti) vs fleet drivers (everyone not office/OTR).
+# Convert gross → loaded by a fleet factor calibrated so the YTD sum matches
+# LABOR (fleet) and the OTR carve-out total from App.jsx.
+OTR_LN = {'baker', 'dawson', 'pacitti'}
+_drv_g, _otr_g = {}, {}
+for d, n, tp in sf:
+    k = key(n)
+    if k[0] in OFFICE: continue                 # office + warehouse
+    wl = wk_of(d)
+    if k[0] in OTR_LN: _otr_g[wl] = _otr_g.get(wl, 0) + tp
+    else:              _drv_g[wl] = _drv_g.get(wl, 0) + tp
+_LABOR = float(re.search(r'let LABOR\s*=\s*([\d.]+)', app).group(1))
+_m = re.search(r'Baker/Dawson/Pacitti \$([\d,]+\.?\d*)', app)
+_OTR_TOT = float(_m.group(1).replace(',', '')) if _m else 0.0
+_Fd = _LABOR / sum(_drv_g.values()) if _drv_g else 1.0
+_Fo = _OTR_TOT / sum(_otr_g.values()) if _otr_g else 1.0
+DRIVER_WEEKLY = {
+    'weeks': wlabel,
+    'fleet': {wl: round(v * _Fd, 2) for wl, v in _drv_g.items()},
+    'otr':   {wl: round(v * _Fo, 2) for wl, v in _otr_g.items()},
+}
+
 def canon(raw):
     s = raw.lower().strip()
     if 'nixon graye' in s: return None
@@ -251,6 +276,12 @@ data = {'source':f'W-2 paychecks (loaded) + contractors ALL-IN (cash + car + hea
 new = json.dumps(data)
 app2, n = re.subn(r'(const OFFICE_PAYCHECKS = )\{.*?\};', lambda m: m.group(1) + new + ';', app, count=1, flags=re.S)
 if n != 1: sys.exit('ERROR: could not find/replace OFFICE_PAYCHECKS in App.jsx')
+
+# DRIVER_WEEKLY — replace if present, else insert right before OFFICE_PAYCHECKS
+dw = 'const DRIVER_WEEKLY = ' + json.dumps(DRIVER_WEEKLY) + ';'
+app2, dn = re.subn(r'const DRIVER_WEEKLY = \{.*?\};', dw, app2, count=1, flags=re.S)
+if dn == 0:
+    app2 = app2.replace('const OFFICE_PAYCHECKS = ', dw + '\n\nconst OFFICE_PAYCHECKS = ', 1)
 io.open('src/App.jsx', 'w', encoding='utf-8').write(app2)
 
 for s in out: print(' ', s['name'], 'total', round(sum(r['total'] for r in s['rows']), 2))
