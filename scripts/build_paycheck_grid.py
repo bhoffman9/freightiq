@@ -137,7 +137,7 @@ for w in weeks[1:]:
 
 # Mairena Tapias (Jon Marcus assistant), 100% CE, paid as expense — APPEND new payments weekly
 r = getrow('CE', ('con','MAI'), 'Mairena Tapias · 1099', False)
-for ds, amt in [('04/20/2026',193.04),('05/05/2026',900.0),('05/20/2026',882.0),('05/28/2026',695.0),('06/02/2026',140.0),('06/12/2026',950.0),('06/22/2026',475.0)]:
+for ds, amt in [('04/20/2026',193.04),('05/05/2026',900.0),('05/20/2026',882.0),('05/28/2026',695.0),('06/02/2026',140.0),('06/12/2026',950.0),('06/22/2026',475.0),('06/30/2026',475.0)]:
     wl = wk_of(mdate(ds)); r['camts'][wl] = round(r['camts'].get(wl,0) + amt, 2)
 
 # Logic Consultants: $500/wk entire year
@@ -155,6 +155,17 @@ MANUAL_CONTRACTORS = {
         ('CE',  ('con','JON'),      2800.0,  'Jon Marcus · 1099'),
         ('CE',  ('con','GAB'),      1145.32, 'Gabriel Colon · 1099 (50%)'),
         ('SF',  ('con','GAB'),      1145.32, 'Gabriel Colon · 1099 (50%)'),
+        ('J&A', ('con','MEL'),      2550.0,  'Mellody Abrego · 1099'),   # 2250 + 300 commission
+        ('J&A', ('con','HIL'),      1730.0,  'Hilda Salman · 1099'),
+        ('J&A', ('fissehaye','b'),  1850.0,  'Biniyam Fissehaye'),        # ENM
+        ('J&A', ('delgado','e'),    900.0,   'Elizabeth Delgado'),
+        ('J&A', ('simpson','c'),    834.97,  'Christopher Simpson'),
+        ('J&A', ('adamson','d'),    1750.0,  'Debra Adamson'),
+    ],
+    '6/29': [  # pay week of the Jul 2 payroll (W-2 checks dated Jun 30 + Jul 2)
+        ('CE',  ('con','JON'),      2800.0,  'Jon Marcus · 1099'),
+        ('CE',  ('con','GAB'),      1000.0,  'Gabriel Colon · 1099 (50%)'),  # $2,000 split 50/50
+        ('SF',  ('con','GAB'),      1000.0,  'Gabriel Colon · 1099 (50%)'),
         ('J&A', ('con','MEL'),      2550.0,  'Mellody Abrego · 1099'),   # 2250 + 300 commission
         ('J&A', ('con','HIL'),      1730.0,  'Hilda Salman · 1099'),
         ('J&A', ('fissehaye','b'),  1850.0,  'Biniyam Fissehaye'),        # ENM
