@@ -33,28 +33,42 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: "No access_token in auth response", detail: authText.slice(0, 200) });
     }
 
-    // Fetch all loads across statuses (paginated — Alvys caps a page at 200)
+    // Fetch the FULL pipeline. Alvys caps a page at 200 AND paginates unreliably
+    // when multiple statuses are sent in one request (a page returning <200 for
+    // one status prematurely ends the loop, dropping the rest). So we paginate
+    // EACH status independently, then dedupe by load id. This captures it all.
     const statuses = ["Queued", "Covered", "Open", "In Transit", "Delivered", "Invoiced"];
+    const seen = new Set();
     const allItems = [];
-    let grandTotal = 0;
-    for (let page = 0; page < 15; page++) {
-      const loadRes = await fetch("https://integrations.alvys.com/api/p/v1/loads/search", {
-        method: "POST",
-        headers: { authorization: `Bearer ${access_token}`, "content-type": "application/json" },
-        body: JSON.stringify({ Status: statuses, Page: page, PageSize: 200 }),
-      });
-      const loadText = await loadRes.text();
-      if (!loadRes.ok) {
-        if (page === 0) return res.status(502).json({ error: "Alvys loads fetch failed", status: loadRes.status, detail: loadText.slice(0, 500) });
-        break;
+    let reportedTotal = 0;   // sum of Alvys' per-status Total (cross-check)
+    for (const status of statuses) {
+      for (let page = 0; page < 50; page++) {   // 50×200 = 10k/status headroom
+        const loadRes = await fetch("https://integrations.alvys.com/api/p/v1/loads/search", {
+          method: "POST",
+          headers: { authorization: `Bearer ${access_token}`, "content-type": "application/json" },
+          body: JSON.stringify({ Status: [status], Page: page, PageSize: 200 }),
+        });
+        const loadText = await loadRes.text();
+        if (!loadRes.ok) {
+          // Fail hard only if the very first request fails; otherwise skip to next status.
+          if (status === statuses[0] && page === 0) {
+            return res.status(502).json({ error: "Alvys loads fetch failed", status: loadRes.status, detail: loadText.slice(0, 500) });
+          }
+          break;
+        }
+        const pd = JSON.parse(loadText);
+        if (page === 0) reportedTotal += (pd.Total || 0);
+        const batch = pd.Items || [];
+        for (const it of batch) {
+          const id = it.Id || it.LoadId || it.LoadNumber;
+          if (id != null && seen.has(id)) continue;   // dedupe (defensive)
+          if (id != null) seen.add(id);
+          allItems.push(it);
+        }
+        if (batch.length < 200) break;   // last page for THIS status
       }
-      const pd = JSON.parse(loadText);
-      grandTotal = pd.Total || grandTotal;
-      const batch = pd.Items || [];
-      allItems.push(...batch);
-      if (batch.length < 200) break;
     }
-    const loadData = { Items: allItems, Total: grandTotal || allItems.length };
+    const loadData = { Items: allItems, Total: allItems.length, reportedTotal };
 
     const loads = (loadData.Items || []).map(l => {
       const stops = l.Stops || [];
@@ -140,6 +154,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       total: loadData.Total || loads.length,
+      reportedTotal: loadData.reportedTotal,   // sum of Alvys per-status Total — should match `total`
       loads,
       topLanes,
       summary: { totalRevenue: totalRev, totalMiles, avgRPM, avgRevPerLoad },
