@@ -97,7 +97,8 @@ freightiq/
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
 | `POST /api/ai` | POST | Proxies requests to Anthropic Claude API (keeps key server-side) |
-| `GET /api/alvys-loads` | GET | Authenticates with Alvys TMS, returns live load pipeline with lanes, revenue, RPM, statuses |
+| `GET /api/alvys-loads` | GET | Live load pipeline (lanes, revenue, RPM, statuses). **Paginated** (200/page) since Jul 2 2026 — was capped at 500, undercounting Queued. Powers Revenue tab + Per Load CPM. |
+| `GET /api/alvys-ar` | GET | Accounts receivable from Alvys — paginated, statuses Covered/Open/In Transit/Delivered/Invoiced. Returns `rows` (AR = delivered/invoiced/in-transit with balance>0) + `allRows` (full set for the Excel download) + aging/byCustomer/byStatus. Carrier not available from Alvys. |
 | `GET /api/distance?origin=X&destination=Y` | GET | Google Maps Distance Matrix proxy — returns driving miles + hours |
 | `GET /api/qbo-pnl?company=X&period=Y` | GET | QuickBooks P&L — companies: `ce_sf_combined`, `ce_east`. Periods: `ytd`, `this_week`, `last_week`, `jan`-`dec`, or `start_date`/`end_date`. **Returns `{ company, period, fiq, parsed }` — expenses/cogs/truckTrailer dicts live under `parsed.*`, not top-level. See `parsePnlReport()` in `_qbo-helpers.js` for the bucket-mapping gotchas (nested-section prefix loss, etc.)** |
 | `GET /api/qbo-bs?company=X` | GET | QuickBooks Balance Sheet — returns assets, liabilities, equity with account detail |
@@ -133,7 +134,9 @@ freightiq/
 | Fleet Overview | `FleetOverview()` | All-in CPM, cost breakdown, driver table |
 | CPM Calculator | `BasicCPM()` | Basic vs All-In CPM, margin targets, CPM simulator |
 | Per Load CPM | `PerLoadCPM()` | Booking simulator, fleet cost cards, live Alvys loads |
-| Revenue | `RevenueDashboard()` | Revenue by company (CE/SF/DI), Alvys + Ascend data |
+| Revenue | `RevenueDashboard()` | **LIVE from `/api/alvys-loads`** (as of Jul 2 2026 — was a static `ALVYS` snapshot). Alvys pipeline by status + top customers; CE/SF split derived from each load's `invoiceAs`. Falls back to static `ALVYS` (yellow warning) if the fetch fails. NOTE: this is booked pipeline across ALL statuses (mostly Queued/Covered) ≠ QBO-invoiced revenue on the Income tab. |
+| A/R | `ArDashboard()` | **LIVE** accounts receivable from `/api/alvys-ar` — total AR, by-status KPIs, aging buckets (days since delivery), full detail table + by-customer. **⬇ Download Excel** exports everything except Queued/Released/Completed (SheetJS). Carrier NOT available from Alvys API (flagged). |
+| OTR Ops | `OtrOperations()` | Over-the-road drivers — separate op like ATL, **carved out of fleet CPM**. Reads `OTR_WEEKLY_LOG` + `otrSum()`; cost-only KPIs + per-week roster/cost table. See "OTR Operations" section. |
 | Driver Detail | `DriverDetail()` | Per-driver labor + fuel + combined CPM |
 | Trucks & Mileage | `TrucksMileage()` | Per-truck miles + state breakdown from Samsara Vehicle Mileage xlsx (static) |
 | Fuel Analysis | `FuelAnalysis()` | Per-driver fuel spend, avg $/gal |
@@ -227,6 +230,21 @@ Agent payments are a separate draw category in QBO — **NOT inside `Total for O
 
 Card-47458 footnote: previously misattributed to Wright Robert (frozen) — reassigned to Tucker Robert in the May 16 update. Wright stays frozen at $2,170.77 (his card 37405 portion only).
 
+### OTR Operations — over-the-road drivers, carved out of the fleet CPM
+
+OTR (added Jun 29 2026) is a **separate driver operation like ATL, but explicitly EXCLUDED from the fleet CPM** (per Ben — OTR gets its own calcs later). Structure mirrors ATL: `OTR_WEEKLY_LOG[]` (per-week roster + driverPay/hours/fuel; drivers move in/out) + `otrSum()` + `OtrOperations()` tab (cost-only KPIs + per-week table, no revenue yet).
+
+**The carve-out is real (unlike ATL, which stays in PAYROLL):**
+- OTR drivers are NOT in `PAYROLL`/`FUEL`. When a driver becomes OTR, remove them from PAYROLL + FUEL and **reduce `LABOR`, `TOTAL_HRS`, `FUEL_TOT`, `GALLONS`** by their amounts (their EFS cards are subtracted from FUEL_TOT — noted in the FUEL_TOT comment). Then add them to `OTR_WEEKLY_LOG`.
+- So `LABOR` = SF fleet drivers only (excl. OTR). `PAYROLL.sum` should equal `LABOR`.
+- Launch roster (Jun 22-28): Baker Anthony, Dawson Brian, Pacitti Michael R.
+
+**`metrics.json drivers:N` regression (bit us Jun 29):** `extract-metrics.js` regex is `(\d+)\s*drivers` — the FIRST match wins. Keep the digit adjacent to "drivers" in the LABOR comment (e.g. "42 drivers active", NOT "42 active"), or it grabs a later "3 drivers" comment and metrics shows `drivers:3`. Verify `metrics.json` drivers count after every weekly build.
+
+### Weekly office/payroll gotcha — QB payroll file row layout SHIFTS
+
+The QB PayrollSummaryByEmployee `.xls` row order is NOT stable — the SF file gained 3 rows on the Jun 29 drop (Gross/taxes/contrib/totalCost moved from rows 14/46/52/54 to 15/49/55/57), which silently zeroed the SF office rows. **Extract office/warehouse figures by ROW LABEL** ("Gross pay - total", "Employer taxes - total", "Company contributions - total", "Total payroll cost"), never hardcoded row indices. (Employee columns are stable; only line-item rows shift.)
+
 ### Re-authorizing QBO (when CE East or another company shows 401s)
 
 QBO tokens for all companies live in the shared `qbo_tokens` Supabase table. CE East has its own row (`id: ce_east`). When the refresh token expires (typically 100 days), `/api/qbo-pnl?company=ce_east` returns 401 and the CE East tab falls back to its static block.
@@ -269,7 +287,8 @@ If you're adding a new live data source that needs to drive CPM or other derived
 - `MONTHLY_REVENUE[]` — 2025-2026 by company (CE/SF/DI)
 - `DETAIL{}` — transaction breakdowns (labor, fuel, insurance, trucks, trailers, maintenance)
 - `ASCEND{}` — Historical Ascend TMS data (Jan-Mar 2026, no longer active)
-- `ALVYS{}` — Alvys TMS pipeline snapshot (also fetched live via /api/alvys-loads)
+- `ALVYS{}` — Alvys TMS pipeline snapshot — now only a **fallback** for the Revenue tab (which is live via `/api/alvys-loads`); refresh only if you want an accurate offline fallback
+- `OTR_WEEKLY_LOG` / `otrSum()` — over-the-road drivers, carved out of the fleet CPM (see "OTR Operations")
 
 **Current period:** Jan 1 – Jun 14, 2026 (165 days)
 
@@ -321,7 +340,7 @@ If you're adding a new live data source that needs to drive CPM or other derived
 - **URL:** https://freightiq-nine-two.vercel.app (PERMANENT)
 - **GitHub:** github.com/bhoffman9/freightiq (private)
 - **Config:** `vercel.json` — framework: vite, buildCommand: npm run build, output: dist
-- **Serverless:** `api/ai.js`, `api/alvys-loads.js`, `api/distance.js`, `api/qbo-pnl.js`, `api/qbo-bs.js` auto-deployed
+- **Serverless:** `api/ai.js`, `api/alvys-loads.js`, `api/alvys-ar.js`, `api/distance.js`, `api/qbo-pnl.js`, `api/qbo-bs.js` auto-deployed
 
 ## Weekly Update Workflow
 
