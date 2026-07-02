@@ -33,18 +33,28 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: "No access_token in auth response", detail: authText.slice(0, 200) });
     }
 
-    // Fetch all loads across statuses
+    // Fetch all loads across statuses (paginated — Alvys caps a page at 200)
     const statuses = ["Queued", "Covered", "Open", "In Transit", "Delivered", "Invoiced"];
-    const loadRes = await fetch("https://integrations.alvys.com/api/p/v1/loads/search", {
-      method: "POST",
-      headers: { authorization: `Bearer ${access_token}`, "content-type": "application/json" },
-      body: JSON.stringify({ Status: statuses, pageSize: 500 }),
-    });
-    const loadText = await loadRes.text();
-    if (!loadRes.ok) {
-      return res.status(502).json({ error: "Alvys loads fetch failed", status: loadRes.status, detail: loadText.slice(0, 500) });
+    const allItems = [];
+    let grandTotal = 0;
+    for (let page = 0; page < 15; page++) {
+      const loadRes = await fetch("https://integrations.alvys.com/api/p/v1/loads/search", {
+        method: "POST",
+        headers: { authorization: `Bearer ${access_token}`, "content-type": "application/json" },
+        body: JSON.stringify({ Status: statuses, Page: page, PageSize: 200 }),
+      });
+      const loadText = await loadRes.text();
+      if (!loadRes.ok) {
+        if (page === 0) return res.status(502).json({ error: "Alvys loads fetch failed", status: loadRes.status, detail: loadText.slice(0, 500) });
+        break;
+      }
+      const pd = JSON.parse(loadText);
+      grandTotal = pd.Total || grandTotal;
+      const batch = pd.Items || [];
+      allItems.push(...batch);
+      if (batch.length < 200) break;
     }
-    const loadData = JSON.parse(loadText);
+    const loadData = { Items: allItems, Total: grandTotal || allItems.length };
 
     const loads = (loadData.Items || []).map(l => {
       const stops = l.Stops || [];

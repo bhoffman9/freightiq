@@ -5377,6 +5377,25 @@ const ALVYS = {
 
 function RevenueDashboard() {
   const [view, setView] = useState("alvys");
+  const [alvysLive, setAlvysLive] = useState(null);
+  useEffect(() => {
+    fetch("/api/alvys-loads").then(r => r.json()).then(dd => {
+      if (!dd || dd.error || !dd.loads) return;
+      const rev = a => a.reduce((s, l) => s + (l.revenue || 0), 0);
+      const ce = dd.loads.filter(l => /capacity express/i.test(l.invoiceAs || ""));
+      const sf = dd.loads.filter(l => /show freight/i.test(l.invoiceAs || ""));
+      const byStatus = Object.entries(dd.byStatus || {}).map(([status, v]) => ({ status, loads: v.loads, rev: v.revenue })).filter(s => s.loads > 0);
+      setAlvysLive({
+        period: "Live — Alvys TMS",
+        totalLoads: dd.total || dd.loads.length, totalRev: byStatus.reduce((s, x) => s + x.rev, 0),
+        ceLoads: ce.length, ceRev: rev(ce), sfLoads: sf.length, sfRev: rev(sf),
+        byStatus,
+        topCustomers: (dd.topCustomers || []).map(c => ({ name: c.name, loads: c.loads, rev: c.revenue })),
+        fetchedAt: dd.fetchedAt,
+      });
+    }).catch(() => {});
+  }, []);
+  const AV = alvysLive || ALVYS;
   const d = ASCEND;
   const latest = d.months[d.months.length - 1];
   const best = d.weeks.reduce((b,w) => w.rev > b.rev ? w : b, d.weeks[0]);
@@ -5403,12 +5422,15 @@ function RevenueDashboard() {
       {/* ── ALVYS SECTION ── */}
       {view === "alvys" && (
         <>
+          <div style={{ fontSize:11, marginBottom:10, color: alvysLive ? "#3ddc84" : "#f5c542" }}>
+            {alvysLive ? `🟢 Live from Alvys · ${fn(AV.totalLoads,0)} loads · as of ${new Date(alvysLive.fetchedAt).toLocaleString()}` : "🟡 Static snapshot (live fetch pending/failed)"}
+          </div>
           <div className="g4" style={{ marginBottom:14 }}>
             {[
-              { label:"Total Pipeline", val:fd(ALVYS.totalRev,0), color:"#3ddc84", sub:`${fn(ALVYS.totalLoads,0)} loads across all statuses` },
-              { label:"CE Revenue", val:fd(ALVYS.ceRev,0), color:"#4fc3f7", sub:`${ALVYS.ceLoads} loads · Capacity Express` },
-              { label:"SF Revenue", val:fd(ALVYS.sfRev,0), color:"#f47820", sub:`${ALVYS.sfLoads} loads · Show Freight` },
-              { label:"Avg Revenue/Load", val:fd(ALVYS.totalRev/ALVYS.totalLoads,0), color:"#f5c542", sub:`Across ${ALVYS.totalLoads} total loads` },
+              { label:"Total Pipeline", val:fd(AV.totalRev,0), color:"#3ddc84", sub:`${fn(AV.totalLoads,0)} loads across all statuses` },
+              { label:"CE Revenue", val:fd(AV.ceRev,0), color:"#4fc3f7", sub:`${AV.ceLoads} loads · Capacity Express` },
+              { label:"SF Revenue", val:fd(AV.sfRev,0), color:"#f47820", sub:`${AV.sfLoads} loads · Show Freight` },
+              { label:"Avg Revenue/Load", val:fd(AV.totalRev/AV.totalLoads,0), color:"#f5c542", sub:`Across ${AV.totalLoads} total loads` },
             ].map(k => (
               <div key={k.label} style={{ background:"var(--s1)",border:`1px solid ${k.color}40`,borderRadius:6,padding:"22px",textAlign:"center" }}>
                 <div style={{ fontSize:9,letterSpacing:3,textTransform:"uppercase",color:k.color,marginBottom:6 }}>{k.label}</div>
@@ -5421,14 +5443,14 @@ function RevenueDashboard() {
           <div className="g2" style={{ gap:14,marginBottom:14 }}>
             <div className="card">
               <div className="ctit">Pipeline by Status</div>
-              {ALVYS.byStatus.map(s => (
+              {AV.byStatus.map(s => (
                 <div key={s.status} style={{ marginBottom:10 }}>
                   <div style={{ display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:3 }}>
                     <span style={{ fontWeight:600 }}>{s.status}</span>
                     <span style={{ fontFamily:"var(--f2)",fontWeight:800 }}>{fd(s.rev,0)} <span style={{ color:"var(--mu)",fontWeight:400 }}>({s.loads} loads)</span></span>
                   </div>
                   <div className="bar" style={{ height:20 }}>
-                    <div className="bfil" style={{ width:`${(s.rev/ALVYS.totalRev*100)}%`,background:s.status==="Delivered"?"#3ddc84":s.status==="Invoiced"?"#f5c542":s.status==="In Transit"?"#4fc3f7":"#666" }} />
+                    <div className="bfil" style={{ width:`${(s.rev/AV.totalRev*100)}%`,background:s.status==="Delivered"?"#3ddc84":s.status==="Invoiced"?"#f5c542":s.status==="In Transit"?"#4fc3f7":"#666" }} />
                   </div>
                 </div>
               ))}
@@ -5439,7 +5461,7 @@ function RevenueDashboard() {
               <table className="tbl" style={{ fontSize:11 }}>
                 <thead><tr><th style={{ textAlign:"left" }}>Customer</th><th>Loads</th><th>Revenue</th></tr></thead>
                 <tbody>
-                  {ALVYS.topCustomers.map((c,i) => (
+                  {AV.topCustomers.map((c,i) => (
                     <tr key={c.name} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                       <td style={{ fontWeight:600 }}>{c.name}</td>
                       <td>{c.loads}</td>
