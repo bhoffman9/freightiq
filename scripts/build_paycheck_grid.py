@@ -153,7 +153,7 @@ for w in weeks[1:]:
 
 # Mairena Tapias (Jon Marcus assistant), 100% CE, paid as expense — APPEND new payments weekly
 r = getrow('CE', ('con','MAI'), 'Mairena Tapias · 1099', False)
-for ds, amt in [('04/20/2026',193.04),('05/05/2026',900.0),('05/20/2026',882.0),('05/28/2026',695.0),('06/02/2026',140.0),('06/12/2026',950.0),('06/22/2026',475.0),('06/30/2026',475.0)]:
+for ds, amt in [('04/20/2026',193.04),('05/05/2026',900.0),('05/20/2026',882.0),('05/28/2026',695.0),('06/02/2026',140.0),('06/12/2026',950.0),('06/18/2026',475.0),('06/22/2026',475.0),('06/30/2026',475.0)]:
     wl = wk_of(mdate(ds)); r['camts'][wl] = round(r['camts'].get(wl,0) + amt, 2)
 
 # Logic Consultants: $500/wk entire year
