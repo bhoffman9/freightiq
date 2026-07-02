@@ -68,10 +68,26 @@ def parse_pc(path):
 sf = parse_pc(SF_PC); ja = parse_pc(JA_PC)
 alld = [mon(d) for d,_,_ in sf+ja]; w0,w1 = min(alld), max(alld); weeks = []; c = w0
 while c <= w1: weeks.append(c); c += datetime.timedelta(days=7)
-wlabel = [f"{w.month}/{w.day}" for w in weeks]
+
+# Column labels = PAY DAY (actual check date), not the Monday week-start.
+# For each Mon-Sun bucket, use the MOST COMMON check date that week as the
+# label (the main payroll run); off-cycle checks still sit in that column.
+# Buckets are still keyed by Monday internally; PD maps Monday -> payday label.
+from collections import Counter
+_ckcount = {}
+for _d, _n, _tp in sf + ja:
+    _ckcount.setdefault(mon(_d), Counter())[_d] += 1
+def _payday(mnd):
+    cc = _ckcount.get(mnd)
+    if not cc: return f"{mnd.month}/{mnd.day}"        # no checks that week → fall back to Monday
+    pd = cc.most_common(1)[0][0]                       # most-frequent check date
+    return f"{pd.month}/{pd.day}"
+PD = {w: _payday(w) for w in weeks}                    # Monday date -> payday label
+PD_BY_MONLABEL = {f"{w.month}/{w.day}": PD[w] for w in weeks}  # "6/29" (Mon) -> payday label
+wlabel = [PD[w] for w in weeks]
 
 def wk_of(dt):
-    m = mon(dt); m = max(weeks[0], min(weeks[-1], m)); return f"{m.month}/{m.day}"
+    m = mon(dt); m = max(weeks[0], min(weeks[-1], m)); return PD[m]
 
 rows = {}
 def getrow(comp, k, name, former):
@@ -133,7 +149,7 @@ for row in list(csv.reader(open(CHASE, encoding='utf-8-sig')))[1:]:
 # Maria Con: $550/wk through Mar 10, then $650/wk — every week 1/5 -> latest
 cutoff = datetime.date(2026,3,9); r = getrow('SF', ('con','MAR'), 'Maria Con · 1099', False)
 for w in weeks[1:]:
-    r['camts'][f"{w.month}/{w.day}"] = 550.0 if w <= cutoff else 650.0
+    r['camts'][PD[w]] = 550.0 if w <= cutoff else 650.0
 
 # Mairena Tapias (Jon Marcus assistant), 100% CE, paid as expense — APPEND new payments weekly
 r = getrow('CE', ('con','MAI'), 'Mairena Tapias · 1099', False)
@@ -142,7 +158,7 @@ for ds, amt in [('04/20/2026',193.04),('05/05/2026',900.0),('05/20/2026',882.0),
 
 # Logic Consultants: $500/wk entire year
 rL = getrow('J&A', ('con','LOGIC'), 'Logic Consultants · 1099', False)
-for w in weeks[1:]: rL['camts'][f"{w.month}/{w.day}"] = 500.0
+for w in weeks[1:]: rL['camts'][PD[w]] = 500.0
 
 # MANUAL contractor amounts by week (Ben gives these in chat each week, since
 # the QB ContractorPayments/Chase exports lag the W-2 paycheck history).
@@ -174,11 +190,15 @@ MANUAL_CONTRACTORS = {
         ('J&A', ('adamson','d'),    1750.0,  'Debra Adamson'),
     ],
 }
+# MANUAL_CONTRACTORS is hand-keyed by Monday week ("6/22", "6/29"); map each
+# to its payday label so contractor payments land in the same column as that
+# week's W-2 checks.
 for wl, items in MANUAL_CONTRACTORS.items():
+    wl_pd = PD_BY_MONLABEL.get(wl, wl)
     for comp, rk, amt, disp in items:
         ex = rows.get((comp, rk)); nm = ex['name'] if ex else disp
         rr = getrow(comp, rk, nm, ex['former'] if ex else False)
-        rr['camts'][wl] = round(rr['camts'].get(wl, 0) + amt, 2)
+        rr['camts'][wl_pd] = round(rr['camts'].get(wl_pd, 0) + amt, 2)
 
 SECT = ['CE','SF','CE East','J&A']; out = []
 for s in SECT:
@@ -194,7 +214,7 @@ for s in SECT:
     out.append({'name':s, 'rows':rs, 'totals':tot, 'ctotals':ct})
 
 period = f"Jan 2 – {weeks[-1].month}/{weeks[-1].day+6}/{weeks[-1].year}"
-data = {'source':f'W-2 paychecks (loaded) + contractor payments QB+Chase (dated, excl reimbursements) · {len(wlabel)} weeks', 'weeks':wlabel, 'sections':out}
+data = {'source':f'W-2 paychecks (loaded) + contractor payments QB+Chase (dated, excl reimbursements) · {len(wlabel)} weeks · columns = pay day', 'weeks':wlabel, 'sections':out}
 
 # write straight into App.jsx
 new = json.dumps(data)
