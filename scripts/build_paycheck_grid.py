@@ -200,6 +200,37 @@ for wl, items in MANUAL_CONTRACTORS.items():
         rr = getrow(comp, rk, nm, ex['former'] if ex else False)
         rr['camts'][wl_pd] = round(rr['camts'].get(wl_pd, 0) + amt, 2)
 
+# --- ALL-IN: fold contractor CAR allowances + company-paid HEALTH insurance
+# into the grid so every column is fully loaded (per Ben — "all in for all
+# places"). Reconciles to the Cost Breakdown footnotes: car $4,794.02 YTD,
+# health $15,463.24 YTD. (Reimbursements stay excluded.)
+def _addc(comp, rk, wl, amt):
+    ex = rows.get((comp, rk)); nm = ex['name'] if ex else str(rk)
+    rr = getrow(comp, rk, nm, ex['former'] if ex else False)
+    rr['camts'][wl] = round(rr['camts'].get(wl, 0) + amt, 2)
+
+# Health insurance — weekly, company-paid. 26 wks each (weeks[1:]) → matches
+# each contractor's healthInsTotal in CONTRACTORS[].
+for comp, rk, rate in [('J&A',('con','MEL'),368.34), ('J&A',('con','HIL'),118.82),
+                       ('J&A',('simpson','c'),53.79), ('J&A',('adamson','d'),53.79)]:
+    for w in weeks[1:]:
+        _addc(comp, rk, PD[w], rate)
+
+# Car allowances — monthly. Spec is (month int → first pay-week of that month)
+# OR an explicit payday label for cars we know the exact pay week of (recent).
+def _carlbl(spec):
+    if isinstance(spec, str): return spec
+    for w in weeks:
+        if w.month == spec: return PD[w]
+    return PD[weeks[-1]]
+CAR = [
+    ('CE',  ('con','JON'), [(1,350.0),(2,350.0),(3,350.0),(4,350.0),(5,350.0),('7/2',350.0)]),          # Jan-May monthly + June paid this wk (7/2) = $2,100
+    ('J&A', ('con','MEL'), [(1,334.86),(2,334.86),(3,334.86),(4,334.86),(5,334.86),(6,684.86),('7/2',334.86)]),  # +June bump + July paid 7/2 = $2,694.02
+]
+for comp, rk, plan in CAR:
+    for spec, amt in plan:
+        _addc(comp, rk, _carlbl(spec), amt)
+
 SECT = ['CE','SF','CE East','J&A']; out = []
 for s in SECT:
     rs = [v for (c,k),v in rows.items() if c == s]
@@ -214,7 +245,7 @@ for s in SECT:
     out.append({'name':s, 'rows':rs, 'totals':tot, 'ctotals':ct})
 
 period = f"Jan 2 – {weeks[-1].month}/{weeks[-1].day+6}/{weeks[-1].year}"
-data = {'source':f'W-2 paychecks (loaded) + contractor payments QB+Chase (dated, excl reimbursements) · {len(wlabel)} weeks · columns = pay day', 'weeks':wlabel, 'sections':out}
+data = {'source':f'W-2 paychecks (loaded) + contractors ALL-IN (cash + car + health, excl reimbursements) · {len(wlabel)} weeks · columns = pay day', 'weeks':wlabel, 'sections':out}
 
 # write straight into App.jsx
 new = json.dumps(data)
