@@ -50,7 +50,7 @@ for blk in ['OFFICE_W2', 'WAREHOUSE']:
 
 W2DIV = {('naruszewicz','b'):{'CE':0.5,'SF':0.5}, ('youngblood','n'):{'CE':1.0}, ('rivera','c'):{'CE':1.0},
          ('galvis','h'):{'CE':0.5,'CE East':0.5}, ('gelaw','k'):{'CE':0.5,'CE East':0.5}}
-OFFICE = ['arias','gonzalez','grosser','naruszewicz','rivera','youngblood','mahan','eagleton','figueroa']
+OFFICE = ['arias','gonzalez','grosser','naruszewicz','rivera','youngblood','mahan','eagleton','figueroa','wilson']
 
 def mon(dt): return dt - datetime.timedelta(days=dt.weekday())
 def mdate(s): m,d,y = s.split('/'); return datetime.date(int(y),int(m),int(d))

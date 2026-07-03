@@ -11,11 +11,6 @@
       "totalCost": 20339.12
     },
     {
-      "name": "Alshamaa Manar",
-      "hours": 302.34,
-      "totalCost": 9368.45
-    },
-    {
       "name": "Daniels Gerald W",
       "hours": 771.31,
       "totalCost": 22531.82
@@ -29,16 +24,6 @@
       "name": "Denman Samuel E",
       "hours": 1507.82,
       "totalCost": 49929.37
-    },
-    {
-      "name": "Dixon Deon A",
-      "hours": 101.84,
-      "totalCost": 3045.73
-    },
-    {
-      "name": "Dotch Brandon C",
-      "hours": 540.11,
-      "totalCost": 16130.43
     },
     {
       "name": "Gray Stephen D",
@@ -66,24 +51,9 @@
       "totalCost": 15782.49
     },
     {
-      "name": "Landreth James",
-      "hours": 161.05,
-      "totalCost": 4883.37
-    },
-    {
       "name": "Logan LaDyle",
       "hours": 323.31,
       "totalCost": 10088.24
-    },
-    {
-      "name": "Lucero Andrew",
-      "hours": 149.53,
-      "totalCost": 4325.15
-    },
-    {
-      "name": "Magtee Christopher",
-      "hours": 39.47,
-      "totalCost": 1141.68
     },
     {
       "name": "Mcclam Michael A",
@@ -126,24 +96,9 @@
       "totalCost": 45215.6
     },
     {
-      "name": "Secrest Jermelle",
-      "hours": 613.67,
-      "totalCost": 17708.58
-    },
-    {
       "name": "Stevenson Timothy",
       "hours": 333.14,
       "totalCost": 9631.52
-    },
-    {
-      "name": "Stringer Adam E",
-      "hours": 203.46,
-      "totalCost": 5885.08
-    },
-    {
-      "name": "Striplin Lamareh",
-      "hours": 653.62,
-      "totalCost": 20028.99
     },
     {
       "name": "Thomas John",
@@ -156,24 +111,9 @@
       "totalCost": 17776.26
     },
     {
-      "name": "Vue CJ Z",
-      "hours": 3,
-      "totalCost": 86.78
-    },
-    {
       "name": "Wainwright Michael W",
       "hours": 1589.37,
       "totalCost": 47133.16
-    },
-    {
-      "name": "Watkins Shawn",
-      "hours": 862.89,
-      "totalCost": 25591.49
-    },
-    {
-      "name": "Watson Dahnifu S",
-      "hours": 1263.31,
-      "totalCost": 36480.52
     },
     {
       "name": "Whipple Wallace",
@@ -204,11 +144,6 @@
       "name": "Lewis Steve",
       "hours": 94.43,
       "totalCost": 2731.38
-    },
-    {
-      "name": "Wilson Antionette",
-      "hours": 100,
-      "totalCost": 2514.25
     }
   ],
   "office": [
@@ -246,6 +181,11 @@
       "name": "Tasha Mahan",
       "entity": "SF",
       "totalCost": 7231.25
+    },
+    {
+      "name": "Antionette Wilson",
+      "entity": "SF",
+      "totalCost": 2514.25
     },
     {
       "name": "Valeria Abrego",
@@ -372,11 +312,11 @@
   ],
   "period": "Jan 1 - Jun 28, 2026",
   "totals": {
-    "driverLabor": 1080221.0099999998,
-    "driverCount": 42,
-    "officeTotal": 417167.85,
+    "driverLabor": 933030.5099999998,
+    "driverCount": 29,
+    "officeTotal": 419682.1,
     "warehouseTotal": 69589.5,
     "contractorTotal": 363786.44,
-    "grandTotal": 1930764.7999999998
+    "grandTotal": 1786088.5499999998
   }
 }

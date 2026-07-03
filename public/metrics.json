@@ -1,8 +1,8 @@
 {
   "period": "Jan 1 - Jun 28, 2026",
-  "drivers": 42,
+  "drivers": 29,
   "miles": 737887.1,
-  "labor": 1200429.3,
+  "labor": 1197915.05,
   "fuel_tot": 586601.24,
   "ins_tot": 148599.16,
   "truck_tot": 457050.95,
@@ -20,5 +20,5 @@
   "revenue_di": 62828.5,
   "net_op_income": 797943.42,
   "days_in_period": 179,
-  "extracted_at": "2026-07-02T20:35:00.957Z"
+  "extracted_at": "2026-07-03T14:52:57.055Z"
 }
