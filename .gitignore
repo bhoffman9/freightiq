@@ -12,3 +12,6 @@ node_modules/
 
 # Claude Code per-directory settings (may contain local paths, tokens, PATs)
 .claude/
+
+# Playwright MCP QA artifacts
+.playwright-mcp/
