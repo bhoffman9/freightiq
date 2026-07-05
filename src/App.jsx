@@ -96,7 +96,7 @@ let FUEL = {
   // No Mudflap charges this period
   // Fuel = ULSD + BDSL + CDSL + UNPR + UNRG (all fuel products; excludes DEF, fees, parking, CADV)
   // Excluded from per-driver mapping (still counted in FUEL_TOT): card 17408 Andres ($5,337.52 — warehouse), 27467 Nathan ($90.01 — office), 67402 ($1,005.41 unknown), 47465 ($369.67 unknown), 07409 Adrian ($332.35 — office, NEW)
-  "Alexander Christopher": { fuel: 27963.68, gallons: 4567.64 },  // card 77409
+  "Alexander Christopher": { fuel: 29199.65, gallons: 4808.95 },  // card 77409
   "Allwine Brian A":       { fuel: 2147.67,  gallons: 556.49 },   // card 07408 split (Jan only, *inactive — frozen)
   "Alshamaa Manar":        { fuel: 5680.93,  gallons: 1055.67 },   // card 87454
   "Anderson Justin M":     { fuel: 450.60,   gallons: 76.00 },    // card 07405 split (Jan only, *inactive — frozen)
@@ -105,29 +105,29 @@ let FUEL = {
   "Christian Norman L":    { fuel: 819.40,   gallons: 149.01 },   // card 47402 split (Mar only, *inactive — frozen)
   "Clark Rettick":         { fuel: 2339.97,  gallons: 482.50 },   // card 37405 split (*inactive — frozen)
   "Cotton Kejlon":         { fuel: 235.78,   gallons: 61.10 },    // card 87401 split (*inactive — frozen)
-  "Cowsky Andy":           { fuel: 16823.38, gallons: 2754.55 },  // card 77457
-  "Daniels Gerald W":      { fuel: 11429.68,  gallons: 1950.36 },  // card 47402 split (active, absorbs deltas over Christian)
+  "Cowsky Andy":           { fuel: 17259.06, gallons: 2846.49 },  // card 77457
+  "Daniels Gerald W":      { fuel: 11821.46,  gallons: 2041.07 },  // card 47402 split (active, absorbs deltas over Christian)
   "Davis Anthoni D":       { fuel: 45676.91, gallons: 8308.99 },  // card 27406
   "Denman Samuel E":       { fuel: 26384.69, gallons: 5228.22 },  // cards 47405 + 37403
   "Dotch Brandon C":       { fuel: 12032.86, gallons: 1880.68 },  // cards 07405 (Anderson-frozen split) + 17468 (UNCHANGED WoW × 3)
-  "Gray Stephen D":        { fuel: 2839.06,   gallons: 520.99 },   // NEW · card 27403
+  "Gray Stephen D":        { fuel: 3909.51,   gallons: 768.84 },   // NEW · card 27403
   "Gutierrez Danny":       { fuel: 9977.47,  gallons: 2052.14 },  // card 47404 (UNCHANGED WoW × 2)
   "Guzman Jose":           { fuel: 11522.63, gallons: 2294.54 },  // card 77401 (UNCHANGED WoW)
   "Howell Lawrence":       { fuel: 0.00,        gallons: 0.00 },
   "Ibarra Jose Pablo":     { fuel: 9619.73,  gallons: 1889.67 },  // card 97409
-  "Johnson Christopher":   { fuel: 10266.31,  gallons: 2014.58 },   // card 37459
+  "Johnson Christopher":   { fuel: 10778.14,  gallons: 2132.27 },   // card 37459
   "Juarez Angel":          { fuel: 2961.21,  gallons: 429.11 },   // card 87461 (frozen UNCHANGED)
   "Kelly Kirk D":          { fuel: 13948.17, gallons: 2933.07 },  // card 77402 split (*inactive — frozen)
-  "Logan LaDyle":          { fuel: 5532.22,  gallons: 1133.16 },   // NEW · card 57457 · ATL driver
+  "Logan LaDyle":          { fuel: 7004.09,  gallons: 1434.76 },   // NEW · card 57457 · ATL driver
   "Lucero Andrew":         { fuel: 1481.30,  gallons: 210.83 },   // card 87401 split (UNCHANGED WoW × 5)
   "Matthews Ron A":        { fuel: 4209.19,  gallons: 1032.33 },  // card 07408 split (*inactive — frozen)
-  "Mcclam Michael A":      { fuel: 23968.29, gallons: 3607.16 },  // card 07407
-  "McNamara John":         { fuel: 21584.34, gallons: 4548.33 },  // card 17407
+  "Mcclam Michael A":      { fuel: 25412.86, gallons: 3889.25 },  // card 07407
+  "McNamara John":         { fuel: 21945.37, gallons: 4624.51 },  // card 17407
   "Memolo Dominick":       { fuel: 0.00,        gallons: 0.00 },
   "Negrete Arturo":        { fuel: 6348.68,  gallons: 1511.56 },  // card 57404 (*inactive — frozen UNCHANGED)
-  "Ponce Carlos":          { fuel: 17000.69, gallons: 2728.39 },  // card 37466
-  "Restrepo Julian E":     { fuel: 19955.89, gallons: 3345.46 },  // card 37405 split (active, absorbs deltas over Wright+Clark)
-  "Reyes Corey":           { fuel: 13783.88,  gallons: 2043.76 },  // cards 07469 + 97453
+  "Ponce Carlos":          { fuel: 18710.03, gallons: 3051.36 },  // card 37466
+  "Restrepo Julian E":     { fuel: 20728.50, gallons: 3521.85 },  // card 37405 split (active, absorbs deltas over Wright+Clark)
+  "Reyes Corey":           { fuel: 14353.27,  gallons: 2170.32 },  // cards 07469 + 97453
   "Robinson Animashaun":   { fuel: 0.00,        gallons: 0.00 },
   "Ronkov Martin P":       { fuel: 7611.12,  gallons: 1505.42 },  // card 67403
   "Secrest Jermelle":      { fuel: 16213.45, gallons: 2451.98 },  // cards 37404 + 27404 (Mell) — UNCHANGED WoW × 3
@@ -135,14 +135,14 @@ let FUEL = {
   "Stringer Adam E":       { fuel: 3165.51,  gallons: 561.20 },   // card 77402 split (UNCHANGED WoW × 3 — Kelly portion frozen)
   "Striplin Lamareh":      { fuel: 12395.32, gallons: 2247.71 },  // card 87407 — moved off UNCHANGED streak
   "Thorne Richard":        { fuel: 5514.29,  gallons: 938.16 },   // card 87401 split (*inactive — frozen)
-  "Tucker Robert":         { fuel: 11937.96,  gallons: 2327.42 },  // card 47458
+  "Tucker Robert":         { fuel: 13257.14,  gallons: 2611.29 },  // card 47458
   "Vue CJ Z":              { fuel: 0.00,        gallons: 0.00 },        // no card mapped
-  "Wainwright Michael W":  { fuel: 35021.87, gallons: 7101.25 },  // card 67463
+  "Wainwright Michael W":  { fuel: 36577.76, gallons: 7439.31 },  // card 67463
   "Watkins Shawn":         { fuel: 38387.04, gallons: 6812.25 },  // cards 57401 + 57464
   "Watson Dahnifu S":      { fuel: 16274.57, gallons: 2966.78 },  // card 97406 (Shaq)
-  "Whipple Wallace":       { fuel: 27279.92, gallons: 5558.62 },  // card 57403
-  "Williams Tadaryl C":    { fuel: 20686.40, gallons: 3906.65 },  // card 37402 (UNCHANGED WoW × 2)
-  "Williams Will":         { fuel: 22924.67, gallons: 3932.88 },  // card 27405
+  "Whipple Wallace":       { fuel: 27613.18, gallons: 5636.87 },  // card 57403
+  "Williams Tadaryl C":    { fuel: 20980.84, gallons: 3974.82 },  // card 37402 (UNCHANGED WoW × 2)
+  "Williams Will":         { fuel: 23794.99, gallons: 4134.18 },  // card 27405
   "Willis Wali A":         { fuel: 13159.83, gallons: 2385.92 },  // card 87400
   "Wright Robert":         { fuel: 2170.77,  gallons: 538.08 },   // card 37405 split only (*inactive — frozen; 47458 reassigned to Tucker), // NEW · card 27450, // NEW · card 87455, // NEW · card 17451
   "Lewis Steve":           { fuel: 979.82, gallons: 148.48 }, // NEW · card 97454
@@ -154,29 +154,29 @@ let FUEL = {
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
 let LABOR     = 1197915.05; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru ~Jul 2 (payroll-only refresh — payroll file ~1wk ahead of the Jun 28 PERIOD; fuel/miles/income still Jun 26-28). 29 drivers active (frozen + 12 terminated Jul 2026 keep YTD so LABOR reconciles). EXCLUDES OTR (Baker/Dawson/Pacitti $14,785.86 — see OTR_WEEKLY_LOG) + Wilson Antionette (ATL office, moved to OFFICE_W2)
-let FUEL_TOT  = 586601.24;  // EFS fleet only — thru Jun 26 (EFS report total $596,077.79 minus OTR cards 27450/17451/87455 $9,476.55; OTR carved out of CPM)
-let GALLONS   = 107763.20;  // EFS 109,737.02 minus OTR 1,973.82
+let FUEL_TOT  = 603068.29;  // EFS fleet only — thru Jul 4 (EFS report total $616,958.33 minus OTR cards 27450/17451/87455 $13,890.04; OTR carved out of CPM)
+let GALLONS   = 111256.42;  // EFS 114,182.80 minus OTR 2,926.38
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
-let MILES     = 737887.1;     // Samsara Vehicle Mileage report, Jan 1 – Jun 27, 2026 (49 logged; updated from manual xlsx drop via scripts/parse_samsara_mileage.py)
+let MILES     = 737887.1;     // Samsara Vehicle Mileage report, Jan 1 – Jun 27, 2026 (49 logged). PENDING: Samsara xlsx for the Jul 5 period not yet dropped — MILES lags the rest by ~1wk. Update via scripts/parse_samsara_mileage.py when it lands.
 let TRUCK_COUNT = 30;       // ACTIVE fleet trucks per Ben's truck-count sheet. NOTE: TRUCK_MILES now has 49 entries from the mileage report; cumulative miles feed MILES + CPM but departed/temp trucks don't count toward the active fleet. (Confirm active count with Ben.)
 let TOTAL_HRS  = 38193.24;  // Payroll hours — fleet drivers only (office + OTR + Wilson excluded), thru ~Jul 2
 let INS_WEEK  = 6375;
-let INS_TOT    = 148599.16;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru Jun 28 (UNCHANGED WoW × 3 — flag, no June truck-ins posting yet)
-let TRUCK_TOT  = 457050.95;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI + Ryder) thru Jun 28 (+$62.7K WoW — June rentals posted)
-let TRAILER_TOT = 202101.42; // QuickBooks: Trailer Rentals (McKinney + Xtra + Utility + Premier + Boxwheel + Ten) thru Jun 28
+let INS_TOT    = 163284.16;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru Jul 5 — caught up (+$14.7K, June/July truck-ins posted)
+let TRUCK_TOT  = 489911.62;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI + Ryder) thru Jul 5
+let TRAILER_TOT = 215129.80; // QuickBooks: Trailer Rentals (McKinney + Xtra + Utility + Premier + Boxwheel + Ten) thru Jul 5
 let EQUIP_TOT   = TRUCK_TOT + TRAILER_TOT;
-let TRUCK_MAINT  = 6003.37;   // Prime Wash, AutoForce, Titan Glass, Towing, Batteries, TZ Parts, eBay, SF Heavy Equipment thru Jun 28
-let TRAIL_MAINT  = 4894.12;   // TravelCenters of America, MKD Express thru Jun 28 (UNCHANGED WoW × 2 — flag)
-let STORAGE      = 44623.35;  // Storage/Parking per P&L thru Jun 28
+let TRUCK_MAINT  = 7783.45;   // Prime Wash, AutoForce, Titan Glass, Towing, Batteries, TZ Parts, eBay, SF Heavy Equipment thru Jul 5
+let TRAIL_MAINT  = 5656.52;   // TravelCenters of America, MKD Express thru Jul 5
+let STORAGE      = 53835.40;  // Storage/Parking per P&L thru Jul 5
 let MAINT_TOT    = TRUCK_MAINT + TRAIL_MAINT + STORAGE;
-let UNIFORMS     = 9065.72;   // Unifirst + Safety Guard Shoe thru Jun 28 (UNCHANGED WoW × 4 — flag)
+let UNIFORMS     = 10863.06;  // Unifirst + Safety Guard Shoe thru Jul 5 — caught up off prior unchanged streak
 // Basic CPM = Labor + Fuel + Truck Rentals + Insurance only
 let BASIC_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT;
 let BASIC_CPM_V = BASIC_COST / MILES;
 // All-In CPM = everything tracked
 let ALLIN_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT + TRAILER_TOT + TRUCK_MAINT + TRAIL_MAINT + STORAGE + UNIFORMS;
 let ALLIN_CPM_V = ALLIN_COST / MILES;
-let PERIOD    = "Jan 1 - Jun 28, 2026";
+let PERIOD    = "Jan 1 - Jul 5, 2026";
 // Derived day count parsed from PERIOD — keeps subtitle labels honest without
 // having to bump a magic number every week. If PERIOD parsing fails, fall back
 // to current behavior (Jan 1 → today).
@@ -2679,7 +2679,8 @@ let MONTHLY_REVENUE = [
   { m:"Mar 26", ce:1734333.27, di:18161.70, sf:522550.51, total:2290040.48,  gp:1113857.96 },
   { m:"Apr 26", ce:1325895.61, di:1781.88,  sf:643584.16, total:2160721.16,  gp:1107479.39 },
   { m:"May 26", ce:1869803.06, di:17407.72, sf:714397.91, total:2725473.59,  gp:1375580.28 },
-  { m:"Jun 26", ce:1730993.12, di:3893.45,  sf:707040.32, total:2563805.90,  gp:1171176.73 },  // June (Jun 1-29)
+  { m:"Jun 26", ce:1958288.12, di:4293.45,  sf:836401.58, total:2940492.16,  gp:1371139.43 },  // full June
+  { m:"Jul 26", ce:198116.75,  di:0,        sf:79262.47,  total:282797.47,   gp:122451.94  },  // partial — Jul 1-5 only
 ];
 
 
@@ -4242,13 +4243,13 @@ function TrailerFleet() {
 
 // ── INCOME DATA ───────────────────────────────────────────────
 const INCOME_2026 = {
-  period: "Jan 1 – Jun 28, 2026",
-  ce: 8588639.29, sf: 3239370.45, di: 62828.50, ceEast: 450198.42,
-  total: 12341036.66,
-  cogs: 6408890.98, grossProfit: 5932145.68,
-  totalExp: 5134202.26, netOpIncome: 797943.42,
-  netIncome: 874603.43,
-  carrierPay: 6324658.34, merchantFees: 55079.60, flexentFees: 29153.04,
+  period: "Jan 1 – Jul 5, 2026",
+  ce: 9014051.04, sf: 3447994.18, di: 63228.50, ceEast: 475246.67,
+  total: 13000520.39,
+  cogs: 6745960.07, grossProfit: 6254560.32,
+  totalExp: 5498143.43, netOpIncome: 756416.89,
+  netIncome: 833088.75,
+  carrierPay: 6658397.09, merchantFees: 55079.60, flexentFees: 32483.38,
   weeks: [
     { label:"Jan 1-4",    rev:86886.02,  gp:52052.64,  ce:71474.65,  sf:14362.37,  di:1049.00,  carrier:34100.00,  netInc:25492.50 },
     { label:"Jan 5-11",   rev:167335.63, gp:76449.43,  ce:103721.70, sf:63463.93,  di:150.00,   carrier:88060.25,  netInc:-73568.84 },
@@ -4276,6 +4277,7 @@ const INCOME_2026 = {
     { label:"Jun 8-14",   rev:498582.95, gp:266256.73, ce:269034.50, sf:187119.50, di:241.45,   carrier:229810.00, netInc:-5865.56 },  // full week — CE East $42,187.50 not in ce/sf/di (netInc swung negative as Jun expenses accrued)
     { label:"Jun 15-21",  rev:418836.45, gp:159067.50, ce:307631.62, sf:109161.45, di:366.00,   carrier:258198.75, netInc:-18679.55 },  // full week — CE East $1,677.38 not in ce/sf/di
     { label:"Jun 22-28",  rev:1338712.94,gp:557692.20, ce:1003807.00,sf:287846.81, di:250.00,   carrier:777342.25, netInc:247747.51 },  // big close-of-June week — CE East $46,809.13 not in ce/sf/di
+    { label:"Jun 29-J5",  rev:659483.73, gp:322414.64, ce:425411.75, sf:208623.73, di:400.00,   carrier:333738.75, netInc:-31114.73 },  // CE East $25,048.25 not in ce/sf/di
   ],
   months: [
     { m: "Jan", rev: 993161.79,  gp: 480933.50,  ce:663460.14,  sf:314754.40, di:14947.25, carrier:497223.26,  exp:598682.35,  netInc:-92214.12 },
@@ -4283,7 +4285,8 @@ const INCOME_2026 = {
     { m: "Mar", rev: 2290040.48, gp: 1113857.96, ce:1734333.27, sf:522550.51, di:18161.70, carrier:1162575.47, exp:789424.77,  netInc:349980.48 },
     { m: "Apr", rev: 2160721.16, gp: 1107479.39, ce:1325895.61, sf:643584.16, di:1781.88,  carrier:1045803.96, exp:888173.85,  netInc:219330.30 },
     { m: "May", rev: 2725473.59, gp: 1375580.28, ce:1869803.06, sf:714397.91, di:17407.72, carrier:1341666.15, exp:1221441.87, netInc:154158.71 },
-    { m: "Jun", rev: 2563805.90, gp: 1171176.73, ce:1730993.12, sf:707040.32, di:3893.45,  carrier:1383148.50, exp:988712.63,  netInc:182464.10 },  // Jun 1-29 (late-June invoicing landed — June swung strongly positive)
+    { m: "Jun", rev: 2940492.16, gp: 1371139.43, ce:1958288.12, sf:836401.58, di:4293.45,  carrier:1557929.75, exp:1149138.78, netInc:222012.50 },  // full June
+    { m: "Jul", rev: 282797.47,  gp: 122451.94,  ce:198116.75,  sf:79262.47,  di:0,        carrier:158957.50,  exp:203515.02,  netInc:-81063.08 },  // partial — Jul 1-5 only
   ],
 };
 
@@ -7470,12 +7473,12 @@ function otrSum() {
 // Michael→Wainwright Michael W, CJ→Johnson Christopher, Manar→Alshamaa Manar,
 // Robert→Tucker Robert.
 const ATL_BILLING = {
-  asOf: "Jun 28, 2026",
-  loads: 104,
-  revenue: 248767.64,      // sum of Invoice Amount ("ATLANTA 2026 ALL LOADS THRU 6.16"), EXCLUDING 2 spreadsheet subtotal rows (110/112) that have no date/load/customer. Driver-less format, so per-driver breakdown below is HISTORICAL (May 4-29) and stale until format restores Driver column
-  carrierPay: 82111.25,    // sum of Carrier Amount = EXTERNAL carrier pay only. 63 of 87 loads have blank Carrier Amount because SF hauled them itself (SF IS the carrier) — those are full income with no external carrier cost (SF's cost is in LABOR/FUEL fleet buckets, not here). Blank ≠ pending.
-  grossProfit: 166656.39,  // revenue − external carrier pay. Correct — the SF-self-haul loads legitimately have no carrier deduction.
-  grossMargin: 67.0,       // % — real brokerage margin (high because most loads ran on SF's own trucks, not outside carriers)
+  asOf: "Jul 3, 2026",
+  loads: 120,
+  revenue: 289297.64,      // sum of Invoice Amount ("ATLANTA 2026 ALL LOADS THRU 7.3"). Driver-less format, so per-driver breakdown below is HISTORICAL (May 4-29) and stale until format restores Driver column
+  carrierPay: 88871.25,    // sum of Carrier Amount = EXTERNAL carrier pay only. 84 of 120 loads have blank Carrier Amount because SF hauled them itself (SF IS the carrier) — those are full income with no external carrier cost (SF's cost is in LABOR/FUEL fleet buckets, not here). Blank ≠ pending.
+  grossProfit: 200426.39,  // revenue − external carrier pay. Correct — the SF-self-haul loads legitimately have no carrier deduction.
+  grossMargin: 69.3,       // % — real brokerage margin (high because most loads ran on SF's own trucks, not outside carriers)
   byDriver: [
     // HISTORICAL — these are the May 4-29 per-driver figures. The new ATL sheet
     // (Jun 9 drop) has no Driver column; can't refresh until format restores it.
