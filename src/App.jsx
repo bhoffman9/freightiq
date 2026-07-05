@@ -7463,6 +7463,19 @@ const OTR_WEEKLY_LOG = [
     contractorPay: 0,
     note: "OTR launch week. Amounts are YTD-to-first-appearance in payroll/EFS. Per-week deltas from next drop forward.",
   },
+  {
+    weekStart: "2026-06-29",
+    weekEnd: "2026-07-05",
+    drivers: ["Baker Anthony", "Dawson Brian"],
+    // Pacitti was ATL this week (moved to ATL_WEEKLY_LOG), so OTR = Baker + Dawson only.
+    driverPay: 5237.09,        // exact: Baker $2,460.07 + Dawson $2,777.02 (6/29-wk PaycheckHistory gross × 1.1125 loaded)
+    driverHours: 0,            // Baker & Dawson not logging hours (same as launch)
+    fuelAmt: 3080.09,          // exact: Baker card 27450 $1,252.72 + Dawson card 17451 $1,827.37 (6/29-7/5 txns)
+    fuelGallons: 647.33,
+    contractors: [],
+    contractorPay: 0,
+    note: "Mon Jun 29 – Fri Jul 3. Pacitti moved to ATL this week (not here). Baker/Dawson exact from PaycheckHistory + EFS cards 27450/17451.",
+  },
 ];
 
 // Aggregate accessor for OtrOperations() — mirrors atlSum().
