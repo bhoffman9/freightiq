@@ -7412,6 +7412,22 @@ const ATL_WEEKLY_LOG = [
     contractorPay: 1850,
     note: "Same roster. Mon Jun 22 – Fri Jun 26 (5 days; payroll/EFS close Fri Jun 26).",
   },
+  {
+    weekStart: "2026-06-29",
+    weekEnd: "2026-07-05",
+    drivers: ["Johnson Christopher", "Logan LaDyle", "Tucker Robert", "Wainwright Michael W", "Pacitti Michael R"],
+    // Manar terminated (was ATL) — dropped. Pacitti was ATL this week INSTEAD of OTR
+    // (per Ben) — his pay/fuel counts here, not in OTR_WEEKLY_LOG for this week.
+    driverPay: 9393.50,        // fleet 4 exact delta (Jul 2 vs Jun 26) $7,279.97 + Pacitti est. $2,113.53 (YTD $4,577.89 − Jun-28 launch $2,464.36)
+    driverHours: 282.25,       // fleet 217.85 + Pacitti est. 64.40
+    fuelAmt: 6222.54,          // fleet 4 exact $4,858.77 + Pacitti est. $1,363.77 (proportional share of OTR-card fuel delta)
+    fuelGallons: 1335.62,
+    contractors: [
+      { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
+    ],
+    contractorPay: 1850,
+    note: "Mon Jun 29 – Fri Jul 3 (payroll/EFS close). Roster: CJ/LaDyle/Tucker/Wainwright + Pacitti (moved from OTR to ATL this week). Pacitti figures are best-effort estimates; fleet 4 are exact deltas. Agent Kevin $500 separate (not in ATL total).",
+  },
 ];
 
 // Aggregate accessors — used by AtlOperations() to roll up the per-week log.
