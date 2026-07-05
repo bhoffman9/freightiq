@@ -128,7 +128,7 @@ let FUEL = {
   "Ponce Carlos":          { fuel: 18710.03, gallons: 3051.36 },  // card 37466
   "Restrepo Julian E":     { fuel: 20728.50, gallons: 3521.85 },  // card 37405 split (active, absorbs deltas over Wright+Clark)
   "Reyes Corey":           { fuel: 14353.27,  gallons: 2170.32 },  // cards 07469 + 97453
-  "Robinson Animashaun":   { fuel: 0.00,        gallons: 0.00 },
+  "Robinson Animashaun":   { fuel: 3446.71,     gallons: 625.34 },   // card 97455 ("Shaun R" on EFS = Animashaun/Robinson) — was unmapped, he had 968 hrs but $0 fuel
   "Ronkov Martin P":       { fuel: 7611.12,  gallons: 1505.42 },  // card 67403
   "Secrest Jermelle":      { fuel: 16213.45, gallons: 2451.98 },  // cards 37404 + 27404 (Mell) — UNCHANGED WoW × 3
   "Stevenson Timothy":     { fuel: 5185.93,   gallons: 906.71 },   // NEW · card 07452
@@ -7418,15 +7418,15 @@ const ATL_WEEKLY_LOG = [
     drivers: ["Johnson Christopher", "Logan LaDyle", "Tucker Robert", "Wainwright Michael W", "Pacitti Michael R"],
     // Manar terminated (was ATL) — dropped. Pacitti was ATL this week INSTEAD of OTR
     // (per Ben) — his pay/fuel counts here, not in OTR_WEEKLY_LOG for this week.
-    driverPay: 9393.50,        // fleet 4 exact delta (Jul 2 vs Jun 26) $7,279.97 + Pacitti est. $2,113.53 (YTD $4,577.89 − Jun-28 launch $2,464.36)
-    driverHours: 282.25,       // fleet 217.85 + Pacitti est. 64.40
-    fuelAmt: 6222.54,          // fleet 4 exact $4,858.77 + Pacitti est. $1,363.77 (proportional share of OTR-card fuel delta)
-    fuelGallons: 1335.62,
+    driverPay: 9393.50,        // exact: fleet 4 delta (Jul 2 vs Jun 26) $7,279.97 + Pacitti $2,113.53 (his 6/29-wk gross $1,899.80 × 1.1125 loaded factor)
+    driverHours: 282.25,       // fleet 217.85 + Pacitti 64.40
+    fuelAmt: 6210.17,          // exact: fleet 4 $4,858.77 + Pacitti $1,351.40 (card 87455 txns 6/29+7/2+7/3)
+    fuelGallons: 1347.45,
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
     ],
     contractorPay: 1850,
-    note: "Mon Jun 29 – Fri Jul 3 (payroll/EFS close). Roster: CJ/LaDyle/Tucker/Wainwright + Pacitti (moved from OTR to ATL this week). Pacitti figures are best-effort estimates; fleet 4 are exact deltas. Agent Kevin $500 separate (not in ATL total).",
+    note: "Mon Jun 29 – Fri Jul 3 (payroll/EFS close). Roster: CJ/LaDyle/Tucker/Wainwright + Pacitti (moved from OTR to ATL this week). All figures exact (Pacitti pay from PaycheckHistory × loaded factor, fuel from card 87455 txns). Agent Kevin $500 separate (not in ATL total).",
   },
 ];
 
