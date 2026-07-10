@@ -38,6 +38,7 @@ const CONFIG = {
     { name: 'PREMIER',         source: 'trailer_premier', body: false },
     { name: 'Ten Trailers',    source: 'trailer_ten',     body: false },
     { name: 'UTILITY TRAILER', source: 'trailer_utility', body: false },
+    { name: 'RENT',            source: 'rent',            body: false },
     // { name: 'CE FINANCE',    source: 'finance',         body: true  },
   ],
 

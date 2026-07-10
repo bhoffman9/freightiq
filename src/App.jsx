@@ -9624,6 +9624,7 @@ export default function App() {
   const [dataVersion, setDataVersion] = useState(0);
   const [equipmentData, setEquipmentData] = useState(null);
   const [equipmentError, setEquipmentError] = useState(null);
+  const [warehouseLive, setWarehouseLive] = useState(false);
 
   // Best-effort one-time cleanup of old Samsara live-mileage caches.
   // The API was retired in June 2026; MILES is now refreshed by manually
@@ -9654,6 +9655,40 @@ export default function App() {
         console.warn("Equipment fetch failed:", msg);
         setEquipmentError(msg);
       });
+  }, []);
+
+  // Hydrate fleet constants from the fdw_ data warehouse (Supabase). This is the
+  // migration off hardcoded constants: numbers now come from Postgres, refreshed
+  // by ingestion — no code edit needed. Falls back silently to the hardcoded
+  // values if the fetch fails, so the dashboard never breaks. Mutates the same
+  // module-level lets the Upload tab does, then recomputeDerived()+remount.
+  useEffect(() => {
+    fetch("/api/fdw-metrics")
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(d => {
+        if (!d || !d.ok || !d.fleet) throw new Error("no fleet data");
+        const f = d.fleet;
+        const pick = (v, cur) => (typeof v === "number" && !Number.isNaN(v)) ? v : cur;
+        LABOR = pick(f.labor, LABOR);           FUEL_TOT = pick(f.fuel_tot, FUEL_TOT);
+        GALLONS = pick(f.gallons, GALLONS);     MILES = pick(f.miles, MILES);
+        INS_TOT = pick(f.ins_tot, INS_TOT);     TRUCK_TOT = pick(f.truck_tot, TRUCK_TOT);
+        TRAILER_TOT = pick(f.trailer_tot, TRAILER_TOT);
+        TRUCK_MAINT = pick(f.truck_maint, TRUCK_MAINT);
+        TRAIL_MAINT = pick(f.trail_maint, TRAIL_MAINT);
+        STORAGE = pick(f.storage, STORAGE);     UNIFORMS = pick(f.uniforms, UNIFORMS);
+        TRUCK_COUNT = pick(f.truck_count, TRUCK_COUNT);
+        TOTAL_HRS = pick(f.total_hrs, TOTAL_HRS);
+        if (Array.isArray(d.payroll) && d.payroll.length) {
+          PAYROLL = d.payroll.map(p => p.active === false
+            ? { name: p.name, hours: p.hours, totalCost: p.totalCost, active: false }
+            : { name: p.name, hours: p.hours, totalCost: p.totalCost });
+        }
+        if (d.fuel && typeof d.fuel === "object" && Object.keys(d.fuel).length) FUEL = d.fuel;
+        recomputeDerived();
+        setWarehouseLive(true);
+        setDataVersion(v => v + 1);
+      })
+      .catch(e => console.warn("fdw-metrics fetch failed (hardcoded fallback):", e?.message || e));
   }, []);
 
   const trackedCPM = (LABOR + FUEL_TOT + INS_TOT + EQUIP_TOT + MAINT_TOT + UNIFORMS) / MILES;
@@ -9693,6 +9728,7 @@ export default function App() {
           <div className="logo">⬡ Freight<b>IQ</b></div>
           <div className="hsub">Show Freight Inc · {PERIOD}</div>
           <div className="hbdg">
+            {warehouseLive && <span className="bdg bdg-o" title="Fleet numbers live from the fdw_ Supabase data warehouse (no hardcoded constants)">⚡ warehouse</span>}
             <span className="bdg bdg-o">Labor {fd(LABOR, 0)}</span>
             <span className="bdg bdg-o">Fuel {fd(FUEL_TOT, 0)}</span>
             <span className="bdg bdg-o">Ins {fd(INS_TOT, 0)}</span>

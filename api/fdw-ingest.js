@@ -23,7 +23,7 @@ const SECRET = process.env.FDW_INGEST_SECRET;
 const ALLOWED_SOURCES = new Set([
   'efs_fuel', 'truck_penske', 'truck_ryder', 'truck_tci', 'truck_tec',
   'truck_idealease', 'trailer_mckinney', 'trailer_premier',
-  'trailer_ten', 'trailer_utility', 'finance',
+  'trailer_ten', 'trailer_utility', 'finance', 'rent',
 ]);
 const ALLOWED_EXT = new Set(['pdf', 'xls', 'xlsx', 'csv']);
 
