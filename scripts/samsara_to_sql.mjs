@@ -8,7 +8,7 @@
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { pullIftaYtd } from '../api/_fdw-samsara.js';
+import { pullMileage } from '../api/_fdw-samsara.js';
 
 const TOKEN = process.env.SAMSARA_API_TOKEN;
 if (!TOKEN) { console.error('set SAMSARA_API_TOKEN'); process.exit(1); }
@@ -16,13 +16,14 @@ const PE = process.argv[2] || '2026-07-05';           // current warehouse perio
 const YEAR = Number(PE.slice(0, 4));
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'supabase', 'migrations', 'fdw_samsara_update.sql');
 
-const d = await pullIftaYtd(TOKEN, YEAR);
-if (!d.trucks.length) { console.error('no IFTA months available'); process.exit(1); }
+const d = await pullMileage(TOKEN, YEAR, new Date().toISOString());
+if (!d.trucks.length) { console.error('no mileage available'); process.exit(1); }
 
 const q = s => `'${String(s).replace(/'/g, "''")}'`;
 const L = [
-  `-- fdw_samsara_update.sql — Samsara IFTA per-vehicle jurisdiction mileage`,
-  `-- Months: ${d.monthsPulled.join(', ')} | ${d.trucks.length} trucks | period_end ${PE}`,
+  `-- fdw_samsara_update.sql — Samsara mileage: IFTA per-state (${d.monthsPulled.join(', ')})`,
+  `--   + current-month total overlay through ${d.overlayThrough} (${d.overlayMiles.toLocaleString()} mi, est. split)`,
+  `-- ${d.trucks.length} trucks | period_end ${PE}`,
   `-- Fleet ${Math.round(d.fleetTotal).toLocaleString()} mi (NV/local ${Math.round(d.fleetLocal).toLocaleString()}, regional ${Math.round(d.fleetRegional).toLocaleString()})`,
   `begin;`,
 ];

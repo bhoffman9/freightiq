@@ -11,7 +11,7 @@
 // Env: SUPABASE_URL, SUPABASE_SERVICE_KEY, FDW_INGEST_SECRET, SAMSARA_API_TOKEN, [CRON_SECRET]
 
 import crypto from 'node:crypto';
-import { pullIftaYtd } from './_fdw-samsara.js';
+import { pullMileage } from './_fdw-samsara.js';
 
 const SB = process.env.SUPABASE_URL;
 const KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -54,8 +54,8 @@ export default async function handler(req, res) {
     const pe = per.period_end;
     const year = Number(pe.slice(0, 4));
 
-    const data = await pullIftaYtd(SAMSARA, year);
-    if (!data.monthsPulled.length) return res.status(200).json({ ok: false, reason: 'no IFTA months available yet' });
+    const data = await pullMileage(SAMSARA, year, new Date().toISOString());
+    if (!data.trucks.length) return res.status(200).json({ ok: false, reason: 'no mileage available yet' });
 
     // Upsert trucks + per-truck mileage snapshots for the current period.
     for (const t of data.trucks) {
@@ -85,7 +85,8 @@ export default async function handler(req, res) {
     });
 
     return res.status(200).json({
-      ok: true, period_end: pe, monthsPulled: data.monthsPulled, trucks: data.trucks.length,
+      ok: true, period_end: pe, monthsPulled: data.monthsPulled, overlayThrough: data.overlayThrough,
+      overlayMiles: data.overlayMiles, trucks: data.trucks.length,
       fleetTotal: data.fleetTotal, fleetLocal: data.fleetLocal, fleetRegional: data.fleetRegional,
     });
   } catch (e) {
