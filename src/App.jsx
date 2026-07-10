@@ -1699,7 +1699,7 @@ function PerLoadCPM() {
   const [roundtrip, setRoundtrip] = useState(false);
   const [trucks, setTrucks] = useState(1);
   const [laborHours, setLaborHours] = useState(10);
-  const HOURLY_RATE = 31.15;
+  const HOURLY_RATE = LABOR / TOTAL_HRS;   // blended loaded driver $/hr — derives from weekly LABOR + TOTAL_HRS so it never goes stale (was hardcoded $31.15; now ~$31.36)
   const [margin, setMargin] = useState(25);
 
   // Address-based mileage
