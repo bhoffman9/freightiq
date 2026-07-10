@@ -15,16 +15,33 @@ async function sb(path) {
   return r.json();
 }
 
+// fdw_fleet_fuel(p_from,p_to) sums fuel-kind txns (OTR excluded) — the single
+// source of truth for fleet fuel, so ingested EFS statements flow through.
+async function sbRpc(fn, body) {
+  const r = await fetch(`${SB}/rest/v1/rpc/${fn}`, {
+    method: 'POST', headers: { ...H, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(`rpc ${fn} -> ${r.status}: ${await r.text()}`);
+  return r.json();
+}
+
 export default async function handler(req, res) {
   if (!SB || !KEY) return res.status(500).json({ error: 'server not configured' });
   try {
-    const per = (await sb('fdw_v_current_period?select=period_end,label'))[0];
+    const per = (await sb('fdw_v_current_period?select=period_end,period_start,label'))[0];
     if (!per) return res.status(200).json({ ok: false, reason: 'no period loaded' });
     const pe = per.period_end;
 
     const fleet = (await sb(
       `fdw_fleet_metrics?entity_id=eq.sf&period_end=eq.${pe}&select=*`
     ))[0] || null;
+
+    // Fuel is derived from the txn sum (period_start..today), so biweekly EFS
+    // statements auto-update FUEL_TOT. Falls back to the stored value on error.
+    const today = new Date().toISOString().slice(0, 10);
+    let fuelAgg = null;
+    try { fuelAgg = (await sbRpc('fdw_fleet_fuel', { p_from: per.period_start, p_to: today }))[0]; }
+    catch (e) { /* keep stored fleet.fuel_tot */ }
 
     const payRows = await sb(
       `fdw_payroll_snapshot?period_end=eq.${pe}&select=hours,total_cost,active,fdw_driver(name)`
@@ -52,7 +69,9 @@ export default async function handler(req, res) {
       ok: true,
       period: { end: pe, label: per.label },
       fleet: fleet && {
-        labor: num(fleet.labor), fuel_tot: num(fleet.fuel_tot), gallons: num(fleet.gallons),
+        labor: num(fleet.labor),
+        fuel_tot: fuelAgg && fuelAgg.fuel != null ? num(fuelAgg.fuel) : num(fleet.fuel_tot),
+        gallons: fuelAgg && fuelAgg.gallons != null ? num(fuelAgg.gallons) : num(fleet.gallons),
         miles: num(fleet.miles), fleet_local: num(fleet.fleet_local),
         fleet_regional: num(fleet.fleet_regional), truck_count: fleet.truck_count,
         total_hrs: num(fleet.total_hrs), ins_tot: num(fleet.ins_tot),
