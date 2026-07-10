@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FreightIQ — Connect Bank</title>
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<style>
+  body { background:#0b0d10; color:#e8eaf0; font-family:'IBM Plex Mono',ui-monospace,monospace; max-width:640px; margin:0 auto; padding:48px 24px; }
+  h1 { font-family:'Barlow Condensed',sans-serif; color:#f47820; letter-spacing:2px; }
+  button { background:linear-gradient(135deg,#f47820,#c45e10); color:#fff; border:none; border-radius:6px;
+           padding:14px 22px; font-size:15px; font-weight:700; letter-spacing:1px; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:default; }
+  #log { background:#12151c; border:1px solid #1f2535; border-radius:6px; padding:14px; margin-top:20px;
+         white-space:pre-wrap; font-size:13px; min-height:60px; color:#9aa4b2; }
+  .muted { color:#5a6370; font-size:12px; }
+</style>
+</head>
+<body>
+  <h1>⬡ FreightIQ — Connect a Bank</h1>
+  <p class="muted">Connects a bank via Plaid for live balances + transactions (Cash Flow tab).
+     Kept separate from QuickBooks accounting. You can connect several banks — repeat as needed.</p>
+  <button id="connect">Connect a bank</button>
+  <div id="log">Ready.</div>
+<script>
+  var logEl = document.getElementById('log');
+  function log(m){ logEl.textContent += '\n' + m; }
+  var pw = null;
+
+  document.getElementById('connect').onclick = async function () {
+    if (!pw) pw = prompt('FreightIQ password');
+    if (!pw) return;
+    this.disabled = true;
+    logEl.textContent = 'Creating link token…';
+    try {
+      var r = await fetch('/api/plaid-link-token', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw })
+      });
+      var j = await r.json();
+      if (!j.link_token) { log('error: ' + (j.error || 'no link token')); pw = null; this.disabled = false; return; }
+      var btn = this;
+      var handler = Plaid.create({
+        token: j.link_token,
+        onSuccess: async function (public_token, meta) {
+          log('Connected: ' + (meta.institution && meta.institution.name) + ' — storing…');
+          var e = await fetch('/api/plaid-exchange', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ public_token: public_token, password: pw, institution: meta.institution && meta.institution.name })
+          });
+          var ej = await e.json();
+          log(ej.ok ? ('✓ stored ' + ej.accounts + ' account(s). Connect another or close.') : ('exchange error: ' + ej.error));
+          btn.disabled = false;
+        },
+        onExit: function (err) { if (err) log('exit: ' + JSON.stringify(err)); btn.disabled = false; }
+      });
+      handler.open();
+    } catch (err) { log('error: ' + err); this.disabled = false; }
+  };
+</script>
+</body>
+</html>
