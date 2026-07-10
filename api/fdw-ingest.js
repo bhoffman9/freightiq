@@ -131,11 +131,14 @@ export default async function handler(req, res) {
     for (const a of atts) {
       if (!a || typeof a.dataB64 !== 'string') throw new Error('invalid attachment');
       const filename = safeFilename(a.filename);
+      // Supabase Storage keys reject #, ?, spaces, etc. Sanitize the KEY while
+      // keeping the true filename in metadata (extracted.filename).
+      const storageKey = filename.replace(/[^A-Za-z0-9._-]/g, '_');
       const buf = Buffer.from(a.dataB64, 'base64');
       if (buf.length > MAX_ATTACHMENT_BYTES) throw new Error('attachment too large');
       total += buf.length;
       if (total > MAX_TOTAL_BYTES) throw new Error('attachments too large');
-      const path = objectPath(source, messageId, filename);
+      const path = objectPath(source, messageId, storageKey);
       await uploadRaw(path, buf, a.mimeType);
       await sbInsert('fdw_import_staging', {
         run_id: runId, source, trust: 'high', raw_ref: path,
