@@ -4,6 +4,14 @@
   "outputDirectory": "dist",
   "crons": [
     {
+      "path": "/api/plaid-sync",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/fdw-qbo-sync",
+      "schedule": "0 7 * * *"
+    },
+    {
       "path": "/api/fdw-extract",
       "schedule": "0 8 * * *"
     },
