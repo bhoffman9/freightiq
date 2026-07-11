@@ -106,7 +106,7 @@ L.push('\n-- income by week');
 weeks.forEach((w, i) => {
   const pe = weekEnd(i);
   const cogs = (typeof w.rev === 'number' && typeof w.gp === 'number') ? +(w.rev - w.gp).toFixed(2) : null;
-  L.push(`insert into fdw_income_week(period_end,ce,sf,di,revenue,cogs,gross_profit,total_exp,net_op_income,other_income,net_income) values(${q(pe)},${num(w.ce)},${num(w.sf)},${num(w.di)},${num(w.rev)},${num(cogs)},${num(w.gp)},null,null,null,${num(w.netInc)}) on conflict(period_end) do update set ce=excluded.ce,sf=excluded.sf,di=excluded.di,revenue=excluded.revenue,cogs=excluded.cogs,gross_profit=excluded.gross_profit,net_income=excluded.net_income;`);
+  L.push(`insert into fdw_income_week(period_end,label,ce,sf,di,revenue,cogs,gross_profit,carrier,total_exp,net_op_income,other_income,net_income) values(${q(pe)},${q(w.label)},${num(w.ce)},${num(w.sf)},${num(w.di)},${num(w.rev)},${num(cogs)},${num(w.gp)},${num(w.carrier)},null,null,null,${num(w.netInc)}) on conflict(period_end) do update set label=excluded.label,ce=excluded.ce,sf=excluded.sf,di=excluded.di,revenue=excluded.revenue,cogs=excluded.cogs,gross_profit=excluded.gross_profit,carrier=excluded.carrier,net_income=excluded.net_income;`);
 });
 
 // -- fdw_income_month: 2026 from INCOME_2026.months (fuller — has netInc);

@@ -58,7 +58,7 @@ export default async function handler(req, res) {
     const today = new Date().toISOString().slice(0, 10);
     const monthStart = today.slice(0, 7) + '-01';
 
-    // 1) YTD categories -> fleet_metrics (NOT labor/fuel/miles)
+    // 1) YTD categories -> fleet_metrics (NOT labor/fuel/miles) + income totals
     const ytd = (await pnl('period=ytd')).fiq;
     await sb(`fdw_fleet_metrics?entity_id=eq.sf&period_end=eq.${pe}`, {
       method: 'PATCH', headers: { Prefer: 'return=minimal' },
@@ -67,15 +67,24 @@ export default async function handler(req, res) {
         truck_maint: ytd.truck_maint, trail_maint: ytd.trail_maint, storage: ytd.storage, uniforms: ytd.uniforms,
       }),
     });
+    await sb('fdw_income_totals?on_conflict=period_end', {
+      method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({
+        period_end: pe, ce: ytd.revenue_ce, sf: ytd.revenue_sf, di: ytd.revenue_di, ce_east: ytd.revenue_ce_east,
+        revenue: ytd.total_revenue, cogs: ytd.total_cogs, gross_profit: ytd.gross_profit,
+        total_exp: ytd.total_expenses, net_op_income: ytd.net_op_income, net_income: ytd.net_income,
+        carrier_pay: ytd.carrier_pay, merchant_fees: ytd.merchant_fees, flexent_fees: ytd.flexent_fees,
+      }),
+    });
 
     // 2) last closed week -> income_week
     const wk = await pnl('period=last_week');
-    const wf = wk.fiq, wend = wk.period.end_date;
+    const wf = wk.fiq, wend = wk.period.end_date, wstart = wk.period.start_date;
     await sb('fdw_income_week?on_conflict=period_end', {
       method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
-        period_end: wend, ce: wf.revenue_ce, sf: wf.revenue_sf, di: wf.revenue_di,
-        revenue: wf.total_revenue, cogs: wf.total_cogs, gross_profit: wf.gross_profit,
+        period_end: wend, label: weekLabel(wstart, wend), ce: wf.revenue_ce, sf: wf.revenue_sf, di: wf.revenue_di,
+        revenue: wf.total_revenue, cogs: wf.total_cogs, gross_profit: wf.gross_profit, carrier: wf.carrier_pay,
         total_exp: wf.total_expenses, net_op_income: wf.net_op_income,
         other_income: round2(wf.net_income - wf.net_op_income), net_income: wf.net_income,
       }),
@@ -107,3 +116,9 @@ export default async function handler(req, res) {
 }
 
 function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+
+// "2026-06-29","2026-07-05" -> "Jun 29-Jul 5"
+function weekLabel(startISO, endISO) {
+  const d = (s) => { const [y, m, day] = s.split('-').map(Number); return `${MONTHS[m - 1]} ${day}`; };
+  return `${d(startISO)}-${d(endISO)}`;
+}

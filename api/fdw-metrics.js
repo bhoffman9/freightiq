@@ -64,10 +64,33 @@ export default async function handler(req, res) {
       fuel[n].gallons += Number(t.gallons) || 0;
     }
 
+    // Income reconstruction (INCOME_2026 shape) from the warehouse. Null if the
+    // QBO totals haven't been synced yet -> App keeps its hardcoded INCOME_2026.
+    let income = null;
+    try {
+      const tot = (await sb(`fdw_income_totals?period_end=eq.${pe}&select=*`))[0];
+      if (tot) {
+        const wRows = await sb('fdw_income_week?select=period_end,label,ce,sf,di,revenue,gross_profit,carrier,net_income&order=period_end.asc');
+        const mRows = await sb('fdw_income_month?month_key=like.2026*&select=label,ce,sf,di,revenue,gross_profit,net_income&order=month_key.asc');
+        income = {
+          period: per.label,
+          ce: num(tot.ce), sf: num(tot.sf), di: num(tot.di), ceEast: num(tot.ce_east),
+          total: num(tot.revenue), cogs: num(tot.cogs), grossProfit: num(tot.gross_profit),
+          totalExp: num(tot.total_exp), netOpIncome: num(tot.net_op_income), netIncome: num(tot.net_income),
+          carrierPay: num(tot.carrier_pay), merchantFees: num(tot.merchant_fees), flexentFees: num(tot.flexent_fees),
+          weeks: wRows.map((w) => ({ label: w.label || w.period_end, rev: num(w.revenue), gp: num(w.gross_profit),
+                                     ce: num(w.ce), sf: num(w.sf), di: num(w.di), carrier: num(w.carrier), netInc: num(w.net_income) })),
+          months: mRows.map((m) => ({ m: (m.label || '').split(' ')[0], rev: num(m.revenue), gp: num(m.gross_profit),
+                                      ce: num(m.ce), sf: num(m.sf), di: num(m.di), netInc: num(m.net_income) })),
+        };
+      }
+    } catch (e) { /* leave income null */ }
+
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     return res.status(200).json({
       ok: true,
       period: { end: pe, label: per.label },
+      income,
       fleet: fleet && {
         labor: num(fleet.labor),
         fuel_tot: fuelAgg && fuelAgg.fuel != null ? num(fuelAgg.fuel) : num(fleet.fuel_tot),

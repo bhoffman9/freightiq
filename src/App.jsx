@@ -9684,6 +9684,17 @@ export default function App() {
             : { name: p.name, hours: p.hours, totalCost: p.totalCost });
         }
         if (d.fuel && typeof d.fuel === "object" && Object.keys(d.fuel).length) FUEL = d.fuel;
+        // Income tab: hydrate INCOME_2026 from QBO-fed warehouse tables (mutate
+        // the const object's props, like the Upload tab does). Only overwrite
+        // numeric fields that came back; keep hardcoded values otherwise.
+        if (d.income) {
+          const inc = d.income;
+          for (const k of ["ce","sf","di","ceEast","total","cogs","grossProfit","totalExp","netOpIncome","netIncome","carrierPay","merchantFees","flexentFees"]) {
+            if (typeof inc[k] === "number" && !Number.isNaN(inc[k])) INCOME_2026[k] = inc[k];
+          }
+          if (Array.isArray(inc.weeks) && inc.weeks.length) INCOME_2026.weeks = inc.weeks;
+          if (Array.isArray(inc.months) && inc.months.length) INCOME_2026.months = inc.months;
+        }
         recomputeDerived();
         setWarehouseLive(true);
         setDataVersion(v => v + 1);
