@@ -8,6 +8,20 @@ Real-time fleet cost-per-mile dashboard with AI-powered data uploads and live AP
 
 **This is the ONE canonical repo.** All work happens here. Never apply changes to any other local copy. Always commit and push data updates immediately.
 
+## ⚡ Critical invariants — read before touching anything
+
+The rules below have each shipped wrong numbers when missed. They live in full detail deeper in this file; this is the high-attention copy. Details in the linked sections.
+
+- **Done = verified LIVE, not committed.** `curl` metrics.json + check cross-app CORS + visit downstream consumers before claiming done. → "Before declaring weekly update DONE"
+- **CPM always divides by `MILES`, never `MILES_EST`.** MILES_EST (gallons×6.5) is fuel-price math only. → Drift pattern A
+- **`PERIOD` is the ONLY date string you hand-type.** Everything else (day counts, quarters, subtitles) derives. Hand-typing a quarter/day-count anywhere else is a future regression. → "Update App.jsx constants"
+- **LABOR comment keeps the digit adjacent to "drivers"** ("42 drivers active"), or `extract-metrics.js` regex sets `metrics.json drivers:0`. → drivers:N regression
+- **ATL / OTR / Agent are per-week — ASK Ben every drop, never generalize** one week's roster to adjacent weeks. Agents are a separate bucket, never nested under ATL/owner. → Step 0
+- **The office + contractor half is NOT optional.** `OFFICE_W2`/`WAREHOUSE` + `CONTRACTORS` refresh every week — drivers/fuel/income alone ≠ done. → checklist #10
+- **Never clear `incoming-freightiq/` until the weekly is built, pushed, and verified live** — the payroll XLS is untracked and unrecoverable. → checklist #11
+- **CPM source purity:** `FUEL_TOT` = EFS only (never QBO fuel line); `INS_TOT` = SF Truck Insurance only. → CPM Definitions
+- **Every weekly drop, report ATL charges to Ben unprompted** (driverPay+fuelAmt+contractorPay, agents excluded) + cumulative. → checklist #9
+
 ## Tech Stack
 
 - **Frontend:** React 18 + Vite (dev server on port 3000)
@@ -355,6 +369,8 @@ If you're adding a new live data source that needs to drive CPM or other derived
 
 ## Weekly Update Workflow
 
+> Before starting a weekly, re-read the **⚡ Critical invariants** block at the top — it's the condensed version of the traps in this workflow. End with the **"Before declaring weekly update DONE"** checklist below.
+
 ### ⏳ Pending build (do this weekly cycle if not yet shipped)
 **Live EBITDA + Adjusted EBITDA tile** on the Income tab, fed from `/api/qbo-pnl?company=ce_sf_combined` so it self-updates. Unadjusted EBITDA ≈ net income + interest − interest income (D&A and income tax are both $0 — leased fleet, pass-through entity). Adjusted EBITDA adds back owner-discretionary spend buried in expenses (Owners Draw, personal-vehicle Asset Loan Payments, etc.). **Blocked on Ben:** (1) the exact add-back list, (2) whether to apply a normalized tax provision vs $0. Queued Jun 20 2026 — see the `project_freightiq_ebitda` memory for the YTD numbers and rationale. Remove this block once shipped.
 
@@ -531,6 +547,8 @@ Ben paying attention to dashboard details is the LAST line of defense, not the f
 **G. Cross-app data ownership.** If a tab depends on a sibling repo (AP Aging, expense-calendar, etc.) and that repo's data shape changes or its publishing stops, FreightIQ falls back silently to hardcoded data. Check the cross-app fetch status banners on each tab; if a banner says "fetch failed" or shows stale data, it counts as broken.
 
 **H. Constants frozen at first commit then never refreshed.** `DETAIL[]`, `MONTHLY_REVENUE` historical rows, vendor-specific blocks (TCI / Penske / TEC / McKinney). When the live data source for one of these changes, the hardcoded copy still ships unless you explicitly refresh or replace it. Search for "thru" comments next to any hardcoded constant — those are tells of frozen-in-time data.
+
+**H2. Hardcoded rates/multipliers that should DERIVE from live constants.** If a rate is just a ratio of two constants that already update weekly, compute it — don't hardcode a number that silently drifts. Fixed Jul 2026: `HOURLY_RATE` in the Per Load CPM simulator was a hardcoded `31.15` (a stale `LABOR/TOTAL_HRS`); changed to `const HOURLY_RATE = LABOR / TOTAL_HRS` so it self-updates every drop (~$31.36 now). When you see a bare numeric rate/price/multiplier, ask "is this derivable from constants that already move?" — if yes, derive it.
 
 ### Office vs Driver split (SF Payroll):
 **Office staff** (excluded from PAYROLL/CPM): Arias Adrian, Eagleton Gentry J (warehouse), Figueroa Andres (warehouse), Fissehaye Biniyam G, Gonzalez Gabriel, Grosser Scot E, Kennon Jessica S (ATL office, terminated May 2026), Mahan Tasha (office/warehouse, started Jun 2026), Naruszewicz Bartosz, Rivera Cecilia I, Wilson Antionette (ATL office support, reclassified from driver Jul 2026), Youngblood Nathan. **OTR (separate carve-out, not office):** Baker Anthony, Dawson Brian, Pacitti Michael R — in `SF_OTR`, excluded from fleet LABOR, tracked in `OTR_WEEKLY_LOG`. Everyone else = drivers. (Both sets encoded in `scripts/parse_weekly_drop.py` — keep in sync.)
