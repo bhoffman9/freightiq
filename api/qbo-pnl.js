@@ -116,7 +116,7 @@ export default async function handler(req, res) {
       trailer_tot: parsed.truckTrailer['Trailer Rentals'] || 0,
       truck_maint: parsed.truckTrailer['Truck Maintenance'] || 0,
       trail_maint: parsed.truckTrailer['Trailer Maintenance'] || 0,
-      storage: parsed.truckTrailer['Storage/Parking'] || 0,
+      storage: parsed.truckTrailer['Storage/Parking/Tolls'] || parsed.truckTrailer['Storage/Parking'] || 0,
       uniforms: parsed.truckTrailer['Worker Uniforms'] || 0,
       fuel_qb: parsed.truckTrailer['Fuel'] || 0,
     };
