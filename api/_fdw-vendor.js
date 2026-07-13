@@ -5,7 +5,7 @@
 // (quarantine on missing amount / low confidence rather than guess).
 import pdf from 'pdf-parse/lib/pdf-parse.js';
 
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-sonnet-5';
 const MIN_TEXT = 40; // below this, treat as an image-only PDF (no text layer)
 
 const EXTRACT_SYS =
@@ -22,8 +22,14 @@ const EXTRACT_SYS =
 
 async function toText(buf, filename) {
   if (/\.csv$/i.test(filename)) return buf.toString('utf8');
-  const d = await pdf(buf);
-  return (d.text || '').trim();
+  try {
+    const d = await pdf(buf);
+    return (d.text || '').trim();
+  } catch (err) {
+    // Corrupt/unsupported PDF (e.g. "bad XRef entry") — not retryable.
+    const e = new Error(`pdf parse failed: ${String(err.message || err).slice(0, 120)}`);
+    e.quarantine = true; throw e;
+  }
 }
 
 // Returns parsed invoice fields, or throws. A thrown error with .quarantine=true
