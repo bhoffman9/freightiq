@@ -13,6 +13,11 @@ export default async function handler(req, res) {
       products: ['transactions'],
       country_codes: ['US'],
       language: 'en',
+      // Required for OAuth banks (Chase, BofA, Wells, etc.). Only sent when set,
+      // because Plaid rejects link/token/create if the URI isn't registered under
+      // Dashboard → Developers → Allowed redirect URIs. Set PLAID_REDIRECT_URI to
+      // https://freightiq-nine-two.vercel.app/plaid-connect.html once registered.
+      ...(process.env.PLAID_REDIRECT_URI ? { redirect_uri: process.env.PLAID_REDIRECT_URI } : {}),
     });
     return res.status(200).json({ link_token: d.link_token });
   } catch (e) {

@@ -26,35 +26,52 @@
   var logEl = document.getElementById('log');
   function log(m){ logEl.textContent += '\n' + m; }
   var pw = null;
+  var btn = document.getElementById('connect');
 
-  document.getElementById('connect').onclick = async function () {
+  function openLink(linkToken, receivedRedirectUri) {
+    var handler = Plaid.create({
+      token: linkToken,
+      receivedRedirectUri: receivedRedirectUri || undefined,
+      onSuccess: async function (public_token, meta) {
+        log('Connected: ' + (meta.institution && meta.institution.name) + ' — storing…');
+        localStorage.removeItem('fiq_plaid_link_token'); localStorage.removeItem('fiq_plaid_pw');
+        var e = await fetch('/api/plaid-exchange', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ public_token: public_token, password: pw, institution: meta.institution && meta.institution.name })
+        });
+        var ej = await e.json();
+        log(ej.ok ? ('✓ stored ' + ej.accounts + ' account(s). Connect another or close.') : ('exchange error: ' + ej.error));
+        btn.disabled = false;
+      },
+      onExit: function (err) { if (err) log('exit: ' + JSON.stringify(err)); btn.disabled = false; }
+    });
+    handler.open();
+  }
+
+  // OAuth banks (Chase, etc.) redirect back here with ?oauth_state_id=… — resume Link.
+  if (window.location.search.indexOf('oauth_state_id=') !== -1) {
+    var savedToken = localStorage.getItem('fiq_plaid_link_token');
+    pw = localStorage.getItem('fiq_plaid_pw');
+    if (savedToken && pw) { log('Resuming bank sign-in…'); btn.disabled = true; openLink(savedToken, window.location.href); }
+    else { log('OAuth return but session was lost — click Connect to retry.'); }
+  }
+
+  btn.onclick = async function () {
     if (!pw) pw = prompt('FreightIQ password');
     if (!pw) return;
-    this.disabled = true;
+    btn.disabled = true;
     logEl.textContent = 'Creating link token…';
     try {
       var r = await fetch('/api/plaid-link-token', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw })
       });
       var j = await r.json();
-      if (!j.link_token) { log('error: ' + (j.error || 'no link token')); pw = null; this.disabled = false; return; }
-      var btn = this;
-      var handler = Plaid.create({
-        token: j.link_token,
-        onSuccess: async function (public_token, meta) {
-          log('Connected: ' + (meta.institution && meta.institution.name) + ' — storing…');
-          var e = await fetch('/api/plaid-exchange', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ public_token: public_token, password: pw, institution: meta.institution && meta.institution.name })
-          });
-          var ej = await e.json();
-          log(ej.ok ? ('✓ stored ' + ej.accounts + ' account(s). Connect another or close.') : ('exchange error: ' + ej.error));
-          btn.disabled = false;
-        },
-        onExit: function (err) { if (err) log('exit: ' + JSON.stringify(err)); btn.disabled = false; }
-      });
-      handler.open();
-    } catch (err) { log('error: ' + err); this.disabled = false; }
+      if (!j.link_token) { log('error: ' + (j.error || 'no link token')); pw = null; btn.disabled = false; return; }
+      // persist across the OAuth redirect so we can resume on return
+      localStorage.setItem('fiq_plaid_link_token', j.link_token);
+      localStorage.setItem('fiq_plaid_pw', pw);
+      openLink(j.link_token);
+    } catch (err) { log('error: ' + err); btn.disabled = false; }
   };
 </script>
 </body>
