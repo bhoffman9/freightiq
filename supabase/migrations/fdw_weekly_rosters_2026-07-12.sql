@@ -8,16 +8,16 @@ insert into fdw_op_weekly(op,week_start,week_end,drivers,contractors,driver_pay,
 values('atl','2026-07-06','2026-07-12',
   '["Logan LaDyle","Pacitti Michael R","Tucker Robert","Johnson Christopher","Wainwright Michael W"]'::jsonb,
   '[{"name":"ENM Trucking LLC","entity":"ENM Trucking LLC","total":1850}]'::jsonb,
-  10377.08, 304, 3000, 0, 1850,
-  'driver_pay EXACT: LaDyle 1826.04 + Tucker 2254.15 + Johnson 1647.41 + Wainwright 2177.23 + Pacitti 2472.25 (loaded, from PaycheckHistory Jul 10 gross 2227.25 x1.11). Pacitti moved OTR->ATL. fuel_amt + hours ESTIMATED — replace with exact card/hour deltas.',
+  10382.64, 339.41, 5125.10, 1022.12, 1850,
+  'ALL EXACT (payroll YTD delta Jul12-Jul2 + EFS card delta Jul12-Jul4). driver_pay: LaDyle 1826.04 + Tucker 2254.15 + Johnson 1647.41 + Wainwright 2177.23 + Pacitti 2477.81. fuel: LaDyle 566 + Tucker 1476 + Johnson 1296 + Wainwright 627 + Pacitti 1160. Pacitti moved OTR->ATL.',
   'high')
 on conflict(op,week_start) do update set week_end=excluded.week_end,drivers=excluded.drivers,contractors=excluded.contractors,driver_pay=excluded.driver_pay,driver_hours=excluded.driver_hours,fuel_amt=excluded.fuel_amt,fuel_gallons=excluded.fuel_gallons,contractor_pay=excluded.contractor_pay,note=excluded.note;
 
 -- OTR week (Jul 6-12): Baker + Dawson (Pacitti now ATL, not here)
 insert into fdw_op_weekly(op,week_start,week_end,drivers,contractors,driver_pay,driver_hours,fuel_amt,fuel_gallons,contractor_pay,note,trust)
 values('otr','2026-07-06','2026-07-12','["Baker Anthony","Dawson Brian"]'::jsonb,'[]'::jsonb,
-  4376.84, 80, 2500, 0, 0,
-  'driver_pay EXACT (loaded): Baker 2309.02 (gross 2080.20 x1.11) + Dawson 2067.82 (gross 1862.90 x1.11). fuel_amt ESTIMATED (cards 27450/17451) — replace with exact.',
+  4386.71, 0, 3619.76, 746.43, 0,
+  'ALL EXACT. driver_pay (loaded): Baker 2314.23 + Dawson 2072.48. fuel: Baker 1725.27 + Dawson 1894.49 (cards 27450/17451). hours 0 — Baker/Dawson are flat-rate (payroll logs 0 hrs).',
   'high')
 on conflict(op,week_start) do update set week_end=excluded.week_end,drivers=excluded.drivers,contractors=excluded.contractors,driver_pay=excluded.driver_pay,driver_hours=excluded.driver_hours,fuel_amt=excluded.fuel_amt,fuel_gallons=excluded.fuel_gallons,contractor_pay=excluded.contractor_pay,note=excluded.note;
 
