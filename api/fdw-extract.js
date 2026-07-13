@@ -20,6 +20,7 @@
 
 import crypto from 'node:crypto';
 import { parseEfs } from './_fdw-efs.js';
+import { parseVendorInvoice } from './_fdw-vendor.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -141,6 +142,38 @@ async function handleEfs(row) {
   return 'processed';
 }
 
+// Land an equipment-lessor invoice (truck_*/trailer_*) via the AI parser.
+// Returns 'processed' | 'quarantined' | 'skipped'. Penske (and others) email a
+// PDF invoice + a tiny CSV index for the SAME invoice — parse only the PDF and
+// skip the CSV so the amount isn't counted twice.
+async function handleVendor(row) {
+  const fn = (row.extracted && row.extracted.filename) || row.raw_ref;
+  if (!/\.pdf$/i.test(fn)) return 'skipped'; // CSV/index companion — not the invoice
+
+  const buf = await downloadRaw(row.raw_ref);
+  let inv;
+  try {
+    inv = await parseVendorInvoice(buf, fn, row.source);
+  } catch (e) {
+    if (e.quarantine) { await quarantine(row, e.message, row.extracted || {}); return 'quarantined'; }
+    throw e; // transient (AI/network) — leave unprocessed for retry
+  }
+  // Honest gate: need a positive total + a date, else quarantine (don't guess).
+  if (inv.amount == null || inv.amount <= 0 || !inv.invoiceDate) {
+    await quarantine(row, `ai extract incomplete (amount=${inv.amount}, date=${inv.invoiceDate}, conf=${inv.confidence})`, inv._raw);
+    return 'quarantined';
+  }
+  await sbUpsert('fdw_equipment_invoice', {
+    source: row.source,
+    category: row.source.startsWith('trailer_') ? 'trailer' : (row.source.startsWith('truck_') ? 'truck' : null),
+    vendor: inv.vendor, invoice_no: inv.invoiceNo, invoice_date: inv.invoiceDate,
+    due_date: inv.dueDate, unit_ids: inv.unitIds, amount: inv.amount,
+    service_period_start: inv.servicePeriodStart, service_period_end: inv.servicePeriodEnd,
+    confidence: inv.confidence, raw_ref: row.raw_ref, run_id: row.run_id, extracted: inv._raw,
+  }, 'raw_ref');
+  return 'processed';
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'GET only' }); }
   if (!SB || !KEY || !SECRET) return res.status(500).json({ error: 'server not configured' });
@@ -156,7 +189,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: String(e.message || e) });
   }
 
-  let processed = 0, quarantined = 0, errors = 0;
+  let processed = 0, quarantined = 0, skipped = 0, errors = 0;
   const detail = [];
 
   for (const row of rows) {
@@ -164,13 +197,17 @@ export default async function handler(req, res) {
       let outcome;
       if (row.source === 'efs_fuel') {
         outcome = await handleEfs(row);
+      } else if (row.source.startsWith('truck_') || row.source.startsWith('trailer_')) {
+        outcome = await handleVendor(row);
       } else {
-        // No calibrated parser for vendor invoices yet — quarantine honestly.
+        // Unknown source with no parser — quarantine honestly.
         await quarantine(row, `needs parser: ${row.source}`, row.extracted || {});
         outcome = 'quarantined';
       }
       await markProcessed(row.id);
-      if (outcome === 'quarantined') quarantined++; else processed++;
+      if (outcome === 'quarantined') quarantined++;
+      else if (outcome === 'skipped') skipped++;
+      else processed++;
       detail.push({ id: row.id, source: row.source, outcome });
     } catch (e) {
       errors++;
@@ -180,5 +217,5 @@ export default async function handler(req, res) {
     }
   }
 
-  return res.status(200).json({ scanned: rows.length, processed, quarantined, errors, detail });
+  return res.status(200).json({ scanned: rows.length, processed, quarantined, skipped, errors, detail });
 }
