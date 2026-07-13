@@ -58,15 +58,15 @@ def mdate(s): m,d,y = s.split('/'); return datetime.date(int(y),int(m),int(d))
 def parse_pc(path):
     sh = xlrd.open_workbook(path).sheets()[0]; out = []
     for r in range(5, sh.nrows):
-        d,n,tp = sh.cell(r,0).value, sh.cell(r,1).value, sh.cell(r,2).value
+        d,n,tp,nt = sh.cell(r,0).value, sh.cell(r,1).value, sh.cell(r,2).value, sh.cell(r,3).value
         if not d or not n: continue
-        try: tp = float(tp)
+        try: tp = float(tp); nt = float(nt)
         except: continue
-        out.append((mdate(str(d).strip()), str(n).strip(), tp))
+        out.append((mdate(str(d).strip()), str(n).strip(), tp, nt))  # date, name, gross, net
     return out
 
 sf = parse_pc(SF_PC); ja = parse_pc(JA_PC)
-alld = [mon(d) for d,_,_ in sf+ja]; w0,w1 = min(alld), max(alld); weeks = []; c = w0
+alld = [mon(d) for d,_,_,_ in sf+ja]; w0,w1 = min(alld), max(alld); weeks = []; c = w0
 while c <= w1: weeks.append(c); c += datetime.timedelta(days=7)
 
 # Column labels = PAY DAY (actual check date), not the Monday week-start.
@@ -75,7 +75,7 @@ while c <= w1: weeks.append(c); c += datetime.timedelta(days=7)
 # Buckets are still keyed by Monday internally; PD maps Monday -> payday label.
 from collections import Counter
 _ckcount = {}
-for _d, _n, _tp in sf + ja:
+for _d, _n, _tp, _nt in sf + ja:
     _ckcount.setdefault(mon(_d), Counter())[_d] += 1
 def _payday(mnd):
     cc = _ckcount.get(mnd)
@@ -92,17 +92,20 @@ def wk_of(dt):
 rows = {}
 def getrow(comp, k, name, former):
     r = rows.get((comp, k))
-    if not r: r = rows[(comp, k)] = {'name':name,'former':former,'amts':{},'camts':{}}
+    if not r: r = rows[(comp, k)] = {'name':name,'former':former,'amts':{},'camts':{},'net':{},'gross':{}}
     return r
 
 def addw2(checks, office_only, src):
-    for d,n,tp in checks:
+    for d,n,tp,nt in checks:
         k = key(n)
         if office_only and k[0] not in OFFICE: continue
         fac, fn = FACT.get(k, (1.11, None)); disp = fn or n.lstrip('*'); former = n.lstrip().startswith('*'); wl = wk_of(d)
         for comp, wt in (W2DIV.get(k) or {src:1.0}).items():
             nm = disp + (f" ({int(wt*100)}%)" if wt < 1 else "")
-            r = getrow(comp, k, nm, former); r['amts'][wl] = round(r['amts'].get(wl,0) + tp*fac*wt, 2)
+            r = getrow(comp, k, nm, former)
+            r['amts'][wl]  = round(r['amts'].get(wl,0)  + tp*fac*wt, 2)   # loaded (gross x employer factor)
+            r['gross'][wl] = round(r['gross'].get(wl,0) + tp*wt, 2)       # gross pay
+            r['net'][wl]   = round(r['net'].get(wl,0)   + nt*wt, 2)       # net (bank direct deposit)
 
 addw2(sf, True, 'SF'); addw2(ja, False, 'J&A')
 
@@ -114,7 +117,7 @@ addw2(sf, True, 'SF'); addw2(ja, False, 'J&A')
 # LABOR (fleet) and the OTR carve-out total from App.jsx.
 OTR_LN = {'baker', 'dawson', 'pacitti'}
 _drv_g, _otr_g = {}, {}
-for d, n, tp in sf:
+for d, n, tp, nt in sf:
     k = key(n)
     if k[0] in OFFICE: continue                 # office + warehouse
     wl = wk_of(d)
