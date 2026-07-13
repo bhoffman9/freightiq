@@ -163,6 +163,15 @@ async function handleVendor(row) {
     await quarantine(row, `ai extract incomplete (amount=${inv.amount}, date=${inv.invoiceDate}, conf=${inv.confidence})`, inv._raw);
     return 'quarantined';
   }
+  // Dedup: vendors email the same invoice more than once (a second copy is a
+  // different raw file). Collapse on (source, invoice_no) so amounts aren't
+  // double-counted — drop any prior row for this invoice from a different file.
+  if (inv.invoiceNo) {
+    await sbDelete('fdw_equipment_invoice',
+      `source=eq.${encodeURIComponent(row.source)}` +
+      `&invoice_no=eq.${encodeURIComponent(inv.invoiceNo)}` +
+      `&raw_ref=neq.${encodeURIComponent(row.raw_ref)}`);
+  }
   await sbUpsert('fdw_equipment_invoice', {
     source: row.source,
     category: row.source.startsWith('trailer_') ? 'trailer' : (row.source.startsWith('truck_') ? 'truck' : null),

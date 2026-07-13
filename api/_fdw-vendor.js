@@ -1,77 +1,91 @@
 // _fdw-vendor.js — AI extraction of equipment-lessor invoices for fdw-extract.
-// pdf-parse pulls the PDF text layer; Claude returns strict JSON. Six vendor
-// layouts that drift make hand-written regex parsers a maintenance sink, so this
-// is format-agnostic AI extraction gated by a validation check in the caller
-// (quarantine on missing amount / low confidence rather than guess).
+// Primary path: pdf-parse pulls the PDF text layer, Claude returns strict JSON.
+// Fallback: if the text layer is missing/corrupt (image-only PDF, "bad XRef"),
+// send the PDF bytes to Claude directly (native PDF reading) — recovers the
+// malformed PDFs Penske/Ryder ship. Six vendor layouts that drift make hand-
+// written regex parsers a maintenance sink; format-agnostic AI + a validation
+// gate in the caller keeps it honest (quarantine, not guess).
 import pdf from 'pdf-parse/lib/pdf-parse.js';
 
 const MODEL = 'claude-sonnet-5';
-const MIN_TEXT = 40; // below this, treat as an image-only PDF (no text layer)
+const MIN_TEXT = 40; // below this, treat the text layer as unusable
 
 const EXTRACT_SYS =
   'You extract structured data from a single equipment-lease invoice (truck or ' +
-  'trailer rental/lease). Return ONLY a JSON object, no prose, with keys: ' +
-  'vendor (string), invoice_no (string|null), invoice_date (YYYY-MM-DD|null), ' +
-  'due_date (YYYY-MM-DD|null), unit_ids (array of strings — truck/trailer/VIN ' +
-  'numbers billed on this invoice, [] if none), amount (number — the invoice ' +
-  'TOTAL / amount due in USD, null if not found), service_period_start ' +
-  '(YYYY-MM-DD|null), service_period_end (YYYY-MM-DD|null), confidence ' +
-  '("high"|"medium"|"low"). amount must be the grand total the customer owes, ' +
-  'NOT a single line item. If the document is not an invoice or you cannot find ' +
-  'a total, set amount null and confidence "low".';
+  'trailer rental/lease). Return ONLY a JSON object, no prose, no code fences, ' +
+  'with keys: vendor (string), invoice_no (string|null), invoice_date ' +
+  '(YYYY-MM-DD|null), due_date (YYYY-MM-DD|null), unit_ids (array of strings — ' +
+  'the truck/trailer/VIN numbers billed on THIS invoice, [] if none), amount ' +
+  '(number — the invoice TOTAL / amount due in USD, null if not found), ' +
+  'service_period_start (YYYY-MM-DD|null), service_period_end (YYYY-MM-DD|null), ' +
+  'confidence ("high"|"medium"|"low"). amount must be the grand total the ' +
+  'customer owes on this invoice, NOT a single line item and NOT a running ' +
+  'account balance or year-to-date figure. If the document is not an invoice or ' +
+  'you cannot find a clear invoice total, set amount null and confidence "low".';
 
-async function toText(buf, filename) {
-  if (/\.csv$/i.test(filename)) return buf.toString('utf8');
-  try {
-    const d = await pdf(buf);
-    return (d.text || '').trim();
-  } catch (err) {
-    // Corrupt/unsupported PDF (e.g. "bad XRef entry") — not retryable.
-    const e = new Error(`pdf parse failed: ${String(err.message || err).slice(0, 120)}`);
-    e.quarantine = true; throw e;
-  }
+const num = (v) => (v == null || isNaN(Number(v)) ? null : Number(v));
+
+async function pdfText(buf) {
+  try { return ((await pdf(buf)).text || '').trim(); }
+  catch { return ''; } // corrupt/unsupported → empty triggers the document fallback
 }
 
-// Returns parsed invoice fields, or throws. A thrown error with .quarantine=true
-// means "known-unprocessable" (caller quarantines, no retry); any other throw is
-// treated as transient (caller records extract_error + retries next run).
-export async function parseVendorInvoice(buf, filename, source) {
+async function callClaude(userContent) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error('ANTHROPIC_API_KEY not set');
-
-  const text = await toText(buf, filename);
-  if (!text || text.length < MIN_TEXT) {
-    const e = new Error(`no text layer (image-only PDF, ${text.length} chars)`);
-    e.quarantine = true; throw e;
-  }
-
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: MODEL, max_tokens: 1024, system: EXTRACT_SYS,
-      messages: [{ role: 'user', content:
-        `Source: ${source}\nFilename: ${filename}\n\nInvoice text:\n"""\n${text.slice(0, 12000)}\n"""` }],
-    }),
+    body: JSON.stringify({ model: MODEL, max_tokens: 2048, system: EXTRACT_SYS,
+      messages: [{ role: 'user', content: userContent }] }),
   });
   const data = await r.json();
   if (!r.ok) throw new Error(`anthropic ${r.status}: ${JSON.stringify(data).slice(0, 200)}`);
+  return (data.content || []).map((c) => c.text || '').join('').trim();
+}
 
-  const reply = (data.content || []).map((c) => c.text || '').join('').trim();
-  const m = reply.match(/\{[\s\S]*\}/);
-  if (!m) throw new Error(`no JSON in AI reply: ${reply.slice(0, 160)}`);
-  const j = JSON.parse(m[0]);
+function parseJson(reply) {
+  let s = reply.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
+  const i = s.indexOf('{'), j = s.lastIndexOf('}');
+  if (i < 0 || j <= i) throw new Error(`no JSON in AI reply: ${reply.slice(0, 160)}`);
+  return JSON.parse(s.slice(i, j + 1));
+}
 
+function shape(j) {
   return {
     vendor: j.vendor || null,
-    invoiceNo: j.invoice_no || null,
+    invoiceNo: j.invoice_no ? String(j.invoice_no) : null,
     invoiceDate: j.invoice_date || null,
     dueDate: j.due_date || null,
     unitIds: Array.isArray(j.unit_ids) ? j.unit_ids.filter(Boolean).join(', ') : null,
-    amount: (j.amount == null || isNaN(Number(j.amount))) ? null : Number(j.amount),
+    amount: num(j.amount),
     servicePeriodStart: j.service_period_start || null,
     servicePeriodEnd: j.service_period_end || null,
     confidence: j.confidence || 'low',
     _raw: j,
   };
+}
+
+// Returns parsed invoice fields, or throws. A thrown error with .quarantine=true
+// means known-unprocessable (caller quarantines, no retry); any other throw is
+// transient (caller records extract_error + retries next run).
+export async function parseVendorInvoice(buf, filename, source) {
+  const isCsv = /\.csv$/i.test(filename);
+  const text = isCsv ? buf.toString('utf8') : await pdfText(buf);
+
+  let reply;
+  if (text && text.length >= MIN_TEXT) {
+    // text-layer path
+    reply = await callClaude(
+      `Source: ${source}\nFilename: ${filename}\n\nInvoice text:\n"""\n${text.slice(0, 14000)}\n"""`);
+  } else if (!isCsv) {
+    // document fallback — hand Claude the raw PDF (reads image-only / corrupt PDFs)
+    reply = await callClaude([
+      { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: buf.toString('base64') } },
+      { type: 'text', text: `Source: ${source}\nFilename: ${filename}\nExtract the invoice fields as specified.` },
+    ]);
+  } else {
+    const e = new Error(`empty CSV (${text.length} chars)`); e.quarantine = true; throw e;
+  }
+  return shape(parseJson(reply));
 }
