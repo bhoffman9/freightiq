@@ -92,7 +92,7 @@ def wk_of(dt):
 rows = {}
 def getrow(comp, k, name, former):
     r = rows.get((comp, k))
-    if not r: r = rows[(comp, k)] = {'name':name,'former':former,'amts':{},'camts':{},'net':{},'gross':{}}
+    if not r: r = rows[(comp, k)] = {'name':name,'former':former,'amts':{},'camts':{},'net':{},'gross':{},'car':{},'health':{},'commission':{}}
     return r
 
 def addw2(checks, office_only, src):
@@ -199,7 +199,7 @@ MANUAL_CONTRACTORS = {
         ('CE',  ('con','JON'),      2800.0,  'Jon Marcus · 1099'),
         ('CE',  ('con','GAB'),      1145.32, 'Gabriel Colon · 1099 (50%)'),
         ('SF',  ('con','GAB'),      1145.32, 'Gabriel Colon · 1099 (50%)'),
-        ('J&A', ('con','MEL'),      2550.0,  'Mellody Abrego · 1099'),   # 2250 + 300 commission
+        ('J&A', ('con','MEL'),      2250.0,  'Mellody Abrego · 1099'),   # 2250 + 300 commission
         ('J&A', ('con','HIL'),      1730.0,  'Hilda Salman · 1099'),
         ('J&A', ('fissehaye','b'),  1850.0,  'Biniyam Fissehaye'),        # ENM
         ('J&A', ('delgado','e'),    900.0,   'Elizabeth Delgado'),
@@ -210,7 +210,7 @@ MANUAL_CONTRACTORS = {
         ('CE',  ('con','JON'),      2800.0,  'Jon Marcus · 1099'),
         ('CE',  ('con','GAB'),      1000.0,  'Gabriel Colon · 1099 (50%)'),  # $2,000 split 50/50
         ('SF',  ('con','GAB'),      1000.0,  'Gabriel Colon · 1099 (50%)'),
-        ('J&A', ('con','MEL'),      2550.0,  'Mellody Abrego · 1099'),   # 2250 + 300 commission
+        ('J&A', ('con','MEL'),      2250.0,  'Mellody Abrego · 1099'),   # 2250 + 300 commission
         ('J&A', ('con','HIL'),      1730.0,  'Hilda Salman · 1099'),
         ('J&A', ('fissehaye','b'),  1850.0,  'Biniyam Fissehaye'),        # ENM
         ('J&A', ('delgado','e'),    900.0,   'Elizabeth Delgado'),
@@ -244,17 +244,17 @@ for wl, items in MANUAL_CONTRACTORS.items():
 # into the grid so every column is fully loaded (per Ben — "all in for all
 # places"). Reconciles to the Cost Breakdown footnotes: car $4,794.02 YTD,
 # health $15,463.24 YTD. (Reimbursements stay excluded.)
-def _addc(comp, rk, wl, amt):
+def _addc(comp, rk, wl, amt, key='camts'):
     ex = rows.get((comp, rk)); nm = ex['name'] if ex else str(rk)
     rr = getrow(comp, rk, nm, ex['former'] if ex else False)
-    rr['camts'][wl] = round(rr['camts'].get(wl, 0) + amt, 2)
+    rr[key][wl] = round(rr[key].get(wl, 0) + amt, 2)
 
 # Health insurance — weekly, company-paid. 26 wks each (weeks[1:]) → matches
 # each contractor's healthInsTotal in CONTRACTORS[].
 for comp, rk, rate in [('J&A',('con','MEL'),368.34), ('J&A',('con','HIL'),118.82),
                        ('J&A',('simpson','c'),53.79), ('J&A',('adamson','d'),53.79)]:
     for w in weeks[1:]:
-        _addc(comp, rk, PD[w], rate)
+        _addc(comp, rk, PD[w], rate, 'health')
 
 # Car allowances — monthly. Spec is (month int → first pay-week of that month)
 # OR an explicit payday label for cars we know the exact pay week of (recent).
@@ -269,23 +269,31 @@ CAR = [
 ]
 for comp, rk, plan in CAR:
     for spec, amt in plan:
-        _addc(comp, rk, _carlbl(spec), amt)
+        _addc(comp, rk, _carlbl(spec), amt, 'car')
+
+# Commission — recent hand-keyed weeks (Mellody $300/wk through June) -> dropdown.
+COMMISSION = [('J&A', ('con','MEL'), [('6/22',300.0),('6/29',300.0)])]
+for _comp, _rk, _plan in COMMISSION:
+    for _wl, _amt in _plan:
+        _addc(_comp, _rk, PD_BY_MONLABEL.get(_wl, _wl), _amt, 'commission')
 
 SECT = ['CE','SF','CE East','J&A']; out = []
 for s in SECT:
     rs = [v for (c,k),v in rows.items() if c == s]
     if not rs: continue
-    for r in rs: r['total'] = round(sum(r['amts'].values()) + sum(r['camts'].values()), 2)
+    for r in rs: r['total'] = round(sum(r['amts'].values()) + sum(r['camts'].values()) + sum(r['car'].values()) + sum(r['health'].values()) + sum(r['commission'].values()), 2)
     rs = sorted(rs, key=lambda r: (r['former'], '1099' in r['name'], r['name']))
-    tot = {}; ct = {}
+    tot = {}; ct = {}; lt = {}
     for wl in wlabel:
         a = round(sum(r['amts'].get(wl,0) for r in rs), 2); cc = round(sum(r['camts'].get(wl,0) for r in rs), 2)
+        ll = round(sum(r['camts'].get(wl,0)+r['car'].get(wl,0)+r['health'].get(wl,0)+r['commission'].get(wl,0) for r in rs), 2)
         if a: tot[wl] = a
         if cc: ct[wl] = cc
-    out.append({'name':s, 'rows':rs, 'totals':tot, 'ctotals':ct})
+        if ll: lt[wl] = ll
+    out.append({'name':s, 'rows':rs, 'totals':tot, 'ctotals':ct, 'ltotals':lt})
 
 period = f"Jan 2 – {weeks[-1].month}/{weeks[-1].day+6}/{weeks[-1].year}"
-data = {'source':f'W-2 paychecks (loaded) + contractors ALL-IN (cash + car + health, excl reimbursements) · {len(wlabel)} weeks · columns = pay day', 'weeks':wlabel, 'sections':out}
+data = {'source':f'W-2 paychecks (loaded) + contractors NET cash (car/health/commission broken out in dropdown) · {len(wlabel)} weeks · columns = pay day', 'weeks':wlabel, 'sections':out}
 
 # write straight into App.jsx
 new = json.dumps(data)
