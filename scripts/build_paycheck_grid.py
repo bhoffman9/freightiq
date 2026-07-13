@@ -217,6 +217,18 @@ MANUAL_CONTRACTORS = {
         ('J&A', ('simpson','c'),    834.97,  'Christopher Simpson'),
         ('J&A', ('adamson','d'),    1750.0,  'Debra Adamson'),
     ],
+    '7/6': [  # pay week ending Jul 12 (W-2 checks dated Jul 10)
+        ('CE',  ('con','JON'),      2800.0,  'Jon Marcus - 1099'),
+        ('CE',  ('con','GAB'),      1174.15, 'Gabriel Colon - 1099 (50%)'),  # $2,348.29 split 50/50
+        ('SF',  ('con','GAB'),      1174.14, 'Gabriel Colon - 1099 (50%)'),
+        ('J&A', ('con','MEL'),      2250.0,  'Mellody Abrego - 1099'),   # 2250 base (no commission stated for this wk)
+        ('J&A', ('con','HIL'),      1730.0,  'Hilda Salman - 1099'),
+        ('J&A', ('fissehaye','b'),  1850.0,  'Biniyam Fissehaye'),        # ENM
+        ('J&A', ('delgado','e'),    900.0,   'Elizabeth Delgado'),
+        ('J&A', ('simpson','c'),    834.97,  'Christopher Simpson'),
+        ('J&A', ('adamson','d'),    1750.0,  'Debra Adamson'),
+        ('J&A', ('con','ERI'),      1730.0,  'Erika Valencio - 1099'),   # NEW J&A contractor
+    ],
 }
 # MANUAL_CONTRACTORS is hand-keyed by Monday week ("6/22", "6/29"); map each
 # to its payday label so contractor payments land in the same column as that
