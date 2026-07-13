@@ -176,7 +176,7 @@ let BASIC_CPM_V = BASIC_COST / MILES;
 // All-In CPM = everything tracked
 let ALLIN_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT + TRAILER_TOT + TRUCK_MAINT + TRAIL_MAINT + STORAGE + UNIFORMS;
 let ALLIN_CPM_V = ALLIN_COST / MILES;
-let PERIOD    = "Jan 1 - Jul 5, 2026";
+let PERIOD    = "Jan 1 - Jul 12, 2026";
 // Derived day count parsed from PERIOD — keeps subtitle labels honest without
 // having to bump a magic number every week. If PERIOD parsing fails, fall back
 // to current behavior (Jan 1 → today).
