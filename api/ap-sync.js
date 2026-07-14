@@ -60,9 +60,13 @@ export default async function handler(req, res) {
     const seen = new Set((existing || []).map((r) => `${r.vendor_name}|${r.invoice_number}`));
 
     const toInsert = [];
-    let skipped = 0, unmapped = 0;
+    let skipped = 0, unmapped = 0, lowConf = 0, badAmount = 0;
     for (const r of rows || []) {
-      if (!r.invoice_no || r.amount == null) { skipped++; continue; }
+      const amt = Number(r.amount);
+      // reject malformed/non-positive amounts — never auto-post a $0 or NaN payable
+      if (!r.invoice_no || !Number.isFinite(amt) || amt <= 0) { badAmount++; continue; }
+      // don't auto-post low-confidence extractions as live payables (they'd need eyes)
+      if (String(r.confidence || '').toLowerCase() === 'low') { lowConf++; continue; }
       const vendorName = VENDOR_MAP[r.source];
       if (!vendorName) { unmapped++; continue; }               // source we don't map yet
       const key = `${vendorName}|${r.invoice_no}`;
@@ -74,7 +78,7 @@ export default async function handler(req, res) {
         invoice_number: String(r.invoice_no),
         invoice_date: r.invoice_date || null,
         due_date: r.due_date || null,
-        amount: Number(r.amount) || 0,
+        amount: amt,
         terms: '',
         description: desc.slice(0, 500),
         status: 'open',
@@ -93,7 +97,7 @@ export default async function handler(req, res) {
       inserted = data ? data.length : 0;
     }
 
-    return res.json({ scanned: (rows || []).length, inserted, skipped_existing: skipped, unmapped_source: unmapped, newInvoices: toInsert.map((t) => `${t.vendor_name} ${t.invoice_number} $${t.amount}`) });
+    return res.json({ scanned: (rows || []).length, inserted, skipped_existing: skipped, unmapped_source: unmapped, low_confidence_skipped: lowConf, bad_amount_skipped: badAmount, newInvoices: toInsert.map((t) => `${t.vendor_name} ${t.invoice_number} $${t.amount}`) });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }

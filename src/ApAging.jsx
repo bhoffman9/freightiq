@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 /* ══════════════════════════════════════════════════════
    AP Aging — ported into FreightIQ as a single self-contained tab.
@@ -53,14 +54,14 @@ const DRAFT_KEY = "ap-aging-invoice-draft";
 /* ══════════════════════════════════════════════════════
    Client-side PDF text extraction + regex field parsing.
    Zero-cost fallback (used when /api/ap-extract is unavailable).
-   PDF.js is loaded from CDN at runtime — no bundled dependency.
+   PDF.js is bundled via pdfjs-dist (lazy-loaded chunk) — no CDN/supply-chain
+   dependency. Worker is emitted as a hashed asset by Vite (?url import).
    ══════════════════════════════════════════════════════ */
-const PDFJS_VER = "4.4.168";
 let pdfjsLib = null;
 async function getPdfjs() {
   if (pdfjsLib) return pdfjsLib;
-  pdfjsLib = await import(/* @vite-ignore */ `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VER}/pdf.min.mjs`);
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VER}/pdf.worker.min.mjs`;
+  pdfjsLib = await import("pdfjs-dist");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
   return pdfjsLib;
 }
 

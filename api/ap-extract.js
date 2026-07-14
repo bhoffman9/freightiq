@@ -6,6 +6,7 @@
 //   units[], vins[], contractNumber, billingPeriod, pdfPath }.
 // Env: SUPABASE_URL, SUPABASE_SERVICE_KEY, ANTHROPIC_API_KEY.
 import { createClient } from '@supabase/supabase-js';
+import { requireApAuth } from './_ap-auth.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '12mb' } } };
 
@@ -31,11 +32,17 @@ Return ONLY valid JSON, no markdown, no explanation.`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'POST only' }); }
+  if (!requireApAuth(req, res)) return;
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set' });
 
   const { pdfBase64, filename } = req.body || {};
-  if (!pdfBase64) return res.status(400).json({ error: 'pdfBase64 required' });
+  if (!pdfBase64 || typeof pdfBase64 !== 'string') return res.status(400).json({ error: 'pdfBase64 required' });
+  let buf;
+  try { buf = Buffer.from(pdfBase64, 'base64'); } catch { return res.status(400).json({ error: 'invalid base64' }); }
+  // Validate it's really a PDF, before spending storage or Anthropic tokens.
+  if (buf.length < 5 || buf.slice(0, 5).toString('latin1') !== '%PDF-') return res.status(400).json({ error: 'not a PDF' });
+  if (buf.length > 10 * 1024 * 1024) return res.status(413).json({ error: 'PDF too large (>10MB)' });
 
   try {
     // 1. store the PDF in the shared `invoices` bucket
@@ -45,7 +52,7 @@ export default async function handler(req, res) {
       pdfPath = `${Date.now()}_${safe}`;
       const { error: upErr } = await supabase.storage
         .from('invoices')
-        .upload(pdfPath, Buffer.from(pdfBase64, 'base64'), { contentType: 'application/pdf', upsert: false });
+        .upload(pdfPath, buf, { contentType: 'application/pdf', upsert: false });
       if (upErr) { pdfPath = ''; } // non-fatal: extraction can still proceed
     } catch { pdfPath = ''; }
 

@@ -4,6 +4,7 @@
 // add &redirect=1 to 302 straight to the file (so a plain <a href> works).
 // Env: SUPABASE_URL, SUPABASE_SERVICE_KEY.
 import { createClient } from '@supabase/supabase-js';
+import { requireApAuth } from './_ap-auth.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -12,6 +13,7 @@ const supabase = createClient(
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'GET only' }); }
+  if (!requireApAuth(req, res)) return;
   const path = Array.isArray(req.query.path) ? req.query.path[0] : req.query.path;
   if (!path) return res.status(400).json({ error: 'path required' });
   try {

@@ -13,6 +13,7 @@
     "lucide-react": "^1.24.0",
     "papaparse": "^5.4.1",
     "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.4.168",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "recharts": "^2.12.0",

@@ -7,6 +7,7 @@
 //   PUT  { id, ...fields }               → update
 //   DELETE ?id=UUID                      → remove (+ delete PDF from storage)
 import { createClient } from '@supabase/supabase-js';
+import { requireApAuth } from './_ap-auth.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -32,6 +33,7 @@ function toFrontend(row) {
 }
 
 export default async function handler(req, res) {
+  if (!requireApAuth(req, res)) return;
   try {
     if (req.method === 'GET') {
       const vendor = req.query.vendor;

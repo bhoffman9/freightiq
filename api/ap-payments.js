@@ -8,6 +8,7 @@
 //                         → record payment; auto-updates amount_paid + status (±$0.05)
 //   DELETE ?id=UUID       → undo a payment; reverts amount_paid + status (±$0.05)
 import { createClient } from '@supabase/supabase-js';
+import { requireApAuth } from './_ap-auth.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -15,6 +16,7 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
+  if (!requireApAuth(req, res)) return;
   try {
     if (req.method === 'GET') {
       const invoiceId = req.query.invoiceId;
@@ -91,85 +93,31 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const body = req.body || {};
       const { invoiceId, amount, paymentDate, note, paymentMethod } = body;
-      if (!invoiceId || !amount) {
-        return res.status(400).json({ error: 'invoiceId and amount required' });
-      }
+      if (!invoiceId || amount == null) return res.status(400).json({ error: 'invoiceId and amount required' });
+      const amt = parseFloat(amount);
+      if (!Number.isFinite(amt) || amt <= 0) return res.status(400).json({ error: 'amount must be positive' });
 
-      // Insert payment record
-      const { error: pErr } = await supabase
-        .from('payments')
-        .insert({
-          invoice_id: invoiceId,
-          amount: parseFloat(amount),
-          payment_date: paymentDate || new Date().toISOString().slice(0, 10),
-          note: note || '',
-          payment_method: paymentMethod || 'ACH',
-        });
-      if (pErr) throw pErr;
-
-      // Update invoice totals
-      const { data: inv, error: iErr } = await supabase
-        .from('invoices')
-        .select('amount, amount_paid')
-        .eq('id', invoiceId)
-        .single();
-      if (iErr) throw iErr;
-
-      const newPaid = parseFloat(inv.amount_paid) + parseFloat(amount);
-      // ±$0.05 tolerance to absorb float rounding so a "full" payment isn't stuck as partial
-      const status = newPaid >= parseFloat(inv.amount) - 0.05 ? 'paid' : 'partial';
-
-      const { error: uErr } = await supabase
-        .from('invoices')
-        .update({ amount_paid: newPaid, status })
-        .eq('id', invoiceId);
-      if (uErr) throw uErr;
-
-      return res.json({ ok: true, newPaid, status });
+      // Atomic: locks the invoice row, inserts the payment, recomputes
+      // amount_paid + status in one transaction (see ap_payment_rpc.sql).
+      const { data, error } = await supabase.rpc('ap_record_payment', {
+        p_invoice_id: invoiceId,
+        p_amount: amt,
+        p_date: paymentDate || null,
+        p_method: paymentMethod || 'ACH',
+        p_note: note || '',
+      });
+      if (error) throw error;
+      return res.json(data);
     }
 
     if (req.method === 'DELETE') {
       const paymentId = req.query.id;
       if (!paymentId) return res.status(400).json({ error: 'payment id required' });
 
-      // Get the payment first
-      const { data: pmt, error: pErr } = await supabase
-        .from('payments')
-        .select('invoice_id, amount')
-        .eq('id', paymentId)
-        .single();
-      if (pErr) throw pErr;
-      if (!pmt) return res.status(404).json({ error: 'payment not found' });
-
-      // Get the invoice
-      const { data: inv, error: iErr } = await supabase
-        .from('invoices')
-        .select('amount, amount_paid')
-        .eq('id', pmt.invoice_id)
-        .single();
-      if (iErr) throw iErr;
-
-      // Delete the payment record
-      const { error: dErr } = await supabase
-        .from('payments')
-        .delete()
-        .eq('id', paymentId);
-      if (dErr) throw dErr;
-
-      // Recalculate invoice paid + status (±$0.05 tolerance for float rounding)
-      const newPaid = Math.max(0, parseFloat(inv.amount_paid) - parseFloat(pmt.amount));
-      let status;
-      if (newPaid <= 0.05) status = 'open';
-      else if (newPaid >= parseFloat(inv.amount) - 0.05) status = 'paid';
-      else status = 'partial';
-
-      const { error: uErr } = await supabase
-        .from('invoices')
-        .update({ amount_paid: newPaid, status })
-        .eq('id', pmt.invoice_id);
-      if (uErr) throw uErr;
-
-      return res.json({ ok: true, newPaid, status });
+      // Atomic undo: deletes the payment + reverts amount_paid/status together.
+      const { data, error } = await supabase.rpc('ap_undo_payment', { p_payment_id: paymentId });
+      if (error) throw error;
+      return res.json(data);
     }
 
     res.setHeader('Allow', 'GET, POST, DELETE');

@@ -6,6 +6,7 @@
 // Returns [] until production Plaid is connected (fdw_bank_feed_txn empty).
 // Env: SUPABASE_URL, SUPABASE_SERVICE_KEY.
 import { createClient } from '@supabase/supabase-js';
+import { requireApAuth } from './_ap-auth.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -24,6 +25,7 @@ function vendorMatches(vendorName, desc) {
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'GET only' }); }
+  if (!requireApAuth(req, res)) return;
   try {
     const { data: invoices, error: iErr } = await supabase
       .from('invoices').select('id, vendor_name, invoice_number, amount, amount_paid, status')

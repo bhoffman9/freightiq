@@ -3,6 +3,7 @@
 // because FreightIQ's own EquipmentContext (and any other app) consumes it.
 // Env: SUPABASE_URL, SUPABASE_SERVICE_KEY (shared project).
 import { createClient } from '@supabase/supabase-js';
+import { requireApAuth } from './_ap-auth.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -24,6 +25,13 @@ const VENDOR_ALIASES = {
 };
 const normalizeVendor = (name) => VENDOR_ALIASES[(name || '').trim().toLowerCase()] || null;
 
+// Warm-instance cache — this endpoint refetches all equipment+invoices and
+// recomputes matching on every call, and it's on FreightIQ's Trucks/Trailers
+// load path. A 60s TTL keeps repeated page loads cheap; AP data being <=60s
+// stale is fine (invoices/payments don't change second-to-second).
+let _cache = null; // { at, payload }
+const CACHE_TTL_MS = 60_000;
+
 const cors = (res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -34,6 +42,9 @@ export default async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (!requireApAuth(req, res)) return;
+
+  if (_cache && Date.now() - _cache.at < CACHE_TTL_MS) return res.json(_cache.payload);
 
   try {
     const { data: fleet, error: fleetErr } = await supabase
@@ -143,7 +154,7 @@ export default async function handler(req, res) {
       };
     });
 
-    return res.json({
+    const payload = {
       units, vendorInvoices,
       summary: {
         totalUnits: units.length, trucks: trucks.length, trailers: trailers.length,
@@ -154,7 +165,9 @@ export default async function handler(req, res) {
         totalOutstanding: units.reduce((s, u) => s + u.outstanding, 0),
       },
       updatedAt: new Date().toISOString(),
-    });
+    };
+    _cache = { at: Date.now(), payload };
+    return res.json(payload);
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }

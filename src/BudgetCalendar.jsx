@@ -1493,6 +1493,15 @@ export default function BudgetCalendar() {
     { value: 'unchecked-first', label: 'Unpaid First' },
   ];
 
+  // Safety net: if the Supabase client couldn't be created (env vars unset),
+  // don't render the interactive calendar — edits would appear on screen and
+  // silently fail to persist. Show a clear message instead. (All hooks above
+  // have already run, so this early return is Rules-of-Hooks safe.)
+  if (!supabase) return (
+    <div className="budget-root" style={{ padding: 24, fontFamily: "system-ui,sans-serif", color: "#b91c1c", fontSize: 14 }}>
+      <b>Budget Calendar isn't configured.</b> Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in Vercel and redeploy. Editing is disabled until then so nothing is lost.
+    </div>
+  );
   return (
     <div className="budget-root">
     <div className="w-full min-h-screen bg-gray-50 p-3">

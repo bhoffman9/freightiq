@@ -13,6 +13,25 @@ function useDataCtx() { return useContext(DataContext); }
 const EquipmentContext = createContext(null);
 function useEquipment() { return useContext(EquipmentContext); }
 
+// Attach the app-password key to same-origin /api/ap-* requests so those
+// financial routes (api/_ap-auth.js) reject anonymous callers. One-time patch
+// scoped to /api/ap-* URLs — every other fetch passes through untouched. Covers
+// both the AP Aging tab and the EquipmentContext fetch without editing each call.
+if (typeof window !== "undefined" && !window.__apFetchPatched) {
+  const _origFetch = window.fetch.bind(window);
+  const AP_KEY = import.meta.env.VITE_APP_PASSWORD || "";
+  window.fetch = (input, init) => {
+    try {
+      const url = typeof input === "string" ? input : (input && input.url) || "";
+      if (AP_KEY && url.indexOf("/api/ap-") !== -1) {
+        init = { ...(init || {}), headers: { ...((init && init.headers) || {}), "x-ap-key": AP_KEY } };
+      }
+    } catch { /* fall through to unmodified fetch */ }
+    return _origFetch(input, init);
+  };
+  window.__apFetchPatched = true;
+}
+
 
 // ── PAYROLL DATA ──────────────────────────────────────────────
 // QuickBooks payroll summary by employee, Jan 1 – May 29, 2026
@@ -9770,7 +9789,7 @@ export default function App() {
     <DataContext.Provider value={ctxValue}>
     <EquipmentContext.Provider value={equipmentData ? { ...equipmentData, _error: null } : (equipmentError ? { units: [], _error: equipmentError } : null)}>
       <style>{CSS}</style>
-      <div className="app" key={dataVersion}>
+      <div className="app">
         <header className="hdr">
           <div className="logo">⬡ Freight<b>IQ</b></div>
           <div className="hsub">Show Freight Inc · {PERIOD}</div>
@@ -9794,7 +9813,15 @@ export default function App() {
           ))}
         </nav>
 
-        <main className="main">{page()}</main>
+        <main className="main">
+          {/* AP Aging + Budget Calendar read their own Supabase/API, NOT the
+              mutated module constants — so they must NOT be caught in the
+              dataVersion remount (that would unmount mid-edit and drop unsaved
+              budget changes). Only legacy tabs remount to re-read constants. */}
+          {(tab === "apaging" || tab === "calendar")
+            ? page()
+            : <div key={dataVersion} style={{ display: "contents" }}>{page()}</div>}
+        </main>
       </div>
     </EquipmentContext.Provider>
     </DataContext.Provider>
