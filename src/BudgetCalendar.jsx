@@ -103,6 +103,8 @@ export default function BudgetCalendar() {
   const [draggedItem, setDraggedItem] = useState(null);
   const [dragOverDay, setDragOverDay] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({ unpaid: false, overdue: false, dueSoon: false, account: '' });
+  const [lastDeleted, setLastDeleted] = useState(null); // { key } — for undo toast
   const [editingAmount, setEditingAmount] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [archivedMonths, setArchivedMonths] = useState({});
@@ -835,7 +837,19 @@ export default function BudgetCalendar() {
 
   const deleteItem = (key) => {
     setDeletedItems(prev => ({ ...prev, [key]: true }));
+    setLastDeleted({ key }); // surface an Undo (delete is soft; this just re-shows it)
   };
+  const undoDelete = () => {
+    setLastDeleted(ld => {
+      if (ld) setDeletedItems(prev => { const n = { ...prev }; delete n[ld.key]; return n; });
+      return null;
+    });
+  };
+  React.useEffect(() => {
+    if (!lastDeleted) return;
+    const t = setTimeout(() => setLastDeleted(null), 6000);
+    return () => clearTimeout(t);
+  }, [lastDeleted]);
 
   // BULK CHECK: check/uncheck all items for a day
   const bulkCheckDay = (day) => {
@@ -1058,7 +1072,19 @@ export default function BudgetCalendar() {
         (exp.account || '').toLowerCase().includes(searchTerm.toLowerCase());
       const isWrongMonth = exp.month !== undefined &&
         (exp.month !== m || exp.year !== y);
-      return !isDeleted && matchesSearch && !isWrongMonth;
+      if (isDeleted || !matchesSearch || isWrongMonth) return false;
+      // operational filters (unpaid / overdue / due-next-7 / account)
+      const checked = !!checkedItems[itemKey];
+      if (filters.unpaid && checked) return false;
+      if (filters.overdue && (!isOverdue(day) || checked)) return false;
+      if (filters.account && (exp.account || '') !== filters.account) return false;
+      if (filters.dueSoon) {
+        const dt = new Date(y, m, day); dt.setHours(0, 0, 0, 0);
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const in7 = new Date(today); in7.setDate(today.getDate() + 7);
+        if (dt < today || dt > in7) return false;
+      }
+      return true;
     });
 
     // SORT
@@ -1504,6 +1530,12 @@ export default function BudgetCalendar() {
   );
   return (
     <div className="budget-root">
+      {lastDeleted && (
+        <div style={{ position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)", background: "#1e293b", color: "#fff", padding: "10px 16px", borderRadius: 8, boxShadow: "0 4px 16px rgba(0,0,0,.4)", zIndex: 9999, display: "flex", alignItems: "center", gap: 14, fontSize: 14 }}>
+          Expense deleted
+          <button onClick={undoDelete} style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 5, padding: "5px 12px", fontWeight: 700, cursor: "pointer" }}>Undo</button>
+        </div>
+      )}
     <div className="w-full min-h-screen bg-gray-50 p-3">
       <div className="max-w-full mx-auto bg-white rounded-lg shadow-lg p-3">
 
@@ -1527,6 +1559,13 @@ export default function BudgetCalendar() {
                 Refresh
               </button>
             </div>
+          </div>
+        )}
+        {saveStatus === 'error' && !loadError && (
+          <div style={{ position: "sticky", top: 0, zIndex: 50 }} className="mb-3 p-3 bg-red-600 text-white rounded-lg flex items-center gap-3 shadow-lg">
+            <AlertTriangle className="w-6 h-6 flex-shrink-0" />
+            <div className="flex-1 text-sm font-semibold">A change didn't save — your last edit may not be stored. Check your connection, then reload to see the true state.</div>
+            <button onClick={() => window.location.reload()} className="px-3 py-1.5 bg-white text-red-700 rounded text-sm font-bold">Reload</button>
           </div>
         )}
 
@@ -1656,6 +1695,26 @@ export default function BudgetCalendar() {
           <button onClick={generatePDF} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium flex items-center gap-1.5">
             <Download className="w-4 h-4" /> Export PDF
           </button>
+        </div>
+
+        {/* FILTERS */}
+        <div className="mb-3 flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-semibold text-gray-500 uppercase">Filter</span>
+          {[{ k: 'unpaid', label: 'Unpaid' }, { k: 'overdue', label: 'Overdue' }, { k: 'dueSoon', label: 'Due ≤ 7 days' }].map(f => (
+            <button key={f.k} onClick={() => setFilters(s => ({ ...s, [f.k]: !s[f.k] }))}
+              className={`px-3 py-1 text-sm rounded-full border-2 font-medium ${filters[f.k] ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-600 hover:border-blue-400'}`}>
+              {f.label}
+            </button>
+          ))}
+          <select value={filters.account} onChange={(e) => setFilters(s => ({ ...s, account: e.target.value }))}
+            className={`py-1 px-2 text-sm rounded-full border-2 bg-white ${filters.account ? 'border-blue-600 text-blue-700 font-medium' : 'border-gray-300 text-gray-600'}`}>
+            <option value="">All accounts</option>
+            {[...new Set(initialExpenses.map(e => e.account).filter(Boolean))].sort().map(a => <option key={a} value={a}>{a}</option>)}
+          </select>
+          {(filters.unpaid || filters.overdue || filters.dueSoon || filters.account) && (
+            <button onClick={() => setFilters({ unpaid: false, overdue: false, dueSoon: false, account: '' })}
+              className="px-3 py-1 text-sm rounded-full text-red-600 hover:bg-red-50 font-medium">✕ Clear filters</button>
+          )}
         </div>
 
         {/* SUMMARY */}

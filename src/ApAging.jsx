@@ -350,6 +350,7 @@ export default function ApAging() {
 
   // ── search, toasts, inline edit, recent payments, confirm modal ──
   const [searchQuery, setSearchQuery] = useState("");
+  const [showUpload, setShowUpload] = useState(false); // drop zone collapsed by default (Gmail auto-ingests)
   const [toasts, setToasts] = useState([]); // [{id, type, message, action?, actionLabel?}]
   const [editingCell, setEditingCell] = useState(null); // {invoiceId, field, value}
   const [recentPayments, setRecentPayments] = useState([]);
@@ -418,15 +419,29 @@ export default function ApAging() {
     } catch { /* silent */ }
   }, []);
   useEffect(() => { loadReviewTrash(); }, [loadReviewTrash]);
-  const approveInvoice = useCallback(async (id) => {
-    await fetch("/api/ap-invoices", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, approve: true }) });
-    await Promise.all([load(), loadReviewTrash()]);
-    addToast("Invoice approved — now in the payable list", "success");
+  const putInvoiceAction = useCallback(async (id, body, okMsg, failMsg) => {
+    try {
+      const res = await fetch("/api/ap-invoices", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...body }) });
+      if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error || `HTTP ${res.status}`); }
+      await Promise.all([load(), loadReviewTrash()]);
+      addToast(okMsg, "success");
+    } catch (e) {
+      addToast(`${failMsg}: ${e.message || e}`, "error");
+      loadReviewTrash(); // re-sync so the item stays visible where it actually is
+    }
   }, [load, loadReviewTrash, addToast]);
-  const restoreInvoice = useCallback(async (id) => {
-    await fetch("/api/ap-invoices", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, restore: true }) });
+  const approveInvoice = useCallback((id) => putInvoiceAction(id, { approve: true }, "Invoice approved — now in the payable list", "Approve failed (still in review)"), [putInvoiceAction]);
+  const restoreInvoice = useCallback((id) => putInvoiceAction(id, { restore: true }, "Invoice restored from trash", "Restore failed (still in trash)"), [putInvoiceAction]);
+  const bulkReviewTrash = useCallback(async (list, field, verb) => {
+    let ok = 0; const fails = [];
+    for (const inv of list) {
+      try {
+        const r = await fetch("/api/ap-invoices", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: inv.id, [field]: true }) });
+        if (!r.ok) throw new Error(String(r.status)); ok++;
+      } catch { fails.push(inv.id); }
+    }
     await Promise.all([load(), loadReviewTrash()]);
-    addToast("Invoice restored from trash", "success");
+    addToast(fails.length ? `${ok} ${verb} · ${fails.length} FAILED` : `${ok} invoice${ok !== 1 ? "s" : ""} ${verb}`, fails.length ? "error" : "success");
   }, [load, loadReviewTrash, addToast]);
 
   /* ── Recent payments (last 20) ── */
@@ -805,24 +820,33 @@ export default function ApAging() {
 
   const submitBatchPay = async () => {
     setBatchPaying(true);
-    let count = 0;
-    let total = 0;
+    let ok = 0, okTotal = 0;
+    const failures = [];
     try {
       for (const item of batchPayItems) {
         const amt = parseFloat(item.amount);
         if (isNaN(amt) || amt <= 0) continue;
-        await fetch("/api/ap-payments", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ invoiceId: item.invoice.id, amount: amt, paymentDate: batchPayDate, paymentMethod: batchPayMethod }),
-        });
-        count++;
-        total += amt;
+        try {
+          const res = await fetch("/api/ap-payments", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ invoiceId: item.invoice.id, amount: amt, paymentDate: batchPayDate, paymentMethod: batchPayMethod }),
+          });
+          if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error || `HTTP ${res.status}`); }
+          ok++; okTotal += amt;
+        } catch (e) {
+          failures.push(`${item.invoice.vendorName} ${item.invoice.invoiceNumber}: ${e.message || e}`);
+        }
       }
-      setShowBatchPayModal(false);
-      setSelectedInvoices(new Set());
-      load();
-      addToast(`${count} payment${count !== 1 ? "s" : ""} totaling ${fmt(total)} recorded`, "success");
+      await load();
+      if (failures.length === 0) {
+        setShowBatchPayModal(false);
+        setSelectedInvoices(new Set());
+        addToast(`${ok} payment${ok !== 1 ? "s" : ""} totaling ${fmt(okTotal)} recorded`, "success");
+      } else {
+        // keep the modal open so nothing silently half-posts — show what failed
+        addToast(`${ok} recorded · ${failures.length} FAILED — ${failures[0]}${failures.length > 1 ? ` (+${failures.length - 1} more)` : ""}`, "error", { duration: 9000 });
+      }
     } finally {
       setBatchPaying(false);
     }
@@ -863,23 +887,28 @@ export default function ApAging() {
 
   /* ── Delete invoice ── */
   const deleteInvoice = async (inv) => {
-    if (!(await askConfirm(`Delete invoice ${inv.invoiceNumber} from ${inv.vendorName}?`))) return;
-    await fetch(`/api/ap-invoices?id=${inv.id}`, { method: "DELETE" });
-    load();
-    addToast(`Invoice ${inv.invoiceNumber} deleted`, "success");
+    if (!(await askConfirm(`Move invoice ${inv.invoiceNumber} from ${inv.vendorName} to Trash?`))) return;
+    try {
+      const res = await fetch(`/api/ap-invoices?id=${inv.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await Promise.all([load(), loadReviewTrash()]);
+      addToast(`Invoice ${inv.invoiceNumber} moved to Trash`, "success", { action: () => restoreInvoice(inv.id), actionLabel: "Undo" });
+    } catch (e) { addToast(`Delete failed: ${e.message || e}`, "error"); }
   };
 
   /* ── Bulk delete selected invoices ── */
   const bulkDelete = async () => {
     const ids = [...selectedInvoices];
     if (ids.length === 0) return;
-    if (!(await askConfirm(`Delete ${ids.length} selected invoice${ids.length !== 1 ? "s" : ""}? This cannot be undone.`))) return;
+    if (!(await askConfirm(`Move ${ids.length} selected invoice${ids.length !== 1 ? "s" : ""} to Trash?`))) return;
+    let ok = 0; const fails = [];
     for (const id of ids) {
-      await fetch(`/api/ap-invoices?id=${id}`, { method: "DELETE" });
+      try { const res = await fetch(`/api/ap-invoices?id=${id}`, { method: "DELETE" }); if (!res.ok) throw new Error(`HTTP ${res.status}`); ok++; }
+      catch { fails.push(id); }
     }
     setSelectedInvoices(new Set());
-    load();
-    addToast(`${ids.length} invoice${ids.length !== 1 ? "s" : ""} deleted`, "success");
+    await Promise.all([load(), loadReviewTrash()]);
+    addToast(fails.length ? `${ok} moved to Trash · ${fails.length} FAILED` : `${ok} invoice${ok !== 1 ? "s" : ""} moved to Trash`, fails.length ? "error" : "success");
   };
 
   /* ── Undo a specific payment by ID (used by recent payments panel) ── */
@@ -1101,9 +1130,18 @@ export default function ApAging() {
           </div>
           {rtPanel && (
             <div style={{ background: "#0d1117", border: "1px solid #1e293b", borderRadius: 8, padding: 12 }}>
-              <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>
-                {rtPanel === "review" ? "Auto-ingested invoices that looked off (amount/vendor/confidence). Not payable until approved." : "Soft-deleted invoices — restore anytime (also covered by daily Supabase backups)."}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 12 }}>
+                <div style={{ fontSize: 11, color: "#64748b" }}>
+                  {rtPanel === "review" ? "Auto-ingested invoices that looked off (amount/vendor/confidence). Not payable until approved." : "Soft-deleted invoices — restore anytime (also covered by daily Supabase backups)."}
+                </div>
+                {(rtPanel === "review" ? reviewList : trashList).length > 1 && (
+                  <button onClick={() => rtPanel === "review" ? bulkReviewTrash(reviewList, "approve", "approved") : bulkReviewTrash(trashList, "restore", "restored")}
+                    style={{ background: rtPanel === "review" ? "#22c55e" : "#3b82f6", color: rtPanel === "review" ? "#0a0f1a" : "#fff", border: "none", borderRadius: 5, padding: "5px 12px", fontWeight: 700, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>
+                    {rtPanel === "review" ? `Approve all ${reviewList.length}` : `Restore all ${trashList.length}`}
+                  </button>
+                )}
               </div>
+              <div style={{ maxHeight: 320, overflowY: "auto" }}>
               {(rtPanel === "review" ? reviewList : trashList).length === 0 ? (
                 <div style={{ color: "#64748b", fontSize: 13 }}>Nothing here.</div>
               ) : (rtPanel === "review" ? reviewList : trashList).map((inv) => (
@@ -1117,6 +1155,7 @@ export default function ApAging() {
                     : <button onClick={() => restoreInvoice(inv.id)} style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 5, padding: "4px 10px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Restore</button>}
                 </div>
               ))}
+              </div>
             </div>
           )}
         </div>
@@ -1230,27 +1269,38 @@ export default function ApAging() {
         </div>
       )}
 
-      {/* ── Drop Zone ── */}
-      <div
-        style={{ ...S.dropZone, ...(dragOver ? S.dropZoneActive : {}), ...(extracting ? { opacity: 0.6 } : {}) }}
-        onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
-        onClick={() => !extracting && fileRef.current?.click()}
-      >
-        <input ref={fileRef} type="file" accept=".pdf" multiple style={{ display: "none" }}
-          onChange={(e) => handleFiles(e.target.files)} />
-        {extracting ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={S.spinner} />
-            <span>{extractProgress || "Extracting..."}</span>
-          </div>
-        ) : (
-          <>
-            <span style={{ fontSize: 24, marginBottom: 4 }}>📄</span>
-            <span>Drop PDF invoices here or <span style={{ color: "#3b82f6", textDecoration: "underline", cursor: "pointer" }}>browse</span></span>
-            <span style={{ fontSize: 11, color: "#475569" }}>Upload one or multiple — AI extraction with verification</span>
-          </>
-        )}
-      </div>
+      {/* ── Upload (collapsed by default — most invoices auto-ingest from Gmail) ── */}
+      <input ref={fileRef} type="file" accept=".pdf" multiple style={{ display: "none" }}
+        onChange={(e) => handleFiles(e.target.files)} />
+      {showUpload || extracting ? (
+        <div
+          style={{ ...S.dropZone, ...(dragOver ? S.dropZoneActive : {}), ...(extracting ? { opacity: 0.6 } : {}), position: "relative" }}
+          onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
+          onClick={() => !extracting && fileRef.current?.click()}
+        >
+          {!extracting && (
+            <span onClick={(e) => { e.stopPropagation(); setShowUpload(false); }}
+              style={{ position: "absolute", top: 6, right: 12, color: "#64748b", cursor: "pointer", fontSize: 16 }} aria-label="Collapse upload">✕</span>
+          )}
+          {extracting ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={S.spinner} />
+              <span>{extractProgress || "Extracting..."}</span>
+            </div>
+          ) : (
+            <>
+              <span style={{ fontSize: 24, marginBottom: 4 }}>📄</span>
+              <span>Drop PDF invoices here or <span style={{ color: "#3b82f6", textDecoration: "underline", cursor: "pointer" }}>browse</span></span>
+              <span style={{ fontSize: 11, color: "#475569" }}>Upload one or multiple — AI extraction with verification</span>
+            </>
+          )}
+        </div>
+      ) : (
+        <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
+          <button onClick={() => setShowUpload(true)} style={{ ...S.btn, fontSize: 12 }}>📄 Upload a PDF invoice</button>
+          <span style={{ fontSize: 11, color: "#475569" }}>Most invoices now auto-ingest from email</span>
+        </div>
+      )}
 
       {/* ── Aging View ── */}
       {view === "aging" && (
@@ -1313,11 +1363,11 @@ export default function ApAging() {
               <input type="date" value={filterDueDate} onChange={(e) => setFilterDueDate(e.target.value)}
                 style={{ marginLeft: 4, padding: "5px 6px", fontSize: 12, background: "#0d1117", color: "#e2e8f0", border: "1px solid #1e293b", borderRadius: 6 }} />
             </label>
-            {(filterVendor || filterInvDate || filterDueDate) && (
-              <span style={{ fontSize: 11, color: "#3b82f6", cursor: "pointer", textDecoration: "underline" }}
-                onClick={() => { setFilterVendor(""); setFilterInvDate(""); setFilterDueDate(""); }}>
-                clear filters
-              </span>
+            {(filterVendor || filterInvDate || filterDueDate || filterBucket || quickFilter || searchQuery) && (
+              <button style={{ fontSize: 11, color: "#fca5a5", background: "none", border: "1px solid #7f1d1d", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontWeight: 600 }}
+                onClick={() => { setFilterVendor(""); setFilterInvDate(""); setFilterDueDate(""); setFilterBucket(null); setQuickFilter(null); setSearchQuery(""); }}>
+                ✕ Clear all filters
+              </button>
             )}
             {(filterVendor || filterInvDate || filterDueDate || filterBucket) && (
               <span style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0", marginLeft: "auto" }}>
@@ -1455,13 +1505,13 @@ export default function ApAging() {
                       if (vOpen.length === 0) return null;
                       return (
                         <tr key={v} style={S.tr}>
-                          <td style={{ ...S.td, fontWeight: 600, color: "#e2e8f0" }}>{v}</td>
+                          <td style={{ ...S.td, fontWeight: 600, color: "#e2e8f0", cursor: "pointer" }} onClick={() => { setFilterVendor(v); setFilterBucket(null); }} title={`Filter to ${v}`}>{v}</td>
                           <td style={{ ...S.td, textAlign: "center" }}>{vOpen.length}</td>
                           {BUCKETS.map((b) => {
                             const bT = vOpen.filter((i) => agingBucket(i.dueDate) === b.key).reduce((s, i) => s + (i.amount - i.amountPaid), 0);
-                            return <td key={b.key} style={{ ...S.td, textAlign: "right", fontVariantNumeric: "tabular-nums", color: bT > 0 ? b.color : "#334155" }}>{bT > 0 ? fmt(bT) : "—"}</td>;
+                            return <td key={b.key} onClick={bT > 0 ? () => { setFilterVendor(v); setFilterBucket(b.key); } : undefined} title={bT > 0 ? `Filter to ${v} · ${b.label} days` : undefined} style={{ ...S.td, textAlign: "right", fontVariantNumeric: "tabular-nums", color: bT > 0 ? b.color : "#334155", cursor: bT > 0 ? "pointer" : "default", textDecoration: bT > 0 ? "underline dotted" : "none" }}>{bT > 0 ? fmt(bT) : "—"}</td>;
                           })}
-                          <td style={{ ...S.td, textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "#f1f5f9" }}>{fmt(vTotal)}</td>
+                          <td style={{ ...S.td, textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "#f1f5f9", cursor: "pointer" }} onClick={() => { setFilterVendor(v); setFilterBucket(null); }} title={`Filter to ${v}`}>{fmt(vTotal)}</td>
                         </tr>
                       );
                     })}

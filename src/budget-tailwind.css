@@ -2,5 +2,15 @@
    (preflight is disabled in tailwind.config.js) so FreightIQ's global styling
    is untouched. Utilities are prefixed `.budget-root ` via the config's
    `important` option, so they only apply inside the budget tab wrapper. */
+/* Minimal reset scoped to the budget tab only (Tailwind preflight is off so it
+   can't touch the rest of FreightIQ). Restores the box-sizing + form-control
+   normalization the ported calendar assumes, without a global reset. */
+.budget-root, .budget-root *, .budget-root *::before, .budget-root *::after { box-sizing: border-box; }
+.budget-root button, .budget-root input, .budget-root select, .budget-root textarea {
+  font-family: inherit; font-size: 100%; line-height: 1.15; margin: 0; color: inherit;
+}
+.budget-root button { cursor: pointer; background: none; border: 0; padding: 0; }
+.budget-root :focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
+
 @tailwind components;
 @tailwind utilities;
