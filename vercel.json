@@ -19,6 +19,10 @@
       "schedule": "0 8 * * *"
     },
     {
+      "path": "/api/ap-sync",
+      "schedule": "30 8 * * *"
+    },
+    {
       "path": "/api/fdw-samsara",
       "schedule": "0 9 * * *"
     }
