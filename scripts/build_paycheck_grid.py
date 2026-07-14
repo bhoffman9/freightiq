@@ -271,11 +271,26 @@ for comp, rk, plan in CAR:
     for spec, amt in plan:
         _addc(comp, rk, _carlbl(spec), amt, 'car')
 
-# Commission — recent hand-keyed weeks (Mellody $300/wk through June) -> dropdown.
-COMMISSION = [('J&A', ('con','MEL'), [('6/22',300.0),('6/29',300.0)])]
-for _comp, _rk, _plan in COMMISSION:
-    for _wl, _amt in _plan:
-        _addc(_comp, _rk, PD_BY_MONLABEL.get(_wl, _wl), _amt, 'commission')
+# Commission — spread each contractor's YTD commission (totals from CONTRACTORS[]
+# in App.jsx) across the weeks they actually had cash, so it's a dropdown line for
+# EVERY earner (Mellody, Delgado, Simpson), not just a hardcoded few. Reconciles
+# to CONTRACTORS[].commission exactly. Runs after camts are fully populated.
+COMMISSION_TOTAL = [
+    ('J&A', ('con','MEL'),     5133.21),   # Mellody
+    ('J&A', ('delgado','e'),   3597.62),   # Elizabeth Delgado
+    ('J&A', ('simpson','c'),   2551.20),   # Christopher Simpson
+]
+for _comp, _rk, _tot in COMMISSION_TOTAL:
+    _r = rows.get((_comp, _rk))
+    if not _r:
+        continue
+    _act = [w for w in wlabel if _r['camts'].get(w)] or list(wlabel)
+    _per = round(_tot / len(_act), 2)
+    for w in _act:
+        _r['commission'][w] = _per
+    _d = round(_tot - _per * len(_act), 2)   # push rounding remainder into the last week
+    if _d:
+        _r['commission'][_act[-1]] = round(_r['commission'][_act[-1]] + _d, 2)
 
 SECT = ['CE','SF','CE East','J&A']; out = []
 for s in SECT:
