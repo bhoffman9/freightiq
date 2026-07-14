@@ -54,6 +54,7 @@ export default async function handler(req, res) {
     const { data: invoices, error: invErr } = await supabase
       .from('invoices')
       .select('id, vendor_name, invoice_number, invoice_date, due_date, amount, amount_paid, description, status, pdf_path')
+      .is('deleted_at', null)
       .order('invoice_date', { ascending: false });
     if (invErr) return res.status(500).json({ error: invErr.message });
 

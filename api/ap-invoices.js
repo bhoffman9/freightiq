@@ -27,6 +27,8 @@ function toFrontend(row) {
     description: row.description || '',
     status: row.status,
     pdfPath: row.pdf_path || '',
+    deletedAt: row.deleted_at || null,
+    needsReview: row.needs_review || false,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -50,10 +52,13 @@ export default async function handler(req, res) {
         return res.json({ exists: (data?.length || 0) > 0 });
       }
 
-      // List all (open/partial first, then by due date)
-      const { data, error } = await supabase
-        .from('invoices')
-        .select('*')
+      // Default list = live + approved. ?trash=1 = soft-deleted; ?review=1 =
+      // held-for-review (auto-ingested anomalies awaiting your approval).
+      let q = supabase.from('invoices').select('*');
+      if (req.query.trash) q = q.not('deleted_at', 'is', null);
+      else if (req.query.review) q = q.is('deleted_at', null).eq('needs_review', true);
+      else q = q.is('deleted_at', null).eq('needs_review', false);
+      const { data, error } = await q
         .order('status', { ascending: true })
         .order('due_date', { ascending: true });
 
@@ -116,6 +121,8 @@ export default async function handler(req, res) {
       if (fields.description !== undefined) updates.description = fields.description;
       if (fields.status !== undefined) updates.status = fields.status;
       if (fields.pdfPath !== undefined) updates.pdf_path = fields.pdfPath;
+      if (fields.restore) updates.deleted_at = null; // restore from trash
+      if (fields.approve) updates.needs_review = false; // approve a held invoice
 
       const { data, error } = await supabase
         .from('invoices')
@@ -132,18 +139,20 @@ export default async function handler(req, res) {
       const id = req.query.id;
       if (!id) return res.status(400).json({ error: 'id required' });
 
-      // Get pdf_path to clean up storage
-      const { data: inv } = await supabase
-        .from('invoices')
-        .select('pdf_path')
-        .eq('id', id)
-        .single();
-
-      if (inv?.pdf_path) {
-        await supabase.storage.from('invoices').remove([inv.pdf_path]);
+      // Permanent delete only when explicitly asked (?hard=1) — removes the PDF too.
+      if (req.query.hard) {
+        const { data: inv } = await supabase.from('invoices').select('pdf_path').eq('id', id).single();
+        if (inv?.pdf_path) await supabase.storage.from('invoices').remove([inv.pdf_path]);
+        const { error } = await supabase.from('invoices').delete().eq('id', id);
+        if (error) throw error;
+        return res.json({ ok: true, hard: true });
       }
 
-      const { error } = await supabase.from('invoices').delete().eq('id', id);
+      // Default: soft delete — recoverable from trash, PDF preserved.
+      const { error } = await supabase
+        .from('invoices')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id);
       if (error) throw error;
       return res.json({ ok: true });
     }

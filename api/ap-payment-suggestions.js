@@ -29,7 +29,8 @@ export default async function handler(req, res) {
   try {
     const { data: invoices, error: iErr } = await supabase
       .from('invoices').select('id, vendor_name, invoice_number, amount, amount_paid, status')
-      .in('status', ['open', 'partial']);
+      .in('status', ['open', 'partial'])
+      .is('deleted_at', null);
     if (iErr) throw iErr;
 
     const since = new Date(Date.now() - LOOKBACK_DAYS * 86400000).toISOString().slice(0, 10);

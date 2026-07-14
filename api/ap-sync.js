@@ -56,11 +56,19 @@ export default async function handler(req, res) {
 
     // Existing (vendor_name, invoice_number) pairs — dedup client-side so we can
     // report inserted vs skipped (the unique index also protects us).
-    const { data: existing } = await supabase.from('invoices').select('vendor_name, invoice_number');
-    const seen = new Set((existing || []).map((r) => `${r.vendor_name}|${r.invoice_number}`));
+    // Existing (non-deleted) invoices: for dedup AND to learn each vendor's
+    // typical amount, so routine invoices auto-approve and anomalies get held.
+    const { data: existing } = await supabase.from('invoices').select('vendor_name, invoice_number, amount').is('deleted_at', null);
+    const seen = new Set();
+    const vendorMax = {};
+    for (const r of existing || []) {
+      seen.add(`${r.vendor_name}|${r.invoice_number}`);
+      const a = Number(r.amount) || 0;
+      if (a > (vendorMax[r.vendor_name] || 0)) vendorMax[r.vendor_name] = a;
+    }
 
     const toInsert = [];
-    let skipped = 0, unmapped = 0, lowConf = 0, badAmount = 0;
+    let skipped = 0, unmapped = 0, lowConf = 0, badAmount = 0, held = 0;
     for (const r of rows || []) {
       const amt = Number(r.amount);
       // reject malformed/non-positive amounts — never auto-post a $0 or NaN payable
@@ -72,7 +80,14 @@ export default async function handler(req, res) {
       const key = `${vendorName}|${r.invoice_no}`;
       if (seen.has(key)) { skipped++; continue; }              // already in AP
       seen.add(key);
-      const desc = `[auto] ${r.unit_ids ? 'Units ' + r.unit_ids : (r.category || 'equipment')} · Gmail-parsed (${r.confidence || 'med'} confidence)`;
+      // Auto-approve only high-confidence invoices whose amount looks normal for
+      // this vendor (has prior history + within 1.5x the vendor's largest prior).
+      // Everything else is HELD for review — kept out of the payable list until
+      // you approve it, so being busy just delays the oddballs, nothing bad.
+      const vmax = vendorMax[vendorName] || 0;
+      const needsReview = String(r.confidence).toLowerCase() !== 'high' || vmax === 0 || amt > vmax * 1.5;
+      if (needsReview) held++;
+      const desc = `[auto] ${r.unit_ids ? 'Units ' + r.unit_ids : (r.category || 'equipment')} · Gmail-parsed (${r.confidence || 'med'} conf)${needsReview ? ' · NEEDS REVIEW' : ''}`;
       toInsert.push({
         vendor_name: vendorName,
         invoice_number: String(r.invoice_no),
@@ -82,6 +97,7 @@ export default async function handler(req, res) {
         terms: '',
         description: desc.slice(0, 500),
         status: 'open',
+        needs_review: needsReview,
         pdf_path: '',
       });
     }
@@ -97,7 +113,7 @@ export default async function handler(req, res) {
       inserted = data ? data.length : 0;
     }
 
-    return res.json({ scanned: (rows || []).length, inserted, skipped_existing: skipped, unmapped_source: unmapped, low_confidence_skipped: lowConf, bad_amount_skipped: badAmount, newInvoices: toInsert.map((t) => `${t.vendor_name} ${t.invoice_number} $${t.amount}`) });
+    return res.json({ scanned: (rows || []).length, inserted, held_for_review: held, skipped_existing: skipped, unmapped_source: unmapped, low_confidence_skipped: lowConf, bad_amount_skipped: badAmount, newInvoices: toInsert.map((t) => `${t.vendor_name} ${t.invoice_number} $${t.amount}${t.needs_review ? ' [review]' : ''}`) });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }

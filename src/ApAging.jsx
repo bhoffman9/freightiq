@@ -401,6 +401,34 @@ export default function ApAging() {
     setConfirmDialog({ message, onConfirm: () => { setConfirmDialog(null); resolve(true); }, onCancel: () => { setConfirmDialog(null); resolve(false); } });
   }), []);
 
+  /* ── Review queue + Trash. Auto-ingested anomalies are HELD (kept out of the
+     payable list) until approved; the delete button now soft-deletes so it's
+     recoverable from Trash. ── */
+  const [reviewList, setReviewList] = useState([]);
+  const [trashList, setTrashList] = useState([]);
+  const [rtPanel, setRtPanel] = useState(null); // 'review' | 'trash' | null
+  const loadReviewTrash = useCallback(async () => {
+    try {
+      const [r, t] = await Promise.all([
+        fetch("/api/ap-invoices?review=1").then((x) => x.json()).catch(() => []),
+        fetch("/api/ap-invoices?trash=1").then((x) => x.json()).catch(() => []),
+      ]);
+      setReviewList(Array.isArray(r) ? r : []);
+      setTrashList(Array.isArray(t) ? t : []);
+    } catch { /* silent */ }
+  }, []);
+  useEffect(() => { loadReviewTrash(); }, [loadReviewTrash]);
+  const approveInvoice = useCallback(async (id) => {
+    await fetch("/api/ap-invoices", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, approve: true }) });
+    await Promise.all([load(), loadReviewTrash()]);
+    addToast("Invoice approved — now in the payable list", "success");
+  }, [load, loadReviewTrash, addToast]);
+  const restoreInvoice = useCallback(async (id) => {
+    await fetch("/api/ap-invoices", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, restore: true }) });
+    await Promise.all([load(), loadReviewTrash()]);
+    addToast("Invoice restored from trash", "success");
+  }, [load, loadReviewTrash, addToast]);
+
   /* ── Recent payments (last 20) ── */
   const loadRecentPayments = useCallback(async () => {
     try {
@@ -1056,6 +1084,43 @@ export default function ApAging() {
         }
       `}</style>
       <div className="ap-root">
+      {/* ── Review queue + Trash strip ── */}
+      {(reviewList.length > 0 || trashList.length > 0 || rtPanel) && (
+        <div className="no-print" style={{ margin: "0 0 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {reviewList.length > 0 && (
+              <button onClick={() => setRtPanel(rtPanel === "review" ? null : "review")}
+                style={{ background: rtPanel === "review" ? "#f59e0b" : "#1e293b", color: rtPanel === "review" ? "#0a0f1a" : "#f59e0b", border: "1px solid #f59e0b", borderRadius: 6, padding: "6px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                ⚠ {reviewList.length} need review
+              </button>
+            )}
+            <button onClick={() => setRtPanel(rtPanel === "trash" ? null : "trash")}
+              style={{ background: rtPanel === "trash" ? "#334155" : "#1e293b", color: "#94a3b8", border: "1px solid #334155", borderRadius: 6, padding: "6px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+              🗑 Trash ({trashList.length})
+            </button>
+          </div>
+          {rtPanel && (
+            <div style={{ background: "#0d1117", border: "1px solid #1e293b", borderRadius: 8, padding: 12 }}>
+              <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>
+                {rtPanel === "review" ? "Auto-ingested invoices that looked off (amount/vendor/confidence). Not payable until approved." : "Soft-deleted invoices — restore anytime (also covered by daily Supabase backups)."}
+              </div>
+              {(rtPanel === "review" ? reviewList : trashList).length === 0 ? (
+                <div style={{ color: "#64748b", fontSize: 13 }}>Nothing here.</div>
+              ) : (rtPanel === "review" ? reviewList : trashList).map((inv) => (
+                <div key={inv.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "6px 0", borderBottom: "1px solid #161b22", fontSize: 13 }}>
+                  <div style={{ color: "#e2e8f0" }}>
+                    <b>{inv.vendorName}</b> · {inv.invoiceNumber} · {fmt(inv.amount)}
+                    <span style={{ color: "#64748b" }}> · {inv.invoiceDate || "—"}</span>
+                  </div>
+                  {rtPanel === "review"
+                    ? <button onClick={() => approveInvoice(inv.id)} style={{ background: "#22c55e", color: "#0a0f1a", border: "none", borderRadius: 5, padding: "4px 10px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Approve</button>
+                    : <button onClick={() => restoreInvoice(inv.id)} style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 5, padding: "4px 10px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Restore</button>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       {/* ── Header ── */}
       <div style={S.header}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
