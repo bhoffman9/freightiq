@@ -142,6 +142,7 @@ export default function BudgetCalendar() {
   const [quickAddOpen, setQuickAddOpen] = useState(null); // { day, x, y } when clicking a day's "+ quick add"
   const [renamingId, setRenamingId] = useState(null);     // ID of item being renamed
   const [renameValue, setRenameValue] = useState('');
+  const [movingKey, setMovingKey] = useState(null);       // itemKey whose "move to day" picker is open
 
   // ── Load/save safety state ────────────────────────────────────────
   // isLoaded gates auto-save so empty state can't overwrite Supabase on cold
@@ -903,6 +904,24 @@ export default function BudgetCalendar() {
       deleteItem(itemKey);
     }
     setDraggedItem(null);
+  };
+
+  // Button-based move (alternative to drag): move an item to a chosen day in the
+  // same month. Reuses the exact drag semantics — a one-time copy at the target
+  // day + hide the original. Same-month only (cross-month drags cause duplicates).
+  const moveExpenseToDay = (expense, fromDay, fromMonth, fromYear, toDay) => {
+    if (viewingArchive || !toDay || toDay === fromDay) { setMovingKey(null); return; }
+    const newExpense = {
+      name: expense.name, amount: expense.amount, account: expense.account,
+      day: toDay, isRecurring: false,
+      month: fromMonth, year: fromYear,
+      id: `moved-${Date.now()}-${Math.random()}`
+    };
+    setExpenses(prev => [...prev, newExpense]);
+    saveOneTimeExpense(newExpense);
+    const itemKey = getItemKey(expense, `${fromYear}-${fromMonth}-${fromDay}`);
+    deleteItem(itemKey);
+    setMovingKey(null);
   };
 
   const getWeekdays = () => {
@@ -2673,19 +2692,19 @@ export default function BudgetCalendar() {
                   <div
                     key={dayIdx}
                     className={`border-2 rounded-lg p-2 transition-all ${
-                      isOverflow ? 'bg-slate-100 border-slate-400 opacity-70' :
-                      holiday ? 'bg-yellow-100 border-yellow-500' :
-                      dueSoon ? 'bg-amber-100 border-amber-500' :
-                      overdue && hasUnchecked ? 'bg-red-100 border-red-500' :
-                      isWeekend ? 'bg-slate-200 border-gray-500' :
-                      'bg-white border-gray-500'
+                      isOverflow ? 'bg-slate-100 border-slate-500 opacity-70' :
+                      holiday ? 'bg-yellow-100 border-yellow-600' :
+                      dueSoon ? 'bg-amber-100 border-amber-600' :
+                      overdue && hasUnchecked ? 'bg-red-100 border-red-600' :
+                      isWeekend ? 'bg-slate-200 border-gray-700' :
+                      'bg-white border-gray-700'
                     } ${dragOverDay === day ? 'ring-4 ring-blue-400 bg-blue-50' : ''}`}
                     onDragOver={(e) => day && handleDragOver(e, day)}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => day && handleDrop(e, day, dayMonth, dayYear)}
                   >
                     {/* DAY HEADER */}
-                    <div className="font-bold text-sm mb-1.5 pb-1.5 border-b-2 border-gray-500 text-gray-900 flex items-center justify-between gap-1">
+                    <div className="font-bold text-sm mb-1.5 pb-1.5 border-b-2 border-gray-700 text-gray-900 flex items-center justify-between gap-1">
                       <div>
                         <span className="text-gray-900">{dayName}</span>
                         {day && <span className="ml-1.5 text-gray-900 font-extrabold">{day}</span>}
@@ -2739,8 +2758,8 @@ export default function BudgetCalendar() {
                             <div
                               key={idx}
                               className={`p-1.5 rounded border ${viewingArchive ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} ${
-                                expense.amount === 0 ? 'bg-orange-50 border-orange-300' :
-                                isChecked ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'
+                                expense.amount === 0 ? 'bg-orange-50 border-orange-400' :
+                                isChecked ? 'bg-green-50 border-green-400' : 'bg-white border-gray-400'
                               }`}
                               draggable={!viewingArchive}
                               onDragStart={(e) => !viewingArchive && handleDragStart(e, expense, day, dayMonth, dayYear)}
@@ -2755,6 +2774,23 @@ export default function BudgetCalendar() {
                                   {isChecked && <Check className="w-3 h-3 text-white" />}
                                 </button>
                                 <div className="flex-1 min-w-0">
+                                  {/* MOVE-TO-DAY PICKER (alternative to drag) */}
+                                  {movingKey === itemKey && !viewingArchive && (
+                                    <div className="flex items-center gap-1 mb-1 p-1 bg-blue-50 border-2 border-blue-400 rounded" onClick={(e) => e.stopPropagation()}>
+                                      <span className="text-[10px] font-bold text-blue-800 flex-shrink-0">Move to:</span>
+                                      <select
+                                        defaultValue={day}
+                                        onChange={(e) => moveExpenseToDay(expense, day, dayMonth, dayYear, parseInt(e.target.value, 10))}
+                                        className="text-xs border border-blue-400 rounded px-1 py-0.5 flex-1 min-w-0"
+                                        autoFocus
+                                      >
+                                        {Array.from({ length: getDaysInMonth(dayMonth, dayYear) }, (_, i) => i + 1).map(d => (
+                                          <option key={d} value={d}>{monthNames[dayMonth].slice(0, 3)} {d}{d === day ? ' (here)' : ''}</option>
+                                        ))}
+                                      </select>
+                                      <button onClick={() => setMovingKey(null)} className="p-0.5 bg-gray-400 hover:bg-gray-500 text-white rounded flex-shrink-0"><X className="w-2.5 h-2.5" /></button>
+                                    </div>
+                                  )}
                                   {/* NAME — click to view vendor detail (#4), shift+click to rename (#5) */}
                                   {(() => {
                                     const variance = computeVariance(expense.name);
@@ -2897,9 +2933,18 @@ export default function BudgetCalendar() {
                                   )}
                                 </div>
                                 {!viewingArchive && (
-                                  <button onClick={() => deleteItem(itemKey)} className="p-0.5 text-red-500 hover:bg-red-50 rounded flex-shrink-0">
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
+                                  <div className="flex flex-col gap-0.5 flex-shrink-0">
+                                    <button
+                                      onClick={() => setMovingKey(movingKey === itemKey ? null : itemKey)}
+                                      title="Move to another day"
+                                      className={`p-0.5 rounded ${movingKey === itemKey ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-50'}`}
+                                    >
+                                      <Calendar className="w-3 h-3" />
+                                    </button>
+                                    <button onClick={() => deleteItem(itemKey)} className="p-0.5 text-red-500 hover:bg-red-50 rounded">
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  </div>
                                 )}
                               </div>
                             </div>
