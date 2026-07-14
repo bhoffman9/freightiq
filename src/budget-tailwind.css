@@ -7,8 +7,14 @@
    normalization the ported calendar assumes, without a global reset. */
 .budget-root, .budget-root *, .budget-root *::before, .budget-root *::after { box-sizing: border-box; }
 .budget-root button, .budget-root input, .budget-root select, .budget-root textarea {
-  font-family: inherit; font-size: 100%; line-height: 1.15; margin: 0; color: inherit;
+  font-family: inherit; font-size: 100%; line-height: 1.15; margin: 0;
 }
+/* Light-themed calendar: force DARK text in typed fields. Without this they
+   inherit FreightIQ's near-white app text → white-on-white (invisible). */
+.budget-root input, .budget-root select, .budget-root textarea {
+  color: #111827; background-color: #ffffff;
+}
+.budget-root input::placeholder, .budget-root textarea::placeholder { color: #9ca3af; }
 .budget-root button { cursor: pointer; background: none; border: 0; padding: 0; }
 .budget-root :focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
 
