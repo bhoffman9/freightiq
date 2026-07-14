@@ -9083,6 +9083,11 @@ function Budgeting() {
   const weeksElapsed = days / 7;
   const totalWeeklyExp = buckets.reduce((s, b) => s + b.val, 0) / weeksElapsed;
   const totalAnnualExp = buckets.reduce((s, b) => s + b.val, 0) * (365 / days);
+  // Operating spend excluding the pass-through Carrier bucket (Carrier Pay + Flexent/Triumph COGS fees)
+  const carrierVal = buckets.find(b => b.key === "carrier")?.val || 0;
+  const weeklyExCarrier = totalWeeklyExp - carrierVal / weeksElapsed;
+  const annualExCarrier = totalAnnualExp - carrierVal * (365 / days);
+  const totalExCarrier = buckets.reduce((s, b) => s + b.val, 0) - carrierVal;
   const weeklyRev = INCOME_2026.total / weeksElapsed;
   // Net margin uses actual Net Income (= revenue − COGS − opex + other income),
   // not just revenue − spend, so the Triumph withholding refunds & interest are
@@ -9146,11 +9151,16 @@ function Budgeting() {
       )}
 
       {/* Summary KPIs */}
-      <div className="g4" style={{ marginBottom:14 }}>
+      <div className="g4" style={{ marginBottom:14, gridTemplateColumns:"repeat(5,1fr)" }}>
         <div className="kpi" style={{ borderTop:"3px solid #ff5252" }}>
           <div className="klbl">Total Weekly Spend</div>
           <div className="kval" style={{ color:"#ff5252" }}>{fd(totalWeeklyExp, 0)}</div>
           <div className="ksub">{fd(totalAnnualExp, 0)} annualized</div>
+        </div>
+        <div className="kpi" style={{ borderTop:"3px solid #f59e0b" }}>
+          <div className="klbl">Weekly Spend · ex-Carrier</div>
+          <div className="kval" style={{ color:"#f59e0b" }}>{fd(weeklyExCarrier, 0)}</div>
+          <div className="ksub">operating spend, COGS removed · {fd(annualExCarrier, 0)} annualized</div>
         </div>
         <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
           <div className="klbl">Weekly Revenue (avg)</div>
@@ -9212,6 +9222,14 @@ function Budgeting() {
               <td style={{ fontSize:13, padding:"12px 9px" }}>{fd(totalWeeklyExp * 4.33, 0)}</td>
               <td style={{ fontSize:13, padding:"12px 9px" }}>{fd(totalAnnualExp, 0)}</td>
               <td style={{ fontSize:13, padding:"12px 9px" }}>{fp(totalWeeklyExp / weeklyRev * 100)}</td>
+            </tr>
+            <tr style={{ color:"#f59e0b" }}>
+              <td style={{ padding:"8px 9px", fontSize:12, fontWeight:700 }}>↳ ex-Carrier (operating spend)</td>
+              <td style={{ fontSize:12, padding:"8px 9px" }}>{fd(totalExCarrier, 0)}</td>
+              <td style={{ fontSize:13, fontWeight:800, padding:"8px 9px" }}>{fd(weeklyExCarrier, 0)}</td>
+              <td style={{ fontSize:12, padding:"8px 9px" }}>{fd(weeklyExCarrier * 4.33, 0)}</td>
+              <td style={{ fontSize:12, padding:"8px 9px" }}>{fd(annualExCarrier, 0)}</td>
+              <td style={{ fontSize:12, padding:"8px 9px" }}>{fp(weeklyExCarrier / weeklyRev * 100)}</td>
             </tr>
           </tfoot>
         </table>

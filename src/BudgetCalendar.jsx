@@ -1537,7 +1537,7 @@ export default function BudgetCalendar() {
         </div>
       )}
     <div className="w-full min-h-screen bg-gray-50 p-3">
-      <div className="max-w-full mx-auto bg-white rounded-lg shadow-lg p-3">
+      <div className="max-w-full mx-auto bg-slate-100 rounded-lg shadow-lg p-3">
 
         {/* LOAD ERROR BANNER — shown when a load failed. Saves are disabled
             while this is visible so empty state can't overwrite existing data. */}
@@ -2671,22 +2671,22 @@ export default function BudgetCalendar() {
                   <div
                     key={dayIdx}
                     className={`border-2 rounded-lg p-2 transition-all ${
-                      isOverflow ? 'bg-slate-50 border-slate-300 opacity-75' :
-                      holiday ? 'bg-yellow-50 border-yellow-400' :
-                      dueSoon ? 'bg-amber-50 border-amber-400' :
-                      overdue && hasUnchecked ? 'bg-red-50 border-red-300' :
-                      isWeekend ? 'bg-gray-100 border-gray-300' :
-                      'border-gray-300'
+                      isOverflow ? 'bg-slate-100 border-slate-400 opacity-70' :
+                      holiday ? 'bg-yellow-100 border-yellow-500' :
+                      dueSoon ? 'bg-amber-100 border-amber-500' :
+                      overdue && hasUnchecked ? 'bg-red-100 border-red-500' :
+                      isWeekend ? 'bg-slate-200 border-gray-500' :
+                      'bg-white border-gray-500'
                     } ${dragOverDay === day ? 'ring-4 ring-blue-400 bg-blue-50' : ''}`}
                     onDragOver={(e) => day && handleDragOver(e, day)}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => day && handleDrop(e, day, dayMonth, dayYear)}
                   >
                     {/* DAY HEADER */}
-                    <div className="font-bold text-sm mb-1.5 pb-1.5 border-b-2 border-gray-300 flex items-center justify-between gap-1">
+                    <div className="font-bold text-sm mb-1.5 pb-1.5 border-b-2 border-gray-500 text-gray-900 flex items-center justify-between gap-1">
                       <div>
-                        <span>{dayName}</span>
-                        {day && <span className="ml-1.5 text-gray-600">{day}</span>}
+                        <span className="text-gray-900">{dayName}</span>
+                        {day && <span className="ml-1.5 text-gray-900 font-extrabold">{day}</span>}
                         {isOverflow && <span className="ml-1 text-xs text-slate-500 font-medium">{monthNames[dayMonth].substring(0,3)}</span>}
                         {dueSoon && <span className="ml-1 text-xs text-amber-700 font-semibold">{'\u26A1'} Due soon</span>}
                         {overdue && hasUnchecked && <span className="ml-1 text-xs text-red-600 font-semibold">{'\u26A0\uFE0F'} Overdue</span>}
