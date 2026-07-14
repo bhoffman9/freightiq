@@ -162,8 +162,34 @@ freightiq/
 | ATL Ops | `AtlOperations()` | Atlanta operations launched May 4, 2026. Reads `ATL_WEEKLY_LOG[]` — per-week roster + contribution amounts (drivers, contractors, driverPay/driverHours/fuelAmt/fuelGallons/contractorPay). NO sticky `entity:"ATL"` tags anymore — designations toggle week-to-week. **Every week ask Ben which drivers + contractors were ATL FOR THAT WEEK.** Agents (Kevin) are NOT in ATL_WEEKLY_LOG — separate bucket entirely. See `feedback_atl_weekly`, `feedback_atl_no_generalize`, and the data layer section below |
 | Cash Flow | `CashFlowDashboard()` | Weekly cash snapshot. Bank-balance accounts are hardcoded in `CASH_SNAPSHOTS` (no Supabase table tracks them). Scheduled payments pull live from `/api/cash-flow` which queries the budget-calendar's `w_*` Supabase tables. Subtitle shows "Live from budget calendar (Supabase)" when the fetch succeeds |
 | Budgeting | `Budgeting()` | QBO P&L rolled into 19 weekly-budget buckets + Agent bucket + Supabase-backed what-if simulator. See "Budgeting tab" section below for bucket-mapping rules. Agent bucket pulls from `AGENTS[]` (NOT subtracted from owner — Kevin's draws are a separate QBO category) |
+| AP Aging | `ApAging()` — src/ApAging.jsx | AP aging dashboard folded in from the standalone app. Invoices/payments/equipment, aging buckets, PDF upload+AI-extract, payment recording, remittances, review-queue + trash. Reads `/api/ap-*`. See "Consolidated dashboards" |
+| Budget Calendar | `BudgetCalendar()` — src/BudgetCalendar.jsx | Work bill/expense calendar folded in from budget-calendar (`w_*` tables). Byte-for-byte port — DO NOT touch its persistence. See "Consolidated dashboards" |
 | Upload | `DataSettings()` | Drop CSV/XLSX files, AI auto-maps columns |
 | Checklist | `Checklist()` | Weekly/monthly data update tasks |
+
+## Consolidated dashboards — AP Aging + Budget Calendar tabs (folded in Jul 2026)
+
+Two standalone apps were ported into FreightIQ as tabs. **They live in SEPARATE files** (`src/ApAging.jsx`, `src/BudgetCalendar.jsx`) imported into App.jsx — the one deliberate exception to "everything in App.jsx," because each is a self-contained ~2,000-line sub-app. Both read/write the **same shared Supabase project** as everything else, so their data (AP `invoices`/`payments`/`equipment`; budget `w_*`) needed NO migration. The standalone apps (`ap-aging-v4.vercel.app`, `budget-calendar-lemon.vercel.app`) are now redundant — **retirement deferred** (CFO dashboard still reads the Supabase tables directly; leave tables intact).
+
+### 🧾 AP Aging (`ApAging()` in `src/ApAging.jsx`, tab id `apaging`)
+- New Vercel routes: `ap-invoices` (CRUD + soft-delete + review-queue), `ap-payments` (**atomic** via Postgres RPCs `ap_record_payment`/`ap_undo_payment` — row-locked, ±$0.05), `ap-extract` (base64 PDF → Claude **Haiku** + storage; validates `%PDF` magic), `ap-equipment` (fleet + invoice-match, **60s cache**, CORS), `ap-pdf` (signed URLs), `ap-sync` (Gmail-parsed `fdw_equipment_invoice` → `invoices`, daily 08:30 cron), `ap-payment-suggestions` (Plaid match — dormant until prod Plaid).
+- **AUTH:** every `/api/ap-*` route requires the app password via `x-ap-key` header (`api/_ap-auth.js` vs `process.env.VITE_APP_PASSWORD`, fails closed). The browser attaches it via a scoped `window.fetch` patch in App.jsx (rewrites only `/api/ap-*` URLs). Gate any new ap-route with `requireApAuth`. (This is abuse-prevention, not bank-grade — password ships in bundle; true fix = Supabase Auth / Vercel protection.)
+- **EquipmentContext** (Trucks/Trailers) now fetches internal `/api/ap-equipment` (was `ap-aging-v4`).
+- Invoices: **soft-delete** (`deleted_at`; `?trash=1`, PUT `{restore:true}`, `?hard=1` for permanent) + **review queue** (`needs_review`; auto-ingested anomalies held OUT of the payable list, `?review=1`, PUT `{approve:true}`). `ap-sync` auto-approves only high-confidence invoices within 1.5× the vendor's prior max; rejects $0/malformed.
+
+### 📅 Budget Calendar (`BudgetCalendar()` in `src/BudgetCalendar.jsx`, tab id `calendar`)
+- **SAFETY-CRITICAL, byte-for-byte port** of `budget-calendar/src/App.jsx` (verified via `diff`). Budgeting source of truth with a strict anti-data-loss model (diff-based saves, sync-refs, `isLoaded`/`loadError` gating). **NEVER touch the save/load/sync logic — UI only.** It had a data-wipe bug once; that model prevents recurrence.
+- Uses a **browser anon Supabase client** — needs `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in Vercel (guarded: null client → config-error stop, not a crash). Writes directly to `w_*`. Light-theme Tailwind (Ben waived dark).
+- **Imports only `useState, useRef`** — use `React.useEffect` (not bare) for new effects.
+- It is NOT the same as the **Budgeting** tab (`Budgeting()`): Budget Calendar = operational bill/expense calendar (`w_*`); Budgeting = QBO P&L → weekly run-rate buckets + what-if. Both stay.
+
+### Integration gotchas
+- **dataVersion remount:** the app tree is keyed by `dataVersion` for live-data refresh, but `apaging`/`calendar` render OUTSIDE that key (`(tab==='apaging'||tab==='calendar') ? page() : <div key={dataVersion}>…`). **Never re-key these two** — a remount mid-edit drops unsaved budget changes.
+- **Width:** both use `.main-wide` (`max-width:none`, full screen) — the fleet/CPM tabs stay 1400px.
+- **New build deps:** `tailwindcss`+`postcss`+`autoprefixer` (scoped to `.budget-root`, **preflight OFF**, `src/budget-tailwind.css` imported in main.jsx), `lucide-react`, `pdfjs-dist@4.4.168` (bundled, worker via `?url`). `tailwind.config.js`/`postcss.config.js` only touch the one budget CSS file — FreightIQ's inline-JS styles are unaffected.
+
+### Direct SQL: `scripts/dbrun.mjs`
+Run SQL against the warehouse via the **IPv4 session pooler** (`aws-1-us-east-2.pooler.supabase.com:5432`, user `postgres.bhdaiddrfeqtwjlsfifx`) — the direct host `db.<ref>.supabase.co` is IPv6-only and unreachable from tooling. `node scripts/dbrun.mjs <file.sql | -c "SQL">` with `PGHOST/PGUSER/PGPASSWORD/PGDATABASE` env (no secrets in repo; DB password in Supabase → Settings → Database). `npm install pg --no-save` (pruned by other npm installs — reinstall as needed). The read-only `mcp__postgres__query` MCP has a stale password after the 2026-07-13 reset.
 
 ## State Management
 
@@ -577,7 +603,8 @@ No test framework configured. No automated tests.
 
 - **Per Load CPM** (`perload-cpm.vercel.app`) — Standalone booking tool, fetches metrics.json + /api/alvys-loads from this app
 - **Atlanta CPM** (`atlanta-cpm.vercel.app`) — ATL planning calculator. Local path: `Desktop/Freight/atlanta-cpm`, has its own CLAUDE.md. **Broader audience than FreightIQ** — when copying ATL operating numbers into atlanta-cpm: (1) driver wages only (no office/contractor/agent), (2) no revenue/GP/margin (cost tool only), (3) never add a UI link back to freightiq-nine-two from atlanta-cpm. The `metrics.json` fetch is fine; rendered links are not. See `feedback_atlanta_cpm_audience` memory.
-- **AP Aging** (`ap-aging-v4.vercel.app`) — AP Aging dashboard (Next.js + Supabase), feeds equipment data into FreightIQ via EquipmentContext
+- **AP Aging** (`ap-aging-v4.vercel.app`) — original standalone AP dashboard (Next.js + Supabase). **Now folded into FreightIQ as the 🧾 AP Aging tab** (`src/ApAging.jsx` + `/api/ap-*`) — see "Consolidated dashboards" above. The standalone deploy is redundant (retirement deferred); FreightIQ reads the same `invoices`/`payments`/`equipment` tables directly.
+- **Budget Calendar** (`budget-calendar-lemon.vercel.app`) — original standalone work-expense calendar (React/Vite + Supabase `w_*`). **Now folded into FreightIQ as the 📅 Budget Calendar tab** (`src/BudgetCalendar.jsx`, byte-for-byte port — see "Consolidated dashboards"). Standalone redundant (retirement deferred).
 - **CFO Dashboard** (`cfo-dashboard-eta.vercel.app`) — Executive financial dashboard (React + Tailwind + Supabase), fetches metrics.json + payroll-summary.json from this app. Local path: `Desktop/Freight/cfo-dashboard`, no GitHub repo — deployed via `npx vercel deploy --prod --yes`. Has per-source status bar, section quick-nav, safeDivide guards, dynamic period/truck count. Known debt: monolithic App.jsx, RLS wide open, no endpoint auth, hardcoded business data.
 - **Flexent Dashboard** (`flexent-dashboard.vercel.app`) — Factoring dashboard for Capacity Express
 - **Alvys Invoice Clearer** (`Desktop/Freight/alvys-clearer.html`) — Standalone HTML tool: drop Flexent CarrierRept PDFs, AI parses invoices, cross-references against Alvys queued loads, exports Alvys-ready CSV. Uses `/api/ai` + `/api/alvys-loads`. Supports multiple PDF drops (accumulates). Alvys API is read-only for invoicing — CSV must be uploaded via Alvys UI.
