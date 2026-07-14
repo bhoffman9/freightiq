@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef, createContext, useContext } from 
 import { BarChart, Bar, LineChart, Line, ComposedChart, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 import * as Papa from "papaparse";
 import * as XLSX from "xlsx";
+import ApAging from "./ApAging.jsx";
 
 // ── Data Context (for Upload tab communication) ──────────────
 const DataContext = createContext(null);
@@ -685,6 +686,7 @@ const TABS = [
   { id: "ar",       icon: "📋", label: "A/R" },
   { id: "otr",      icon: "🛣️", label: "OTR Ops" },
   { id: "cashflow", icon: "💰", label: "Cash Flow" },
+  { id: "apaging",  icon: "🧾", label: "AP Aging" },
   { id: "budget",   icon: "📋", label: "Budgeting" },
   { id: "settings", icon: "📂", label: "Upload" },
   { id: "checklist", icon: "✅", label: "Checklist" },
@@ -2993,7 +2995,7 @@ function TrucksTab() {
               </div>
               <div style={{ marginTop:10,fontSize:10,color:equipment?._error ? "#ff5252" : "var(--mu)" }}>
                 {equipment?._error
-                  ? `⚠ AP Aging fetch failed: ${equipment._error} — Trucks data missing. Check ap-aging-v4.vercel.app/api/equipment.`
+                  ? `⚠ AP Aging fetch failed: ${equipment._error} — Trucks data missing. Check /api/ap-equipment.`
                   : <>Live data from AP Aging dashboard · Updated {equipment?.updatedAt ? new Date(equipment.updatedAt).toLocaleDateString() : "—"}</>}
               </div>
             </div>
@@ -3801,7 +3803,7 @@ function TrailerFleet() {
               </div>
               <div style={{ marginTop:10,fontSize:10,color:equipment?._error ? "#ff5252" : "var(--mu)" }}>
                 {equipment?._error
-                  ? `⚠ AP Aging fetch failed: ${equipment._error} — Trailers data missing. Check ap-aging-v4.vercel.app/api/equipment.`
+                  ? `⚠ AP Aging fetch failed: ${equipment._error} — Trailers data missing. Check /api/ap-equipment.`
                   : <>Live data from AP Aging dashboard · Updated {equipment?.updatedAt ? new Date(equipment.updatedAt).toLocaleDateString() : "—"} ·
                     {Object.entries(byVendor).map(([v,c]) => <span key={v}> <span style={{ color:vendorColor(v) }}>■ {v}</span> ({c})</span>)}</>}
               </div>
@@ -9668,7 +9670,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    fetch("https://ap-aging-v4.vercel.app/api/equipment")
+    fetch("/api/ap-equipment")
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -9752,6 +9754,7 @@ export default function App() {
     if (tab === "otr")      return <OtrOperations />;
     if (tab === "budget")   return <Budgeting />;
     if (tab === "office")   return <OfficeStaff />;
+    if (tab === "apaging")  return <ApAging />;
     if (tab === "settings") return <DataSettings />;
     if (tab === "checklist") return <Checklist />;
     return null;
