@@ -1,0 +1,6 @@
+/* Tailwind utilities for the Budget Calendar tab only. No @tailwind base
+   (preflight is disabled in tailwind.config.js) so FreightIQ's global styling
+   is untouched. Utilities are prefixed `.budget-root ` via the config's
+   `important` option, so they only apply inside the budget tab wrapper. */
+@tailwind components;
+@tailwind utilities;
