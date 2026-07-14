@@ -247,24 +247,27 @@ const fp = n => (n == null || isNaN(n)) ? "—" : Number(n).toFixed(1) + "%";
 
 const cpmColor = c => {
   if (c == null) return "#5a6370";
-  if (c < 2.5)  return "#3ddc84";
-  if (c < 3.2)  return "#f5c542";
-  return "#ff5252";
+  if (c < 2.5)  return "#4ade80";
+  if (c < 3.2)  return "#fbbf24";
+  return "#fb7185";
 };
 
 
 // ── STYLES ────────────────────────────────────────────────────
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --bg: #0b0d10; --s1: #12151c; --s2: #181c26; --bd: #1f2535;
-  --or: #f47820; --or2: #c45e10; --orl: rgba(244,120,32,.12);
-  --ye: #f5c542; --gn: #3ddc84; --rd: #ff5252; --bl: #4fc3f7; --pu: #b39ddb;
-  --tx: #e8eaf0; --mu: #5a6370;
-  --f1: 'IBM Plex Mono', monospace; --f2: 'Barlow Condensed', sans-serif;
+  --or: #2dd4bf; --or2: #14b8a6; --orl: rgba(45,212,191,.12);
+  --ye: #fbbf24; --gn: #4ade80; --rd: #fb7185; --bl: #38bdf8; --pu: #a78bfa;
+  --tx: #eef1f6; --mu: #8791a3;
+  --f1: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --f2: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --f3: 'IBM Plex Mono', ui-monospace, monospace;
 }
-body { background: var(--bg); color: var(--tx); font-family: var(--f1); }
+body { background: var(--bg); color: var(--tx); font-family: var(--f1);
+  font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 .app { display: flex; flex-direction: column; min-height: 100vh; }
 
 /* header */
@@ -278,7 +281,7 @@ body { background: var(--bg); color: var(--tx); font-family: var(--f1); }
 .bdg { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px;
   border-radius: 2px; border: 1px solid; }
 .bdg-o { background: var(--orl); color: var(--or); border-color: var(--or); }
-.bdg-g { background: rgba(61,220,132,.1); color: var(--gn); border-color: rgba(61,220,132,.4); }
+.bdg-g { background: rgba(74,222,128,.1); color: var(--gn); border-color: rgba(74,222,128,.4); }
 
 /* nav */
 .nav { background: var(--s1); border-bottom: 1px solid var(--bd); display: flex; padding: 0 22px; overflow-x: auto; }
@@ -322,13 +325,13 @@ body { background: var(--bg); color: var(--tx); font-family: var(--f1); }
 /* kpi tiles */
 .kpi { background: var(--s2); border: 1px solid var(--bd); border-radius: 3px; padding: 13px 15px; }
 .klbl { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--mu); margin-bottom: 4px; }
-.kval { font-family: var(--f2); font-size: 24px; font-weight: 800; line-height: 1; }
+.kval { font-family: var(--f3); font-size: 23px; font-weight: 600; line-height: 1; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
 .ksub { font-size: 10px; color: var(--mu); margin-top: 3px; }
 
 /* metric blocks */
 .met { background: var(--bg); border: 1px solid var(--bd); border-radius: 3px; padding: 13px; margin-bottom: 9px; }
 .mlbl { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--mu); margin-bottom: 3px; }
-.mval { font-family: var(--f2); font-size: 26px; font-weight: 800; line-height: 1.1; }
+.mval { font-family: var(--f3); font-size: 25px; font-weight: 600; line-height: 1.1; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
 .msub { font-size: 10px; color: var(--mu); margin-top: 2px; }
 
 /* inputs */
@@ -370,16 +373,18 @@ select.inp { cursor: pointer; }
   font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 8px 9px;
   text-align: right; border-bottom: 1px solid var(--bd); white-space: nowrap; }
 .tbl th:first-child, .tbl th:nth-child(2) { text-align: left; }
-.tbl td { padding: 6px 9px; border-bottom: 1px solid var(--bd); text-align: right; }
-.tbl td:first-child, .tbl td:nth-child(2) { text-align: left; }
+.tbl td { padding: 6px 9px; border-bottom: 1px solid var(--bd); text-align: right;
+  font-family: var(--f3); font-variant-numeric: tabular-nums; font-size: 12px; }
+.tbl td:first-child, .tbl td:nth-child(2) { text-align: left; font-family: var(--f1); }
 .tbl tr:hover td { background: var(--s2); }
-.tbl tfoot td { background: var(--s2); font-family: var(--f2); font-weight: 700;
-  font-size: 11px; color: var(--or); border-top: 1px solid var(--or); }
+.tbl tfoot td { background: var(--s2); font-family: var(--f3); font-weight: 600;
+  font-size: 12px; color: var(--or); border-top: 1px solid var(--or); font-variant-numeric: tabular-nums; }
+.tbl tfoot td:first-child, .tbl tfoot td:nth-child(2) { font-family: var(--f2); }
 
 /* info boxes */
-.ibox { background: var(--orl); border: 1px solid rgba(244,120,32,.35); border-radius: 3px;
+.ibox { background: var(--orl); border: 1px solid rgba(45,212,191,.35); border-radius: 3px;
   padding: 11px 14px; font-size: 11px; line-height: 1.7; margin-bottom: 14px; }
-.sbox { background: rgba(79,195,247,.06); border: 1px solid rgba(79,195,247,.2); border-radius: 3px;
+.sbox { background: rgba(56,189,248,.06); border: 1px solid rgba(56,189,248,.2); border-radius: 3px;
   padding: 9px 13px; font-size: 10px; color: var(--mu); line-height: 1.8; margin-bottom: 14px; }
 
 /* AI output */
@@ -397,7 +402,7 @@ hr { border: none; border-top: 1px solid var(--bd); margin: 14px 0; }
 
 /* gauge */
 .gauge { text-align: center; padding: 14px 0; }
-.gval { font-family: var(--f2); font-size: 56px; font-weight: 900; line-height: 1; }
+.gval { font-family: var(--f3); font-size: 52px; font-weight: 600; line-height: 1; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; }
 .glbl { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--mu); margin-top: 5px; }
 
 /* empty state */
@@ -817,7 +822,7 @@ function DetailModal({ id, onClose }) {
         {d.note && (
           <div style={{
             padding: "8px 22px", background: "var(--orl)",
-            borderBottom: "1px solid rgba(244,120,32,.2)",
+            borderBottom: "1px solid rgba(45,212,191,.2)",
             fontSize: 11, color: "var(--tx)", flexShrink: 0,
           }}>
             {d.note}
@@ -846,7 +851,7 @@ function DetailModal({ id, onClose }) {
                     return (
                       <td key={j} style={{
                         textAlign: j === 0 || (typeof cell === "string" && j > 0 && !isAmt) ? "left" : "right",
-                        color: isNeg ? "#ff5252" : isAmt ? (j === row.length - 1 ? "var(--ye)" : "var(--tx)") : "var(--tx)",
+                        color: isNeg ? "#fb7185" : isAmt ? (j === row.length - 1 ? "var(--ye)" : "var(--tx)") : "var(--tx)",
                         fontWeight: isAmt && j === row.length - 1 ? 600 : 400,
                         background: i % 2 === 0 ? "var(--s2)" : "transparent",
                       }}>
@@ -902,8 +907,8 @@ function TrucksMileage() {
   }, [sortKey, activeTrucks]);
 
   const STATE_COLORS = {
-    CA:"#f47820",NV:"#4fc3f7",AZ:"#3ddc84",TX:"#f5c542",OR:"#b39ddb",
-    UT:"#a78bfa",NM:"#ff8a65",GA:"#26a69a",AR:"#ef5350",OK:"#ab47bc",
+    CA:"#2dd4bf",NV:"#38bdf8",AZ:"#4ade80",TX:"#fbbf24",OR:"#a78bfa",
+    UT:"#a78bfa",NM:"#5eead4",GA:"#26a69a",AR:"#ef5350",OK:"#ab47bc",
     AL:"#66bb6a",TN:"#29b6f6",MS:"#ff7043",LA:"#8d6e63",SC:"#ec407a",
     WV:"#78909c",VA:"#5c6bc0",MD:"#26c6da",OH:"#d4e157",NC:"#ffa726",
     IN:"#42a5f5",PA:"#7e57c2",IL:"#26a69a",MO:"#ff7043",
@@ -923,22 +928,22 @@ function TrucksMileage() {
       <div className="g4" style={{ marginBottom:14 }}>
         <div className="kpi">
           <div className="klbl">Total Fleet Miles</div>
-          <div className="kval" style={{ color:"#4fc3f7" }}>{fn(activeTotal,0)}</div>
+          <div className="kval" style={{ color:"#38bdf8" }}>{fn(activeTotal,0)}</div>
           <div className="ksub">{activeFleetCount} active · {loggedCount} ran YTD</div>
         </div>
         <div className="kpi">
           <div className="klbl">Local Miles (NV)</div>
-          <div className="kval" style={{ color:"#3ddc84" }}>{fn(activeLocal,0)}</div>
+          <div className="kval" style={{ color:"#4ade80" }}>{fn(activeLocal,0)}</div>
           <div className="ksub">{fp(localPct)} of fleet</div>
         </div>
         <div className="kpi">
           <div className="klbl">Regional Miles</div>
-          <div className="kval" style={{ color:"#f47820" }}>{fn(activeRegional,0)}</div>
+          <div className="kval" style={{ color:"#2dd4bf" }}>{fn(activeRegional,0)}</div>
           <div className="ksub">{fp(regionalPct)} of fleet</div>
         </div>
         <div className="kpi">
           <div className="klbl">Avg Miles / Truck</div>
-          <div className="kval" style={{ color:"#f5c542" }}>{fn(activeTotal/truckCount,0)}</div>
+          <div className="kval" style={{ color:"#fbbf24" }}>{fn(activeTotal/truckCount,0)}</div>
           <div className="ksub">{fn(activeLocal/truckCount,0)} local · {fn(activeRegional/truckCount,0)} regional</div>
         </div>
       </div>
@@ -947,16 +952,16 @@ function TrucksMileage() {
       <div className="card" style={{ marginBottom:14 }}>
         <div className="ctit">Local vs Regional Split — Fleet Total</div>
         <div className="sbar" style={{ height:32, marginBottom:10 }}>
-          <div className="sseg" style={{ width:`${localPct}%`, background:"#3ddc84", fontSize:11, fontWeight:700 }}>
+          <div className="sseg" style={{ width:`${localPct}%`, background:"#4ade80", fontSize:11, fontWeight:700 }}>
             Local (NV) {fp(localPct)}
           </div>
-          <div className="sseg" style={{ width:`${regionalPct}%`, background:"#f47820", fontSize:11, fontWeight:700 }}>
+          <div className="sseg" style={{ width:`${regionalPct}%`, background:"#2dd4bf", fontSize:11, fontWeight:700 }}>
             Regional {fp(regionalPct)}
           </div>
         </div>
         <div style={{ display:"flex", gap:24, fontSize:11 }}>
-          <span><span style={{ color:"#3ddc84" }}>■</span> Local (NV): {fn(activeLocal,0)} mi</span>
-          <span><span style={{ color:"#f47820" }}>■</span> Regional (all other states): {fn(activeRegional,0)} mi</span>
+          <span><span style={{ color:"#4ade80" }}>■</span> Local (NV): {fn(activeLocal,0)} mi</span>
+          <span><span style={{ color:"#2dd4bf" }}>■</span> Regional (all other states): {fn(activeRegional,0)} mi</span>
           <span style={{ color:"var(--mu)" }}>Total: {fn(activeTotal,0)} mi</span>
         </div>
       </div>
@@ -987,8 +992,8 @@ function TrucksMileage() {
                 <XAxis dataKey="m" tick={{ fill:"var(--mu)",fontSize:11 }} />
                 <YAxis tick={{ fill:"var(--mu)",fontSize:9 }} tickFormatter={v=>fn(v,0)+" mi"} />
                 <Tooltip formatter={(v,n) => [fn(v,0)+" mi", n]} contentStyle={{ background:"var(--s2)",border:"1px solid var(--bd)",borderRadius:3 }} labelStyle={{ color:"var(--or)",fontFamily:"var(--f2)",fontWeight:700 }} />
-                <Bar dataKey="local"    name="Local (NV)"  fill="#3ddc84" stackId="a" radius={[0,0,0,0]} />
-                <Bar dataKey="regional" name="Regional"    fill="#f47820" stackId="a" radius={[2,2,0,0]} />
+                <Bar dataKey="local"    name="Local (NV)"  fill="#4ade80" stackId="a" radius={[0,0,0,0]} />
+                <Bar dataKey="regional" name="Regional"    fill="#2dd4bf" stackId="a" radius={[2,2,0,0]} />
               </BarChart>
             </ResponsiveContainer>
             <div style={{ display:"flex",gap:24,fontSize:11,color:"var(--mu)",marginTop:8 }}>
@@ -996,8 +1001,8 @@ function TrucksMileage() {
                 <div key={m.m} style={{ textAlign:"center",flex:1 }}>
                   <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase" }}>{m.m}</div>
                   <div style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:800,color:"var(--tx)" }}>{fn(m.total,0)}</div>
-                  <div style={{ fontSize:10,color:"#3ddc84" }}>{fp(m.local/m.total*100)} local</div>
-                  <div style={{ fontSize:10,color:"#f47820" }}>{fp(m.regional/m.total*100)} regional</div>
+                  <div style={{ fontSize:10,color:"#4ade80" }}>{fp(m.local/m.total*100)} local</div>
+                  <div style={{ fontSize:10,color:"#2dd4bf" }}>{fp(m.regional/m.total*100)} regional</div>
                 </div>
               ))}
             </div>
@@ -1019,8 +1024,8 @@ function TrucksMileage() {
                     <th style={{ textAlign:"left",color:"var(--mu)",fontSize:9 }}></th>
                     {MONTHLY_MILES.map(m => (
                       <>
-                        <th key={m.m+"l"} style={{ color:"#3ddc84",fontWeight:600,borderLeft:"1px solid var(--bd)",fontSize:9 }}>Local</th>
-                        <th key={m.m+"r"} style={{ color:"#f47820",fontWeight:600,fontSize:9 }}>Regional</th>
+                        <th key={m.m+"l"} style={{ color:"#4ade80",fontWeight:600,borderLeft:"1px solid var(--bd)",fontSize:9 }}>Local</th>
+                        <th key={m.m+"r"} style={{ color:"#2dd4bf",fontWeight:600,fontSize:9 }}>Regional</th>
                         <th key={m.m+"t"} style={{ color:"var(--tx)",fontWeight:700,fontSize:9 }}>Total</th>
                       </>
                     ))}
@@ -1034,8 +1039,8 @@ function TrucksMileage() {
                         const v = m.trucks[truck];
                         return v ? (
                           <>
-                            <td key={m.m+"l"} style={{ color:"#3ddc84",borderLeft:"1px solid var(--bd)" }}>{fn(v.l,0)}</td>
-                            <td key={m.m+"r"} style={{ color:"#f47820" }}>{fn(v.r,0)}</td>
+                            <td key={m.m+"l"} style={{ color:"#4ade80",borderLeft:"1px solid var(--bd)" }}>{fn(v.l,0)}</td>
+                            <td key={m.m+"r"} style={{ color:"#2dd4bf" }}>{fn(v.r,0)}</td>
                             <td key={m.m+"t"} style={{ fontWeight:600 }}>{fn(v.t,0)}</td>
                           </>
                         ) : (
@@ -1054,8 +1059,8 @@ function TrucksMileage() {
                     <td style={{ fontWeight:700 }}>FLEET</td>
                     {MONTHLY_MILES.map(m => (
                       <>
-                        <td key={m.m+"l"} style={{ color:"#3ddc84",fontWeight:700,borderLeft:"1px solid var(--bd)" }}>{fn(m.local,0)}</td>
-                        <td key={m.m+"r"} style={{ color:"#f47820",fontWeight:700 }}>{fn(m.regional,0)}</td>
+                        <td key={m.m+"l"} style={{ color:"#4ade80",fontWeight:700,borderLeft:"1px solid var(--bd)" }}>{fn(m.local,0)}</td>
+                        <td key={m.m+"r"} style={{ color:"#2dd4bf",fontWeight:700 }}>{fn(m.regional,0)}</td>
                         <td key={m.m+"t"} style={{ fontWeight:800 }}>{fn(m.total,0)}</td>
                       </>
                     ))}
@@ -1076,9 +1081,9 @@ function TrucksMileage() {
 
         const sum = (arr, key) => arr.reduce((s,t) => s + t[key], 0);
         const groups = [
-          { label:"Sleeper",         trucks:sleepers, color:"#4fc3f7", icon:"🛏️" },
-          { label:"Day Cab",         trucks:daycabs,  color:"#3ddc84", icon:"🚛" },
-          { label:"Box Truck",       trucks:boxes,    color:"#b39ddb", icon:"📦" },
+          { label:"Sleeper",         trucks:sleepers, color:"#38bdf8", icon:"🛏️" },
+          { label:"Day Cab",         trucks:daycabs,  color:"#4ade80", icon:"🚛" },
+          { label:"Box Truck",       trucks:boxes,    color:"#a78bfa", icon:"📦" },
           { label:"External/Untagged",trucks:ext,     color:"#5a6370", icon:"❓" },
         ].filter(g => g.trucks.length > 0);
 
@@ -1098,8 +1103,8 @@ function TrucksMileage() {
                     <div style={{ fontFamily:"var(--f2)",fontSize:32,fontWeight:900,color:g.color }}>{fn(mi,0)}</div>
                     <div style={{ fontSize:10,color:"var(--mu)",marginTop:4 }}>{g.trucks.length} truck{g.trucks.length>1?"s":""} · {fp(mi/MILES*100)} of fleet</div>
                     <div style={{ display:"flex",gap:10,marginTop:8,fontSize:10 }}>
-                      <span style={{ color:"#3ddc84" }}>NV {fn(local,0)}</span>
-                      <span style={{ color:"#f47820" }}>Reg {fn(reg,0)}</span>
+                      <span style={{ color:"#4ade80" }}>NV {fn(local,0)}</span>
+                      <span style={{ color:"#2dd4bf" }}>Reg {fn(reg,0)}</span>
                     </div>
                     <div className="bar" style={{ marginTop:6 }}>
                       <div className="bfil" style={{ width:`${mi/MILES*100}%`,background:g.color }} />
@@ -1158,9 +1163,9 @@ function TrucksMileage() {
                       <XAxis dataKey="m" tick={{ fill:"var(--mu)",fontSize:11 }} />
                       <YAxis tick={{ fill:"var(--mu)",fontSize:9 }} tickFormatter={v=>fn(v,0)+" mi"} />
                       <Tooltip formatter={(v,n) => [fn(v,0)+" mi", n]} contentStyle={{ background:"var(--s2)",border:"1px solid var(--bd)",borderRadius:3 }} labelStyle={{ color:"var(--or)",fontFamily:"var(--f2)",fontWeight:700 }} />
-                      <Bar dataKey="sleeper" name="Sleeper"   fill="#4fc3f7" stackId="a" radius={[0,0,0,0]} />
-                      <Bar dataKey="daycab"  name="Day Cab"   fill="#3ddc84" stackId="a" radius={[0,0,0,0]} />
-                      <Bar dataKey="box"     name="Box Truck"  fill="#b39ddb" stackId="a" radius={[2,2,0,0]} />
+                      <Bar dataKey="sleeper" name="Sleeper"   fill="#38bdf8" stackId="a" radius={[0,0,0,0]} />
+                      <Bar dataKey="daycab"  name="Day Cab"   fill="#4ade80" stackId="a" radius={[0,0,0,0]} />
+                      <Bar dataKey="box"     name="Box Truck"  fill="#a78bfa" stackId="a" radius={[2,2,0,0]} />
                     </BarChart>
                   </ResponsiveContainer>
                   <div style={{ display:"flex",gap:24,fontSize:11,color:"var(--mu)",marginTop:8 }}>
@@ -1168,16 +1173,16 @@ function TrucksMileage() {
                       <div key={m.m} style={{ textAlign:"center",flex:1 }}>
                         <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase" }}>{m.m}</div>
                         <div style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:800,color:"var(--tx)" }}>{fn(m.total,0)}</div>
-                        <div style={{ fontSize:10,color:"#4fc3f7" }}>{fp(m.sleeper/m.total*100)} sleeper · {fn(m.sleeper,0)}</div>
-                        <div style={{ fontSize:10,color:"#3ddc84" }}>{fp(m.daycab/m.total*100)} day cab · {fn(m.daycab,0)}</div>
-                        {m.box > 0 && <div style={{ fontSize:10,color:"#b39ddb" }}>{fp(m.box/m.total*100)} box · {fn(m.box,0)}</div>}
+                        <div style={{ fontSize:10,color:"#38bdf8" }}>{fp(m.sleeper/m.total*100)} sleeper · {fn(m.sleeper,0)}</div>
+                        <div style={{ fontSize:10,color:"#4ade80" }}>{fp(m.daycab/m.total*100)} day cab · {fn(m.daycab,0)}</div>
+                        {m.box > 0 && <div style={{ fontSize:10,color:"#a78bfa" }}>{fp(m.box/m.total*100)} box · {fn(m.box,0)}</div>}
                       </div>
                     ))}
                   </div>
                   <div style={{ display:"flex",gap:20,fontSize:11,marginTop:10 }}>
-                    <span><span style={{ color:"#4fc3f7" }}>■</span> Sleeper</span>
-                    <span><span style={{ color:"#3ddc84" }}>■</span> Day Cab</span>
-                    <span><span style={{ color:"#b39ddb" }}>■</span> Box Truck</span>
+                    <span><span style={{ color:"#38bdf8" }}>■</span> Sleeper</span>
+                    <span><span style={{ color:"#4ade80" }}>■</span> Day Cab</span>
+                    <span><span style={{ color:"#a78bfa" }}>■</span> Box Truck</span>
                   </div>
                 </div>
               );
@@ -1191,10 +1196,10 @@ function TrucksMileage() {
                   <thead>
                     <tr>
                       <th style={{ textAlign:"left" }}>Truck</th>
-                      <th style={{ color:"#3ddc84" }}>Local (NV)</th>
-                      <th style={{ color:"#3ddc84" }}>Local %</th>
-                      <th style={{ color:"#f47820" }}>Regional</th>
-                      <th style={{ color:"#f47820" }}>Regional %</th>
+                      <th style={{ color:"#4ade80" }}>Local (NV)</th>
+                      <th style={{ color:"#4ade80" }}>Local %</th>
+                      <th style={{ color:"#2dd4bf" }}>Regional</th>
+                      <th style={{ color:"#2dd4bf" }}>Regional %</th>
                       <th>Total Miles</th>
                       <th>Split</th>
                     </tr>
@@ -1205,15 +1210,15 @@ function TrucksMileage() {
                       return (
                         <tr key={t.truck} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                           <td style={{ fontWeight:700,color:g.color,fontFamily:"var(--f2)",fontSize:16,letterSpacing:1 }}>#{t.truck}</td>
-                          <td style={{ color:"#3ddc84",fontWeight:600 }}>{fn(t.local,0)}</td>
-                          <td style={{ color:"#3ddc84" }}>{fp(lp)}</td>
-                          <td style={{ color:"#f47820",fontWeight:600 }}>{fn(t.regional,0)}</td>
-                          <td style={{ color:"#f47820" }}>{fp(100-lp)}</td>
+                          <td style={{ color:"#4ade80",fontWeight:600 }}>{fn(t.local,0)}</td>
+                          <td style={{ color:"#4ade80" }}>{fp(lp)}</td>
+                          <td style={{ color:"#2dd4bf",fontWeight:600 }}>{fn(t.regional,0)}</td>
+                          <td style={{ color:"#2dd4bf" }}>{fp(100-lp)}</td>
                           <td style={{ fontWeight:700 }}>{fn(t.miles,0)}</td>
                           <td style={{ width:120 }}>
                             <div style={{ display:"flex",height:10,borderRadius:2,overflow:"hidden" }}>
-                              <div style={{ width:`${lp}%`,background:"#3ddc84",minWidth:lp>0?2:0 }} />
-                              <div style={{ width:`${100-lp}%`,background:"#f47820",minWidth:(100-lp)>0?2:0 }} />
+                              <div style={{ width:`${lp}%`,background:"#4ade80",minWidth:lp>0?2:0 }} />
+                              <div style={{ width:`${100-lp}%`,background:"#2dd4bf",minWidth:(100-lp)>0?2:0 }} />
                             </div>
                           </td>
                         </tr>
@@ -1223,10 +1228,10 @@ function TrucksMileage() {
                   <tfoot>
                     <tr>
                       <td>TOTAL</td>
-                      <td style={{ color:"#3ddc84" }}>{fn(sum(g.trucks,"local"),0)}</td>
-                      <td style={{ color:"#3ddc84" }}>{fp(sum(g.trucks,"local")/sum(g.trucks,"miles")*100)}</td>
-                      <td style={{ color:"#f47820" }}>{fn(sum(g.trucks,"regional"),0)}</td>
-                      <td style={{ color:"#f47820" }}>{fp(sum(g.trucks,"regional")/sum(g.trucks,"miles")*100)}</td>
+                      <td style={{ color:"#4ade80" }}>{fn(sum(g.trucks,"local"),0)}</td>
+                      <td style={{ color:"#4ade80" }}>{fp(sum(g.trucks,"local")/sum(g.trucks,"miles")*100)}</td>
+                      <td style={{ color:"#2dd4bf" }}>{fn(sum(g.trucks,"regional"),0)}</td>
+                      <td style={{ color:"#2dd4bf" }}>{fp(sum(g.trucks,"regional")/sum(g.trucks,"miles")*100)}</td>
                       <td>{fn(sum(g.trucks,"miles"),0)}</td>
                       <td></td>
                     </tr>
@@ -1276,10 +1281,10 @@ function TrucksMileage() {
               <tr>
                 <th style={{ textAlign:"center" }}>#</th>
                 <th>Truck</th>
-                <th style={{ color:"#3ddc84" }}>Local (NV)</th>
-                <th style={{ color:"#3ddc84" }}>Local %</th>
-                <th style={{ color:"#f47820" }}>Regional</th>
-                <th style={{ color:"#f47820" }}>Regional %</th>
+                <th style={{ color:"#4ade80" }}>Local (NV)</th>
+                <th style={{ color:"#4ade80" }}>Local %</th>
+                <th style={{ color:"#2dd4bf" }}>Regional</th>
+                <th style={{ color:"#2dd4bf" }}>Regional %</th>
                 <th>Total Miles</th>
                 <th>Split</th>
               </tr>
@@ -1300,15 +1305,15 @@ function TrucksMileage() {
                     <td style={{ fontWeight:700, color:"var(--or)", fontFamily:"var(--f2)", fontSize:16, letterSpacing:1 }}>
                       #{t.truck}
                     </td>
-                    <td style={{ color:"#3ddc84", fontWeight:600 }}>{t.local > 0 ? fn(t.local,0) : <span style={{ color:"var(--mu)" }}>—</span>}</td>
-                    <td style={{ color:"#3ddc84" }}>{t.local > 0 ? fp(lPct) : "—"}</td>
-                    <td style={{ color:"#f47820", fontWeight:600 }}>{t.regional > 0 ? fn(t.regional,0) : <span style={{ color:"var(--mu)" }}>—</span>}</td>
-                    <td style={{ color:"#f47820" }}>{t.regional > 0 ? fp(rPct) : "—"}</td>
+                    <td style={{ color:"#4ade80", fontWeight:600 }}>{t.local > 0 ? fn(t.local,0) : <span style={{ color:"var(--mu)" }}>—</span>}</td>
+                    <td style={{ color:"#4ade80" }}>{t.local > 0 ? fp(lPct) : "—"}</td>
+                    <td style={{ color:"#2dd4bf", fontWeight:600 }}>{t.regional > 0 ? fn(t.regional,0) : <span style={{ color:"var(--mu)" }}>—</span>}</td>
+                    <td style={{ color:"#2dd4bf" }}>{t.regional > 0 ? fp(rPct) : "—"}</td>
                     <td style={{ fontWeight:700 }}>{fn(t.miles,0)}</td>
                     <td style={{ width:120 }}>
                       <div style={{ display:"flex", height:10, borderRadius:2, overflow:"hidden" }}>
-                        {t.local > 0 && <div style={{ width:`${lPct}%`, background:"#3ddc84", minWidth:2 }} />}
-                        {t.regional > 0 && <div style={{ width:`${rPct}%`, background:"#f47820", minWidth:2 }} />}
+                        {t.local > 0 && <div style={{ width:`${lPct}%`, background:"#4ade80", minWidth:2 }} />}
+                        {t.regional > 0 && <div style={{ width:`${rPct}%`, background:"#2dd4bf", minWidth:2 }} />}
                       </div>
                     </td>
                   </tr>,
@@ -1322,13 +1327,13 @@ function TrucksMileage() {
                           </div>
                           {/* Local / Regional summary */}
                           <div style={{ display:"flex", gap:10, marginBottom:12 }}>
-                            <div style={{ background:"rgba(61,220,132,.1)", border:"1px solid rgba(61,220,132,.3)",
+                            <div style={{ background:"rgba(74,222,128,.1)", border:"1px solid rgba(74,222,128,.3)",
                               borderRadius:3, padding:"10px 16px", flex:1, textAlign:"center" }}>
-                              <div style={{ fontSize:9, color:"#3ddc84", letterSpacing:2, textTransform:"uppercase", marginBottom:3 }}>Local (NV)</div>
-                              <div style={{ fontFamily:"var(--f2)", fontSize:26, fontWeight:900, color:"#3ddc84" }}>{fn(t.local,0)}</div>
+                              <div style={{ fontSize:9, color:"#4ade80", letterSpacing:2, textTransform:"uppercase", marginBottom:3 }}>Local (NV)</div>
+                              <div style={{ fontFamily:"var(--f2)", fontSize:26, fontWeight:900, color:"#4ade80" }}>{fn(t.local,0)}</div>
                               <div style={{ fontSize:10, color:"var(--mu)" }}>{fp(lPct)} of this truck</div>
                             </div>
-                            <div style={{ background:"rgba(244,120,32,.1)", border:"1px solid rgba(244,120,32,.3)",
+                            <div style={{ background:"rgba(45,212,191,.1)", border:"1px solid rgba(45,212,191,.3)",
                               borderRadius:3, padding:"10px 16px", flex:1, textAlign:"center" }}>
                               <div style={{ fontSize:9, color:"var(--or)", letterSpacing:2, textTransform:"uppercase", marginBottom:3 }}>Regional</div>
                               <div style={{ fontFamily:"var(--f2)", fontSize:26, fontWeight:900, color:"var(--or)" }}>{fn(t.regional,0)}</div>
@@ -1341,11 +1346,11 @@ function TrucksMileage() {
                             {states.map(([st, mi], idx) => (
                               <div key={st} style={{
                                 background:"var(--bg)", borderRadius:3, padding:"6px 12px",
-                                border:`1px solid ${st==="NV"?"rgba(61,220,132,.4)":getColor(st,idx)+"40"}`,
+                                border:`1px solid ${st==="NV"?"rgba(74,222,128,.4)":getColor(st,idx)+"40"}`,
                                 minWidth:70, textAlign:"center",
                               }}>
                                 <div style={{ fontSize:11, fontWeight:700, fontFamily:"var(--f2)",
-                                  color: st==="NV" ? "#3ddc84" : getColor(st,idx), letterSpacing:1 }}>
+                                  color: st==="NV" ? "#4ade80" : getColor(st,idx), letterSpacing:1 }}>
                                   {st} {st==="NV"&&<span style={{ fontSize:8 }}>LOCAL</span>}
                                 </div>
                                 <div style={{ fontSize:12, color:"var(--tx)", fontWeight:600 }}>{fn(mi,0)}</div>
@@ -1358,7 +1363,7 @@ function TrucksMileage() {
                             {states.map(([st, mi], idx) => (
                               <div key={st} title={`${st}: ${fn(mi,0)} mi`}
                                 style={{ width:`${mi/t.miles*100}%`,
-                                  background: st==="NV" ? "#3ddc84" : getColor(st,idx), minWidth:2 }} />
+                                  background: st==="NV" ? "#4ade80" : getColor(st,idx), minWidth:2 }} />
                             ))}
                           </div>
                         </div>
@@ -1371,15 +1376,15 @@ function TrucksMileage() {
             <tfoot>
               <tr>
                 <td colSpan={2}>FLEET TOTAL</td>
-                <td style={{ color:"#3ddc84" }}>{fn(FLEET_LOCAL,0)}</td>
-                <td style={{ color:"#3ddc84" }}>{fp(localPct)}</td>
-                <td style={{ color:"#f47820" }}>{fn(FLEET_REGIONAL,0)}</td>
-                <td style={{ color:"#f47820" }}>{fp(regionalPct)}</td>
+                <td style={{ color:"#4ade80" }}>{fn(FLEET_LOCAL,0)}</td>
+                <td style={{ color:"#4ade80" }}>{fp(localPct)}</td>
+                <td style={{ color:"#2dd4bf" }}>{fn(FLEET_REGIONAL,0)}</td>
+                <td style={{ color:"#2dd4bf" }}>{fp(regionalPct)}</td>
                 <td>{fn(MILES,0)}</td>
                 <td>
                   <div style={{ display:"flex", height:10, borderRadius:2, overflow:"hidden" }}>
-                    <div style={{ width:`${localPct}%`, background:"#3ddc84" }} />
-                    <div style={{ width:`${regionalPct}%`, background:"#f47820" }} />
+                    <div style={{ width:`${localPct}%`, background:"#4ade80" }} />
+                    <div style={{ width:`${regionalPct}%`, background:"#2dd4bf" }} />
                   </div>
                 </td>
               </tr>
@@ -1409,15 +1414,15 @@ function BasicCPM() {
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
         <div style={{
           background:"linear-gradient(145deg,#1a1f2e 0%,#0f1118 100%)",
-          border:"2px solid #3ddc84", borderRadius:6, padding:"28px 24px",
+          border:"2px solid #4ade80", borderRadius:6, padding:"28px 24px",
           display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-          textAlign:"center", boxShadow:"0 0 40px rgba(61,220,132,.12)",
+          textAlign:"center", boxShadow:"0 0 40px rgba(74,222,128,.12)",
           position:"relative", overflow:"hidden",
         }}>
           <div style={{ position:"absolute",inset:0,opacity:.04,
-            backgroundImage:"repeating-linear-gradient(0deg,#3ddc84 0px,#3ddc84 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,#3ddc84 0px,#3ddc84 1px,transparent 1px,transparent 40px)" }} />
-          <div style={{ fontSize:10,letterSpacing:4,textTransform:"uppercase",color:"#3ddc84",marginBottom:6,position:"relative" }}>Basic CPM</div>
-          <div style={{ fontFamily:"var(--f2)",fontSize:80,fontWeight:900,lineHeight:1,color:"#3ddc84",position:"relative",textShadow:"0 0 60px rgba(61,220,132,.3)" }}>
+            backgroundImage:"repeating-linear-gradient(0deg,#4ade80 0px,#4ade80 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,#4ade80 0px,#4ade80 1px,transparent 1px,transparent 40px)" }} />
+          <div style={{ fontSize:10,letterSpacing:4,textTransform:"uppercase",color:"#4ade80",marginBottom:6,position:"relative" }}>Basic CPM</div>
+          <div style={{ fontFamily:"var(--f2)",fontSize:80,fontWeight:900,lineHeight:1,color:"#4ade80",position:"relative",textShadow:"0 0 60px rgba(74,222,128,.3)" }}>
             {fd(BASIC_CPM_V,3)}
           </div>
           <div style={{ fontSize:11,color:"var(--mu)",marginTop:10,position:"relative" }}>Labor · Fuel · Truck Rentals · Insurance</div>
@@ -1429,13 +1434,13 @@ function BasicCPM() {
           background:"linear-gradient(145deg,#1f1a12 0%,#141008 100%)",
           border:"2px solid var(--or)", borderRadius:6, padding:"28px 24px",
           display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-          textAlign:"center", boxShadow:"0 0 40px rgba(244,120,32,.12)",
+          textAlign:"center", boxShadow:"0 0 40px rgba(45,212,191,.12)",
           position:"relative", overflow:"hidden",
         }}>
           <div style={{ position:"absolute",inset:0,opacity:.04,
             backgroundImage:"repeating-linear-gradient(0deg,var(--or) 0px,var(--or) 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,var(--or) 0px,var(--or) 1px,transparent 1px,transparent 40px)" }} />
           <div style={{ fontSize:10,letterSpacing:4,textTransform:"uppercase",color:"var(--or)",marginBottom:6,position:"relative" }}>All-In CPM</div>
-          <div style={{ fontFamily:"var(--f2)",fontSize:80,fontWeight:900,lineHeight:1,color:"var(--or)",position:"relative",textShadow:"0 0 60px rgba(244,120,32,.25)" }}>
+          <div style={{ fontFamily:"var(--f2)",fontSize:80,fontWeight:900,lineHeight:1,color:"var(--or)",position:"relative",textShadow:"0 0 60px rgba(45,212,191,.25)" }}>
             {fd(ALLIN_CPM_V,3)}
           </div>
           <div style={{ fontSize:11,color:"var(--mu)",marginTop:10,position:"relative" }}>+ Trailers · Maint · Storage · Uniforms</div>
@@ -1449,16 +1454,16 @@ function BasicCPM() {
         <div className="card">
           <div className="ctit">Basic CPM — 4 Components</div>
           <div className="sbar" style={{ marginBottom:14 }}>
-            <div className="sseg" style={{ width:`${LABOR/BASIC_COST*100}%`,    background:"#f47820" }}>Labor {fp(LABOR/BASIC_COST*100)}</div>
+            <div className="sseg" style={{ width:`${LABOR/BASIC_COST*100}%`,    background:"#2dd4bf" }}>Labor {fp(LABOR/BASIC_COST*100)}</div>
             <div className="sseg" style={{ width:`${FUEL_TOT/BASIC_COST*100}%`, background:"#c49a00",color:"#fff" }}>Fuel {fp(FUEL_TOT/BASIC_COST*100)}</div>
             <div className="sseg" style={{ width:`${TRUCK_TOT/BASIC_COST*100}%`,background:"#0288d1" }}>Trucks {fp(TRUCK_TOT/BASIC_COST*100)}</div>
             <div className="sseg" style={{ width:`${INS_TOT/BASIC_COST*100}%`,  background:"#7c5cbf" }}>Ins {fp(INS_TOT/BASIC_COST*100)}</div>
           </div>
           {[
-            { label:"Labor",         val:LABOR,    cpm:lCPM, color:"#f47820", sub:ACTIVE_DRIVERS_COUNT + " drivers · all-in employer cost" },
-            { label:"Fuel",          val:FUEL_TOT, cpm:fCPM, color:"#f5c542", sub:"EFS + Mudflap · "+fn(GALLONS,0)+" gal" },
-            { label:"Truck Rentals", val:TRUCK_TOT,cpm:tCPM, color:"#4fc3f7", sub:"Penske + TEC/Transco + TCI" },
-            { label:"Insurance",     val:INS_TOT,  cpm:iCPM, color:"#b39ddb", sub:"$"+fn(INS_WEEK,0)+"/wk · "+PERIOD_DAYS+"-day period" },
+            { label:"Labor",         val:LABOR,    cpm:lCPM, color:"#2dd4bf", sub:ACTIVE_DRIVERS_COUNT + " drivers · all-in employer cost" },
+            { label:"Fuel",          val:FUEL_TOT, cpm:fCPM, color:"#fbbf24", sub:"EFS + Mudflap · "+fn(GALLONS,0)+" gal" },
+            { label:"Truck Rentals", val:TRUCK_TOT,cpm:tCPM, color:"#38bdf8", sub:"Penske + TEC/Transco + TCI" },
+            { label:"Insurance",     val:INS_TOT,  cpm:iCPM, color:"#a78bfa", sub:"$"+fn(INS_WEEK,0)+"/wk · "+PERIOD_DAYS+"-day period" },
           ].map(item => (
             <div key={item.label} style={{
               background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:3,
@@ -1482,7 +1487,7 @@ function BasicCPM() {
           }}>
             <div style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"var(--or)" }}>BASIC TOTAL</div>
             <div style={{ textAlign:"right" }}>
-              <div style={{ fontFamily:"var(--f2)",fontSize:30,fontWeight:900,color:"#3ddc84" }}>{fd(BASIC_CPM_V,3)}</div>
+              <div style={{ fontFamily:"var(--f2)",fontSize:30,fontWeight:900,color:"#4ade80" }}>{fd(BASIC_CPM_V,3)}</div>
               <div style={{ fontSize:10,color:"var(--mu)" }}>{fd(BASIC_COST,0)}</div>
             </div>
           </div>
@@ -1495,12 +1500,12 @@ function BasicCPM() {
             {[10,15,20,25,30].map(pct => {
               const bNeeded = BASIC_CPM_V / (1 - pct/100);
               const aNeeded = ALLIN_CPM_V / (1 - pct/100);
-              const col = pct>=20?"#3ddc84":pct>=15?"#f5c542":"var(--or)";
+              const col = pct>=20?"#4ade80":pct>=15?"#fbbf24":"var(--or)";
               return (
                 <div key={pct} style={{ display:"flex", alignItems:"center", padding:"9px 0", borderBottom:"1px solid var(--bd)", gap:8 }}>
                   <div style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:800,color:"var(--mu)",width:80 }}>{pct}%</div>
                   <div style={{ flex:1, textAlign:"center" }}>
-                    <div style={{ fontSize:9,color:"#3ddc84",letterSpacing:1,textTransform:"uppercase",marginBottom:2 }}>Basic</div>
+                    <div style={{ fontSize:9,color:"#4ade80",letterSpacing:1,textTransform:"uppercase",marginBottom:2 }}>Basic</div>
                     <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:col }}>{fd(bNeeded,3)}</div>
                   </div>
                   <div style={{ width:1, background:"var(--bd)", alignSelf:"stretch" }} />
@@ -1526,12 +1531,12 @@ function BasicCPM() {
 
 function CpmSimulator() {
   const categories = [
-    { key:"labor",    label:"Labor (Payroll)",     val:LABOR,       color:"#f47820" },
-    { key:"fuel",     label:"Fuel (EFS + Mudflap)", val:FUEL_TOT,   color:"#f5c542" },
-    { key:"trucks",   label:"Truck Rentals",        val:TRUCK_TOT,  color:"#4fc3f7" },
-    { key:"trailers", label:"Trailer Rentals",      val:TRAILER_TOT,color:"#3ddc84" },
-    { key:"ins",      label:"Insurance",            val:INS_TOT,    color:"#b39ddb" },
-    { key:"tmaint",   label:"Truck Maintenance",    val:TRUCK_MAINT,color:"#ff8a65" },
+    { key:"labor",    label:"Labor (Payroll)",     val:LABOR,       color:"#2dd4bf" },
+    { key:"fuel",     label:"Fuel (EFS + Mudflap)", val:FUEL_TOT,   color:"#fbbf24" },
+    { key:"trucks",   label:"Truck Rentals",        val:TRUCK_TOT,  color:"#38bdf8" },
+    { key:"trailers", label:"Trailer Rentals",      val:TRAILER_TOT,color:"#4ade80" },
+    { key:"ins",      label:"Insurance",            val:INS_TOT,    color:"#a78bfa" },
+    { key:"tmaint",   label:"Truck Maintenance",    val:TRUCK_MAINT,color:"#5eead4" },
     { key:"rmaint",   label:"Trailer Maintenance",  val:TRAIL_MAINT,color:"#26a69a" },
     { key:"storage",  label:"Storage / Parking",    val:STORAGE,    color:"#d97706" },
     { key:"uniforms", label:"Uniforms",             val:UNIFORMS,   color:"#ec407a" },
@@ -1561,11 +1566,11 @@ function CpmSimulator() {
     <div style={{
       marginTop:14, padding:"24px", borderRadius:6,
       background:"linear-gradient(135deg,#0f1118,#12151c)",
-      border:"2px solid #b39ddb40",
+      border:"2px solid #a78bfa40",
     }}>
       <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16 }}>
         <div>
-          <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"#b39ddb" }}>
+          <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"#a78bfa" }}>
             CPM Simulator
           </div>
           <div style={{ fontSize:10,color:"var(--mu)",marginTop:2 }}>Pick any combination of cost categories to see the CPM impact</div>
@@ -1659,14 +1664,14 @@ function CpmSimulator() {
           <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:10 }}>
             <div style={{ background:"var(--bg)",border:"1px solid var(--bd)",borderRadius:3,padding:"12px",textAlign:"center" }}>
               <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>vs Basic (4)</div>
-              <div style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:900,color:cpm>BASIC_CPM_V?"#ff5252":cpm<BASIC_CPM_V?"#3ddc84":"var(--mu)" }}>
+              <div style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:900,color:cpm>BASIC_CPM_V?"#fb7185":cpm<BASIC_CPM_V?"#4ade80":"var(--mu)" }}>
                 {cpm > BASIC_CPM_V ? "+" : ""}{activeCount>0 ? fd(cpm-BASIC_CPM_V,3) : "—"}
               </div>
               <div style={{ fontSize:10,color:"var(--mu)" }}>Basic: {fd(BASIC_CPM_V,3)}</div>
             </div>
             <div style={{ background:"var(--bg)",border:"1px solid var(--bd)",borderRadius:3,padding:"12px",textAlign:"center" }}>
               <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>vs All-In (9)</div>
-              <div style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:900,color:cpm>ALLIN_CPM_V?"#ff5252":cpm<ALLIN_CPM_V?"#3ddc84":"var(--mu)" }}>
+              <div style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:900,color:cpm>ALLIN_CPM_V?"#fb7185":cpm<ALLIN_CPM_V?"#4ade80":"var(--mu)" }}>
                 {cpm > ALLIN_CPM_V ? "+" : ""}{activeCount>0 ? fd(cpm-ALLIN_CPM_V,3) : "—"}
               </div>
               <div style={{ fontSize:10,color:"var(--mu)" }}>All-In: {fd(ALLIN_CPM_V,3)}</div>
@@ -1710,11 +1715,11 @@ function PerLoadCPM() {
   }, []);
 
   const costCategories = [
-    { key:"labor",    label:"Labor",           val:LABOR,        color:"#f47820" },
-    { key:"fuel",     label:"Fuel",            val:FUEL_TOT,     color:"#f5c542" },
-    { key:"trucks",   label:"Truck Rentals",   val:TRUCK_TOT,    color:"#4fc3f7" },
-    { key:"trailers", label:"Trailer Rentals", val:TRAILER_TOT,  color:"#3ddc84" },
-    { key:"ins",      label:"Insurance",       val:INS_TOT,      color:"#b39ddb" },
+    { key:"labor",    label:"Labor",           val:LABOR,        color:"#2dd4bf" },
+    { key:"fuel",     label:"Fuel",            val:FUEL_TOT,     color:"#fbbf24" },
+    { key:"trucks",   label:"Truck Rentals",   val:TRUCK_TOT,    color:"#38bdf8" },
+    { key:"trailers", label:"Trailer Rentals", val:TRAILER_TOT,  color:"#4ade80" },
+    { key:"ins",      label:"Insurance",       val:INS_TOT,      color:"#a78bfa" },
   ];
 
   // Booking simulator state
@@ -1785,17 +1790,17 @@ function PerLoadCPM() {
   const netMarginCalc = totalRev > 0 ? (netProfit / totalRev) * 100 : 0;
 
   // Margin color
-  const mCol = margin >= 25 ? "#3ddc84" : margin >= 15 ? "#f5c542" : "#ff5252";
+  const mCol = margin >= 25 ? "#4ade80" : margin >= 15 ? "#fbbf24" : "#fb7185";
 
   const breakevens = [100, 200, 300, 400, 500, 750, 1000, 1500];
 
   // Verdict based on net profit (revenue minus selected fleet costs)
-  const verdictCol = netProfit > 0 && netMarginCalc >= 15 ? "#3ddc84" : netProfit > 0 ? "#f5c542" : "#ff5252";
+  const verdictCol = netProfit > 0 && netMarginCalc >= 15 ? "#4ade80" : netProfit > 0 ? "#fbbf24" : "#fb7185";
   const verdictLabel = netProfit > 0 && netMarginCalc >= 15 ? "Good Load" : netProfit > 0 ? "Acceptable" : "Loses Money";
   const profitPerMile = effectiveMiles > 0 ? netProfit / effectiveMiles : 0;
   const minRevForTarget = margin < 100 ? fleetCost / (1 - margin / 100) : 0;
   const hitsTarget = netMarginCalc >= margin;
-  const revBorderCol = hitsTarget ? "#3ddc84" : totalRev > fleetCost ? "#f5c542" : "#ff5252";
+  const revBorderCol = hitsTarget ? "#4ade80" : totalRev > fleetCost ? "#fbbf24" : "#fb7185";
 
   // Pulse on verdict change
   const verdictRef = useRef(null);
@@ -1833,7 +1838,7 @@ function PerLoadCPM() {
               padding:"4px 10px", borderRadius:3, cursor:"pointer", fontSize:12, fontWeight:700,
               fontFamily:"var(--f2)",
               background: value === v ? color : "transparent",
-              color: value === v ? (color==="#f5c542"?"#000":"#fff") : "var(--mu)",
+              color: value === v ? (color==="#fbbf24"?"#000":"#fff") : "var(--mu)",
               border:`1px solid ${value === v ? color : "var(--bd)"}`,
             }}>{presetFmt ? presetFmt(v) : v}</button>
           ))}
@@ -1881,7 +1886,7 @@ function PerLoadCPM() {
         {/* ── LANE — origin & destination ── */}
         <div style={{ display:"grid", gridTemplateColumns:"1fr auto 1fr auto", gap:10, marginBottom:14, alignItems:"end" }}>
           <div>
-            <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"#3ddc84", marginBottom:6, fontWeight:700 }}>Origin</div>
+            <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"#4ade80", marginBottom:6, fontWeight:700 }}>Origin</div>
             <input type="text" value={origin} onChange={e => setOrigin(e.target.value)} placeholder="City, State or address"
               onKeyDown={e => e.key === "Enter" && calcRoute()}
               style={{ background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:6, padding:"12px 14px",
@@ -1889,7 +1894,7 @@ function PerLoadCPM() {
           </div>
           <div style={{ fontFamily:"var(--f2)", fontSize:24, fontWeight:900, color:"var(--mu)", paddingBottom:8 }}>{"\u2192"}</div>
           <div>
-            <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"#ff5252", marginBottom:6, fontWeight:700 }}>Destination</div>
+            <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"#fb7185", marginBottom:6, fontWeight:700 }}>Destination</div>
             <input type="text" value={dest} onChange={e => setDest(e.target.value)} placeholder="City, State or address"
               onKeyDown={e => e.key === "Enter" && calcRoute()}
               style={{ background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:6, padding:"12px 14px",
@@ -1903,16 +1908,16 @@ function PerLoadCPM() {
         </div>
         {routeInfo && routeStatus === "done" && (
           <div style={{ display:"flex", gap:16, alignItems:"center", marginBottom:14, padding:"10px 16px",
-            background:"rgba(61,220,132,.06)", border:"1px solid #3ddc8430", borderRadius:4 }}>
+            background:"rgba(74,222,128,.06)", border:"1px solid #4ade8030", borderRadius:4 }}>
             <span style={{ fontSize:13, color:"var(--mu)" }}>{routeInfo.origin.split(",").slice(0,2).join(",")}</span>
             <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:800, color:"var(--or)" }}>{"\u2192"}</span>
             <span style={{ fontSize:13, color:"var(--mu)" }}>{routeInfo.dest.split(",").slice(0,2).join(",")}</span>
-            <span style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:900, color:"#4fc3f7" }}>{fn(routeInfo.miles,0)} mi</span>
+            <span style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:900, color:"#38bdf8" }}>{fn(routeInfo.miles,0)} mi</span>
             <span style={{ fontSize:13, color:"var(--mu)" }}>{routeInfo.hours} hrs driving</span>
           </div>
         )}
         {routeInfo && routeStatus === "error" && (
-          <div style={{ marginBottom:14, padding:"10px 16px", background:"rgba(255,82,82,.06)", border:"1px solid #ff525230", borderRadius:4, fontSize:13, color:"#ff5252" }}>
+          <div style={{ marginBottom:14, padding:"10px 16px", background:"rgba(251,113,133,.06)", border:"1px solid #fb718530", borderRadius:4, fontSize:13, color:"#fb7185" }}>
             {routeInfo.error}
           </div>
         )}
@@ -1946,15 +1951,15 @@ function PerLoadCPM() {
           </div>
           {/* Mileage with roundtrip toggle */}
           <div>
-            {inputBox("Mileage (one-way)", miles, setMiles, "#4fc3f7", null,
+            {inputBox("Mileage (one-way)", miles, setMiles, "#38bdf8", null,
               [150,250,386,500,750,1000], v => `${fn(v,0)} mi`)}
             <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, flexWrap:"wrap" }}>
               <button onClick={() => setRoundtrip(!roundtrip)} style={{
                 padding:"5px 14px", borderRadius:20, cursor:"pointer",
                 fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1,
-                background: roundtrip ? "#4fc3f7" : "transparent",
+                background: roundtrip ? "#38bdf8" : "transparent",
                 color: roundtrip ? "#000" : "var(--mu)",
-                border:`1px solid ${roundtrip ? "#4fc3f7" : "var(--bd)"}`,
+                border:`1px solid ${roundtrip ? "#38bdf8" : "var(--bd)"}`,
                 transition:"all .15s",
               }}>{roundtrip ? "\u2194 Roundtrip" : "\u2192 One-way"}</button>
               <div style={{ display:"flex", alignItems:"center", gap:4 }}>
@@ -1968,7 +1973,7 @@ function PerLoadCPM() {
                 </select>
               </div>
               {(roundtrip || trucks > 1) && (
-                <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color:"#4fc3f7" }}>
+                <span style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:700, color:"#38bdf8" }}>
                   {fn(effectiveMiles,0)} mi total{trucks > 1 ? ` · ${trucks} trucks · ${fd(totalRev,0)} total rev` : ""}
                 </span>
               )}
@@ -2013,8 +2018,8 @@ function PerLoadCPM() {
               return (
                 <div style={{
                   marginTop:10, padding:"10px 14px", borderRadius:4,
-                  background: hitsTarget ? "rgba(61,220,132,.08)" : "rgba(255,82,82,.08)",
-                  border:`1px solid ${hitsTarget ? "#3ddc8440" : "#ff525240"}`,
+                  background: hitsTarget ? "rgba(74,222,128,.08)" : "rgba(251,113,133,.08)",
+                  border:`1px solid ${hitsTarget ? "#4ade8040" : "#fb718540"}`,
                 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
                     <span style={{ fontSize:12, color:"var(--mu)" }}>Min revenue for {margin}%</span>
@@ -2026,7 +2031,7 @@ function PerLoadCPM() {
                   </div>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <span style={{ fontSize:12, color:"var(--mu)" }}>{hitsTarget ? "Above target by" : "Short by"}</span>
-                    <span style={{ fontFamily:"var(--f2)", fontSize:15, fontWeight:800, color:hitsTarget?"#3ddc84":"#ff5252" }}>
+                    <span style={{ fontFamily:"var(--f2)", fontSize:15, fontWeight:800, color:hitsTarget?"#4ade80":"#fb7185" }}>
                       {hitsTarget ? "+" : ""}{fd(gap,0)}
                     </span>
                   </div>
@@ -2044,7 +2049,7 @@ function PerLoadCPM() {
               <span style={{ fontSize:13, color:"var(--mu)", marginLeft:12 }}>{activeCats.length} of 5 active</span>
             </div>
             <div style={{ display:"flex", alignItems:"baseline", gap:16 }}>
-              <span style={{ fontFamily:"var(--f2)", fontSize:22, fontWeight:900, color:"#ff5252" }}>{fd(selectedCPM,3)}<span style={{ fontSize:13, fontWeight:700, color:"var(--mu)" }}>/mi</span></span>
+              <span style={{ fontFamily:"var(--f2)", fontSize:22, fontWeight:900, color:"#fb7185" }}>{fd(selectedCPM,3)}<span style={{ fontSize:13, fontWeight:700, color:"var(--mu)" }}>/mi</span></span>
               <div style={{ display:"flex", gap:6 }}>
                 {[["All", presetAll],["None", presetNone]].map(([lbl, action]) => (
                   <button key={lbl} onClick={action} style={{
@@ -2131,9 +2136,9 @@ function PerLoadCPM() {
         }}>
           {[
             { label:"RPM", val:`$${rpm.toFixed(2)}`, color:"var(--or)" },
-            { label:"Fleet CPM", val:`$${selectedCPM.toFixed(3)}`, color:"#ff5252" },
-            { label:"Profit/Mi", val:`$${profitPerMile.toFixed(2)}`, color:profitPerMile>=0?verdictCol:"#ff5252" },
-            { label:`Fleet Cost (${activeCats.length})`, val:fd(fleetCost,0), color:"#ff5252" },
+            { label:"Fleet CPM", val:`$${selectedCPM.toFixed(3)}`, color:"#fb7185" },
+            { label:"Profit/Mi", val:`$${profitPerMile.toFixed(2)}`, color:profitPerMile>=0?verdictCol:"#fb7185" },
+            { label:`Fleet Cost (${activeCats.length})`, val:fd(fleetCost,0), color:"#fb7185" },
             { label:"Net Profit", val:(netProfit>=0?"+":"")+fd(netProfit,0), color:verdictCol },
             { label:"Net Margin", val:fp(netMarginCalc), color:verdictCol },
           ].map((k,i) => (
@@ -2150,12 +2155,12 @@ function PerLoadCPM() {
           background:"rgba(0,0,0,.2)", borderRadius:6, padding:"20px 24px" }}>
           <div style={{ textAlign:"center" }}>
             <div style={{ fontSize:12, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:6 }}>Revenue{trucks>1?` (${trucks} trucks)`:""}</div>
-            <div style={{ fontFamily:"var(--f2)", fontSize:42, fontWeight:900, color:"#3ddc84", lineHeight:1 }}>{fd(totalRev,0)}</div>
+            <div style={{ fontFamily:"var(--f2)", fontSize:42, fontWeight:900, color:"#4ade80", lineHeight:1 }}>{fd(totalRev,0)}</div>
           </div>
           <div style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:"var(--mu)", padding:"0 16px" }}>−</div>
           <div style={{ textAlign:"center" }}>
             <div style={{ fontSize:12, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:6 }}>Fleet Cost</div>
-            <div style={{ fontFamily:"var(--f2)", fontSize:42, fontWeight:900, color:"#ff5252", lineHeight:1 }}>{fd(fleetCost,0)}</div>
+            <div style={{ fontFamily:"var(--f2)", fontSize:42, fontWeight:900, color:"#fb7185", lineHeight:1 }}>{fd(fleetCost,0)}</div>
           </div>
           <div style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:"var(--mu)", padding:"0 16px" }}>=</div>
           <div style={{ textAlign:"center" }}>
@@ -2178,7 +2183,7 @@ function PerLoadCPM() {
               const cost = em * selectedCPM;
               const prof = tRev - cost;
               const mrg = tRev > 0 ? (prof / tRev) * 100 : 0;
-              const col = prof > 0 && mrg >= 15 ? "#3ddc84" : prof > 0 ? "#f5c542" : "#ff5252";
+              const col = prof > 0 && mrg >= 15 ? "#4ade80" : prof > 0 ? "#fbbf24" : "#fb7185";
               const isActive = m === miles;
               return (
                 <div key={m} onClick={() => setMiles(m)} style={{
@@ -2187,7 +2192,7 @@ function PerLoadCPM() {
                   border: isActive ? `2px solid ${col}` : "1px solid var(--bd)",
                   transition:"all .15s",
                 }}>
-                  <div style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"#4fc3f7" }}>{fn(m,0)} mi{roundtrip ? " RT" : ""}</div>
+                  <div style={{ fontFamily:"var(--f2)", fontSize:16, fontWeight:800, color:"#38bdf8" }}>{fn(m,0)} mi{roundtrip ? " RT" : ""}</div>
                   <div style={{ fontFamily:"var(--f2)", fontSize:13, fontWeight:700, color:"var(--mu)", marginTop:2 }}>${(tRev/em).toFixed(2)}/mi</div>
                   <div style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:900, color:col, marginTop:4 }}>
                     {prof >= 0 ? "+" : ""}{fd(prof,0)}
@@ -2228,10 +2233,10 @@ function PerLoadCPM() {
                     <td style={{ padding:"10px 8px", color:"var(--tx)", fontWeight:600 }}>{l.origin}</td>
                     <td style={{ padding:"10px 8px", color:"var(--tx)", fontWeight:600 }}>{l.destination}</td>
                     <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", fontSize:18, fontWeight:900, color:"var(--or)" }}>{l.loads}</td>
-                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", color:"#4fc3f7" }}>{l.avgMiles > 0 ? fn(l.avgMiles,0) : "—"}</td>
-                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", fontWeight:700, color:"#3ddc84" }}>{fd(l.avgRevenue,0)}</td>
-                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", fontWeight:700, color:l.avgRPM>=4?"#3ddc84":l.avgRPM>=3?"#f5c542":"#ff5252" }}>{l.avgRPM > 0 ? `$${l.avgRPM.toFixed(2)}` : "—"}</td>
-                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", fontWeight:800, color:"#3ddc84" }}>{fd(l.revenue,0)}</td>
+                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", color:"#38bdf8" }}>{l.avgMiles > 0 ? fn(l.avgMiles,0) : "—"}</td>
+                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", fontWeight:700, color:"#4ade80" }}>{fd(l.avgRevenue,0)}</td>
+                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", fontWeight:700, color:l.avgRPM>=4?"#4ade80":l.avgRPM>=3?"#fbbf24":"#fb7185" }}>{l.avgRPM > 0 ? `$${l.avgRPM.toFixed(2)}` : "—"}</td>
+                    <td style={{ textAlign:"right", padding:"10px 8px", fontFamily:"var(--f2)", fontWeight:800, color:"#4ade80" }}>{fd(l.revenue,0)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2274,7 +2279,7 @@ function FleetOverview() {
       <div className="psub">Show Freight Inc · {PERIOD} · {ACTIVE_DRIVERS_COUNT} Drivers</div>
 
       <div className="sbox">
-        <strong style={{ color: "#4fc3f7" }}>Data sources (QuickBooks + EFS):</strong>
+        <strong style={{ color: "#38bdf8" }}>Data sources (QuickBooks + EFS):</strong>
         {" "}Payroll {fd(LABOR,0)} <span style={{color:"var(--mu)"}}>(thru {PERIOD_END})</span> ·
         {" "}Fuel {fd(FUEL_TOT,0)} <span style={{color:"var(--mu)"}}>(EFS thru {PERIOD_END})</span> ·
         {" "}Insurance {fd(INS_TOT,0)} <span style={{color:"var(--mu)"}}>(thru {PERIOD_END})</span> ·
@@ -2301,7 +2306,7 @@ function FleetOverview() {
           alignItems: "center",
           justifyContent: "center",
           textAlign: "center",
-          boxShadow: "0 0 40px rgba(244,120,32,.12)",
+          boxShadow: "0 0 40px rgba(45,212,191,.12)",
           position: "relative",
           overflow: "hidden",
         }}>
@@ -2336,7 +2341,7 @@ function FleetOverview() {
           <div style={{ marginTop: 12, position: "relative" }}>
             <div className="tag" style={{
               fontSize: 10, padding: "4px 14px",
-              background: tCPM < 3.0 ? "rgba(61,220,132,.15)" : tCPM < 4.0 ? "rgba(245,197,66,.15)" : "rgba(255,82,82,.15)",
+              background: tCPM < 3.0 ? "rgba(74,222,128,.15)" : tCPM < 4.0 ? "rgba(251,191,36,.15)" : "rgba(251,113,133,.15)",
               color: cpmColor(tCPM),
               border: `1px solid ${cpmColor(tCPM)}50`,
             }}>
@@ -2348,11 +2353,11 @@ function FleetOverview() {
         {/* Cost breakdown tiles — 3x3 grid */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
           {[
-            { key: "labor",       label: "Labor",           val: LABOR,       cpm: lCPM, pct: lP, color: "#f47820" },
-            { key: "fuel",        label: "Fuel",            val: FUEL_TOT,    cpm: fCPM, pct: fP, color: "#f5c542" },
-            { key: "insurance",   label: "Insurance",       val: INS_TOT,     cpm: iCPM, pct: iP, color: "#b39ddb" },
-            { key: "trucks",      label: "Trucks",          val: TRUCK_TOT,   cpm: TRUCK_TOT/MILES, pct: tP, color: "#4fc3f7" },
-            { key: "trailers",    label: "Trailers",        val: TRAILER_TOT, cpm: TRAILER_TOT/MILES, pct: rP, color: "#3ddc84" },
+            { key: "labor",       label: "Labor",           val: LABOR,       cpm: lCPM, pct: lP, color: "#2dd4bf" },
+            { key: "fuel",        label: "Fuel",            val: FUEL_TOT,    cpm: fCPM, pct: fP, color: "#fbbf24" },
+            { key: "insurance",   label: "Insurance",       val: INS_TOT,     cpm: iCPM, pct: iP, color: "#a78bfa" },
+            { key: "trucks",      label: "Trucks",          val: TRUCK_TOT,   cpm: TRUCK_TOT/MILES, pct: tP, color: "#38bdf8" },
+            { key: "trailers",    label: "Trailers",        val: TRAILER_TOT, cpm: TRAILER_TOT/MILES, pct: rP, color: "#4ade80" },
             { key: "truckMaint",  label: "Truck Maint",     val: TRUCK_MAINT, cpm: TRUCK_MAINT/MILES, pct: (TRUCK_MAINT/totalTracked)*100, color: "#d97706" },
             { key: "trailerMaint",label: "Trailer Maint",   val: TRAIL_MAINT, cpm: TRAIL_MAINT/MILES, pct: (TRAIL_MAINT/totalTracked)*100, color: "#d97706" },
             { key: "storage",     label: "Storage/Park",    val: STORAGE,     cpm: STORAGE/MILES, pct: (STORAGE/totalTracked)*100, color: "#d97706" },
@@ -2385,7 +2390,7 @@ function FleetOverview() {
       <div className="card" style={{ marginBottom: 14 }}>
         <div className="ctit">All-In Cost Stack — {fd(tCPM, 3)}/mi</div>
         <div className="sbar">
-          <div className="sseg" style={{ width: `${lP}%`, background: "#f47820" }}>Labor {fp(lP)}</div>
+          <div className="sseg" style={{ width: `${lP}%`, background: "#2dd4bf" }}>Labor {fp(lP)}</div>
           <div className="sseg" style={{ width: `${fP}%`, background: "#c49a00", color: "#fff" }}>Fuel {fp(fP)}</div>
           <div className="sseg" style={{ width: `${iP}%`, background: "#7c5cbf" }}>Ins {fp(iP)}</div>
           <div className="sseg" style={{ width: `${tP}%`, background: "#0288d1" }}>Trucks {fp(tP)}</div>
@@ -2394,13 +2399,13 @@ function FleetOverview() {
           <div className="sseg" style={{ width: `${uP}%`, background: "#4a1d96" }}>Unif {fp(uP)}</div>
         </div>
         <div className="g3" style={{ marginTop: 12 }}>
-          <div className="kpi"><div className="klbl">Labor CPM</div><div className="kval" style={{ fontSize: 18, color: "#f47820" }}>{fd(lCPM, 3)}</div></div>
-          <div className="kpi"><div className="klbl">Fuel CPM</div><div className="kval" style={{ fontSize: 18, color: "#f5c542" }}>{fd(fCPM, 3)}</div></div>
-          <div className="kpi"><div className="klbl">Insurance CPM</div><div className="kval" style={{ fontSize: 18, color: "#b39ddb" }}>{fd(iCPM, 3)}</div></div>
-          <div className="kpi"><div className="klbl">Truck CPM</div><div className="kval" style={{ fontSize: 18, color: "#4fc3f7" }}>{fd(TRUCK_TOT/MILES, 3)}</div></div>
-          <div className="kpi"><div className="klbl">Trailer CPM</div><div className="kval" style={{ fontSize: 18, color: "#3ddc84" }}>{fd(TRAILER_TOT/MILES, 3)}</div></div>
+          <div className="kpi"><div className="klbl">Labor CPM</div><div className="kval" style={{ fontSize: 18, color: "#2dd4bf" }}>{fd(lCPM, 3)}</div></div>
+          <div className="kpi"><div className="klbl">Fuel CPM</div><div className="kval" style={{ fontSize: 18, color: "#fbbf24" }}>{fd(fCPM, 3)}</div></div>
+          <div className="kpi"><div className="klbl">Insurance CPM</div><div className="kval" style={{ fontSize: 18, color: "#a78bfa" }}>{fd(iCPM, 3)}</div></div>
+          <div className="kpi"><div className="klbl">Truck CPM</div><div className="kval" style={{ fontSize: 18, color: "#38bdf8" }}>{fd(TRUCK_TOT/MILES, 3)}</div></div>
+          <div className="kpi"><div className="klbl">Trailer CPM</div><div className="kval" style={{ fontSize: 18, color: "#4ade80" }}>{fd(TRAILER_TOT/MILES, 3)}</div></div>
           <div className="kpi"><div className="klbl">Maint+Stor CPM</div><div className="kval" style={{ fontSize: 18, color: "#d97706" }}>{fd(MAINT_TOT/MILES, 3)}</div></div>
-          <div className="kpi"><div className="klbl">Avg Fuel Price</div><div className="kval" style={{ fontSize: 18, color: "#4fc3f7" }}>{fd(FUEL_TOT / GALLONS, 3)}/gal</div></div>
+          <div className="kpi"><div className="klbl">Avg Fuel Price</div><div className="kval" style={{ fontSize: 18, color: "#38bdf8" }}>{fd(FUEL_TOT / GALLONS, 3)}/gal</div></div>
         </div>
       </div>
 
@@ -2433,13 +2438,13 @@ function FleetOverview() {
                     {i < 3 ? ["🥇","🥈","🥉"][i] : i + 1}
                   </td>
                   <td style={{ fontWeight: 500 }}>{d.name}</td>
-                  <td style={{ color: "#f47820" }}>{fd(d.totalCost, 0)}</td>
-                  <td style={{ color: "#f5c542" }}>{d.fuel > 0 ? fd(d.fuel, 0) : <span style={{ color: "#5a6370" }}>—</span>}</td>
-                  <td style={{ color: "#4fc3f7", fontWeight: 600 }}>{d.combined > 0 ? fd(d.combined, 0) : "—"}</td>
+                  <td style={{ color: "#2dd4bf" }}>{fd(d.totalCost, 0)}</td>
+                  <td style={{ color: "#fbbf24" }}>{d.fuel > 0 ? fd(d.fuel, 0) : <span style={{ color: "#5a6370" }}>—</span>}</td>
+                  <td style={{ color: "#38bdf8", fontWeight: 600 }}>{d.combined > 0 ? fd(d.combined, 0) : "—"}</td>
                   <td style={{ color: "#5a6370" }}>{d.gallons > 0 ? fn(d.gallons, 0) : "—"}</td>
                   <td style={{ color: "#5a6370" }}>{d.miles > 0 ? fn(d.miles, 0) : "—"}</td>
                   <td style={{ color: d.lCPM ? cpmColor(d.lCPM) : "#5a6370" }}>{d.lCPM ? fd(d.lCPM, 3) : "—"}</td>
-                  <td style={{ color: "#f5c542" }}>{d.fCPM ? fd(d.fCPM, 3) : "—"}</td>
+                  <td style={{ color: "#fbbf24" }}>{d.fCPM ? fd(d.fCPM, 3) : "—"}</td>
                   <td style={{ fontWeight: 700, color: d.cpm ? cpmColor(d.cpm) : "#5a6370" }}>{d.cpm ? fd(d.cpm, 3) : "—"}</td>
                 </tr>
               ))}
@@ -2494,19 +2499,19 @@ function DriverDetail() {
           <div className="g3" style={{ marginBottom: 14 }}>
             <div className="kpi">
               <div className="klbl">Labor Cost</div>
-              <div className="kval" style={{ color: "#f47820" }}>{fd(d.totalCost, 0)}</div>
+              <div className="kval" style={{ color: "#2dd4bf" }}>{fd(d.totalCost, 0)}</div>
               <div className="ksub">{d.hours.toFixed(1)} hrs · {fd(d.totalCost / d.hours)}/hr</div>
             </div>
             <div className="kpi">
               <div className="klbl">Fuel Spend</div>
-              <div className="kval" style={{ color: "#f5c542" }}>
+              <div className="kval" style={{ color: "#fbbf24" }}>
                 {d.fuel > 0 ? fd(d.fuel, 0) : <span style={{ color: "#5a6370" }}>No data</span>}
               </div>
               <div className="ksub">{d.gallons > 0 ? `${fn(d.gallons, 0)} gal · ${fd(d.fuel / d.gallons, 3)}/gal` : ""}</div>
             </div>
             <div className="kpi">
               <div className="klbl">Total (L + F)</div>
-              <div className="kval" style={{ color: "#4fc3f7" }}>{d.combined > 0 ? fd(d.combined, 0) : "—"}</div>
+              <div className="kval" style={{ color: "#38bdf8" }}>{d.combined > 0 ? fd(d.combined, 0) : "—"}</div>
               <div className="ksub">{d.miles > 0 ? `~${fn(d.miles, 0)} est miles` : ""}</div>
             </div>
           </div>
@@ -2521,18 +2526,18 @@ function DriverDetail() {
                     <div className="glbl">combined CPM</div>
                   </div>
                   <div className="sbar">
-                    <div className="sseg" style={{ width: `${(1 - d.fCPM / d.cpm) * 100}%`, background: "#f47820" }}>Labor</div>
+                    <div className="sseg" style={{ width: `${(1 - d.fCPM / d.cpm) * 100}%`, background: "#2dd4bf" }}>Labor</div>
                     <div className="sseg" style={{ width: `${(d.fCPM / d.cpm) * 100}%`, background: "#c49a00" }}>Fuel</div>
                   </div>
                   <div className="g2" style={{ gap: 8 }}>
                     <div className="met" style={{ marginBottom: 0 }}>
                       <div className="mlbl">Labor CPM</div>
-                      <div className="mval" style={{ fontSize: 20, color: "#f47820" }}>{fd(d.lCPM, 3)}</div>
+                      <div className="mval" style={{ fontSize: 20, color: "#2dd4bf" }}>{fd(d.lCPM, 3)}</div>
                       <div className="msub">fleet avg {fd(LABOR / MILES, 3)}</div>
                     </div>
                     <div className="met" style={{ marginBottom: 0 }}>
                       <div className="mlbl">Fuel CPM</div>
-                      <div className="mval" style={{ fontSize: 20, color: "#f5c542" }}>{fd(d.fCPM, 3)}</div>
+                      <div className="mval" style={{ fontSize: 20, color: "#fbbf24" }}>{fd(d.fCPM, 3)}</div>
                       <div className="msub">fleet avg {fd(FUEL_TOT / MILES, 3)}</div>
                     </div>
                   </div>
@@ -2541,7 +2546,7 @@ function DriverDetail() {
                     {(() => {
                       const diff = d.cpm - flCPM;
                       return (
-                        <div className="mval" style={{ color: diff > 0 ? "#ff5252" : "#3ddc84" }}>
+                        <div className="mval" style={{ color: diff > 0 ? "#fb7185" : "#4ade80" }}>
                           {diff > 0 ? "+" : ""}{fd(diff, 3)}
                         </div>
                       );
@@ -2550,7 +2555,7 @@ function DriverDetail() {
                   </div>
                   <div className="met" style={{ marginBottom: 0 }}>
                     <div className="mlbl">Rate Needed (15% margin)</div>
-                    <div className="mval" style={{ color: "#3ddc84" }}>{fd(d.cpm / 0.85, 3)}/mi</div>
+                    <div className="mval" style={{ color: "#4ade80" }}>{fd(d.cpm / 0.85, 3)}/mi</div>
                   </div>
                 </>
               ) : (
@@ -2564,13 +2569,13 @@ function DriverDetail() {
               <div className="ctit">Efficiency Metrics</div>
               <div className="met">
                 <div className="mlbl">Cost per Payroll Hour</div>
-                <div className="mval" style={{ color: "#f47820" }}>{fd(d.totalCost / d.hours)}</div>
+                <div className="mval" style={{ color: "#2dd4bf" }}>{fd(d.totalCost / d.hours)}</div>
                 <div className="msub">fully loaded employer rate</div>
               </div>
               {d.fuel > 0 && (
                 <div className="met">
                   <div className="mlbl">Fuel per Hour Worked</div>
-                  <div className="mval" style={{ color: "#f5c542" }}>{fd(d.fuel / d.hours)}</div>
+                  <div className="mval" style={{ color: "#fbbf24" }}>{fd(d.fuel / d.hours)}</div>
                 </div>
               )}
               <div className="met" style={{ marginBottom: 0 }}>
@@ -2605,22 +2610,22 @@ function FuelAnalysis() {
       <div className="g4" style={{ marginBottom: 14 }}>
         <div className="kpi">
           <div className="klbl">EFS Card Spend</div>
-          <div className="kval" style={{ color: "#f47820" }}>{fd(171999.62,0)}</div>
+          <div className="kval" style={{ color: "#2dd4bf" }}>{fd(171999.62,0)}</div>
           <div className="ksub">{fn(36450.66,0)} gal · $4.541/gal avg</div>
         </div>
         <div className="kpi">
           <div className="klbl">Mudflap Spend</div>
-          <div className="kval" style={{ color: "#f5c542" }}>{fd(10603.84,0)}</div>
+          <div className="kval" style={{ color: "#fbbf24" }}>{fd(10603.84,0)}</div>
           <div className="ksub">{fn(2799.19,0)} gal · $3.657/gal avg</div>
         </div>
         <div className="kpi">
           <div className="klbl">Combined Fuel</div>
-          <div className="kval" style={{ color: "#4fc3f7" }}>{fd(FUEL_TOT, 0)}</div>
+          <div className="kval" style={{ color: "#38bdf8" }}>{fd(FUEL_TOT, 0)}</div>
           <div className="ksub">{fn(GALLONS, 0)} total gallons</div>
         </div>
         <div className="kpi">
           <div className="klbl">Fuel CPM</div>
-          <div className="kval" style={{ color: "#f5c542" }}>{fd(FUEL_TOT / MILES, 3)}</div>
+          <div className="kval" style={{ color: "#fbbf24" }}>{fd(FUEL_TOT / MILES, 3)}</div>
           <div className="ksub">avg {fd(avgPPG, 3)}/gal</div>
         </div>
       </div>
@@ -2646,15 +2651,15 @@ function FuelAnalysis() {
                       {i < 3 ? ["🥇","🥈","🥉"][i] : i + 1}
                     </td>
                     <td style={{ fontWeight: 500 }}>{d.name}</td>
-                    <td style={{ color: "#f47820" }}>{fd(d.fuel, 0)}</td>
+                    <td style={{ color: "#2dd4bf" }}>{fd(d.fuel, 0)}</td>
                     <td style={{ color: "#5a6370" }}>{fn(d.gallons, 0)}</td>
-                    <td style={{ color: ppg > avgPPG * 1.05 ? "#ff5252" : "#f5c542" }}>{fd(ppg, 3)}</td>
+                    <td style={{ color: ppg > avgPPG * 1.05 ? "#fb7185" : "#fbbf24" }}>{fd(ppg, 3)}</td>
                     <td style={{ color: "#5a6370" }}>{fn(d.miles, 0)}</td>
-                    <td style={{ color: d.fCPM > 0.75 ? "#ff5252" : d.fCPM > 0.65 ? "#f5c542" : "#3ddc84" }}>{fd(d.fCPM, 3)}</td>
+                    <td style={{ color: d.fCPM > 0.75 ? "#fb7185" : d.fCPM > 0.65 ? "#fbbf24" : "#4ade80" }}>{fd(d.fCPM, 3)}</td>
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                         <div className="bar" style={{ flex: 1, margin: 0 }}>
-                          <div className="bfil" style={{ width: `${Math.min(100, pct * 3)}%`, background: "#f47820" }} />
+                          <div className="bfil" style={{ width: `${Math.min(100, pct * 3)}%`, background: "#2dd4bf" }} />
                         </div>
                         <span style={{ color: "#5a6370", fontSize: 10 }}>{fp(pct)}</span>
                       </div>
@@ -2892,22 +2897,22 @@ function TrucksTab() {
           <div className="g4" style={{ marginBottom:14 }}>
             <div className="kpi">
               <div className="klbl">Total Truck Spend</div>
-              <div className="kval" style={{ color:"#f47820" }}>{fd(grandTotal,0)}</div>
+              <div className="kval" style={{ color:"#2dd4bf" }}>{fd(grandTotal,0)}</div>
               <div className="ksub">TEC {fd(TEC_EQUIPMENT.lease.total+rentalTotal+shopTotal,0)} · Penske {fd(penskeTotal,0)} · TCI {fd(tciTotal,0)}</div>
             </div>
             <div className="kpi">
               <div className="klbl">Active Units</div>
-              <div className="kval" style={{ color:"#3ddc84" }}>{allUnits}</div>
+              <div className="kval" style={{ color:"#4ade80" }}>{allUnits}</div>
               <div className="ksub">TEC {tecUnits} · TCI {tciUnits} · Penske {penskeActive}</div>
             </div>
             <div className="kpi">
               <div className="klbl">Total Billed Miles</div>
-              <div className="kval" style={{ color:"#4fc3f7" }}>{fn(allMiles,0)}</div>
+              <div className="kval" style={{ color:"#38bdf8" }}>{fn(allMiles,0)}</div>
               <div className="ksub">TEC {fn(totalMiles,0)} · TCI {fn(tciMiles,0)} · Penske {fn(penskeMiles,0)}</div>
             </div>
             <div className="kpi">
               <div className="klbl">Total Monthly Fixed</div>
-              <div className="kval" style={{ color:"#f5c542" }}>{fd(allMonthly,0)}</div>
+              <div className="kval" style={{ color:"#fbbf24" }}>{fd(allMonthly,0)}</div>
               <div className="ksub">avg {fd(allMonthly/allUnits,0)}/unit · {fd(allMonthly*12,0)}/yr</div>
             </div>
           </div>
@@ -2944,8 +2949,8 @@ function TrucksTab() {
         const totalBilled = trucks.reduce((s,a) => s+(a.totalBilled||0), 0);
         const totalPaid = trucks.reduce((s,a) => s+(a.totalPaid||0), 0);
         const totalOutstanding = trucks.reduce((s,a) => s+(a.outstanding||0), 0);
-        const typeColor = t => t?.includes("Sleeper") ? "#4fc3f7" : t?.includes("Day Cab") ? "#3ddc84" : "#b39ddb";
-        const vendorColor = v => v === "TCI" ? "#f47820" : v === "Penske" ? "#ff5252" : v?.includes("TEC") || v?.includes("Transco") ? "#4fc3f7" : v === "Ryder" ? "#26a69a" : "#5a6370";
+        const typeColor = t => t?.includes("Sleeper") ? "#38bdf8" : t?.includes("Day Cab") ? "#4ade80" : "#a78bfa";
+        const vendorColor = v => v === "TCI" ? "#2dd4bf" : v === "Penske" ? "#fb7185" : v?.includes("TEC") || v?.includes("Transco") ? "#38bdf8" : v === "Ryder" ? "#26a69a" : "#5a6370";
 
         if (!equipment) return <div style={{ padding:40,textAlign:"center",color:"var(--mu)" }}>Loading equipment data from AP Aging...</div>;
 
@@ -2959,22 +2964,22 @@ function TrucksTab() {
               </div>
               <div className="kpi">
                 <div className="klbl">Monthly Lease Total</div>
-                <div className="kval" style={{ color:"#f5c542" }}>{fd(totalMonthly,0)}</div>
+                <div className="kval" style={{ color:"#fbbf24" }}>{fd(totalMonthly,0)}</div>
                 <div className="ksub">{fd(totalMonthly*12,0)}/yr</div>
               </div>
               <div className="kpi">
                 <div className="klbl">Total Billed</div>
-                <div className="kval" style={{ color:"#ff5252" }}>{fd(totalBilled,0)}</div>
+                <div className="kval" style={{ color:"#fb7185" }}>{fd(totalBilled,0)}</div>
                 <div className="ksub">{fd(totalPaid,0)} paid</div>
               </div>
               <div className="kpi">
                 <div className="klbl">Outstanding</div>
-                <div className="kval" style={{ color:totalOutstanding > 0 ? "#ff5252" : "#3ddc84" }}>{fd(totalOutstanding,0)}</div>
+                <div className="kval" style={{ color:totalOutstanding > 0 ? "#fb7185" : "#4ade80" }}>{fd(totalOutstanding,0)}</div>
               </div>
             </div>
 
             <div className="card">
-              <div className="ctit">Truck Fleet — {trucks.length} Units <span style={{ fontSize:10,color:"#3ddc84",fontWeight:400 }}>· Live from AP Aging</span></div>
+              <div className="ctit">Truck Fleet — {trucks.length} Units <span style={{ fontSize:10,color:"#4ade80",fontWeight:400 }}>· Live from AP Aging</span></div>
               <div style={{ overflowX:"auto" }}>
                 <table className="tbl" style={{ fontSize:10 }}>
                   <thead>
@@ -3003,19 +3008,19 @@ function TrucksTab() {
                         <td style={{ color:"var(--mu)",fontFamily:"var(--f2)",fontSize:11 }}>{a.vendorUnit}</td>
                         <td>{a.make && a.make !== "—" && a.make !== "\u00e2\u20ac\u201d" ? `${a.make} ${a.model||""}` : "—"}</td>
                         <td style={{ color:"var(--mu)" }}>{a.year && a.year !== "\u00e2\u20ac\u201d" ? a.year : "—"}</td>
-                        <td style={{ color:(a.monthlyCost||0) > 0 ? "#f5c542" : "var(--mu)", fontWeight:600 }}>{(a.monthlyCost||0) > 0 ? fd(a.monthlyCost,0) : "—"}</td>
+                        <td style={{ color:(a.monthlyCost||0) > 0 ? "#fbbf24" : "var(--mu)", fontWeight:600 }}>{(a.monthlyCost||0) > 0 ? fd(a.monthlyCost,0) : "—"}</td>
                         <td style={{ color:"var(--mu)",fontSize:9 }}>{(a.mileageRate||0) > 0 ? `$${a.mileageRate}/mi` : "—"}</td>
                         <td>{a.invoiceCount || 0}</td>
-                        <td style={{ color:"#ff5252" }}>{(a.totalBilled||0) > 0 ? fd(a.totalBilled,0) : "—"}</td>
-                        <td style={{ color:"#3ddc84" }}>{(a.totalPaid||0) > 0 ? fd(a.totalPaid,0) : "—"}</td>
-                        <td style={{ color:(a.outstanding||0) > 0 ? "#ff5252" : "var(--mu)", fontWeight:600 }}>{(a.outstanding||0) > 0 ? fd(a.outstanding,0) : "—"}</td>
-                        <td><span style={{ fontSize:9,fontWeight:700,color:a.status==="Active"?"#3ddc84":"#ff5252",background:a.status==="Active"?"rgba(61,220,132,.1)":"rgba(255,82,82,.1)",border:`1px solid ${a.status==="Active"?"rgba(61,220,132,.3)":"rgba(255,82,82,.3)"}`,borderRadius:2,padding:"1px 6px" }}>{a.status}</span></td>
+                        <td style={{ color:"#fb7185" }}>{(a.totalBilled||0) > 0 ? fd(a.totalBilled,0) : "—"}</td>
+                        <td style={{ color:"#4ade80" }}>{(a.totalPaid||0) > 0 ? fd(a.totalPaid,0) : "—"}</td>
+                        <td style={{ color:(a.outstanding||0) > 0 ? "#fb7185" : "var(--mu)", fontWeight:600 }}>{(a.outstanding||0) > 0 ? fd(a.outstanding,0) : "—"}</td>
+                        <td><span style={{ fontSize:9,fontWeight:700,color:a.status==="Active"?"#4ade80":"#fb7185",background:a.status==="Active"?"rgba(74,222,128,.1)":"rgba(251,113,133,.1)",border:`1px solid ${a.status==="Active"?"rgba(74,222,128,.3)":"rgba(251,113,133,.3)"}`,borderRadius:2,padding:"1px 6px" }}>{a.status}</span></td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div style={{ marginTop:10,fontSize:10,color:equipment?._error ? "#ff5252" : "var(--mu)" }}>
+              <div style={{ marginTop:10,fontSize:10,color:equipment?._error ? "#fb7185" : "var(--mu)" }}>
                 {equipment?._error
                   ? `⚠ AP Aging fetch failed: ${equipment._error} — Trucks data missing. Check /api/ap-equipment.`
                   : <>Live data from AP Aging dashboard · Updated {equipment?.updatedAt ? new Date(equipment.updatedAt).toLocaleDateString() : "—"}</>}
@@ -3032,22 +3037,22 @@ function TrucksTab() {
           <div className="g4" style={{ marginBottom:14 }}>
             <div className="kpi">
               <div className="klbl">Total TCI Spend</div>
-              <div className="kval" style={{ color:"#f47820" }}>{fd(tciTotal,0)}</div>
+              <div className="kval" style={{ color:"#2dd4bf" }}>{fd(tciTotal,0)}</div>
               <div className="ksub">Feb lease {fd(TCI_LEASING.lease.reduce((s,i)=>s+i.total,0),0)} · Mar lease {fd(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.total,0),0)}</div>
             </div>
             <div className="kpi">
               <div className="klbl">Lease Units</div>
-              <div className="kval" style={{ color:"#3ddc84" }}>5</div>
+              <div className="kval" style={{ color:"#4ade80" }}>5</div>
               <div className="ksub">CA126DC × 5 + M2106 box truck × 1</div>
             </div>
             <div className="kpi">
               <div className="klbl">Mar Variable Miles</div>
-              <div className="kval" style={{ color:"#f5c542" }}>{fn(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.miles,0),0)}</div>
+              <div className="kval" style={{ color:"#fbbf24" }}>{fn(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.miles,0),0)}</div>
               <div className="ksub">@ $0.07/mi · {fd(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.variable,0),2)} total</div>
             </div>
             <div className="kpi">
               <div className="klbl">Box Truck Rental</div>
-              <div className="kval" style={{ color:"#4fc3f7" }}>{fd(TCI_LEASING.rental[0].total,0)}</div>
+              <div className="kval" style={{ color:"#38bdf8" }}>{fd(TCI_LEASING.rental[0].total,0)}</div>
               <div className="ksub">Unit #19129 · Feb 2026</div>
             </div>
           </div>
@@ -3077,24 +3082,24 @@ function TrucksTab() {
                   {TCI_LEASING.lease.map((l,i) => (
                     <tr key={l.invoice} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                       <td style={{ fontFamily:"var(--f2)",fontSize:12,fontWeight:700,color:"var(--or)" }}>{l.invoice}</td>
-                      <td style={{ fontWeight:700,color:"#3ddc84",fontFamily:"var(--f2)",fontSize:14 }}>#{l.unit}</td>
+                      <td style={{ fontWeight:700,color:"#4ade80",fontFamily:"var(--f2)",fontSize:14 }}>#{l.unit}</td>
                       <td style={{ fontSize:10,color:"var(--mu)",fontFamily:"monospace" }}>{l.vin}</td>
                       <td style={{ color:"var(--mu)" }}>{l.contract}</td>
                       <td style={{ color:"var(--mu)",fontSize:10 }}>{l.period}</td>
-                      <td style={{ color:"#4fc3f7" }}>{fd(l.fixed,2)}</td>
-                      <td style={{ color:"#f5c542" }}>{fd(l.license,2)}</td>
-                      <td style={{ color:"#b39ddb" }}>{fd(l.fhut,2)}</td>
-                      <td style={{ color:"#f47820",fontWeight:700 }}>{fd(l.total,2)}</td>
+                      <td style={{ color:"#38bdf8" }}>{fd(l.fixed,2)}</td>
+                      <td style={{ color:"#fbbf24" }}>{fd(l.license,2)}</td>
+                      <td style={{ color:"#a78bfa" }}>{fd(l.fhut,2)}</td>
+                      <td style={{ color:"#2dd4bf",fontWeight:700 }}>{fd(l.total,2)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr>
                     <td colSpan={5}>TOTAL — 5 units</td>
-                    <td style={{ color:"#4fc3f7" }}>{fd(TCI_LEASING.lease.reduce((s,i)=>s+i.fixed,0),0)}</td>
-                    <td style={{ color:"#f5c542" }}>{fd(TCI_LEASING.lease.reduce((s,i)=>s+i.license,0),0)}</td>
-                    <td style={{ color:"#b39ddb" }}>{fd(TCI_LEASING.lease.reduce((s,i)=>s+i.fhut,0),0)}</td>
-                    <td style={{ color:"#f47820",fontWeight:800 }}>{fd(TCI_LEASING.lease.reduce((s,i)=>s+i.total,0),2)}</td>
+                    <td style={{ color:"#38bdf8" }}>{fd(TCI_LEASING.lease.reduce((s,i)=>s+i.fixed,0),0)}</td>
+                    <td style={{ color:"#fbbf24" }}>{fd(TCI_LEASING.lease.reduce((s,i)=>s+i.license,0),0)}</td>
+                    <td style={{ color:"#a78bfa" }}>{fd(TCI_LEASING.lease.reduce((s,i)=>s+i.fhut,0),0)}</td>
+                    <td style={{ color:"#2dd4bf",fontWeight:800 }}>{fd(TCI_LEASING.lease.reduce((s,i)=>s+i.total,0),2)}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -3126,25 +3131,25 @@ function TrucksTab() {
                   {TCI_LEASING.leaseMar.map((l,i) => (
                     <tr key={l.invoice} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                       <td style={{ fontFamily:"var(--f2)",fontSize:12,fontWeight:700,color:"var(--or)" }}>{l.invoice}</td>
-                      <td style={{ fontWeight:700,color:"#3ddc84",fontFamily:"var(--f2)",fontSize:14 }}>#{l.unit}</td>
+                      <td style={{ fontWeight:700,color:"#4ade80",fontFamily:"var(--f2)",fontSize:14 }}>#{l.unit}</td>
                       <td style={{ color:"var(--mu)" }}>{l.contract}</td>
                       <td style={{ color:"var(--mu)",fontSize:10 }}>{l.period}</td>
-                      <td style={{ color:"#4fc3f7" }}>{fd(l.fixed,2)}</td>
-                      <td style={{ color:"#f5c542",fontWeight:600 }}>{fn(l.miles,0)}</td>
+                      <td style={{ color:"#38bdf8" }}>{fd(l.fixed,2)}</td>
+                      <td style={{ color:"#fbbf24",fontWeight:600 }}>{fn(l.miles,0)}</td>
                       <td style={{ color:"var(--mu)" }}>${l.miRate}</td>
-                      <td style={{ color:"#f47820" }}>{fd(l.variable,2)}</td>
-                      <td style={{ color:"#f47820",fontWeight:700 }}>{fd(l.total,2)}</td>
+                      <td style={{ color:"#2dd4bf" }}>{fd(l.variable,2)}</td>
+                      <td style={{ color:"#2dd4bf",fontWeight:700 }}>{fd(l.total,2)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr>
                     <td colSpan={4}>TOTAL — 5 units</td>
-                    <td style={{ color:"#4fc3f7" }}>{fd(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.fixed,0),0)}</td>
-                    <td style={{ color:"#f5c542" }}>{fn(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.miles,0),0)}</td>
+                    <td style={{ color:"#38bdf8" }}>{fd(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.fixed,0),0)}</td>
+                    <td style={{ color:"#fbbf24" }}>{fn(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.miles,0),0)}</td>
                     <td>—</td>
-                    <td style={{ color:"#f47820" }}>{fd(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.variable,0),2)}</td>
-                    <td style={{ color:"#f47820",fontWeight:800 }}>{fd(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.total,0),2)}</td>
+                    <td style={{ color:"#2dd4bf" }}>{fd(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.variable,0),2)}</td>
+                    <td style={{ color:"#2dd4bf",fontWeight:800 }}>{fd(TCI_LEASING.leaseMar.reduce((s,i)=>s+i.total,0),2)}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -3157,7 +3162,7 @@ function TrucksTab() {
             {TCI_LEASING.rental.map(r => (
               <div key={r.invoice} style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start" }}>
                 <div>
-                  <div style={{ fontFamily:"var(--f2)",fontSize:16,fontWeight:900,color:"#4fc3f7",letterSpacing:1,marginBottom:4 }}>
+                  <div style={{ fontFamily:"var(--f2)",fontSize:16,fontWeight:900,color:"#38bdf8",letterSpacing:1,marginBottom:4 }}>
                     #{r.unit} — {r.make} {r.model} ({r.year})
                   </div>
                   <div style={{ display:"flex",gap:16,fontSize:10,color:"var(--mu)",flexWrap:"wrap" }}>
@@ -3167,13 +3172,13 @@ function TrucksTab() {
                     <span>📝 PO: {r.po}</span>
                   </div>
                   <div style={{ display:"flex",gap:12,marginTop:8,fontSize:11 }}>
-                    <span>Fixed: <strong style={{ color:"#4fc3f7" }}>{fd(r.fixed,2)}</strong></span>
-                    <span>Env Fee: <strong style={{ color:"#b39ddb" }}>{fd(r.envFee,2)}</strong></span>
-                    <span>Variable: <strong style={{ color:"#f5c542" }}>{fd(r.variable,2)}</strong></span>
+                    <span>Fixed: <strong style={{ color:"#38bdf8" }}>{fd(r.fixed,2)}</strong></span>
+                    <span>Env Fee: <strong style={{ color:"#a78bfa" }}>{fd(r.envFee,2)}</strong></span>
+                    <span>Variable: <strong style={{ color:"#fbbf24" }}>{fd(r.variable,2)}</strong></span>
                   </div>
                 </div>
                 <div style={{ textAlign:"right",flexShrink:0,marginLeft:16 }}>
-                  <div style={{ fontFamily:"var(--f2)",fontSize:30,fontWeight:900,color:"#f47820" }}>{fd(r.total,2)}</div>
+                  <div style={{ fontFamily:"var(--f2)",fontSize:30,fontWeight:900,color:"#2dd4bf" }}>{fd(r.total,2)}</div>
                   <div style={{ fontSize:10,color:"var(--mu)" }}>Odometer {fn(r.meterFrom,0)} → {fn(r.meterTo,0)}</div>
                 </div>
               </div>
@@ -3183,10 +3188,10 @@ function TrucksTab() {
           {/* Service invoices — liftgate installs */}
           <div className="card">
             <div className="ctit">TCI Service Invoices — Liftgate Charging System Install (×4)</div>
-            <div style={{ background:"rgba(244,120,32,.06)",border:"1px solid rgba(244,120,32,.2)",borderRadius:3,padding:"10px 14px",marginBottom:14,fontSize:11,color:"var(--mu)",lineHeight:1.7 }}>
-              <strong style={{ color:"#f47820" }}>Same work · Same parts · Same price on all 4 trucks.</strong> Install charge socket, wiring, and 12' dual-pole 4-gauge liftgate cable per customer request.
+            <div style={{ background:"rgba(45,212,191,.06)",border:"1px solid rgba(45,212,191,.2)",borderRadius:3,padding:"10px 14px",marginBottom:14,fontSize:11,color:"var(--mu)",lineHeight:1.7 }}>
+              <strong style={{ color:"#2dd4bf" }}>Same work · Same parts · Same price on all 4 trucks.</strong> Install charge socket, wiring, and 12' dual-pole 4-gauge liftgate cable per customer request.
               Parts include: dual-pole socket, 7-pin mounting bracket, battery lugs, 4GA wire (black+red), liftgate cable.
-              Each: Parts $325.84 · Labor $186.00 · Misc $16.74 · Tax $27.75 = <strong style={{ color:"#f47820" }}>$556.33</strong>
+              Each: Parts $325.84 · Labor $186.00 · Misc $16.74 · Tax $27.75 = <strong style={{ color:"#2dd4bf" }}>$556.33</strong>
             </div>
             <table className="tbl" style={{ fontSize:11 }}>
               <thead>
@@ -3206,24 +3211,24 @@ function TrucksTab() {
                 {TCI_LEASING.service.map((s,i) => (
                   <tr key={s.invoice} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                     <td style={{ fontFamily:"var(--f2)",fontSize:12,fontWeight:700,color:"var(--or)" }}>{s.invoice}</td>
-                    <td style={{ fontWeight:700,color:"#3ddc84",fontFamily:"var(--f2)",fontSize:14 }}>#{s.unit}</td>
+                    <td style={{ fontWeight:700,color:"#4ade80",fontFamily:"var(--f2)",fontSize:14 }}>#{s.unit}</td>
                     <td style={{ fontSize:10,color:"var(--mu)",fontFamily:"monospace" }}>{s.vin}</td>
                     <td style={{ color:"var(--mu)" }}>{fn(s.meter,0)} mi</td>
                     <td style={{ color:"var(--mu)" }}>{s.date}</td>
-                    <td style={{ color:"#4fc3f7" }}>{fd(s.parts,2)}</td>
-                    <td style={{ color:"#f5c542" }}>{fd(s.labor,2)}</td>
+                    <td style={{ color:"#38bdf8" }}>{fd(s.parts,2)}</td>
+                    <td style={{ color:"#fbbf24" }}>{fd(s.labor,2)}</td>
                     <td style={{ color:"var(--mu)" }}>{fd(s.tax,2)}</td>
-                    <td style={{ color:"#f47820",fontWeight:700 }}>{fd(s.total,2)}</td>
+                    <td style={{ color:"#2dd4bf",fontWeight:700 }}>{fd(s.total,2)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr>
                   <td colSpan={5}>TOTAL — 4 installs</td>
-                  <td style={{ color:"#4fc3f7" }}>{fd(TCI_LEASING.service.reduce((s,i)=>s+i.parts,0),2)}</td>
-                  <td style={{ color:"#f5c542" }}>{fd(TCI_LEASING.service.reduce((s,i)=>s+i.labor,0),2)}</td>
+                  <td style={{ color:"#38bdf8" }}>{fd(TCI_LEASING.service.reduce((s,i)=>s+i.parts,0),2)}</td>
+                  <td style={{ color:"#fbbf24" }}>{fd(TCI_LEASING.service.reduce((s,i)=>s+i.labor,0),2)}</td>
                   <td style={{ color:"var(--mu)" }}>{fd(TCI_LEASING.service.reduce((s,i)=>s+i.tax,0),2)}</td>
-                  <td style={{ color:"#f47820",fontWeight:800 }}>{fd(TCI_LEASING.service.reduce((s,i)=>s+i.total,0),2)}</td>
+                  <td style={{ color:"#2dd4bf",fontWeight:800 }}>{fd(TCI_LEASING.service.reduce((s,i)=>s+i.total,0),2)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -3238,22 +3243,22 @@ function TrucksTab() {
           <div className="g4" style={{ marginBottom:14 }}>
             <div className="kpi">
               <div className="klbl">Total Penske Spend</div>
-              <div className="kval" style={{ color:"#f47820" }}>{fd(PENSKE.invoices.reduce((s,i)=>s+i.total,0),0)}</div>
+              <div className="kval" style={{ color:"#2dd4bf" }}>{fd(PENSKE.invoices.reduce((s,i)=>s+i.total,0),0)}</div>
               <div className="ksub">{PENSKE.invoices.length} invoices · Jan–Feb 2026</div>
             </div>
             <div className="kpi">
               <div className="klbl">Lease Units</div>
-              <div className="kval" style={{ color:"#3ddc84" }}>4</div>
+              <div className="kval" style={{ color:"#4ade80" }}>4</div>
               <div className="ksub">#585443 (credit) · #587120 · #587127 · subs</div>
             </div>
             <div className="kpi">
               <div className="klbl">Contract & Rental</div>
-              <div className="kval" style={{ color:"#f5c542" }}>{fd(3018.99+3650.75,0)}</div>
+              <div className="kval" style={{ color:"#fbbf24" }}>{fd(3018.99+3650.75,0)}</div>
               <div className="ksub">Invoices 0032649248 + 0032533089</div>
             </div>
             <div className="kpi">
               <div className="klbl">Specials + Fuel</div>
-              <div className="kval" style={{ color:"#4fc3f7" }}>{fd(884.24+100.63+1620.97+709.04,0)}</div>
+              <div className="kval" style={{ color:"#38bdf8" }}>{fd(884.24+100.63+1620.97+709.04,0)}</div>
               <div className="ksub">Fuel · Tolls · IFTA Taxes · Fees</div>
             </div>
           </div>
@@ -3276,7 +3281,7 @@ function TrucksTab() {
                     <td style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:700,color:"var(--or)" }}>{inv.invoice}</td>
                     <td style={{ color:"var(--mu)" }}>{inv.date}</td>
                     <td>{inv.type}</td>
-                    <td style={{ color:"#f47820",fontWeight:700 }}>{fd(inv.total,2)}</td>
+                    <td style={{ color:"#2dd4bf",fontWeight:700 }}>{fd(inv.total,2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -3309,33 +3314,33 @@ function TrucksTab() {
               <tbody>
                 {PENSKE.leaseUnits.map((u,i) => (
                   <tr key={u.unit+i} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
-                    <td style={{ fontWeight:700,color:u.total<0?"#ff5252":"var(--or)",fontFamily:"var(--f2)",fontSize:14,letterSpacing:1 }}>#{u.unit}</td>
-                    <td style={{ color:u.miles<0?"#ff5252":"var(--tx)" }}>{fn(u.miles,0)}</td>
-                    <td style={{ color:u.variable<0?"#ff5252":"#f47820" }}>{fd(u.variable,2)}</td>
-                    <td style={{ color:"#4fc3f7" }}>{u.fixed ? fd(u.fixed,2) : "—"}</td>
+                    <td style={{ fontWeight:700,color:u.total<0?"#fb7185":"var(--or)",fontFamily:"var(--f2)",fontSize:14,letterSpacing:1 }}>#{u.unit}</td>
+                    <td style={{ color:u.miles<0?"#fb7185":"var(--tx)" }}>{fn(u.miles,0)}</td>
+                    <td style={{ color:u.variable<0?"#fb7185":"#2dd4bf" }}>{fd(u.variable,2)}</td>
+                    <td style={{ color:"#38bdf8" }}>{u.fixed ? fd(u.fixed,2) : "—"}</td>
                     <td style={{ color:"var(--mu)" }}>{fd(u.tax,2)}</td>
-                    <td style={{ color:u.total<0?"#ff5252":"var(--ye)",fontWeight:700 }}>{fd(u.total,2)}</td>
+                    <td style={{ color:u.total<0?"#fb7185":"var(--ye)",fontWeight:700 }}>{fd(u.total,2)}</td>
                     <td style={{ color:"var(--mu)",fontSize:10 }}>{u.note}</td>
                   </tr>
                 ))}
                 {/* New unit activation */}
-                <tr style={{ background:"rgba(61,220,132,.05)" }}>
-                  <td style={{ fontWeight:700,color:"#3ddc84",fontFamily:"var(--f2)",fontSize:14,letterSpacing:1 }}>#{PENSKE.newUnit.unit}</td>
+                <tr style={{ background:"rgba(74,222,128,.05)" }}>
+                  <td style={{ fontWeight:700,color:"#4ade80",fontFamily:"var(--f2)",fontSize:14,letterSpacing:1 }}>#{PENSKE.newUnit.unit}</td>
                   <td style={{ color:"var(--mu)" }}>0</td>
                   <td style={{ color:"var(--mu)" }}>—</td>
-                  <td style={{ color:"#4fc3f7" }}>{fd(PENSKE.newUnit.fixed,2)}</td>
+                  <td style={{ color:"#38bdf8" }}>{fd(PENSKE.newUnit.fixed,2)}</td>
                   <td style={{ color:"var(--mu)" }}>{fd(PENSKE.newUnit.tax,2)}</td>
-                  <td style={{ color:"#3ddc84",fontWeight:700 }}>{fd(PENSKE.newUnit.total,2)}</td>
-                  <td style={{ color:"#3ddc84",fontSize:10 }}>{PENSKE.newUnit.note}</td>
+                  <td style={{ color:"#4ade80",fontWeight:700 }}>{fd(PENSKE.newUnit.total,2)}</td>
+                  <td style={{ color:"#4ade80",fontSize:10 }}>{PENSKE.newUnit.note}</td>
                 </tr>
                 {/* Rental */}
                 <tr>
-                  <td style={{ fontWeight:700,color:"#b39ddb",fontFamily:"var(--f2)",fontSize:14,letterSpacing:1 }}>#{PENSKE.rental.unit} <span style={{ fontSize:10 }}>({PENSKE.rental.myUnit})</span></td>
+                  <td style={{ fontWeight:700,color:"#a78bfa",fontFamily:"var(--f2)",fontSize:14,letterSpacing:1 }}>#{PENSKE.rental.unit} <span style={{ fontSize:10 }}>({PENSKE.rental.myUnit})</span></td>
                   <td>{fn(PENSKE.rental.miles,0)}</td>
-                  <td style={{ color:"#f47820" }}>{fd(PENSKE.rental.variable,2)}</td>
-                  <td style={{ color:"#4fc3f7" }}>{fd(PENSKE.rental.fixed,2)}</td>
+                  <td style={{ color:"#2dd4bf" }}>{fd(PENSKE.rental.variable,2)}</td>
+                  <td style={{ color:"#38bdf8" }}>{fd(PENSKE.rental.fixed,2)}</td>
                   <td style={{ color:"var(--mu)" }}>{fd(PENSKE.rental.tax,2)}</td>
-                  <td style={{ color:"#b39ddb",fontWeight:700 }}>{fd(PENSKE.rental.total,2)}</td>
+                  <td style={{ color:"#a78bfa",fontWeight:700 }}>{fd(PENSKE.rental.total,2)}</td>
                   <td style={{ color:"var(--mu)",fontSize:10 }}>{PENSKE.rental.note}</td>
                 </tr>
               </tbody>
@@ -3353,7 +3358,7 @@ function TrucksTab() {
                       <div style={{ fontFamily:"var(--f2)",fontSize:12,fontWeight:800,color:"var(--or)",letterSpacing:1 }}>{s.invoice}</div>
                       <div style={{ fontSize:10,color:"var(--mu)" }}>{s.date} · Unit #{s.unit}</div>
                     </div>
-                    <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:900,color:"#ff8a65" }}>{fd(s.total,2)}</div>
+                    <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:900,color:"#5eead4" }}>{fd(s.total,2)}</div>
                   </div>
                   {s.items.map((item,i) => (
                     <div key={i} style={{ display:"flex",justifyContent:"space-between",fontSize:10,color:"var(--mu)",padding:"3px 0" }}>
@@ -3372,10 +3377,10 @@ function TrucksTab() {
                 <div key={i} style={{ marginBottom:12,paddingBottom:12,borderBottom:"1px solid var(--bd)" }}>
                   <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4 }}>
                     <div>
-                      <span style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:800,color:f.type==="Lease"?"#4fc3f7":"#b39ddb" }}>Unit #{f.unit}</span>
+                      <span style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:800,color:f.type==="Lease"?"#38bdf8":"#a78bfa" }}>Unit #{f.unit}</span>
                       <span style={{ fontSize:10,color:"var(--mu)",marginLeft:8 }}>{f.type}</span>
                     </div>
-                    <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:900,color:"#f47820" }}>{fd(f.total,2)}</div>
+                    <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:900,color:"#2dd4bf" }}>{fd(f.total,2)}</div>
                   </div>
                   <div style={{ fontSize:10,color:"var(--mu)" }}>
                     Diesel: {f.diesel} gal @ ${f.rate.toFixed(4)}
@@ -3385,7 +3390,7 @@ function TrucksTab() {
               ))}
               <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:8 }}>
                 <span style={{ fontSize:11,color:"var(--mu)" }}>Total 170.8 gal · avg $4.1513/gal w/tax</span>
-                <span style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:900,color:"#f47820" }}>{fd(PENSKE.fuel.total,2)}</span>
+                <span style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:900,color:"#2dd4bf" }}>{fd(PENSKE.fuel.total,2)}</span>
               </div>
             </div>
           </div>
@@ -3398,17 +3403,17 @@ function TrucksTab() {
           <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14 }}>
             <div className="kpi">
               <div className="klbl">Fixed Lease Total</div>
-              <div className="kval" style={{ color:"#4fc3f7",fontSize:22 }}>{fd(totalFixed,0)}</div>
+              <div className="kval" style={{ color:"#38bdf8",fontSize:22 }}>{fd(totalFixed,0)}</div>
               <div className="ksub">{fp(totalFixed/TEC_EQUIPMENT.lease.subtotal*100)} of subtotal</div>
             </div>
             <div className="kpi">
               <div className="klbl">Mileage Charges</div>
-              <div className="kval" style={{ color:"#f47820",fontSize:22 }}>{fd(totalMiChg,0)}</div>
+              <div className="kval" style={{ color:"#2dd4bf",fontSize:22 }}>{fd(totalMiChg,0)}</div>
               <div className="ksub">{fn(totalMiles,0)} mi @ ~$0.092/mi</div>
             </div>
             <div className="kpi">
               <div className="klbl">Sales Tax</div>
-              <div className="kval" style={{ color:"#b39ddb",fontSize:22 }}>{fd(TEC_EQUIPMENT.lease.tax,0)}</div>
+              <div className="kval" style={{ color:"#a78bfa",fontSize:22 }}>{fd(TEC_EQUIPMENT.lease.tax,0)}</div>
               <div className="ksub">{fp(TEC_EQUIPMENT.lease.tax/TEC_EQUIPMENT.lease.total*100)} of invoice</div>
             </div>
           </div>
@@ -3444,12 +3449,12 @@ function TrucksTab() {
                         <td style={{ fontWeight:700,color:"var(--or)",fontFamily:"var(--f2)",fontSize:14,letterSpacing:1 }}>#{u.unit}</td>
                         <td style={{ color:"var(--mu)" }}>{fn(u.odOut,0)}</td>
                         <td style={{ color:"var(--mu)" }}>{fn(u.odIn,0)}</td>
-                        <td style={{ color:u.miles>5000?"#f5c542":"var(--tx)",fontWeight:u.miles>5000?700:400 }}>{fn(u.miles,0)}</td>
-                        <td style={{ color:"#4fc3f7" }}>{fd(u.fixed,2)}</td>
+                        <td style={{ color:u.miles>5000?"#fbbf24":"var(--tx)",fontWeight:u.miles>5000?700:400 }}>{fn(u.miles,0)}</td>
+                        <td style={{ color:"#38bdf8" }}>{fd(u.fixed,2)}</td>
                         <td style={{ color:"var(--mu)" }}>${u.miRate.toFixed(5)}</td>
-                        <td style={{ color:"#f47820" }}>{fd(u.miCharge,2)}</td>
+                        <td style={{ color:"#2dd4bf" }}>{fd(u.miCharge,2)}</td>
                         <td style={{ color:"var(--ye)",fontWeight:700 }}>{fd(u.total,2)}</td>
-                        <td style={{ color:cpm<0.6?"#3ddc84":cpm<1?"#f5c542":"#ff8a65",fontWeight:700 }}>{fd(cpm,3)}</td>
+                        <td style={{ color:cpm<0.6?"#4ade80":cpm<1?"#fbbf24":"#5eead4",fontWeight:700 }}>{fd(cpm,3)}</td>
                       </tr>
                     );
                   })}
@@ -3459,11 +3464,11 @@ function TrucksTab() {
                     <td>TOTAL</td>
                     <td colSpan={2}>12 units</td>
                     <td>{fn(totalMiles,0)}</td>
-                    <td style={{ color:"#4fc3f7" }}>{fd(totalFixed,0)}</td>
+                    <td style={{ color:"#38bdf8" }}>{fd(totalFixed,0)}</td>
                     <td>—</td>
-                    <td style={{ color:"#f47820" }}>{fd(totalMiChg,0)}</td>
+                    <td style={{ color:"#2dd4bf" }}>{fd(totalMiChg,0)}</td>
                     <td style={{ color:"var(--ye)",fontWeight:800 }}>{fd(TEC_EQUIPMENT.lease.subtotal,0)}</td>
-                    <td style={{ color:"#f5c542" }}>{fd(TEC_EQUIPMENT.lease.total/totalMiles,3)}</td>
+                    <td style={{ color:"#fbbf24" }}>{fd(TEC_EQUIPMENT.lease.total/totalMiles,3)}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -3478,17 +3483,17 @@ function TrucksTab() {
           <div className="g3" style={{ marginBottom:14 }}>
             <div className="kpi">
               <div className="klbl">Rental Invoices</div>
-              <div className="kval" style={{ color:"#3ddc84" }}>{TEC_EQUIPMENT.rentals.length}</div>
+              <div className="kval" style={{ color:"#4ade80" }}>{TEC_EQUIPMENT.rentals.length}</div>
               <div className="ksub">Feb 2026</div>
             </div>
             <div className="kpi">
               <div className="klbl">Total Rental Spend</div>
-              <div className="kval" style={{ color:"#f47820" }}>{fd(rentalTotal,0)}</div>
+              <div className="kval" style={{ color:"#2dd4bf" }}>{fd(rentalTotal,0)}</div>
               <div className="ksub">Units 103951, 104020, 101579</div>
             </div>
             <div className="kpi">
               <div className="klbl">Unique Rental Units</div>
-              <div className="kval" style={{ color:"#4fc3f7" }}>3</div>
+              <div className="kval" style={{ color:"#38bdf8" }}>3</div>
               <div className="ksub">#103951 · #104020 · #101579</div>
             </div>
           </div>
@@ -3507,7 +3512,7 @@ function TrucksTab() {
                   </div>
                 </div>
                 <div style={{ textAlign:"right",flexShrink:0,marginLeft:16 }}>
-                  <div style={{ fontFamily:"var(--f2)",fontSize:26,fontWeight:900,color:"#f47820" }}>{fd(r.total,2)}</div>
+                  <div style={{ fontFamily:"var(--f2)",fontSize:26,fontWeight:900,color:"#2dd4bf" }}>{fd(r.total,2)}</div>
                   <div style={{ fontSize:10,color:"var(--mu)" }}>subtotal {fd(r.subtotal,2)} + tax {fd(r.tax,2)}</div>
                 </div>
               </div>
@@ -3523,7 +3528,7 @@ function TrucksTab() {
             <div key={s.invoice} className="card">
               <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,paddingBottom:12,borderBottom:"1px solid var(--bd)" }}>
                 <div>
-                  <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:900,color:"#f5c542",marginBottom:4 }}>
+                  <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:900,color:"#fbbf24",marginBottom:4 }}>
                     Unit #{s.unit} — {s.description}
                   </div>
                   <div style={{ display:"flex",gap:16,fontSize:10,color:"var(--mu)",flexWrap:"wrap" }}>
@@ -3535,13 +3540,13 @@ function TrucksTab() {
                   <div style={{ fontSize:10,color:"var(--mu)",marginTop:6 }}>{s.note}</div>
                 </div>
                 <div style={{ textAlign:"right",flexShrink:0,marginLeft:16 }}>
-                  <div style={{ fontFamily:"var(--f2)",fontSize:30,fontWeight:900,color:"#f5c542" }}>{fd(s.total,2)}</div>
+                  <div style={{ fontFamily:"var(--f2)",fontSize:30,fontWeight:900,color:"#fbbf24" }}>{fd(s.total,2)}</div>
                   <div style={{ fontSize:10,color:"var(--mu)" }}>parts {fd(s.subtotal,2)} + tax {fd(s.tax,2)}</div>
                 </div>
               </div>
-              <div style={{ background:"rgba(245,197,66,.06)",border:"1px solid rgba(245,197,66,.2)",borderRadius:3,padding:"12px 14px" }}>
+              <div style={{ background:"rgba(251,191,36,.06)",border:"1px solid rgba(251,191,36,.2)",borderRadius:3,padding:"12px 14px" }}>
                 <div style={{ fontSize:10,color:"var(--mu)",lineHeight:1.7 }}>
-                  <strong style={{ color:"#f5c542" }}>Note:</strong> Driver from Show Freight picked up mattress. 
+                  <strong style={{ color:"#fbbf24" }}>Note:</strong> Driver from Show Freight picked up mattress. 
                   Customer-requested per Juan. Billed directly to customer.
                   This vehicle was in for 90-day DOT inspection (CARB CTC Mar/Sep cycle).
                 </div>
@@ -3755,7 +3760,7 @@ function TrailerFleet() {
         const totalBilled = trailers.reduce((s,a) => s+(a.totalBilled||0), 0);
         const totalPaid = trailers.reduce((s,a) => s+(a.totalPaid||0), 0);
         const totalOutstanding = trailers.reduce((s,a) => s+(a.outstanding||0), 0);
-        const vendorColor = v => v === "McKinney" ? "#f47820" : v === "Xtra" || v === "Xtra Lease" ? "#4fc3f7" : v?.includes("Utility") || v?.includes("Mountain") ? "#3ddc84" : v === "Premier" ? "#b39ddb" : v === "Boxwheel" ? "#26a69a" : "#5a6370";
+        const vendorColor = v => v === "McKinney" ? "#2dd4bf" : v === "Xtra" || v === "Xtra Lease" ? "#38bdf8" : v?.includes("Utility") || v?.includes("Mountain") ? "#4ade80" : v === "Premier" ? "#a78bfa" : v === "Boxwheel" ? "#26a69a" : "#5a6370";
         const byVendor = {};
         trailers.forEach(a => { byVendor[a.vendor] = (byVendor[a.vendor]||0) + 1; });
 
@@ -3771,22 +3776,22 @@ function TrailerFleet() {
               </div>
               <div className="kpi">
                 <div className="klbl">Monthly Base Rental</div>
-                <div className="kval" style={{ color:"#f5c542" }}>{fd(totalMonthly,0)}</div>
+                <div className="kval" style={{ color:"#fbbf24" }}>{fd(totalMonthly,0)}</div>
                 <div className="ksub">{fd(totalMonthly*12,0)}/yr</div>
               </div>
               <div className="kpi">
                 <div className="klbl">Total Billed</div>
-                <div className="kval" style={{ color:"#ff5252" }}>{fd(totalBilled,0)}</div>
+                <div className="kval" style={{ color:"#fb7185" }}>{fd(totalBilled,0)}</div>
                 <div className="ksub">{fd(totalPaid,0)} paid</div>
               </div>
               <div className="kpi">
                 <div className="klbl">Outstanding</div>
-                <div className="kval" style={{ color:totalOutstanding > 0 ? "#ff5252" : "#3ddc84" }}>{fd(totalOutstanding,0)}</div>
+                <div className="kval" style={{ color:totalOutstanding > 0 ? "#fb7185" : "#4ade80" }}>{fd(totalOutstanding,0)}</div>
               </div>
             </div>
 
             <div className="card">
-              <div className="ctit">Trailer Fleet — {trailers.length} Units <span style={{ fontSize:10,color:"#3ddc84",fontWeight:400 }}>· Live from AP Aging</span></div>
+              <div className="ctit">Trailer Fleet — {trailers.length} Units <span style={{ fontSize:10,color:"#4ade80",fontWeight:400 }}>· Live from AP Aging</span></div>
               <div style={{ overflowX:"auto" }}>
                 <table className="tbl" style={{ fontSize:10 }}>
                   <thead>
@@ -3810,20 +3815,20 @@ function TrailerFleet() {
                         <td style={{ fontFamily:"var(--f2)",fontSize:14,fontWeight:900,color:vendorColor(a.vendor),letterSpacing:1 }}>#{a.fleetNumber}</td>
                         <td style={{ fontWeight:700,color:vendorColor(a.vendor),fontSize:10 }}>{a.vendor}</td>
                         <td style={{ textAlign:"left",fontSize:10 }}>{a.type}</td>
-                        <td style={{ color:(a.monthlyCost||0) > 0 ? "#f5c542" : "var(--mu)", fontWeight:600 }}>{(a.monthlyCost||0) > 0 ? fd(a.monthlyCost,0) : "—"}</td>
+                        <td style={{ color:(a.monthlyCost||0) > 0 ? "#fbbf24" : "var(--mu)", fontWeight:600 }}>{(a.monthlyCost||0) > 0 ? fd(a.monthlyCost,0) : "—"}</td>
                         <td style={{ color:"var(--mu)",fontSize:9 }}>{(a.mileageRate||0) > 0 ? `$${a.mileageRate}/mi` : "—"}</td>
                         <td>{a.invoiceCount || 0}</td>
-                        <td style={{ color:"#ff5252" }}>{(a.totalBilled||0) > 0 ? fd(a.totalBilled,0) : "—"}</td>
-                        <td style={{ color:"#3ddc84" }}>{(a.totalPaid||0) > 0 ? fd(a.totalPaid,0) : "—"}</td>
-                        <td style={{ color:(a.outstanding||0) > 0 ? "#ff5252" : "var(--mu)", fontWeight:600 }}>{(a.outstanding||0) > 0 ? fd(a.outstanding,0) : "—"}</td>
+                        <td style={{ color:"#fb7185" }}>{(a.totalBilled||0) > 0 ? fd(a.totalBilled,0) : "—"}</td>
+                        <td style={{ color:"#4ade80" }}>{(a.totalPaid||0) > 0 ? fd(a.totalPaid,0) : "—"}</td>
+                        <td style={{ color:(a.outstanding||0) > 0 ? "#fb7185" : "var(--mu)", fontWeight:600 }}>{(a.outstanding||0) > 0 ? fd(a.outstanding,0) : "—"}</td>
                         <td style={{ fontSize:9,color:"var(--mu)" }}>{a.lastInvoiceDate || "—"}</td>
-                        <td><span style={{ fontSize:9,fontWeight:700,color:a.status==="Active"?"#3ddc84":"#ff8a65",background:a.status==="Active"?"rgba(61,220,132,.1)":"rgba(255,138,101,.1)",border:`1px solid ${a.status==="Active"?"rgba(61,220,132,.3)":"rgba(255,138,101,.3)"}`,borderRadius:2,padding:"1px 6px" }}>{a.status}</span></td>
+                        <td><span style={{ fontSize:9,fontWeight:700,color:a.status==="Active"?"#4ade80":"#5eead4",background:a.status==="Active"?"rgba(74,222,128,.1)":"rgba(45,212,191,.1)",border:`1px solid ${a.status==="Active"?"rgba(74,222,128,.3)":"rgba(45,212,191,.3)"}`,borderRadius:2,padding:"1px 6px" }}>{a.status}</span></td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div style={{ marginTop:10,fontSize:10,color:equipment?._error ? "#ff5252" : "var(--mu)" }}>
+              <div style={{ marginTop:10,fontSize:10,color:equipment?._error ? "#fb7185" : "var(--mu)" }}>
                 {equipment?._error
                   ? `⚠ AP Aging fetch failed: ${equipment._error} — Trailers data missing. Check /api/ap-equipment.`
                   : <>Live data from AP Aging dashboard · Updated {equipment?.updatedAt ? new Date(equipment.updatedAt).toLocaleDateString() : "—"} ·
@@ -3886,12 +3891,12 @@ function TrailerFleet() {
           return (<>
             <div className="kpi">
               <div className="klbl">Total Rental Cost</div>
-              <div className="kval" style={{ color:"#f47820" }}>{fd(vCost,0)}</div>
+              <div className="kval" style={{ color:"#2dd4bf" }}>{fd(vCost,0)}</div>
               <div className="ksub" style={{ fontSize:9 }}>{vSub}</div>
             </div>
             <div className="kpi">
               <div className="klbl">Units</div>
-              <div className="kval" style={{ color:"#3ddc84" }}>{vUnits}</div>
+              <div className="kval" style={{ color:"#4ade80" }}>{vUnits}</div>
               <div className="ksub">{
                 vendor==="mckinney" ? "29 units · 10 returning" :
                 vendor==="xtra"     ? "8 units" :
@@ -3901,12 +3906,12 @@ function TrailerFleet() {
             </div>
             <div className="kpi">
               <div className="klbl">Avg Cost / Unit</div>
-              <div className="kval" style={{ color:"#f5c542" }}>{fd(vAvg,0)}</div>
+              <div className="kval" style={{ color:"#fbbf24" }}>{fd(vAvg,0)}</div>
               <div className="ksub">this billing period</div>
             </div>
             <div className="kpi">
               <div className="klbl">Total Miles</div>
-              <div className="kval" style={{ color:"#4fc3f7" }}>{fn(vMiles,0)}</div>
+              <div className="kval" style={{ color:"#38bdf8" }}>{fn(vMiles,0)}</div>
               <div className="ksub">{
                 vendor==="all"    ? "McKinney 35,342 · XTRA 41,230" :
                 vendor==="mtnwest"? "no mileage billing" : ""
@@ -3932,7 +3937,7 @@ function TrailerFleet() {
             return (
               <>
                 {Object.entries(types).sort((a,b)=>b[1]-a[1]).map(([label,count],i) => {
-                  const colors = ["#4fc3f7","#b39ddb","#3ddc84","#f5c542","#f47820"];
+                  const colors = ["#38bdf8","#a78bfa","#4ade80","#fbbf24","#2dd4bf"];
                   const col = colors[i % colors.length];
                   return (
                     <div key={label} style={{ display:"flex",justifyContent:"space-between",alignItems:"center",
@@ -3953,13 +3958,13 @@ function TrailerFleet() {
                 <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:12 }}>
                   <div style={{ display:"flex",gap:16 }}>
                     <div style={{ textAlign:"center" }}>
-                      <div style={{ fontSize:9,color:"#3ddc84",letterSpacing:2,textTransform:"uppercase" }}>Active</div>
-                      <div style={{ fontFamily:"var(--f2)",fontSize:22,fontWeight:900,color:"#3ddc84" }}>{active}</div>
+                      <div style={{ fontSize:9,color:"#4ade80",letterSpacing:2,textTransform:"uppercase" }}>Active</div>
+                      <div style={{ fontFamily:"var(--f2)",fontSize:22,fontWeight:900,color:"#4ade80" }}>{active}</div>
                     </div>
                     {returning > 0 && (
                       <div style={{ textAlign:"center" }}>
-                        <div style={{ fontSize:9,color:"#ff5252",letterSpacing:2,textTransform:"uppercase" }}>Returning</div>
-                        <div style={{ fontFamily:"var(--f2)",fontSize:22,fontWeight:900,color:"#ff5252" }}>{returning}</div>
+                        <div style={{ fontSize:9,color:"#fb7185",letterSpacing:2,textTransform:"uppercase" }}>Returning</div>
+                        <div style={{ fontFamily:"var(--f2)",fontSize:22,fontWeight:900,color:"#fb7185" }}>{returning}</div>
                       </div>
                     )}
                   </div>
@@ -3986,9 +3991,9 @@ function TrailerFleet() {
             return (
               <>
                 {[
-                  { label:"Base Rental",    val:baseRent, color:"#4fc3f7" },
-                  { label:"Mileage Charges",val:miCharge, color:"#f47820" },
-                  { label:"Tax",            val:taxAmt,   color:"#b39ddb" },
+                  { label:"Base Rental",    val:baseRent, color:"#38bdf8" },
+                  { label:"Mileage Charges",val:miCharge, color:"#2dd4bf" },
+                  { label:"Tax",            val:taxAmt,   color:"#a78bfa" },
                 ].map(item => (
                   <div key={item.label} style={{ display:"flex",justifyContent:"space-between",alignItems:"center",
                     padding:"10px 0",borderBottom:"1px solid var(--bd)" }}>
@@ -4065,21 +4070,21 @@ function TrailerFleet() {
                     <td style={{ color:"var(--mu)",fontSize:10 }}>{u.type}</td>
                     <td style={{ color:"var(--mu)" }}>{u.from} – {u.to}</td>
                     <td style={{ color:"var(--mu)" }}>{u.days}</td>
-                    <td style={{ color:"#4fc3f7" }}>{fd(u.base,2)}</td>
+                    <td style={{ color:"#38bdf8" }}>{fd(u.base,2)}</td>
                     <td style={{ color:"var(--mu)" }}>${u.miRate.toFixed(3)}</td>
-                    <td style={{ color:u.miles>1000?"#f5c542":"var(--tx)", fontWeight:u.miles>1000?700:400 }}>
+                    <td style={{ color:u.miles>1000?"#fbbf24":"var(--tx)", fontWeight:u.miles>1000?700:400 }}>
                       {u.miles > 0 ? fn(u.miles,0) : <span style={{ color:"var(--mu)" }}>0</span>}
                     </td>
-                    <td style={{ color:"#f47820",fontWeight:700 }}>{fd(u.total,2)}</td>
-                    <td style={{ color:cpm?cpm>1?"#ff8a65":"#3ddc84":"var(--mu)" }}>
+                    <td style={{ color:"#2dd4bf",fontWeight:700 }}>{fd(u.total,2)}</td>
+                    <td style={{ color:cpm?cpm>1?"#5eead4":"#4ade80":"var(--mu)" }}>
                       {cpm ? fd(cpm,3) : "—"}
                     </td>
                     <td>
                       <span style={{
                         fontSize:9,letterSpacing:1,textTransform:"uppercase",padding:"2px 7px",borderRadius:2,
-                        background:u.final?"rgba(255,82,82,.12)":"rgba(61,220,132,.1)",
-                        color:u.final?"#ff5252":"#3ddc84",
-                        border:`1px solid ${u.final?"rgba(255,82,82,.3)":"rgba(61,220,132,.3)"}`,
+                        background:u.final?"rgba(251,113,133,.12)":"rgba(74,222,128,.1)",
+                        color:u.final?"#fb7185":"#4ade80",
+                        border:`1px solid ${u.final?"rgba(251,113,133,.3)":"rgba(74,222,128,.3)"}`,
                       }}>
                         {u.final ? "Returning" : "Active"}
                       </span>
@@ -4091,10 +4096,10 @@ function TrailerFleet() {
             <tfoot>
               <tr>
                 <td colSpan={4}>{filtered.length} units shown</td>
-                <td style={{ color:"#4fc3f7" }}>{fd(filtered.reduce((s,u)=>s+u.base,0),0)}</td>
+                <td style={{ color:"#38bdf8" }}>{fd(filtered.reduce((s,u)=>s+u.base,0),0)}</td>
                 <td>—</td>
                 <td>{fn(filtered.reduce((s,u)=>s+u.miles,0),0)}</td>
-                <td style={{ color:"#f47820",fontWeight:700 }}>{fd(filtered.reduce((s,u)=>s+u.total,0),2)}</td>
+                <td style={{ color:"#2dd4bf",fontWeight:700 }}>{fd(filtered.reduce((s,u)=>s+u.total,0),2)}</td>
                 <td>—</td>
                 <td>—</td>
               </tr>
@@ -4112,17 +4117,17 @@ function TrailerFleet() {
           <div className="g3" style={{ marginBottom:14 }}>
             <div className="kpi">
               <div className="klbl">Total Repair Invoices</div>
-              <div className="kval" style={{ color:"#ff5252" }}>{fd(TRAILERS_INV.repairs.reduce((s,r)=>s+r.total,0)+XTRA_LEASE.service.total,0)}</div>
+              <div className="kval" style={{ color:"#fb7185" }}>{fd(TRAILERS_INV.repairs.reduce((s,r)=>s+r.total,0)+XTRA_LEASE.service.total,0)}</div>
               <div className="ksub">{TRAILERS_INV.repairs.length + 1} invoices · McKinney + XTRA Lease</div>
             </div>
             <div className="kpi">
               <div className="klbl">Total Labor</div>
-              <div className="kval" style={{ color:"#f5c542" }}>{fd(TRAILERS_INV.repairs.reduce((s,r)=>s+r.labor,0)+XTRA_LEASE.service.items.reduce((s,i)=>s+i.labor,0),0)}</div>
+              <div className="kval" style={{ color:"#fbbf24" }}>{fd(TRAILERS_INV.repairs.reduce((s,r)=>s+r.labor,0)+XTRA_LEASE.service.items.reduce((s,i)=>s+i.labor,0),0)}</div>
               <div className="ksub">McKinney $850 + XTRA $637.50</div>
             </div>
             <div className="kpi">
               <div className="klbl">Total Parts + Fees</div>
-              <div className="kval" style={{ color:"#f47820" }}>{fd(TRAILERS_INV.repairs.reduce((s,r)=>s+r.total-r.labor,0)+(XTRA_LEASE.service.total-XTRA_LEASE.service.items.reduce((s,i)=>s+i.labor,0)),0)}</div>
+              <div className="kval" style={{ color:"#2dd4bf" }}>{fd(TRAILERS_INV.repairs.reduce((s,r)=>s+r.total-r.labor,0)+(XTRA_LEASE.service.total-XTRA_LEASE.service.items.reduce((s,i)=>s+i.labor,0)),0)}</div>
               <div className="ksub">parts, fees & tax across all invoices</div>
             </div>
           </div>
@@ -4132,7 +4137,7 @@ function TrailerFleet() {
           <div className="card" style={{ marginBottom:14 }}>
             <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,paddingBottom:12,borderBottom:"1px solid var(--bd)" }}>
               <div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:900,letterSpacing:2,color:"#4fc3f7",marginBottom:4 }}>
+                <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:900,letterSpacing:2,color:"#38bdf8",marginBottom:4 }}>
                   Unit #{XTRA_LEASE.service.unit} — Roll Door Repairs
                 </div>
                 <div style={{ display:"flex",gap:20,fontSize:10,color:"var(--mu)",flexWrap:"wrap" }}>
@@ -4144,16 +4149,16 @@ function TrailerFleet() {
               </div>
               <div style={{ textAlign:"right",flexShrink:0,marginLeft:16 }}>
                 <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase",marginBottom:2 }}>Total Due</div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:32,fontWeight:900,color:"#4fc3f7" }}>{fd(XTRA_LEASE.service.total,2)}</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:32,fontWeight:900,color:"#38bdf8" }}>{fd(XTRA_LEASE.service.total,2)}</div>
                 <div style={{ fontSize:10,color:"var(--mu)" }}>subtotal {fd(XTRA_LEASE.service.subtotal,2)} + tax {fd(XTRA_LEASE.service.tax,2)}</div>
               </div>
             </div>
             <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14 }}>
-              <div style={{ background:"rgba(245,197,66,.08)",border:"1px solid rgba(245,197,66,.2)",borderRadius:3,padding:"12px 14px" }}>
-                <div style={{ fontSize:9,color:"#f5c542",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Total Labor</div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:26,fontWeight:900,color:"#f5c542" }}>{fd(XTRA_LEASE.service.items.reduce((s,i)=>s+i.labor,0),2)}</div>
+              <div style={{ background:"rgba(251,191,36,.08)",border:"1px solid rgba(251,191,36,.2)",borderRadius:3,padding:"12px 14px" }}>
+                <div style={{ fontSize:9,color:"#fbbf24",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Total Labor</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:26,fontWeight:900,color:"#fbbf24" }}>{fd(XTRA_LEASE.service.items.reduce((s,i)=>s+i.labor,0),2)}</div>
               </div>
-              <div style={{ background:"rgba(244,120,32,.08)",border:"1px solid rgba(244,120,32,.2)",borderRadius:3,padding:"12px 14px" }}>
+              <div style={{ background:"rgba(45,212,191,.08)",border:"1px solid rgba(45,212,191,.2)",borderRadius:3,padding:"12px 14px" }}>
                 <div style={{ fontSize:9,color:"var(--or)",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Total Parts</div>
                 <div style={{ fontFamily:"var(--f2)",fontSize:26,fontWeight:900,color:"var(--or)" }}>{fd(XTRA_LEASE.service.items.reduce((s,i)=>s+i.parts,0),2)}</div>
               </div>
@@ -4164,7 +4169,7 @@ function TrailerFleet() {
                 {XTRA_LEASE.service.items.map((item,i) => (
                   <tr key={i} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                     <td>{item.desc}</td>
-                    <td style={{ color:"#f5c542" }}>{fd(item.labor,2)}</td>
+                    <td style={{ color:"#fbbf24" }}>{fd(item.labor,2)}</td>
                     <td style={{ color:"var(--or)" }}>{fd(item.parts,2)}</td>
                     <td style={{ fontWeight:700 }}>{fd(item.total,2)}</td>
                   </tr>
@@ -4173,7 +4178,7 @@ function TrailerFleet() {
               <tfoot>
                 <tr><td colSpan={3}>Sub Total</td><td>{fd(XTRA_LEASE.service.subtotal,2)}</td></tr>
                 <tr><td colSpan={3}>Tax (NV 4.6% + Clark 3.775%)</td><td>{fd(XTRA_LEASE.service.tax,2)}</td></tr>
-                <tr><td colSpan={3} style={{ fontWeight:800,color:"#4fc3f7" }}>TOTAL</td><td style={{ fontWeight:900,color:"#4fc3f7",fontFamily:"var(--f2)",fontSize:16 }}>{fd(XTRA_LEASE.service.total,2)}</td></tr>
+                <tr><td colSpan={3} style={{ fontWeight:800,color:"#38bdf8" }}>TOTAL</td><td style={{ fontWeight:900,color:"#38bdf8",fontFamily:"var(--f2)",fontSize:16 }}>{fd(XTRA_LEASE.service.total,2)}</td></tr>
               </tfoot>
             </table>
           </div>
@@ -4197,19 +4202,19 @@ function TrailerFleet() {
                 </div>
                 <div style={{ textAlign:"right",flexShrink:0,marginLeft:16 }}>
                   <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase",marginBottom:2 }}>Total Due</div>
-                  <div style={{ fontFamily:"var(--f2)",fontSize:32,fontWeight:900,color:"#ff5252" }}>{fd(r.total,2)}</div>
+                  <div style={{ fontFamily:"var(--f2)",fontSize:32,fontWeight:900,color:"#fb7185" }}>{fd(r.total,2)}</div>
                   <div style={{ fontSize:10,color:"var(--mu)" }}>subtotal {fd(r.subtotal,2)} + tax {fd(r.tax,2)}</div>
                 </div>
               </div>
 
               {/* Labor + Parts summary */}
               <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14 }}>
-                <div style={{ background:"rgba(245,197,66,.08)",border:"1px solid rgba(245,197,66,.2)",borderRadius:3,padding:"12px 14px" }}>
-                  <div style={{ fontSize:9,color:"#f5c542",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Labor</div>
-                  <div style={{ fontFamily:"var(--f2)",fontSize:26,fontWeight:900,color:"#f5c542" }}>{fd(r.labor,2)}</div>
+                <div style={{ background:"rgba(251,191,36,.08)",border:"1px solid rgba(251,191,36,.2)",borderRadius:3,padding:"12px 14px" }}>
+                  <div style={{ fontSize:9,color:"#fbbf24",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Labor</div>
+                  <div style={{ fontFamily:"var(--f2)",fontSize:26,fontWeight:900,color:"#fbbf24" }}>{fd(r.labor,2)}</div>
                   <div style={{ fontSize:10,color:"var(--mu)",marginTop:2 }}>${(r.labor/100).toFixed(1)} hrs @ $100/hr</div>
                 </div>
-                <div style={{ background:"rgba(244,120,32,.08)",border:"1px solid rgba(244,120,32,.2)",borderRadius:3,padding:"12px 14px" }}>
+                <div style={{ background:"rgba(45,212,191,.08)",border:"1px solid rgba(45,212,191,.2)",borderRadius:3,padding:"12px 14px" }}>
                   <div style={{ fontSize:9,color:"var(--or)",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Parts & Fees</div>
                   <div style={{ fontFamily:"var(--f2)",fontSize:26,fontWeight:900,color:"var(--or)" }}>{fd(r.subtotal-r.labor,2)}</div>
                   <div style={{ fontSize:10,color:"var(--mu)",marginTop:2 }}>{r.items.length} line items</div>
@@ -4227,11 +4232,11 @@ function TrailerFleet() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr style={{ background:"rgba(245,197,66,.05)" }}>
-                    <td style={{ color:"#f5c542",fontWeight:700 }}>Labor — {r.description}</td>
-                    <td style={{ color:"#f5c542" }}>{(r.labor/100).toFixed(1)} hrs</td>
-                    <td style={{ color:"#f5c542" }}>$100.00</td>
-                    <td style={{ color:"#f5c542",fontWeight:700 }}>{fd(r.labor,2)}</td>
+                  <tr style={{ background:"rgba(251,191,36,.05)" }}>
+                    <td style={{ color:"#fbbf24",fontWeight:700 }}>Labor — {r.description}</td>
+                    <td style={{ color:"#fbbf24" }}>{(r.labor/100).toFixed(1)} hrs</td>
+                    <td style={{ color:"#fbbf24" }}>$100.00</td>
+                    <td style={{ color:"#fbbf24",fontWeight:700 }}>{fd(r.labor,2)}</td>
                   </tr>
                   {r.items.map((item,i) => (
                     <tr key={i} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
@@ -4252,8 +4257,8 @@ function TrailerFleet() {
                     <td>{fd(r.tax,2)}</td>
                   </tr>
                   <tr>
-                    <td colSpan={3} style={{ fontWeight:800,color:"#ff5252" }}>TOTAL</td>
-                    <td style={{ fontWeight:900,color:"#ff5252",fontFamily:"var(--f2)",fontSize:16 }}>{fd(r.total,2)}</td>
+                    <td colSpan={3} style={{ fontWeight:800,color:"#fb7185" }}>TOTAL</td>
+                    <td style={{ fontWeight:900,color:"#fb7185",fontFamily:"var(--f2)",fontSize:16 }}>{fd(r.total,2)}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -4465,15 +4470,15 @@ function IncomeDashboard() {
               <button key={id} onClick={() => setQbPeriod(id)} style={{
                 padding:"6px 14px",borderRadius:3,cursor:"pointer",
                 fontFamily:"var(--f2)",fontSize:11,fontWeight:700,letterSpacing:1,textTransform:"uppercase",
-                background:qbPeriod===id?"#3ddc84":"transparent",
+                background:qbPeriod===id?"#4ade80":"transparent",
                 color:qbPeriod===id?"#0b0d10":"var(--mu)",
-                border:`1px solid ${qbPeriod===id?"#3ddc84":"var(--bd)"}`,
+                border:`1px solid ${qbPeriod===id?"#4ade80":"var(--bd)"}`,
               }}>{lbl}</button>
             ))}
           </div>
 
           {qbLoading && <div style={{ textAlign:"center",padding:40,color:"var(--mu)" }}>Loading from QuickBooks...</div>}
-          {qbError && <div style={{ padding:16,background:"rgba(255,82,82,.1)",border:"1px solid rgba(255,82,82,.3)",borderRadius:4,color:"#ff5252",fontSize:12,marginBottom:14 }}>{qbError}</div>}
+          {qbError && <div style={{ padding:16,background:"rgba(251,113,133,.1)",border:"1px solid rgba(251,113,133,.3)",borderRadius:4,color:"#fb7185",fontSize:12,marginBottom:14 }}>{qbError}</div>}
 
           {qbData && (() => { const q = qbData.fiq; const p = qbData.period; return (
             <>
@@ -4484,9 +4489,9 @@ function IncomeDashboard() {
               {/* Revenue hero */}
               <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14 }}>
                 {[
-                  { label:"CE Revenue", val:q.revenue_ce, color:"#f47820" },
-                  { label:"SF Revenue", val:q.revenue_sf, color:"#4fc3f7" },
-                  { label:"DI Revenue", val:q.revenue_di, color:"#b39ddb" },
+                  { label:"CE Revenue", val:q.revenue_ce, color:"#2dd4bf" },
+                  { label:"SF Revenue", val:q.revenue_sf, color:"#38bdf8" },
+                  { label:"DI Revenue", val:q.revenue_di, color:"#a78bfa" },
                 ].map(co => (
                   <div key={co.label} style={{ background:"var(--s1)",border:`1px solid ${co.color}50`,borderRadius:6,padding:"22px",textAlign:"center" }}>
                     <div style={{ fontSize:9,letterSpacing:3,textTransform:"uppercase",color:co.color,marginBottom:6 }}>{co.label}</div>
@@ -4499,10 +4504,10 @@ function IncomeDashboard() {
               {/* P&L summary cards */}
               <div className="g4" style={{ marginBottom:14 }}>
                 {[
-                  { label:"Total Revenue", val:q.total_revenue, color:"#3ddc84" },
-                  { label:"Gross Profit", val:q.gross_profit, color:"#f5c542", sub:q.total_revenue > 0 ? `${(q.gross_profit/q.total_revenue*100).toFixed(1)}% margin` : "" },
-                  { label:"Net Op Income", val:q.net_op_income, color:q.net_op_income >= 0 ? "#3ddc84" : "#ff5252" },
-                  { label:"Net Income", val:q.net_income, color:q.net_income >= 0 ? "#3ddc84" : "#ff5252" },
+                  { label:"Total Revenue", val:q.total_revenue, color:"#4ade80" },
+                  { label:"Gross Profit", val:q.gross_profit, color:"#fbbf24", sub:q.total_revenue > 0 ? `${(q.gross_profit/q.total_revenue*100).toFixed(1)}% margin` : "" },
+                  { label:"Net Op Income", val:q.net_op_income, color:q.net_op_income >= 0 ? "#4ade80" : "#fb7185" },
+                  { label:"Net Income", val:q.net_income, color:q.net_income >= 0 ? "#4ade80" : "#fb7185" },
                 ].map(k => (
                   <div key={k.label} style={{ background:"var(--s1)",border:`1px solid ${k.color}40`,borderRadius:6,padding:"18px",textAlign:"center" }}>
                     <div style={{ fontSize:9,letterSpacing:3,textTransform:"uppercase",color:k.color,marginBottom:6 }}>{k.label}</div>
@@ -4526,7 +4531,7 @@ function IncomeDashboard() {
                       ].map(([lbl,val]) => (
                         <tr key={lbl} style={{ fontWeight:lbl.startsWith("Total") ? 800 : 400 }}>
                           <td>{lbl}</td>
-                          <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:lbl.startsWith("Total")?"#ff5252":"var(--tx)" }}>{fd(val)}</td>
+                          <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:lbl.startsWith("Total")?"#fb7185":"var(--tx)" }}>{fd(val)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -4538,14 +4543,14 @@ function IncomeDashboard() {
                   <table className="tbl" style={{ fontSize:11 }}>
                     <tbody>
                       {[
-                        ["SF Truck Insurance", q.ins_tot, "#f5c542"],
-                        ["Truck Rentals", q.truck_tot, "#4fc3f7"],
-                        ["Trailer Rentals", q.trailer_tot, "#b39ddb"],
+                        ["SF Truck Insurance", q.ins_tot, "#fbbf24"],
+                        ["Truck Rentals", q.truck_tot, "#38bdf8"],
+                        ["Trailer Rentals", q.trailer_tot, "#a78bfa"],
                         ["Truck Maintenance", q.truck_maint, "var(--tx)"],
                         ["Trailer Maintenance", q.trail_maint, "var(--tx)"],
                         ["Storage/Parking", q.storage, "var(--tx)"],
                         ["Uniforms", q.uniforms, "var(--tx)"],
-                        ["Fuel (QB)", q.fuel_qb, "#f47820"],
+                        ["Fuel (QB)", q.fuel_qb, "#2dd4bf"],
                       ].map(([lbl,val,col]) => (
                         <tr key={lbl}>
                           <td>{lbl}</td>
@@ -4559,12 +4564,12 @@ function IncomeDashboard() {
 
               {/* CE East if present */}
               {q.revenue_ce_east > 0 && (
-                <div style={{ padding:12,background:"rgba(79,195,247,.06)",border:"1px solid rgba(79,195,247,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",marginBottom:14 }}>
+                <div style={{ padding:12,background:"rgba(56,189,248,.06)",border:"1px solid rgba(56,189,248,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",marginBottom:14 }}>
                   CE East Revenue: {fd(q.revenue_ce_east,0)}
                 </div>
               )}
 
-              <div style={{ padding:12,background:"rgba(61,220,132,.06)",border:"1px solid rgba(61,220,132,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",textAlign:"center" }}>
+              <div style={{ padding:12,background:"rgba(74,222,128,.06)",border:"1px solid rgba(74,222,128,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",textAlign:"center" }}>
                 Live from QuickBooks · CE & SF Combined P&L · Updated in real-time
               </div>
             </>
@@ -4578,9 +4583,9 @@ function IncomeDashboard() {
           {/* Revenue hero row — 3 companies prominent */}
           <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14 }}>
             {[
-              { label:"CE Revenue", val:INCOME_2026.ce, color:"#f47820", pct:INCOME_2026.ce/INCOME_2026.total*100 },
-              { label:"SF Revenue", val:INCOME_2026.sf, color:"#4fc3f7", pct:INCOME_2026.sf/INCOME_2026.total*100 },
-              { label:"DI Revenue", val:INCOME_2026.di, color:"#b39ddb", pct:INCOME_2026.di/INCOME_2026.total*100 },
+              { label:"CE Revenue", val:INCOME_2026.ce, color:"#2dd4bf", pct:INCOME_2026.ce/INCOME_2026.total*100 },
+              { label:"SF Revenue", val:INCOME_2026.sf, color:"#38bdf8", pct:INCOME_2026.sf/INCOME_2026.total*100 },
+              { label:"DI Revenue", val:INCOME_2026.di, color:"#a78bfa", pct:INCOME_2026.di/INCOME_2026.total*100 },
             ].map(co => (
               <div key={co.label} style={{
                 background:"var(--s1)",border:`1px solid ${co.color}50`,borderRadius:6,
@@ -4603,19 +4608,19 @@ function IncomeDashboard() {
           <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14 }}>
             <div className="kpi">
               <div className="klbl">Carrier Pay (COGS)</div>
-              <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:"#ff5252",lineHeight:1 }}>{fd(INCOME_2026.carrierPay,0)}</div>
+              <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:"#fb7185",lineHeight:1 }}>{fd(INCOME_2026.carrierPay,0)}</div>
               <div style={{ fontSize:10,color:"var(--mu)",marginTop:4 }}>{fp(INCOME_2026.carrierPay/INCOME_2026.total*100)} of revenue</div>
-              <div className="bar" style={{ marginTop:6 }}><div className="bfil" style={{ width:`${Math.min(100,INCOME_2026.carrierPay/INCOME_2026.total*100)}%`,background:"#ff5252" }} /></div>
+              <div className="bar" style={{ marginTop:6 }}><div className="bfil" style={{ width:`${Math.min(100,INCOME_2026.carrierPay/INCOME_2026.total*100)}%`,background:"#fb7185" }} /></div>
             </div>
             <div className="kpi">
               <div className="klbl">Gross Profit</div>
-              <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:"#3ddc84",lineHeight:1 }}>{fd(INCOME_2026.grossProfit,0)}</div>
+              <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:"#4ade80",lineHeight:1 }}>{fd(INCOME_2026.grossProfit,0)}</div>
               <div style={{ fontSize:10,color:"var(--mu)",marginTop:4 }}>{fp(gpMargin26)} GP margin</div>
-              <div className="bar" style={{ marginTop:6 }}><div className="bfil" style={{ width:`${gpMargin26}%`,background:"#3ddc84" }} /></div>
+              <div className="bar" style={{ marginTop:6 }}><div className="bfil" style={{ width:`${gpMargin26}%`,background:"#4ade80" }} /></div>
             </div>
             <div className="kpi">
               <div className="klbl">Net Income</div>
-              <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:INCOME_2026.netIncome>=0?"#3ddc84":"#ff5252",lineHeight:1 }}>{fd(INCOME_2026.netIncome,0)}</div>
+              <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:INCOME_2026.netIncome>=0?"#4ade80":"#fb7185",lineHeight:1 }}>{fd(INCOME_2026.netIncome,0)}</div>
               <div style={{ fontSize:10,color:"var(--mu)",marginTop:4 }}>{fp(INCOME_2026.netIncome/INCOME_2026.total*100)} net margin</div>
             </div>
           </div>
@@ -4709,25 +4714,25 @@ function IncomeDashboard() {
 
             const tiles = [
               {
-                label: "Revenue / Driver", val: revPerDriver, color: "#f47820",
+                label: "Revenue / Driver", val: revPerDriver, color: "#2dd4bf",
                 sub: `${activeDrivers} active drivers · annualized`,
                 bench: "OTR industry avg ~$200K/yr (ATA)",
                 benchPass: revPerDriver >= 200000,
               },
               {
-                label: "Revenue / Truck", val: revPerTruck, color: "#4fc3f7",
+                label: "Revenue / Truck", val: revPerTruck, color: "#38bdf8",
                 sub: `${truckCount} trucks · annualized`,
                 bench: "Asset carrier avg ~$210K/yr",
                 benchPass: revPerTruck >= 210000,
               },
               {
-                label: "Revenue / Total FTE", val: revPerFTE, color: "#3ddc84",
+                label: "Revenue / Total FTE", val: revPerFTE, color: "#4ade80",
                 sub: `${activeDrivers}D · ${activeOffice}O · ${warehouseCount}W · ${activeContractors}C = ${totalFTE} FTE`,
                 bench: "Asset+broker hybrid · varies wide",
                 benchPass: null,
               },
               {
-                label: "Driver : Office Leverage", val: null, ratio: driverOffice, color: "#b39ddb",
+                label: "Driver : Office Leverage", val: null, ratio: driverOffice, color: "#a78bfa",
                 sub: `${activeDrivers} drivers ÷ ${activeOffice} office FTE`,
                 bench: "Brokerage 5:1+ · Asset 10:1+",
                 benchPass: driverOffice >= 5,
@@ -4738,7 +4743,7 @@ function IncomeDashboard() {
               <div className="card" style={{ marginTop:14 }}>
                 <div className="ctit">⚙️ Operational Efficiency · Per-Worker Productivity</div>
                 <div className="ibox" style={{ marginBottom:14 }}>
-                  <strong style={{ color:"#4fc3f7" }}>Investor-grade unit economics.</strong> Revenue per worker normalized
+                  <strong style={{ color:"#38bdf8" }}>Investor-grade unit economics.</strong> Revenue per worker normalized
                   to a full-year run rate ({fd(projRevEff,0)} projected from {ytdDays} actual days). Compare against industry
                   benchmarks for asset-based trucking and freight brokerage.
                 </div>
@@ -4752,9 +4757,9 @@ function IncomeDashboard() {
                       <div className="ksub" style={{ marginTop:6 }}>{t.sub}</div>
                       <div style={{
                         fontSize:10, marginTop:8, padding:"4px 7px", borderRadius:2,
-                        background: t.benchPass===true?"rgba(61,220,132,.1)":t.benchPass===false?"rgba(255,82,82,.08)":"rgba(90,99,112,.1)",
+                        background: t.benchPass===true?"rgba(74,222,128,.1)":t.benchPass===false?"rgba(251,113,133,.08)":"rgba(90,99,112,.1)",
                         color: t.benchPass===true?"var(--gn)":t.benchPass===false?"var(--rd)":"var(--mu)",
-                        border: `1px solid ${t.benchPass===true?"rgba(61,220,132,.3)":t.benchPass===false?"rgba(255,82,82,.25)":"var(--bd)"}`,
+                        border: `1px solid ${t.benchPass===true?"rgba(74,222,128,.3)":t.benchPass===false?"rgba(251,113,133,.25)":"var(--bd)"}`,
                       }}>
                         {t.benchPass===true?"✓ ":t.benchPass===false?"⚠ ":""}{t.bench}
                       </div>
@@ -4791,16 +4796,16 @@ function IncomeDashboard() {
               <div className="card" style={{ marginTop:14 }}>
                 <div className="ctit">📈 Run Rate — Full-Year 2026 Projection</div>
                 <div className="ibox" style={{ marginBottom:14 }}>
-                  <strong style={{ color:"#4fc3f7" }}>Based on {ytdDays} days of actual data</strong> ({PERIOD}), annualized at current pace.
+                  <strong style={{ color:"#38bdf8" }}>Based on {ytdDays} days of actual data</strong> ({PERIOD}), annualized at current pace.
                   These are straight-line projections — seasonal swings (summer slowdown, Q4 peak) will affect actual results.
                 </div>
 
                 {/* Hero projection KPIs */}
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:14, marginBottom:14 }}>
                   {[
-                    { label:"Projected Revenue", val:projRev, color:"#f5c542", vs25:vsRev25, actual25:INCOME_2025.total },
-                    { label:"Projected Gross Profit", val:projGP, color:"#3ddc84", vs25:vsGP25, actual25:INCOME_2025.grossProfit },
-                    { label:"Projected Net Income", val:projNet, color:projNet >= 0 ? "#3ddc84" : "#ff5252", vs25:null, actual25:INCOME_2025.netIncome },
+                    { label:"Projected Revenue", val:projRev, color:"#fbbf24", vs25:vsRev25, actual25:INCOME_2025.total },
+                    { label:"Projected Gross Profit", val:projGP, color:"#4ade80", vs25:vsGP25, actual25:INCOME_2025.grossProfit },
+                    { label:"Projected Net Income", val:projNet, color:projNet >= 0 ? "#4ade80" : "#fb7185", vs25:null, actual25:INCOME_2025.netIncome },
                   ].map(p => (
                     <div key={p.label} style={{
                       background:"var(--s1)", border:`1px solid ${p.color}40`, borderRadius:6,
@@ -4814,12 +4819,12 @@ function IncomeDashboard() {
                         2025 actual: {fd(p.actual25,0)}
                       </div>
                       {p.vs25 != null && (
-                        <div style={{ fontSize:12,fontWeight:700,color:p.vs25>=0?"#3ddc84":"#ff5252",marginTop:4,position:"relative" }}>
+                        <div style={{ fontSize:12,fontWeight:700,color:p.vs25>=0?"#4ade80":"#fb7185",marginTop:4,position:"relative" }}>
                           {p.vs25>=0?"+":""}{p.vs25.toFixed(1)}% vs 2025
                         </div>
                       )}
                       {p.label.includes("Net") && (
-                        <div style={{ fontSize:12,fontWeight:700,color:projNet>=0?"#3ddc84":"#ff5252",marginTop:4,position:"relative" }}>
+                        <div style={{ fontSize:12,fontWeight:700,color:projNet>=0?"#4ade80":"#fb7185",marginTop:4,position:"relative" }}>
                           {INCOME_2025.netIncome < 0 && projNet > 0 ? "🔄 Loss → Profit" : INCOME_2025.netIncome < 0 && projNet < 0 ? "Still negative" : ""}
                         </div>
                       )}
@@ -4831,22 +4836,22 @@ function IncomeDashboard() {
                 <div className="g4" style={{ marginBottom:14 }}>
                   <div className="kpi">
                     <div className="klbl">Weekly Avg Revenue</div>
-                    <div className="kval" style={{ color:"#f5c542", fontSize:20 }}>{fd(weeklyAvgRev,0)}</div>
+                    <div className="kval" style={{ color:"#fbbf24", fontSize:20 }}>{fd(weeklyAvgRev,0)}</div>
                     <div className="ksub">{fd(weeklyAvgGP,0)} GP/wk · {fp(weeklyAvgGP/weeklyAvgRev*100)} margin</div>
                   </div>
                   <div className="kpi">
                     <div className="klbl">Monthly Avg Revenue</div>
-                    <div className="kval" style={{ color:"#f47820", fontSize:20 }}>{fd(monthlyAvgRev,0)}</div>
+                    <div className="kval" style={{ color:"#2dd4bf", fontSize:20 }}>{fd(monthlyAvgRev,0)}</div>
                     <div className="ksub">{fd(monthlyAvgGP,0)} GP/mo</div>
                   </div>
                   <div className="kpi">
                     <div className="klbl">Daily Run Rate</div>
-                    <div className="kval" style={{ color:"#4fc3f7", fontSize:20 }}>{fd(INCOME_2026.total / ytdDays,0)}</div>
+                    <div className="kval" style={{ color:"#38bdf8", fontSize:20 }}>{fd(INCOME_2026.total / ytdDays,0)}</div>
                     <div className="ksub">{fd(INCOME_2026.grossProfit / ytdDays,0)} GP/day</div>
                   </div>
                   <div className="kpi">
                     <div className="klbl">Revenue per Driver/Wk</div>
-                    <div className="kval" style={{ color:"#b39ddb", fontSize:20 }}>{fd(weeklyAvgRev / ACTIVE_DRIVERS_COUNT,0)}</div>
+                    <div className="kval" style={{ color:"#a78bfa", fontSize:20 }}>{fd(weeklyAvgRev / ACTIVE_DRIVERS_COUNT,0)}</div>
                     <div className="ksub">{ACTIVE_DRIVERS_COUNT} drivers · {fd(weeklyAvgGP / ACTIVE_DRIVERS_COUNT,0)} GP each</div>
                   </div>
                 </div>
@@ -4866,11 +4871,11 @@ function IncomeDashboard() {
                     <tbody>
                       {[
                         { label:"Total Revenue",   ytd:INCOME_2026.total,       proj:projRev,     act25:INCOME_2025.total,       hi:true },
-                        { label:"  CE Revenue",    ytd:INCOME_2026.ce,          proj:projCE,      act25:INCOME_2025.ce,          indent:true, color:"#f47820" },
-                        { label:"  SF Revenue",    ytd:INCOME_2026.sf,          proj:projSF,      act25:INCOME_2025.sf,          indent:true, color:"#4fc3f7" },
-                        { label:"  DI Revenue",    ytd:INCOME_2026.di,          proj:projDI,      act25:INCOME_2025.di,          indent:true, color:"#b39ddb" },
+                        { label:"  CE Revenue",    ytd:INCOME_2026.ce,          proj:projCE,      act25:INCOME_2025.ce,          indent:true, color:"#2dd4bf" },
+                        { label:"  SF Revenue",    ytd:INCOME_2026.sf,          proj:projSF,      act25:INCOME_2025.sf,          indent:true, color:"#38bdf8" },
+                        { label:"  DI Revenue",    ytd:INCOME_2026.di,          proj:projDI,      act25:INCOME_2025.di,          indent:true, color:"#a78bfa" },
                         { label:"Carrier Pay",     ytd:INCOME_2026.carrierPay,  proj:projCarrier, act25:INCOME_2025.cogs,        neg:true },
-                        { label:"Gross Profit",    ytd:INCOME_2026.grossProfit, proj:projGP,      act25:INCOME_2025.grossProfit, hi:true, color:"#3ddc84" },
+                        { label:"Gross Profit",    ytd:INCOME_2026.grossProfit, proj:projGP,      act25:INCOME_2025.grossProfit, hi:true, color:"#4ade80" },
                         { label:"GP Margin",       ytd:gpMargin26,              proj:gpMargin26,  act25:gpMargin25,              pct:true },
                         { label:"Operating Expenses", ytd:INCOME_2026.totalExp, proj:projExp,     act25:INCOME_2025.totalExp,    neg:true },
                         { label:"Net Income",      ytd:INCOME_2026.netIncome,   proj:projNet,     act25:INCOME_2025.netIncome,   hi:true, bold:true },
@@ -4881,14 +4886,14 @@ function IncomeDashboard() {
                         return (
                           <tr key={r.label} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                             <td style={{ fontWeight:r.hi||r.bold?700:400, color:r.indent?r.color:"var(--tx)", paddingLeft:r.indent?24:9 }}>{r.label}</td>
-                            <td style={{ color:r.pct?undefined:r.bold?(r.ytd>=0?"#3ddc84":"#ff5252"):r.neg?"#ff5252":r.color||"var(--ye)", fontWeight:r.hi?700:400 }}>
+                            <td style={{ color:r.pct?undefined:r.bold?(r.ytd>=0?"#4ade80":"#fb7185"):r.neg?"#fb7185":r.color||"var(--ye)", fontWeight:r.hi?700:400 }}>
                               {r.pct ? fp(r.ytd) : fd(r.ytd,0)}
                             </td>
-                            <td style={{ color:r.pct?undefined:r.bold?(r.proj>=0?"#3ddc84":"#ff5252"):r.color||"var(--or)", fontWeight:r.hi?800:500, fontFamily:r.hi?"var(--f2)":"var(--f1)" }}>
+                            <td style={{ color:r.pct?undefined:r.bold?(r.proj>=0?"#4ade80":"#fb7185"):r.color||"var(--or)", fontWeight:r.hi?800:500, fontFamily:r.hi?"var(--f2)":"var(--f1)" }}>
                               {r.pct ? fp(r.proj) : fd(r.proj,0)}
                             </td>
                             <td style={{ color:"var(--mu)" }}>{r.pct ? fp(r.act25) : fd(r.act25,0)}</td>
-                            <td style={{ color:vsChg==null?"var(--mu)":r.neg?(vsChg<=0?"#3ddc84":"#ff5252"):(vsChg>=0?"#3ddc84":"#ff5252"), fontWeight:700 }}>
+                            <td style={{ color:vsChg==null?"var(--mu)":r.neg?(vsChg<=0?"#4ade80":"#fb7185"):(vsChg>=0?"#4ade80":"#fb7185"), fontWeight:700 }}>
                               {vsChg==null ? "—" : r.pct ? `${vsChg>=0?"+":""}${vsChg.toFixed(1)} pts` : `${vsChg>=0?"+":""}${vsChg.toFixed(1)}%`}
                             </td>
                           </tr>
@@ -4902,7 +4907,7 @@ function IncomeDashboard() {
                   <strong style={{ color:"var(--or)" }}>Note:</strong> Projections assume current pace continues for the full year.
                   2025 had seasonal peaks (May/Jun, Sep/Oct) and valleys (Jul/Aug). Actual 2026 will vary.
                   {projNet > 0 && INCOME_2025.netIncome < 0 && (
-                    <span style={{ color:"#3ddc84" }}> At current pace, 2026 reverses the 2025 loss of {fd(INCOME_2025.netIncome,0)} into a projected profit of {fd(projNet,0)}.</span>
+                    <span style={{ color:"#4ade80" }}> At current pace, 2026 reverses the 2025 loss of {fd(INCOME_2025.netIncome,0)} into a projected profit of {fd(projNet,0)}.</span>
                   )}
                 </div>
               </div>
@@ -4955,15 +4960,15 @@ function IncomeDashboard() {
                   <XAxis dataKey="label" tick={{ fill:"var(--mu)",fontSize:9 }} />
                   <YAxis tick={{ fill:"var(--mu)",fontSize:9 }} tickFormatter={v=>"$"+Math.round(v/1000)+"k"} />
                   <Tooltip content={<CustomTip />} />
-                  <Bar dataKey="rev" name="Revenue" fill="#3ddc84" radius={[2,2,0,0]} />
-                  <Bar dataKey="gp"  name="Gross Profit" fill="#f47820" radius={[2,2,0,0]} />
-                  <Bar dataKey="carrier" name="Carrier Pay" fill="#ff525280" radius={[2,2,0,0]} />
+                  <Bar dataKey="rev" name="Revenue" fill="#4ade80" radius={[2,2,0,0]} />
+                  <Bar dataKey="gp"  name="Gross Profit" fill="#2dd4bf" radius={[2,2,0,0]} />
+                  <Bar dataKey="carrier" name="Carrier Pay" fill="#fb718580" radius={[2,2,0,0]} />
                 </BarChart>
               </ResponsiveContainer>
               <div style={{ display:"flex",gap:20,fontSize:10,color:"var(--mu)",marginTop:8 }}>
-                <span><span style={{ color:"#3ddc84" }}>■</span> Revenue</span>
-                <span><span style={{ color:"#f47820" }}>■</span> Gross Profit</span>
-                <span><span style={{ color:"#ff5252" }}>■</span> Carrier Pay</span>
+                <span><span style={{ color:"#4ade80" }}>■</span> Revenue</span>
+                <span><span style={{ color:"#2dd4bf" }}>■</span> Gross Profit</span>
+                <span><span style={{ color:"#fb7185" }}>■</span> Carrier Pay</span>
               </div>
               {/* Weekly detail table */}
               <div style={{ marginTop:14,overflowX:"auto" }}>
@@ -4971,12 +4976,12 @@ function IncomeDashboard() {
                   <thead>
                     <tr>
                       <th style={{ textAlign:"left" }}>Week</th>
-                      <th style={{ color:"#f47820" }}>CE</th>
-                      <th style={{ color:"#4fc3f7" }}>SF</th>
-                      <th style={{ color:"#b39ddb" }}>DI</th>
+                      <th style={{ color:"#2dd4bf" }}>CE</th>
+                      <th style={{ color:"#38bdf8" }}>SF</th>
+                      <th style={{ color:"#a78bfa" }}>DI</th>
                       <th>Revenue</th>
-                      <th style={{ color:"#ff5252" }}>Carrier Pay</th>
-                      <th style={{ color:"#3ddc84" }}>GP</th>
+                      <th style={{ color:"#fb7185" }}>Carrier Pay</th>
+                      <th style={{ color:"#4ade80" }}>GP</th>
                       <th>GP %</th>
                       <th style={{ color:undefined }}>Net Inc</th>
                     </tr>
@@ -4985,28 +4990,28 @@ function IncomeDashboard() {
                     {INCOME_2026.weeks.map((w,i) => (
                       <tr key={w.label} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                         <td style={{ fontWeight:600,fontSize:11 }}>{w.label}</td>
-                        <td style={{ color:"#f47820" }}>{fd(w.ce,0)}</td>
-                        <td style={{ color:"#4fc3f7" }}>{fd(w.sf,0)}</td>
-                        <td style={{ color:"#b39ddb" }}>{fd(w.di,0)}</td>
+                        <td style={{ color:"#2dd4bf" }}>{fd(w.ce,0)}</td>
+                        <td style={{ color:"#38bdf8" }}>{fd(w.sf,0)}</td>
+                        <td style={{ color:"#a78bfa" }}>{fd(w.di,0)}</td>
                         <td style={{ fontWeight:600 }}>{fd(w.rev,0)}</td>
-                        <td style={{ color:"#ff5252" }}>{fd(w.carrier,0)}</td>
-                        <td style={{ color:"#3ddc84" }}>{fd(w.gp,0)}</td>
-                        <td style={{ color:"#3ddc84" }}>{fp(w.gp/w.rev*100)}</td>
-                        <td style={{ color:w.netInc>=0?"#3ddc84":"#ff5252",fontWeight:600 }}>{fd(w.netInc,0)}</td>
+                        <td style={{ color:"#fb7185" }}>{fd(w.carrier,0)}</td>
+                        <td style={{ color:"#4ade80" }}>{fd(w.gp,0)}</td>
+                        <td style={{ color:"#4ade80" }}>{fp(w.gp/w.rev*100)}</td>
+                        <td style={{ color:w.netInc>=0?"#4ade80":"#fb7185",fontWeight:600 }}>{fd(w.netInc,0)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr>
                       <td>TOTAL</td>
-                      <td style={{ color:"#f47820" }}>{fd(INCOME_2026.ce,0)}</td>
-                      <td style={{ color:"#4fc3f7" }}>{fd(INCOME_2026.sf,0)}</td>
-                      <td style={{ color:"#b39ddb" }}>{fd(INCOME_2026.di,0)}</td>
+                      <td style={{ color:"#2dd4bf" }}>{fd(INCOME_2026.ce,0)}</td>
+                      <td style={{ color:"#38bdf8" }}>{fd(INCOME_2026.sf,0)}</td>
+                      <td style={{ color:"#a78bfa" }}>{fd(INCOME_2026.di,0)}</td>
                       <td style={{ fontWeight:700 }}>{fd(INCOME_2026.total,0)}</td>
-                      <td style={{ color:"#ff5252" }}>{fd(INCOME_2026.carrierPay,0)}</td>
-                      <td style={{ color:"#3ddc84" }}>{fd(INCOME_2026.grossProfit,0)}</td>
-                      <td style={{ color:"#3ddc84" }}>{fp(INCOME_2026.grossProfit/INCOME_2026.total*100)}</td>
-                      <td style={{ color:INCOME_2026.netIncome>=0?"#3ddc84":"#ff5252",fontWeight:700 }}>{fd(INCOME_2026.netIncome,0)}</td>
+                      <td style={{ color:"#fb7185" }}>{fd(INCOME_2026.carrierPay,0)}</td>
+                      <td style={{ color:"#4ade80" }}>{fd(INCOME_2026.grossProfit,0)}</td>
+                      <td style={{ color:"#4ade80" }}>{fp(INCOME_2026.grossProfit/INCOME_2026.total*100)}</td>
+                      <td style={{ color:INCOME_2026.netIncome>=0?"#4ade80":"#fb7185",fontWeight:700 }}>{fd(INCOME_2026.netIncome,0)}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -5023,15 +5028,15 @@ function IncomeDashboard() {
                   <XAxis dataKey="m" tick={{ fill:"var(--mu)",fontSize:9 }} />
                   <YAxis tick={{ fill:"var(--mu)",fontSize:9 }} tickFormatter={v=>"$"+Math.round(v/1000)+"k"} />
                   <Tooltip content={<CustomTip />} />
-                  <Bar dataKey="ce" name="CE Revenue" fill="#f47820" stackId="a" />
-                  <Bar dataKey="sf" name="SF Revenue" fill="#4fc3f7" stackId="a" />
-                  <Bar dataKey="di" name="DI Revenue" fill="#b39ddb" stackId="a" />
+                  <Bar dataKey="ce" name="CE Revenue" fill="#2dd4bf" stackId="a" />
+                  <Bar dataKey="sf" name="SF Revenue" fill="#38bdf8" stackId="a" />
+                  <Bar dataKey="di" name="DI Revenue" fill="#a78bfa" stackId="a" />
                 </BarChart>
               </ResponsiveContainer>
               <div style={{ display:"flex",gap:20,fontSize:10,color:"var(--mu)",marginTop:8,marginBottom:20 }}>
-                <span><span style={{ color:"#f47820" }}>■</span> CE Revenue</span>
-                <span><span style={{ color:"#4fc3f7" }}>■</span> SF Revenue</span>
-                <span><span style={{ color:"#b39ddb" }}>■</span> DI Revenue</span>
+                <span><span style={{ color:"#2dd4bf" }}>■</span> CE Revenue</span>
+                <span><span style={{ color:"#38bdf8" }}>■</span> SF Revenue</span>
+                <span><span style={{ color:"#a78bfa" }}>■</span> DI Revenue</span>
               </div>
 
               {/* GP line overlay */}
@@ -5044,13 +5049,13 @@ function IncomeDashboard() {
                   <XAxis dataKey="m" tick={{ fill:"var(--mu)",fontSize:9 }} />
                   <YAxis tick={{ fill:"var(--mu)",fontSize:9 }} tickFormatter={v=>"$"+Math.round(v/1000)+"k"} />
                   <Tooltip content={<CustomTip />} />
-                  <Line dataKey="total" name="Total Revenue" stroke="#3ddc84" strokeWidth={2} dot={{ r:3,fill:"#3ddc84" }} strokeDasharray="4 2" />
-                  <Line dataKey="gp"    name="Gross Profit"  stroke="#f5c542" strokeWidth={2} dot={{ r:3,fill:"#f5c542" }} />
+                  <Line dataKey="total" name="Total Revenue" stroke="#4ade80" strokeWidth={2} dot={{ r:3,fill:"#4ade80" }} strokeDasharray="4 2" />
+                  <Line dataKey="gp"    name="Gross Profit"  stroke="#fbbf24" strokeWidth={2} dot={{ r:3,fill:"#fbbf24" }} />
                 </LineChart>
               </ResponsiveContainer>
               <div style={{ display:"flex",gap:20,fontSize:10,color:"var(--mu)",marginTop:8 }}>
-                <span><span style={{ color:"#3ddc84" }}>- -</span> Total Revenue</span>
-                <span><span style={{ color:"#f5c542" }}>■</span> Gross Profit</span>
+                <span><span style={{ color:"#4ade80" }}>- -</span> Total Revenue</span>
+                <span><span style={{ color:"#fbbf24" }}>■</span> Gross Profit</span>
               </div>
 
               {/* Monthly summary table */}
@@ -5059,12 +5064,12 @@ function IncomeDashboard() {
                   <thead>
                     <tr>
                       <th style={{ textAlign:"left" }}>Month</th>
-                      <th style={{ color:"#f47820" }}>CE</th>
-                      <th style={{ color:"#4fc3f7" }}>SF</th>
-                      <th style={{ color:"#b39ddb" }}>DI</th>
+                      <th style={{ color:"#2dd4bf" }}>CE</th>
+                      <th style={{ color:"#38bdf8" }}>SF</th>
+                      <th style={{ color:"#a78bfa" }}>DI</th>
                       <th>Total</th>
-                      <th style={{ color:"#f5c542" }}>Gross Profit</th>
-                      <th style={{ color:"#f5c542" }}>GP %</th>
+                      <th style={{ color:"#fbbf24" }}>Gross Profit</th>
+                      <th style={{ color:"#fbbf24" }}>GP %</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -5073,12 +5078,12 @@ function IncomeDashboard() {
                         fontWeight:row.m==="Jan 26"?700:400,
                         borderTop:row.m==="Jan 26"?"2px solid var(--or)":undefined }}>
                         <td style={{ color:row.m==="Jan 26"?"var(--or)":"var(--tx)" }}>{row.m}</td>
-                        <td style={{ color:"#f47820" }}>{fd(row.ce,0)}</td>
-                        <td style={{ color:"#4fc3f7" }}>{fd(row.sf,0)}</td>
-                        <td style={{ color:"#b39ddb" }}>{fd(row.di,0)}</td>
+                        <td style={{ color:"#2dd4bf" }}>{fd(row.ce,0)}</td>
+                        <td style={{ color:"#38bdf8" }}>{fd(row.sf,0)}</td>
+                        <td style={{ color:"#a78bfa" }}>{fd(row.di,0)}</td>
                         <td style={{ fontWeight:600 }}>{fd(row.total,0)}</td>
-                        <td style={{ color:"#f5c542" }}>{fd(row.gp,0)}</td>
-                        <td style={{ color:"#f5c542" }}>{fp(row.gp/row.total*100)}</td>
+                        <td style={{ color:"#fbbf24" }}>{fd(row.gp,0)}</td>
+                        <td style={{ color:"#fbbf24" }}>{fp(row.gp/row.total*100)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -5139,9 +5144,9 @@ function IncomeDashboard() {
                   <div key={d.m} style={{ textAlign:"center" }}>
                     <span style={{
                       fontFamily:"var(--f2)",fontSize:15,fontWeight:900,
-                      color:up?"#3ddc84":"#ff5252",
-                      background:up?"rgba(61,220,132,.12)":"rgba(255,82,82,.12)",
-                      border:`1px solid ${up?"rgba(61,220,132,.3)":"rgba(255,82,82,.3)"}`,
+                      color:up?"#4ade80":"#fb7185",
+                      background:up?"rgba(74,222,128,.12)":"rgba(251,113,133,.12)",
+                      border:`1px solid ${up?"rgba(74,222,128,.3)":"rgba(251,113,133,.3)"}`,
                       borderRadius:3,padding:"2px 8px",
                     }}>
                       {up?"↑":"↓"}{Math.abs(chg).toFixed(1)}%
@@ -5156,12 +5161,12 @@ function IncomeDashboard() {
                 <XAxis dataKey="m" tick={{ fill:"var(--mu)",fontSize:11 }} />
                 <YAxis tick={{ fill:"var(--mu)",fontSize:9 }} tickFormatter={v=>"$"+Math.round(v/1000)+"k"} />
                 <Tooltip content={<CustomTip />} />
-                <Bar dataKey="v26" name="2026" fill="#3ddc84" radius={[2,2,0,0]} />
+                <Bar dataKey="v26" name="2026" fill="#4ade80" radius={[2,2,0,0]} />
                 <Bar dataKey="v25" name="2025" fill="#5a6370" radius={[2,2,0,0]} />
               </BarChart>
             </ResponsiveContainer>
             <div style={{ display:"flex",gap:20,fontSize:10,color:"var(--mu)",marginTop:8 }}>
-              <span><span style={{ color:"#3ddc84" }}>■</span> 2026</span>
+              <span><span style={{ color:"#4ade80" }}>■</span> 2026</span>
               <span><span style={{ color:"#5a6370" }}>■</span> 2025 (same period)</span>
             </div>
           </div>
@@ -5235,11 +5240,11 @@ function IncomeDashboard() {
       <div style={{
         marginTop:14, padding:"24px", borderRadius:6,
         background:"linear-gradient(135deg,#12151c,#181c26)",
-        border:"2px solid #4fc3f740",
+        border:"2px solid #38bdf840",
       }}>
         <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16 }}>
           <div>
-            <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"#4fc3f7" }}>
+            <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"#38bdf8" }}>
               Revenue Simulator
             </div>
             <div style={{ fontSize:10,color:"var(--mu)",marginTop:2 }}>What if we add straight revenue? See the impact on net income.</div>
@@ -5249,7 +5254,7 @@ function IncomeDashboard() {
             <input type="number" min={0} step={50000} value={simAmount}
               onChange={e => setSimAmount(Math.max(0, +e.target.value || 0))}
               style={{
-                width:140, fontFamily:"var(--f2)", fontSize:24, fontWeight:900, color:"#4fc3f7",
+                width:140, fontFamily:"var(--f2)", fontSize:24, fontWeight:900, color:"#38bdf8",
                 background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:3,
                 padding:"6px 10px", textAlign:"right", outline:"none",
               }} />
@@ -5261,9 +5266,9 @@ function IncomeDashboard() {
             <button key={amt} onClick={() => setSimAmount(amt)} style={{
               padding:"4px 12px",borderRadius:3,cursor:"pointer",
               fontFamily:"var(--f2)",fontSize:11,fontWeight:700,
-              background:simAmount===amt?"#4fc3f7":"transparent",
+              background:simAmount===amt?"#38bdf8":"transparent",
               color:simAmount===amt?"#000":"var(--mu)",
-              border:`1px solid ${simAmount===amt?"#4fc3f7":"var(--bd)"}`,
+              border:`1px solid ${simAmount===amt?"#38bdf8":"var(--bd)"}`,
             }}>{fd(amt,0)}</button>
           ))}
         </div>
@@ -5284,11 +5289,11 @@ function IncomeDashboard() {
               <div>
                 <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase",marginBottom:10 }}>Current</div>
                 {[
-                  { label:"Revenue",     val:curRev, color:"#3ddc84" },
-                  { label:"Gross Profit", val:curGP,  color:"#f5c542" },
-                  { label:"Expenses",    val:curExp, color:"#ff5252" },
-                  { label:"Net Income",  val:curNet, color:curNet>=0?"#3ddc84":"#ff5252" },
-                  { label:"Net Margin",  val:null,   pct:curNetMargin, color:curNetMargin>=0?"#3ddc84":"#ff5252" },
+                  { label:"Revenue",     val:curRev, color:"#4ade80" },
+                  { label:"Gross Profit", val:curGP,  color:"#fbbf24" },
+                  { label:"Expenses",    val:curExp, color:"#fb7185" },
+                  { label:"Net Income",  val:curNet, color:curNet>=0?"#4ade80":"#fb7185" },
+                  { label:"Net Margin",  val:null,   pct:curNetMargin, color:curNetMargin>=0?"#4ade80":"#fb7185" },
                 ].map(r => (
                   <div key={r.label} style={{ display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid var(--bd)" }}>
                     <span style={{ fontSize:11,color:"var(--mu)" }}>{r.label}</span>
@@ -5301,20 +5306,20 @@ function IncomeDashboard() {
 
               {/* Arrow */}
               <div style={{ display:"flex",alignItems:"center",paddingTop:40 }}>
-                <div style={{ fontFamily:"var(--f2)",fontSize:28,color:"#4fc3f7" }}>→</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:28,color:"#38bdf8" }}>→</div>
               </div>
 
               {/* Simulated */}
               <div>
-                <div style={{ fontSize:9,color:"#4fc3f7",letterSpacing:2,textTransform:"uppercase",marginBottom:10 }}>
+                <div style={{ fontSize:9,color:"#38bdf8",letterSpacing:2,textTransform:"uppercase",marginBottom:10 }}>
                   + {fd(simAmount,0)} Revenue
                 </div>
                 {[
-                  { label:"Revenue",     val:newRev, color:"#3ddc84" },
-                  { label:"Gross Profit", val:newGP,  color:"#f5c542" },
-                  { label:"Expenses",    val:curExp, color:"#ff5252" },
-                  { label:"Net Income",  val:newNet, color:newNet>=0?"#3ddc84":"#ff5252" },
-                  { label:"Net Margin",  val:null,   pct:newNetMargin, color:newNetMargin>=0?"#3ddc84":"#ff5252" },
+                  { label:"Revenue",     val:newRev, color:"#4ade80" },
+                  { label:"Gross Profit", val:newGP,  color:"#fbbf24" },
+                  { label:"Expenses",    val:curExp, color:"#fb7185" },
+                  { label:"Net Income",  val:newNet, color:newNet>=0?"#4ade80":"#fb7185" },
+                  { label:"Net Margin",  val:null,   pct:newNetMargin, color:newNetMargin>=0?"#4ade80":"#fb7185" },
                 ].map(r => (
                   <div key={r.label} style={{ display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid var(--bd)" }}>
                     <span style={{ fontSize:11,color:"var(--mu)" }}>{r.label}</span>
@@ -5329,9 +5334,9 @@ function IncomeDashboard() {
         })()}
 
         {/* Net income delta */}
-        <div style={{ marginTop:16,padding:"14px",background:"rgba(61,220,132,.08)",border:"1px solid rgba(61,220,132,.2)",borderRadius:3,textAlign:"center" }}>
-          <div style={{ fontSize:9,color:"#3ddc84",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Net Income Impact</div>
-          <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:"#3ddc84" }}>
+        <div style={{ marginTop:16,padding:"14px",background:"rgba(74,222,128,.08)",border:"1px solid rgba(74,222,128,.2)",borderRadius:3,textAlign:"center" }}>
+          <div style={{ fontSize:9,color:"#4ade80",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Net Income Impact</div>
+          <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:"#4ade80" }}>
             {fd(INCOME_2026.netIncome + simAmount,0)}
           </div>
           <div style={{ fontSize:11,color:"var(--mu)",marginTop:4 }}>
@@ -5448,15 +5453,15 @@ function RevenueDashboard() {
       {/* ── ALVYS SECTION ── */}
       {view === "alvys" && (
         <>
-          <div style={{ fontSize:11, marginBottom:10, color: alvysLive ? "#3ddc84" : "#f5c542" }}>
+          <div style={{ fontSize:11, marginBottom:10, color: alvysLive ? "#4ade80" : "#fbbf24" }}>
             {alvysLive ? `🟢 Live from Alvys · ${fn(AV.totalLoads,0)} loads · as of ${new Date(alvysLive.fetchedAt).toLocaleString()}` : "🟡 Static snapshot (live fetch pending/failed)"}
           </div>
           <div className="g4" style={{ marginBottom:14 }}>
             {[
-              { label:"Total Pipeline", val:fd(AV.totalRev,0), color:"#3ddc84", sub:`${fn(AV.totalLoads,0)} loads across all statuses` },
-              { label:"CE Revenue", val:fd(AV.ceRev,0), color:"#4fc3f7", sub:`${AV.ceLoads} loads · Capacity Express` },
-              { label:"SF Revenue", val:fd(AV.sfRev,0), color:"#f47820", sub:`${AV.sfLoads} loads · Show Freight` },
-              { label:"Avg Revenue/Load", val:fd(AV.totalRev/AV.totalLoads,0), color:"#f5c542", sub:`Across ${AV.totalLoads} total loads` },
+              { label:"Total Pipeline", val:fd(AV.totalRev,0), color:"#4ade80", sub:`${fn(AV.totalLoads,0)} loads across all statuses` },
+              { label:"CE Revenue", val:fd(AV.ceRev,0), color:"#38bdf8", sub:`${AV.ceLoads} loads · Capacity Express` },
+              { label:"SF Revenue", val:fd(AV.sfRev,0), color:"#2dd4bf", sub:`${AV.sfLoads} loads · Show Freight` },
+              { label:"Avg Revenue/Load", val:fd(AV.totalRev/AV.totalLoads,0), color:"#fbbf24", sub:`Across ${AV.totalLoads} total loads` },
             ].map(k => (
               <div key={k.label} style={{ background:"var(--s1)",border:`1px solid ${k.color}40`,borderRadius:6,padding:"22px",textAlign:"center" }}>
                 <div style={{ fontSize:9,letterSpacing:3,textTransform:"uppercase",color:k.color,marginBottom:6 }}>{k.label}</div>
@@ -5476,7 +5481,7 @@ function RevenueDashboard() {
                     <span style={{ fontFamily:"var(--f2)",fontWeight:800 }}>{fd(s.rev,0)} <span style={{ color:"var(--mu)",fontWeight:400 }}>({s.loads} loads)</span></span>
                   </div>
                   <div className="bar" style={{ height:20 }}>
-                    <div className="bfil" style={{ width:`${(s.rev/AV.totalRev*100)}%`,background:s.status==="Delivered"?"#3ddc84":s.status==="Invoiced"?"#f5c542":s.status==="In Transit"?"#4fc3f7":"#666" }} />
+                    <div className="bfil" style={{ width:`${(s.rev/AV.totalRev*100)}%`,background:s.status==="Delivered"?"#4ade80":s.status==="Invoiced"?"#fbbf24":s.status==="In Transit"?"#38bdf8":"#666" }} />
                   </div>
                 </div>
               ))}
@@ -5491,7 +5496,7 @@ function RevenueDashboard() {
                     <tr key={c.name} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                       <td style={{ fontWeight:600 }}>{c.name}</td>
                       <td>{c.loads}</td>
-                      <td style={{ color:"#3ddc84" }}>{fd(c.rev,0)}</td>
+                      <td style={{ color:"#4ade80" }}>{fd(c.rev,0)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -5499,7 +5504,7 @@ function RevenueDashboard() {
             </div>
           </div>
 
-          <div style={{ padding:12,background:"rgba(61,220,132,.06)",border:"1px solid rgba(61,220,132,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",textAlign:"center" }}>
+          <div style={{ padding:12,background:"rgba(74,222,128,.06)",border:"1px solid rgba(74,222,128,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",textAlign:"center" }}>
             Alvys TMS data is live. As more loads are completed, this dashboard will build history automatically.
           </div>
         </>
@@ -5508,7 +5513,7 @@ function RevenueDashboard() {
       {/* ── ASCEND HISTORICAL SECTION ── */}
       {(view === "overview" || view === "weekly" || view === "monthly" || view === "ascend") && (() => { const aView = view === "ascend" ? "overview" : view; return (
         <>
-      <div style={{ padding:8,background:"rgba(244,120,32,.08)",border:"1px solid rgba(244,120,32,.2)",borderRadius:4,fontSize:11,color:"var(--mu)",textAlign:"center",marginBottom:14 }}>
+      <div style={{ padding:8,background:"rgba(45,212,191,.08)",border:"1px solid rgba(45,212,191,.2)",borderRadius:4,fontSize:11,color:"var(--mu)",textAlign:"center",marginBottom:14 }}>
         📁 Ascend TMS Historical Data — Jan 1 – Mar 29, 2026 · Ascend has been replaced by Alvys
       </div>
 
@@ -5528,10 +5533,10 @@ function RevenueDashboard() {
       {/* Hero KPIs */}
       <div className="g4" style={{ marginBottom:14 }}>
         {[
-          { label:"Total Revenue", val:fd(d.totalRev,0), color:"#3ddc84", sub:`${fn(d.totalLoads,0)} loads · ${fn(d.totalMiles,0)} miles` },
-          { label:"Total Expenses", val:fd(d.totalExp,0), color:"#ff5252", sub:`Avg ${fd(d.totalExp/d.totalLoads,0)}/load · $${(d.totalExp/d.totalMiles).toFixed(2)}/mi` },
-          { label:"Gross Profit", val:fd(d.totalGP,0), color:"#f5c542", sub:`${fp(d.overallMargin)} margin · ${fd(d.avgGPPerLoad,0)}/load` },
-          { label:"Revenue/Mile", val:`$${d.avgRPM.toFixed(2)}`, color:"#4fc3f7", sub:`vs $${(d.totalExp/d.totalMiles).toFixed(2)} cost/mi · $${(d.avgRPM - d.totalExp/d.totalMiles).toFixed(2)} spread` },
+          { label:"Total Revenue", val:fd(d.totalRev,0), color:"#4ade80", sub:`${fn(d.totalLoads,0)} loads · ${fn(d.totalMiles,0)} miles` },
+          { label:"Total Expenses", val:fd(d.totalExp,0), color:"#fb7185", sub:`Avg ${fd(d.totalExp/d.totalLoads,0)}/load · $${(d.totalExp/d.totalMiles).toFixed(2)}/mi` },
+          { label:"Gross Profit", val:fd(d.totalGP,0), color:"#fbbf24", sub:`${fp(d.overallMargin)} margin · ${fd(d.avgGPPerLoad,0)}/load` },
+          { label:"Revenue/Mile", val:`$${d.avgRPM.toFixed(2)}`, color:"#38bdf8", sub:`vs $${(d.totalExp/d.totalMiles).toFixed(2)} cost/mi · $${(d.avgRPM - d.totalExp/d.totalMiles).toFixed(2)} spread` },
         ].map(k => (
           <div key={k.label} style={{ background:"var(--s1)",border:`1px solid ${k.color}40`,borderRadius:6,padding:"22px",textAlign:"center" }}>
             <div style={{ fontSize:9,letterSpacing:3,textTransform:"uppercase",color:k.color,marginBottom:6 }}>{k.label}</div>
@@ -5566,15 +5571,15 @@ function RevenueDashboard() {
                 <XAxis dataKey="m" tick={{ fill:"var(--mu)",fontSize:10 }} />
                 <YAxis tick={{ fill:"var(--mu)",fontSize:9 }} tickFormatter={v=>"$"+Math.round(v/1000)+"k"} />
                 <Tooltip content={<CustomTip />} />
-                <Bar dataKey="rev" name="Revenue" fill="#3ddc84" radius={[2,2,0,0]} />
-                <Bar dataKey="exp" name="Expenses" fill="#ff525280" radius={[2,2,0,0]} />
-                <Bar dataKey="gp"  name="Gross Profit" fill="#f5c542" radius={[2,2,0,0]} />
+                <Bar dataKey="rev" name="Revenue" fill="#4ade80" radius={[2,2,0,0]} />
+                <Bar dataKey="exp" name="Expenses" fill="#fb718580" radius={[2,2,0,0]} />
+                <Bar dataKey="gp"  name="Gross Profit" fill="#fbbf24" radius={[2,2,0,0]} />
               </BarChart>
             </ResponsiveContainer>
             <div style={{ display:"flex",gap:20,fontSize:10,color:"var(--mu)",marginTop:8 }}>
-              <span><span style={{ color:"#3ddc84" }}>■</span> Revenue</span>
-              <span><span style={{ color:"#ff5252" }}>■</span> Expenses</span>
-              <span><span style={{ color:"#f5c542" }}>■</span> Gross Profit</span>
+              <span><span style={{ color:"#4ade80" }}>■</span> Revenue</span>
+              <span><span style={{ color:"#fb7185" }}>■</span> Expenses</span>
+              <span><span style={{ color:"#fbbf24" }}>■</span> Gross Profit</span>
             </div>
           </div>
 
@@ -5584,18 +5589,18 @@ function RevenueDashboard() {
               <div className="ctit">Monthly Summary</div>
               <table className="tbl" style={{ fontSize:11 }}>
                 <thead>
-                  <tr><th style={{ textAlign:"left" }}>Month</th><th>Loads</th><th>Revenue</th><th>Expenses</th><th style={{ color:"#f5c542" }}>GP</th><th>Margin</th><th>$/Mile</th></tr>
+                  <tr><th style={{ textAlign:"left" }}>Month</th><th>Loads</th><th>Revenue</th><th>Expenses</th><th style={{ color:"#fbbf24" }}>GP</th><th>Margin</th><th>$/Mile</th></tr>
                 </thead>
                 <tbody>
                   {d.months.map((m,i) => (
                     <tr key={m.m} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                       <td style={{ fontWeight:700 }}>{m.m}</td>
                       <td>{m.loads}</td>
-                      <td style={{ color:"#3ddc84" }}>{fd(m.rev,0)}</td>
-                      <td style={{ color:"#ff5252" }}>{fd(m.exp,0)}</td>
-                      <td style={{ color:"#f5c542",fontWeight:700 }}>{fd(m.gp,0)}</td>
-                      <td style={{ color:m.gpPct>=30?"#3ddc84":"#f5c542",fontWeight:700 }}>{fp(m.gpPct)}</td>
-                      <td style={{ color:"#4fc3f7" }}>${m.rpm.toFixed(2)}</td>
+                      <td style={{ color:"#4ade80" }}>{fd(m.rev,0)}</td>
+                      <td style={{ color:"#fb7185" }}>{fd(m.exp,0)}</td>
+                      <td style={{ color:"#fbbf24",fontWeight:700 }}>{fd(m.gp,0)}</td>
+                      <td style={{ color:m.gpPct>=30?"#4ade80":"#fbbf24",fontWeight:700 }}>{fp(m.gpPct)}</td>
+                      <td style={{ color:"#38bdf8" }}>${m.rpm.toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -5603,11 +5608,11 @@ function RevenueDashboard() {
                   <tr>
                     <td>Total</td>
                     <td>{fn(d.totalLoads,0)}</td>
-                    <td style={{ color:"#3ddc84" }}>{fd(d.totalRev,0)}</td>
-                    <td style={{ color:"#ff5252" }}>{fd(d.totalExp,0)}</td>
-                    <td style={{ color:"#f5c542",fontWeight:800 }}>{fd(d.totalGP,0)}</td>
+                    <td style={{ color:"#4ade80" }}>{fd(d.totalRev,0)}</td>
+                    <td style={{ color:"#fb7185" }}>{fd(d.totalExp,0)}</td>
+                    <td style={{ color:"#fbbf24",fontWeight:800 }}>{fd(d.totalGP,0)}</td>
                     <td style={{ fontWeight:800 }}>{fp(d.overallMargin)}</td>
-                    <td style={{ color:"#4fc3f7" }}>${d.avgRPM.toFixed(2)}</td>
+                    <td style={{ color:"#38bdf8" }}>${d.avgRPM.toFixed(2)}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -5617,7 +5622,7 @@ function RevenueDashboard() {
               <div className="ctit">Margin Trend</div>
               <div style={{ fontSize:10,color:"var(--mu)",marginBottom:8 }}>GP margin improving month-over-month</div>
               {d.months.map(m => {
-                const color = m.gpPct >= 35 ? "#3ddc84" : m.gpPct >= 25 ? "#f5c542" : "#ff5252";
+                const color = m.gpPct >= 35 ? "#4ade80" : m.gpPct >= 25 ? "#fbbf24" : "#fb7185";
                 return (
                   <div key={m.m} style={{ marginBottom:12 }}>
                     <div style={{ display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:4 }}>
@@ -5636,9 +5641,9 @@ function RevenueDashboard() {
                   </div>
                 );
               })}
-              <div style={{ marginTop:14,padding:"12px",background:"rgba(61,220,132,.08)",border:"1px solid rgba(61,220,132,.2)",borderRadius:3,textAlign:"center" }}>
-                <div style={{ fontSize:9,color:"#3ddc84",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Margin Improvement Jan → Mar</div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:"#3ddc84" }}>+{(d.months[d.months.length-1].gpPct - d.months[0].gpPct).toFixed(1)} pts</div>
+              <div style={{ marginTop:14,padding:"12px",background:"rgba(74,222,128,.08)",border:"1px solid rgba(74,222,128,.2)",borderRadius:3,textAlign:"center" }}>
+                <div style={{ fontSize:9,color:"#4ade80",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Margin Improvement Jan → Mar</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:"#4ade80" }}>+{(d.months[d.months.length-1].gpPct - d.months[0].gpPct).toFixed(1)} pts</div>
               </div>
             </div>
           </div>
@@ -5648,18 +5653,18 @@ function RevenueDashboard() {
             <div className="ctit">Revenue/Mile vs Fleet All-In CPM</div>
             <div style={{ display:"flex",gap:20,alignItems:"center",padding:"20px",justifyContent:"center" }}>
               <div style={{ textAlign:"center" }}>
-                <div style={{ fontSize:9,color:"#4fc3f7",letterSpacing:2,textTransform:"uppercase" }}>TMS Rev/Mi</div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:48,fontWeight:900,color:"#4fc3f7" }}>${d.avgRPM.toFixed(2)}</div>
+                <div style={{ fontSize:9,color:"#38bdf8",letterSpacing:2,textTransform:"uppercase" }}>TMS Rev/Mi</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:48,fontWeight:900,color:"#38bdf8" }}>${d.avgRPM.toFixed(2)}</div>
               </div>
               <div style={{ fontFamily:"var(--f2)",fontSize:24,color:"var(--mu)" }}>vs</div>
               <div style={{ textAlign:"center" }}>
-                <div style={{ fontSize:9,color:"#ff8a65",letterSpacing:2,textTransform:"uppercase" }}>Fleet All-In CPM</div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:48,fontWeight:900,color:"#ff8a65" }}>${ALLIN_CPM_V.toFixed(2)}</div>
+                <div style={{ fontSize:9,color:"#5eead4",letterSpacing:2,textTransform:"uppercase" }}>Fleet All-In CPM</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:48,fontWeight:900,color:"#5eead4" }}>${ALLIN_CPM_V.toFixed(2)}</div>
               </div>
               <div style={{ fontFamily:"var(--f2)",fontSize:24,color:"var(--mu)" }}>=</div>
               <div style={{ textAlign:"center" }}>
-                <div style={{ fontSize:9,color:"#3ddc84",letterSpacing:2,textTransform:"uppercase" }}>Net Spread/Mi</div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:48,fontWeight:900,color:"#3ddc84" }}>${(d.avgRPM - ALLIN_CPM_V).toFixed(2)}</div>
+                <div style={{ fontSize:9,color:"#4ade80",letterSpacing:2,textTransform:"uppercase" }}>Net Spread/Mi</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:48,fontWeight:900,color:"#4ade80" }}>${(d.avgRPM - ALLIN_CPM_V).toFixed(2)}</div>
               </div>
             </div>
           </div>
@@ -5672,12 +5677,12 @@ function RevenueDashboard() {
           <div className="g3" style={{ marginBottom:14 }}>
             <div className="kpi">
               <div className="klbl">Best Revenue Week</div>
-              <div className="kval" style={{ color:"#3ddc84",fontSize:18 }}>{best.label}</div>
+              <div className="kval" style={{ color:"#4ade80",fontSize:18 }}>{best.label}</div>
               <div className="ksub">{fd(best.rev,0)} · {best.loads} loads</div>
             </div>
             <div className="kpi">
               <div className="klbl">Best Margin Week</div>
-              <div className="kval" style={{ color:"#f5c542",fontSize:18 }}>{bestMargin.label}</div>
+              <div className="kval" style={{ color:"#fbbf24",fontSize:18 }}>{bestMargin.label}</div>
               <div className="ksub">{fp(bestMargin.gpPct)} · {fd(bestMargin.gp,0)} GP</div>
             </div>
             <div className="kpi">
@@ -5695,8 +5700,8 @@ function RevenueDashboard() {
                 <XAxis dataKey="label" tick={{ fill:"var(--mu)",fontSize:8 }} angle={-30} textAnchor="end" height={50} />
                 <YAxis tick={{ fill:"var(--mu)",fontSize:9 }} tickFormatter={v=>"$"+Math.round(v/1000)+"k"} />
                 <Tooltip content={<CustomTip />} />
-                <Bar dataKey="rev" name="Revenue" fill="#3ddc84" radius={[2,2,0,0]} />
-                <Bar dataKey="gp"  name="Gross Profit" fill="#f5c542" radius={[2,2,0,0]} />
+                <Bar dataKey="rev" name="Revenue" fill="#4ade80" radius={[2,2,0,0]} />
+                <Bar dataKey="gp"  name="Gross Profit" fill="#fbbf24" radius={[2,2,0,0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -5709,12 +5714,12 @@ function RevenueDashboard() {
                   <tr>
                     <th style={{ textAlign:"left" }}>Week</th>
                     <th>Loads</th>
-                    <th style={{ color:"#3ddc84" }}>Revenue</th>
-                    <th style={{ color:"#ff5252" }}>Expenses</th>
-                    <th style={{ color:"#f5c542" }}>GP</th>
+                    <th style={{ color:"#4ade80" }}>Revenue</th>
+                    <th style={{ color:"#fb7185" }}>Expenses</th>
+                    <th style={{ color:"#fbbf24" }}>GP</th>
                     <th>Margin</th>
                     <th>Miles</th>
-                    <th style={{ color:"#4fc3f7" }}>$/Mile</th>
+                    <th style={{ color:"#38bdf8" }}>$/Mile</th>
                     <th>$/Load</th>
                   </tr>
                 </thead>
@@ -5723,12 +5728,12 @@ function RevenueDashboard() {
                     <tr key={w.label} style={{ background:i%2===0?"var(--s2)":"transparent", opacity:w.loads<5?0.4:1 }}>
                       <td style={{ fontWeight:600 }}>{w.label}</td>
                       <td>{w.loads}</td>
-                      <td style={{ color:"#3ddc84" }}>{fd(w.rev,0)}</td>
-                      <td style={{ color:"#ff5252" }}>{fd(w.exp,0)}</td>
-                      <td style={{ color:"#f5c542",fontWeight:700 }}>{fd(w.gp,0)}</td>
-                      <td style={{ color:w.gpPct>=35?"#3ddc84":w.gpPct>=25?"#f5c542":"#ff5252",fontWeight:700 }}>{fp(w.gpPct)}</td>
+                      <td style={{ color:"#4ade80" }}>{fd(w.rev,0)}</td>
+                      <td style={{ color:"#fb7185" }}>{fd(w.exp,0)}</td>
+                      <td style={{ color:"#fbbf24",fontWeight:700 }}>{fd(w.gp,0)}</td>
+                      <td style={{ color:w.gpPct>=35?"#4ade80":w.gpPct>=25?"#fbbf24":"#fb7185",fontWeight:700 }}>{fp(w.gpPct)}</td>
                       <td>{fn(w.miles,0)}</td>
-                      <td style={{ color:"#4fc3f7",fontWeight:600 }}>${w.rpm.toFixed(2)}</td>
+                      <td style={{ color:"#38bdf8",fontWeight:600 }}>${w.rpm.toFixed(2)}</td>
                       <td style={{ color:"var(--mu)" }}>{w.loads>0?fd(w.gp/w.loads,0):"—"}</td>
                     </tr>
                   ))}
@@ -5737,12 +5742,12 @@ function RevenueDashboard() {
                   <tr>
                     <td>TOTAL</td>
                     <td>{fn(d.totalLoads,0)}</td>
-                    <td style={{ color:"#3ddc84" }}>{fd(d.totalRev,0)}</td>
-                    <td style={{ color:"#ff5252" }}>{fd(d.totalExp,0)}</td>
-                    <td style={{ color:"#f5c542",fontWeight:800 }}>{fd(d.totalGP,0)}</td>
+                    <td style={{ color:"#4ade80" }}>{fd(d.totalRev,0)}</td>
+                    <td style={{ color:"#fb7185" }}>{fd(d.totalExp,0)}</td>
+                    <td style={{ color:"#fbbf24",fontWeight:800 }}>{fd(d.totalGP,0)}</td>
                     <td style={{ fontWeight:800 }}>{fp(d.overallMargin)}</td>
                     <td>{fn(d.totalMiles,0)}</td>
-                    <td style={{ color:"#4fc3f7" }}>${d.avgRPM.toFixed(2)}</td>
+                    <td style={{ color:"#38bdf8" }}>${d.avgRPM.toFixed(2)}</td>
                     <td>{fd(d.avgGPPerLoad,0)}</td>
                   </tr>
                 </tfoot>
@@ -5764,17 +5769,17 @@ function RevenueDashboard() {
                 <YAxis yAxisId="left" tick={{ fill:"var(--mu)",fontSize:9 }} tickFormatter={v=>"$"+Math.round(v/1000)+"k"} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fill:"var(--mu)",fontSize:9 }} tickFormatter={v=>v+"%"} domain={[0,50]} />
                 <Tooltip content={<CustomTip />} />
-                <Bar yAxisId="left" dataKey="rev" name="Revenue" fill="#3ddc8460" radius={[2,2,0,0]} />
-                <Bar yAxisId="left" dataKey="gp"  name="Gross Profit" fill="#f5c542" radius={[2,2,0,0]} />
-                <Line yAxisId="right" dataKey="gpPct" name="Margin %" stroke="#4fc3f7" strokeWidth={3}
-                  dot={{ r:6, fill:"#4fc3f7", strokeWidth:0 }} type="monotone" />
+                <Bar yAxisId="left" dataKey="rev" name="Revenue" fill="#4ade8060" radius={[2,2,0,0]} />
+                <Bar yAxisId="left" dataKey="gp"  name="Gross Profit" fill="#fbbf24" radius={[2,2,0,0]} />
+                <Line yAxisId="right" dataKey="gpPct" name="Margin %" stroke="#38bdf8" strokeWidth={3}
+                  dot={{ r:6, fill:"#38bdf8", strokeWidth:0 }} type="monotone" />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
 
           {/* Monthly deep-dive cards */}
           {d.months.map(m => {
-            const color = m.gpPct >= 35 ? "#3ddc84" : m.gpPct >= 25 ? "#f5c542" : "#ff5252";
+            const color = m.gpPct >= 35 ? "#4ade80" : m.gpPct >= 25 ? "#fbbf24" : "#fb7185";
             return (
               <div key={m.m} className="card" style={{ marginBottom:14, borderLeft:`3px solid ${color}` }}>
                 <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start" }}>
@@ -5794,11 +5799,11 @@ function RevenueDashboard() {
                 </div>
                 <div style={{ display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginTop:14 }}>
                   {[
-                    { label:"Revenue", val:fd(m.rev,0), c:"#3ddc84" },
-                    { label:"Expenses", val:fd(m.exp,0), c:"#ff5252" },
-                    { label:"GP", val:fd(m.gp,0), c:"#f5c542" },
-                    { label:"Rev/Mile", val:`$${m.rpm.toFixed(2)}`, c:"#4fc3f7" },
-                    { label:"GP/Load", val:fd(m.gp/m.loads,0), c:"#b39ddb" },
+                    { label:"Revenue", val:fd(m.rev,0), c:"#4ade80" },
+                    { label:"Expenses", val:fd(m.exp,0), c:"#fb7185" },
+                    { label:"GP", val:fd(m.gp,0), c:"#fbbf24" },
+                    { label:"Rev/Mile", val:`$${m.rpm.toFixed(2)}`, c:"#38bdf8" },
+                    { label:"GP/Load", val:fd(m.gp/m.loads,0), c:"#a78bfa" },
                   ].map(k => (
                     <div key={k.label} style={{ textAlign:"center" }}>
                       <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase" }}>{k.label}</div>
@@ -5958,10 +5963,10 @@ function CEEast() {
 
   // ── Distribution splits ──
   const OWNERS = [
-    { name:"Chris",         pct:0.45, color:"#ff5252" },
-    { name:"Anthony",       pct:0.45, color:"#4fc3f7" },
-    { name:"Gabriel Colon", pct:0.04, color:"#3ddc84" },
-    { name:"Jon Marcus",    pct:0.06, color:"#f5c542" },
+    { name:"Chris",         pct:0.45, color:"#fb7185" },
+    { name:"Anthony",       pct:0.45, color:"#38bdf8" },
+    { name:"Gabriel Colon", pct:0.04, color:"#4ade80" },
+    { name:"Jon Marcus",    pct:0.06, color:"#fbbf24" },
   ];
   const monthlyDist = distAmt;
   const annualDist  = monthlyDist * 12;
@@ -6001,15 +6006,15 @@ function CEEast() {
               <button key={id} onClick={() => setCePeriod(id)} style={{
                 padding:"6px 14px",borderRadius:3,cursor:"pointer",
                 fontFamily:"var(--f2)",fontSize:11,fontWeight:700,letterSpacing:1,textTransform:"uppercase",
-                background:cePeriod===id?"#4fc3f7":"transparent",
+                background:cePeriod===id?"#38bdf8":"transparent",
                 color:cePeriod===id?"#0b0d10":"var(--mu)",
-                border:`1px solid ${cePeriod===id?"#4fc3f7":"var(--bd)"}`,
+                border:`1px solid ${cePeriod===id?"#38bdf8":"var(--bd)"}`,
               }}>{lbl}</button>
             ))}
           </div>
 
           {ceLoading && <div style={{ textAlign:"center",padding:40,color:"var(--mu)" }}>Loading CE East from QuickBooks...</div>}
-          {ceError && <div style={{ padding:16,background:"rgba(255,82,82,.1)",border:"1px solid rgba(255,82,82,.3)",borderRadius:4,color:"#ff5252",fontSize:12,marginBottom:14 }}>{ceError}</div>}
+          {ceError && <div style={{ padding:16,background:"rgba(251,113,133,.1)",border:"1px solid rgba(251,113,133,.3)",borderRadius:4,color:"#fb7185",fontSize:12,marginBottom:14 }}>{ceError}</div>}
 
           {ceQb && (() => { const t = ceQb.parsed.totals; const p = ceQb.period; const inc = ceQb.parsed.income; const exp = ceQb.parsed.expenses; const cogs = ceQb.parsed.cogs; return (
             <>
@@ -6020,10 +6025,10 @@ function CEEast() {
               {/* Hero KPIs */}
               <div className="g4" style={{ marginBottom:14 }}>
                 {[
-                  { label:"Revenue", val:t.totalIncome || 0, color:"#3ddc84" },
-                  { label:"Gross Profit", val:t.grossProfit || 0, color:"#f5c542", sub:t.totalIncome > 0 ? `${(t.grossProfit/t.totalIncome*100).toFixed(1)}% margin` : "" },
-                  { label:"Total Expenses", val:t.totalExpenses || 0, color:"#ff8a65" },
-                  { label:"Net Income", val:t.netIncome || 0, color:(t.netIncome||0) >= 0 ? "#3ddc84" : "#ff5252" },
+                  { label:"Revenue", val:t.totalIncome || 0, color:"#4ade80" },
+                  { label:"Gross Profit", val:t.grossProfit || 0, color:"#fbbf24", sub:t.totalIncome > 0 ? `${(t.grossProfit/t.totalIncome*100).toFixed(1)}% margin` : "" },
+                  { label:"Total Expenses", val:t.totalExpenses || 0, color:"#5eead4" },
+                  { label:"Net Income", val:t.netIncome || 0, color:(t.netIncome||0) >= 0 ? "#4ade80" : "#fb7185" },
                 ].map(k => (
                   <div key={k.label} style={{ background:"var(--s1)",border:`1px solid ${k.color}40`,borderRadius:6,padding:"18px",textAlign:"center" }}>
                     <div style={{ fontSize:9,letterSpacing:3,textTransform:"uppercase",color:k.color,marginBottom:6 }}>{k.label}</div>
@@ -6040,9 +6045,9 @@ function CEEast() {
                   <table className="tbl" style={{ fontSize:11 }}>
                     <tbody>
                       {Object.entries(inc).filter(([k]) => !k.startsWith("Total")).map(([k,v]) => (
-                        <tr key={k}><td>{k}</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#3ddc84" }}>{fd(v)}</td></tr>
+                        <tr key={k}><td>{k}</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#4ade80" }}>{fd(v)}</td></tr>
                       ))}
-                      <tr style={{ fontWeight:800,borderTop:"1px solid var(--bd)" }}><td>Total Income</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#3ddc84" }}>{fd(t.totalIncome)}</td></tr>
+                      <tr style={{ fontWeight:800,borderTop:"1px solid var(--bd)" }}><td>Total Income</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#4ade80" }}>{fd(t.totalIncome)}</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -6053,9 +6058,9 @@ function CEEast() {
                   <table className="tbl" style={{ fontSize:11 }}>
                     <tbody>
                       {Object.entries(cogs).filter(([k]) => !k.startsWith("Total")).map(([k,v]) => (
-                        <tr key={k}><td>{k}</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#ff5252" }}>{fd(v)}</td></tr>
+                        <tr key={k}><td>{k}</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#fb7185" }}>{fd(v)}</td></tr>
                       ))}
-                      <tr style={{ fontWeight:800,borderTop:"1px solid var(--bd)" }}><td>Total COGS</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#ff5252" }}>{fd(t.totalCOGS)}</td></tr>
+                      <tr style={{ fontWeight:800,borderTop:"1px solid var(--bd)" }}><td>Total COGS</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#fb7185" }}>{fd(t.totalCOGS)}</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -6069,7 +6074,7 @@ function CEEast() {
                     {Object.entries(exp).filter(([k,v]) => !k.startsWith("Total") && v !== 0).sort((a,b) => b[1]-a[1]).map(([k,v]) => (
                       <tr key={k}><td>{k.replace(/^[^>]+> /,"")}</td><td style={{ textAlign:"right",fontFamily:"var(--f2)" }}>{fd(v)}</td></tr>
                     ))}
-                    <tr style={{ fontWeight:800,borderTop:"1px solid var(--bd)" }}><td>Total Expenses</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#ff5252" }}>{fd(t.totalExpenses)}</td></tr>
+                    <tr style={{ fontWeight:800,borderTop:"1px solid var(--bd)" }}><td>Total Expenses</td><td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#fb7185" }}>{fd(t.totalExpenses)}</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -6083,18 +6088,18 @@ function CEEast() {
                   <div className="g3" style={{ gap:14,marginBottom:14 }}>
                     {/* Assets */}
                     <div className="card">
-                      <div className="ctit" style={{ color:"#3ddc84" }}>Assets</div>
+                      <div className="ctit" style={{ color:"#4ade80" }}>Assets</div>
                       <table className="tbl" style={{ fontSize:11 }}>
                         <tbody>
                           {Object.entries(b.assets).filter(([k,v]) => v !== 0).map(([k,v]) => (
                             <tr key={k} style={{ fontWeight:k.startsWith("Total") ? 800 : 400 }}>
                               <td style={{ paddingLeft:k.startsWith("Total") ? 0 : 8 }}>{k}</td>
-                              <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:k.startsWith("Total")?"#3ddc84":"var(--tx)" }}>{fd(v)}</td>
+                              <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:k.startsWith("Total")?"#4ade80":"var(--tx)" }}>{fd(v)}</td>
                             </tr>
                           ))}
                           <tr style={{ fontWeight:800,borderTop:"2px solid var(--bd)" }}>
                             <td>TOTAL ASSETS</td>
-                            <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#3ddc84",fontSize:14 }}>{fd(b.totals.totalAssets)}</td>
+                            <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#4ade80",fontSize:14 }}>{fd(b.totals.totalAssets)}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -6102,7 +6107,7 @@ function CEEast() {
 
                     {/* Liabilities */}
                     <div className="card">
-                      <div className="ctit" style={{ color:"#ff5252" }}>Liabilities</div>
+                      <div className="ctit" style={{ color:"#fb7185" }}>Liabilities</div>
                       <table className="tbl" style={{ fontSize:11 }}>
                         <tbody>
                           {Object.entries(b.liabilities).filter(([k,v]) => v !== 0).length > 0
@@ -6116,7 +6121,7 @@ function CEEast() {
                           }
                           <tr style={{ fontWeight:800,borderTop:"2px solid var(--bd)" }}>
                             <td>TOTAL LIABILITIES</td>
-                            <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#ff5252",fontSize:14 }}>{fd(b.totals.totalLiabilities || 0)}</td>
+                            <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#fb7185",fontSize:14 }}>{fd(b.totals.totalLiabilities || 0)}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -6124,18 +6129,18 @@ function CEEast() {
 
                     {/* Equity */}
                     <div className="card">
-                      <div className="ctit" style={{ color:"#f5c542" }}>Equity</div>
+                      <div className="ctit" style={{ color:"#fbbf24" }}>Equity</div>
                       <table className="tbl" style={{ fontSize:11 }}>
                         <tbody>
                           {Object.entries(b.equity).filter(([k,v]) => v !== 0).map(([k,v]) => (
                             <tr key={k} style={{ fontWeight:k.startsWith("Total") ? 800 : 400 }}>
                               <td style={{ paddingLeft:k.startsWith("Total") ? 0 : 8 }}>{k}</td>
-                              <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:v < 0 ? "#ff5252" : "var(--tx)" }}>{fd(v)}</td>
+                              <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:v < 0 ? "#fb7185" : "var(--tx)" }}>{fd(v)}</td>
                             </tr>
                           ))}
                           <tr style={{ fontWeight:800,borderTop:"2px solid var(--bd)" }}>
                             <td>TOTAL EQUITY</td>
-                            <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#f5c542",fontSize:14 }}>{fd(b.totals.totalEquity)}</td>
+                            <td style={{ textAlign:"right",fontFamily:"var(--f2)",color:"#fbbf24",fontSize:14 }}>{fd(b.totals.totalEquity)}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -6144,7 +6149,7 @@ function CEEast() {
                 </>
               ); })()}
 
-              <div style={{ padding:12,background:"rgba(79,195,247,.06)",border:"1px solid rgba(79,195,247,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",textAlign:"center" }}>
+              <div style={{ padding:12,background:"rgba(56,189,248,.06)",border:"1px solid rgba(56,189,248,.15)",borderRadius:4,fontSize:11,color:"var(--mu)",textAlign:"center" }}>
                 Live from QuickBooks · CE East P&L + Balance Sheet · Updated in real-time
               </div>
             </>
@@ -6164,11 +6169,11 @@ function CEEast() {
               <div style={{ fontSize:11,fontWeight:700,color:"var(--tx)" }}>Gross Profit</div>
               <div style={{ fontSize:10,color:"var(--mu)" }}>{fp(43372.61/481841.01*100)} GP margin</div>
             </div>
-            <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:"#f5c542" }}>{fd(43372.61,0)}</div>
+            <div style={{ fontFamily:"var(--f2)",fontSize:28,fontWeight:900,color:"#fbbf24" }}>{fd(43372.61,0)}</div>
           </div>
           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0" }}>
             <div style={{ fontSize:11,color:"var(--tx)" }}>Total Revenue</div>
-            <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:700,color:"#3ddc84" }}>{fd(481841.01,0)}</div>
+            <div style={{ fontFamily:"var(--f2)",fontSize:18,fontWeight:700,color:"#4ade80" }}>{fd(481841.01,0)}</div>
           </div>
         </div>
         <div className="card">
@@ -6177,9 +6182,9 @@ function CEEast() {
             {months2026.map(row => (
               <div key={row.m} style={{ background:"var(--bg)",border:"1px solid var(--bd)",borderRadius:3,padding:"12px 14px" }}>
                 <div style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:800,letterSpacing:1,color:"var(--or)",marginBottom:6 }}>{row.m}</div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:26,fontWeight:900,color:"#f5c542",lineHeight:1 }}>{fd(row.gp,0)}</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:26,fontWeight:900,color:"#fbbf24",lineHeight:1 }}>{fd(row.gp,0)}</div>
                 <div style={{ fontSize:9,color:"var(--mu)",letterSpacing:2,textTransform:"uppercase",marginTop:2,marginBottom:6 }}>Gross Profit</div>
-                <div style={{ fontSize:12,color:"#3ddc84" }}>{fd(row.rev,0)}</div>
+                <div style={{ fontSize:12,color:"#4ade80" }}>{fd(row.rev,0)}</div>
                 <div style={{ fontSize:9,color:"var(--mu)" }}>Revenue · {fp(row.gp/row.rev*100)}</div>
               </div>
             ))}
@@ -6187,7 +6192,7 @@ function CEEast() {
           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0 0",borderTop:"1px solid var(--bd)",marginTop:10 }}>
             <div style={{ fontSize:11,fontWeight:800,color:"var(--tx)" }}>2026 YTD Total</div>
             <div style={{ textAlign:"right" }}>
-              <div style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:900,color:"#f5c542" }}>
+              <div style={{ fontFamily:"var(--f2)",fontSize:20,fontWeight:900,color:"#fbbf24" }}>
                 {fd(months2026.reduce((s,r)=>s+r.gp,0),0)} GP
               </div>
               <div style={{ fontSize:10,color:"var(--mu)" }}>
@@ -6213,7 +6218,7 @@ function CEEast() {
                   <input type="number" min={0} max={Math.round(monthlyGP)} step={500} value={distAmt}
                     onChange={e => setDistAmt(Math.min(Math.round(monthlyGP), Math.max(0, +e.target.value || 0)))}
                     style={{
-                      width:120, fontFamily:"var(--f2)", fontSize:22, fontWeight:900, color:"#3ddc84",
+                      width:120, fontFamily:"var(--f2)", fontSize:22, fontWeight:900, color:"#4ade80",
                       background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:3,
                       padding:"4px 8px", textAlign:"right", outline:"none",
                     }} />
@@ -6221,17 +6226,17 @@ function CEEast() {
               </div>
               <input type="range" min={0} max={Math.round(monthlyGP)} step={500} value={distAmt}
                 onChange={e => setDistAmt(+e.target.value)}
-                style={{ width:"100%",accentColor:"#3ddc84" }} />
+                style={{ width:"100%",accentColor:"#4ade80" }} />
               <div style={{ display:"flex",justifyContent:"space-between",fontSize:10,color:"var(--mu)",marginTop:4 }}>
                 <span>$0</span><span>$8K</span><span>$16K</span><span>$24K</span><span>{fd(monthlyGP,0)}</span>
               </div>
             </div>
 
             {/* Total distribution result */}
-            <div style={{ background:"rgba(61,220,132,.08)",border:"1px solid rgba(61,220,132,.2)",
+            <div style={{ background:"rgba(74,222,128,.08)",border:"1px solid rgba(74,222,128,.2)",
               borderRadius:3,padding:"14px",marginBottom:14,textAlign:"center" }}>
-              <div style={{ fontSize:9,color:"#3ddc84",letterSpacing:3,textTransform:"uppercase",marginBottom:4 }}>Total Monthly Distribution</div>
-              <div style={{ fontFamily:"var(--f2)",fontSize:44,fontWeight:900,color:"#3ddc84",lineHeight:1 }}>
+              <div style={{ fontSize:9,color:"#4ade80",letterSpacing:3,textTransform:"uppercase",marginBottom:4 }}>Total Monthly Distribution</div>
+              <div style={{ fontFamily:"var(--f2)",fontSize:44,fontWeight:900,color:"#4ade80",lineHeight:1 }}>
                 {fd(monthlyDist,0)}<span style={{ fontSize:16,color:"var(--mu)" }}>/mo</span>
               </div>
               <div style={{ fontSize:11,color:"var(--mu)",marginTop:4 }}>{fd(annualDist,0)}/yr · {fp(monthlyGP > 0 ? monthlyDist/monthlyGP*100 : 0)} of {fd(monthlyGP,0)}/mo avg GP</div>
@@ -6260,12 +6265,12 @@ function CEEast() {
                 <div key={pct} onClick={() => setDistAmt(mo)} style={{
                   display:"flex",justifyContent:"space-between",alignItems:"center",
                   padding:"8px 12px",marginBottom:4,borderRadius:3,cursor:"pointer",
-                  background:sel?"rgba(61,220,132,.1)":"var(--bg)",
-                  border:`1px solid ${sel?"#3ddc84":"var(--bd)"}`,
+                  background:sel?"rgba(74,222,128,.1)":"var(--bg)",
+                  border:`1px solid ${sel?"#4ade80":"var(--bd)"}`,
                 }}>
-                  <span style={{ fontFamily:"var(--f2)",fontSize:14,fontWeight:700,color:sel?"#3ddc84":"var(--mu)" }}>{pct}% of GP</span>
+                  <span style={{ fontFamily:"var(--f2)",fontSize:14,fontWeight:700,color:sel?"#4ade80":"var(--mu)" }}>{pct}% of GP</span>
                   <div style={{ display:"flex",gap:12,alignItems:"center" }}>
-                    <span style={{ fontFamily:"var(--f2)",fontSize:16,fontWeight:800,color:sel?"#3ddc84":"var(--tx)" }}>{fd(mo,0)}/mo</span>
+                    <span style={{ fontFamily:"var(--f2)",fontSize:16,fontWeight:800,color:sel?"#4ade80":"var(--tx)" }}>{fd(mo,0)}/mo</span>
                     <span style={{ fontSize:10,color:"var(--mu)" }}>{fd(mo*12,0)}/yr</span>
                   </div>
                 </div>
@@ -6282,11 +6287,11 @@ function CEEast() {
               <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start" }}>
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:11,color:"var(--tx)",fontWeight:600,marginBottom:4 }}>Chris Contribution</div>
-                  <div className="bar"><div className="bfil" style={{ width:"100%",background:"#3ddc84" }} /></div>
-                  <div style={{ fontSize:10,color:"#3ddc84",fontWeight:700,marginTop:4 }}>✓ Repaid in full — March 2026 via gross profits</div>
+                  <div className="bar"><div className="bfil" style={{ width:"100%",background:"#4ade80" }} /></div>
+                  <div style={{ fontSize:10,color:"#4ade80",fontWeight:700,marginTop:4 }}>✓ Repaid in full — March 2026 via gross profits</div>
                 </div>
                 <div style={{ textAlign:"right",marginLeft:16 }}>
-                  <div style={{ fontFamily:"var(--f2)",fontSize:24,fontWeight:900,color:"#3ddc84" }}>{fd(dueToChr,0)}</div>
+                  <div style={{ fontFamily:"var(--f2)",fontSize:24,fontWeight:900,color:"#4ade80" }}>{fd(dueToChr,0)}</div>
                   <div style={{ fontSize:9,color:"var(--mu)" }}>100% repaid</div>
                 </div>
               </div>
@@ -6297,11 +6302,11 @@ function CEEast() {
               <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start" }}>
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:11,color:"var(--tx)",fontWeight:600,marginBottom:4 }}>Anthony Contribution</div>
-                  <div className="bar"><div className="bfil" style={{ width:"50%",background:"#f5c542" }} /></div>
-                  <div style={{ fontSize:10,color:"#f5c542",fontWeight:600,marginTop:4 }}>🔄 $6,810 repaid — $6,810 remaining (50%)</div>
+                  <div className="bar"><div className="bfil" style={{ width:"50%",background:"#fbbf24" }} /></div>
+                  <div style={{ fontSize:10,color:"#fbbf24",fontWeight:600,marginTop:4 }}>🔄 $6,810 repaid — $6,810 remaining (50%)</div>
                 </div>
                 <div style={{ textAlign:"right",marginLeft:16 }}>
-                  <div style={{ fontFamily:"var(--f2)",fontSize:24,fontWeight:900,color:"#ff8a65" }}>{fd(dueToAnt,0)}</div>
+                  <div style={{ fontFamily:"var(--f2)",fontSize:24,fontWeight:900,color:"#5eead4" }}>{fd(dueToAnt,0)}</div>
                   <div style={{ fontSize:9,color:"var(--mu)" }}>50% repaid</div>
                 </div>
               </div>
@@ -6313,13 +6318,13 @@ function CEEast() {
             </div>
             {/* Anthony offset */}
             <div style={{ marginTop:12,padding:"12px 14px",
-              background:"rgba(79,195,247,.07)",border:"1px solid rgba(79,195,247,.25)",borderRadius:3 }}>
+              background:"rgba(56,189,248,.07)",border:"1px solid rgba(56,189,248,.25)",borderRadius:3 }}>
               <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}>
                 <div>
-                  <div style={{ fontSize:9,color:"#4fc3f7",letterSpacing:2,textTransform:"uppercase",marginBottom:3 }}>Separate — Due FROM Anthony</div>
+                  <div style={{ fontSize:9,color:"#38bdf8",letterSpacing:2,textTransform:"uppercase",marginBottom:3 }}>Separate — Due FROM Anthony</div>
                   <div style={{ fontSize:10,color:"var(--mu)" }}>Anthony owes the company · not part of threshold</div>
                 </div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:22,fontWeight:900,color:"#4fc3f7",marginLeft:16 }}>{fd(dueFromAnt,0)}</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:22,fontWeight:900,color:"#38bdf8",marginLeft:16 }}>{fd(dueFromAnt,0)}</div>
               </div>
             </div>
           </div>
@@ -6333,35 +6338,35 @@ function CEEast() {
 
             {/* Two hero numbers */}
             <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16 }}>
-              <div style={{ background:"rgba(245,197,66,.08)",border:"1px solid rgba(245,197,66,.25)",borderRadius:4,padding:"16px",textAlign:"center" }}>
-                <div style={{ fontSize:9,color:"#f5c542",letterSpacing:3,textTransform:"uppercase",marginBottom:6 }}>Gross Profit</div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:"#f5c542",lineHeight:1 }}>{fd(pl.grossProfit,0)}</div>
+              <div style={{ background:"rgba(251,191,36,.08)",border:"1px solid rgba(251,191,36,.25)",borderRadius:4,padding:"16px",textAlign:"center" }}>
+                <div style={{ fontSize:9,color:"#fbbf24",letterSpacing:3,textTransform:"uppercase",marginBottom:6 }}>Gross Profit</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:"#fbbf24",lineHeight:1 }}>{fd(pl.grossProfit,0)}</div>
                 <div style={{ fontSize:10,color:"var(--mu)",marginTop:4 }}>{fp(pl.grossProfit/pl.revenue*100)} margin</div>
               </div>
-              <div style={{ background:pl.netIncome>=0?"rgba(61,220,132,.08)":"rgba(255,82,82,.08)",border:`1px solid ${pl.netIncome>=0?"rgba(61,220,132,.25)":"rgba(255,82,82,.25)"}`,borderRadius:4,padding:"16px",textAlign:"center" }}>
-                <div style={{ fontSize:9,color:pl.netIncome>=0?"#3ddc84":"#ff5252",letterSpacing:3,textTransform:"uppercase",marginBottom:6 }}>Net Income</div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:pl.netIncome>=0?"#3ddc84":"#ff5252",lineHeight:1 }}>{fd(pl.netIncome,0)}</div>
+              <div style={{ background:pl.netIncome>=0?"rgba(74,222,128,.08)":"rgba(251,113,133,.08)",border:`1px solid ${pl.netIncome>=0?"rgba(74,222,128,.25)":"rgba(251,113,133,.25)"}`,borderRadius:4,padding:"16px",textAlign:"center" }}>
+                <div style={{ fontSize:9,color:pl.netIncome>=0?"#4ade80":"#fb7185",letterSpacing:3,textTransform:"uppercase",marginBottom:6 }}>Net Income</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:pl.netIncome>=0?"#4ade80":"#fb7185",lineHeight:1 }}>{fd(pl.netIncome,0)}</div>
                 <div style={{ fontSize:10,color:"var(--mu)",marginTop:4 }}>{fp(pl.netIncome/pl.revenue*100)} net margin</div>
               </div>
             </div>
 
             {/* Full breakdown */}
             {[
-              { label:"Total Revenue",         val:pl.revenue,       color:"#3ddc84" },
-              { label:"Carrier Pay",            val:-pl.carrierPay,   color:"#ff5252" },
-              { label:"Triumph/Flexent Fees",   val:-pl.merchantFees, color:"#ff8a65" },
-              { label:"Gross Profit",           val:pl.grossProfit,   color:"#f5c542", bold:true },
-              { label:"Salaries & Wages",       val:-pl.salaries,     color:"#ff5252" },
-              { label:"Freight Insurance",      val:-pl.freightIns,   color:"#ff5252" },
-              { label:"Computers & Software",   val:-pl.computers,    color:"#ff5252" },
-              { label:"Travel Expenses",        val:-pl.travel,       color:"#ff5252" },
-              { label:"Other Expenses",         val:-(pl.expenses-pl.salaries-pl.freightIns-pl.computers-pl.travel), color:"#ff5252" },
-              { label:"Net Income",             val:pl.netIncome,     color:pl.netIncome>=0?"#3ddc84":"#ff5252", bold:true },
+              { label:"Total Revenue",         val:pl.revenue,       color:"#4ade80" },
+              { label:"Carrier Pay",            val:-pl.carrierPay,   color:"#fb7185" },
+              { label:"Triumph/Flexent Fees",   val:-pl.merchantFees, color:"#5eead4" },
+              { label:"Gross Profit",           val:pl.grossProfit,   color:"#fbbf24", bold:true },
+              { label:"Salaries & Wages",       val:-pl.salaries,     color:"#fb7185" },
+              { label:"Freight Insurance",      val:-pl.freightIns,   color:"#fb7185" },
+              { label:"Computers & Software",   val:-pl.computers,    color:"#fb7185" },
+              { label:"Travel Expenses",        val:-pl.travel,       color:"#fb7185" },
+              { label:"Other Expenses",         val:-(pl.expenses-pl.salaries-pl.freightIns-pl.computers-pl.travel), color:"#fb7185" },
+              { label:"Net Income",             val:pl.netIncome,     color:pl.netIncome>=0?"#4ade80":"#fb7185", bold:true },
             ].map(item => (
               <div key={item.label} style={{
                 display:"flex",justifyContent:"space-between",alignItems:"center",
                 padding:"7px 0",borderBottom:"1px solid var(--bd)",
-                background:item.bold?"rgba(245,197,66,.04)":"transparent",
+                background:item.bold?"rgba(251,191,36,.04)":"transparent",
               }}>
                 <div>
                   <div style={{ fontSize:11,color:item.bold?item.color:"var(--tx)",fontWeight:item.bold?700:400 }}>{item.label}</div>
@@ -6377,15 +6382,15 @@ function CEEast() {
           {/* Reserves Due */}
           <div style={{
             marginTop:14,padding:"20px 22px",borderRadius:6,
-            background:"linear-gradient(135deg,rgba(245,197,66,.12),rgba(245,197,66,.04))",
-            border:"2px solid rgba(245,197,66,.4)",
+            background:"linear-gradient(135deg,rgba(251,191,36,.12),rgba(251,191,36,.04))",
+            border:"2px solid rgba(251,191,36,.4)",
           }}>
             <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}>
               <div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:14,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"#f5c542",marginBottom:4 }}>Reserves Due</div>
+                <div style={{ fontFamily:"var(--f2)",fontSize:14,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"#fbbf24",marginBottom:4 }}>Reserves Due</div>
                 <div style={{ fontSize:12,color:"var(--mu)" }}>Reserves held — released upon customer payment</div>
               </div>
-              <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:"#f5c542",marginLeft:16 }}>{fd(13683.50,0)}</div>
+              <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:"#fbbf24",marginLeft:16 }}>{fd(13683.50,0)}</div>
             </div>
           </div>
 
@@ -6395,12 +6400,12 @@ function CEEast() {
             <div style={{ fontSize:10,color:"var(--mu)",marginBottom:10 }}>Fixed/recurring monthly costs — CE East operations</div>
             {(() => {
               const items = [
-                { label:"CE East Staff",       amt:7250,    color:"#4fc3f7" },
-                { label:"Computer & Software", amt:2280,    color:"#b39ddb" },
-                { label:"Freight Insurance",   amt:1930.73, color:"#ff8a65" },
-                { label:"Rent",                amt:1100,    color:"#f47820" },
-                { label:"Nelly",               amt:1000,    color:"#3ddc84" },
-                { label:"Sales Commission",    amt:750,     color:"#f5c542" },
+                { label:"CE East Staff",       amt:7250,    color:"#38bdf8" },
+                { label:"Computer & Software", amt:2280,    color:"#a78bfa" },
+                { label:"Freight Insurance",   amt:1930.73, color:"#5eead4" },
+                { label:"Rent",                amt:1100,    color:"#2dd4bf" },
+                { label:"Nelly",               amt:1000,    color:"#4ade80" },
+                { label:"Sales Commission",    amt:750,     color:"#fbbf24" },
                 { label:"Utilities",           amt:600,     color:"#26a69a" },
                 { label:"Vinix",               amt:188.64,  color:"#ef5350" },
               ];
@@ -6512,12 +6517,12 @@ If this is a PDF document, use the raw PDF text to extract structured data. For 
 // AI reads the headers, detects the type, maps columns, loads data.
 
 const REPORT_TYPES = {
-  payroll:        { label:"Payroll",         icon:"👷", color:"#f47820", desc:"Driver names, hours, pay" },
-  fuel:           { label:"Fuel",            icon:"⛽", color:"#f5c542", desc:"Fuel card transactions by driver" },
-  mileage:        { label:"Truck Mileage",   icon:"📍", color:"#4fc3f7", desc:"GPS/Samsara mileage per truck" },
-  income:         { label:"Income / P&L",    icon:"💵", color:"#3ddc84", desc:"Revenue, carrier pay, expenses" },
-  insurance:      { label:"Insurance",       icon:"🛡️", color:"#b39ddb", desc:"Premium payments" },
-  truck_payments: { label:"Truck Payments",  icon:"🚛", color:"#ff8a65", desc:"Lease/rental invoices" },
+  payroll:        { label:"Payroll",         icon:"👷", color:"#2dd4bf", desc:"Driver names, hours, pay" },
+  fuel:           { label:"Fuel",            icon:"⛽", color:"#fbbf24", desc:"Fuel card transactions by driver" },
+  mileage:        { label:"Truck Mileage",   icon:"📍", color:"#38bdf8", desc:"GPS/Samsara mileage per truck" },
+  income:         { label:"Income / P&L",    icon:"💵", color:"#4ade80", desc:"Revenue, carrier pay, expenses" },
+  insurance:      { label:"Insurance",       icon:"🛡️", color:"#a78bfa", desc:"Premium payments" },
+  truck_payments: { label:"Truck Payments",  icon:"🚛", color:"#5eead4", desc:"Lease/rental invoices" },
   trailer:        { label:"Trailer Payments", icon:"🚜", color:"#26a69a", desc:"Trailer lease/rental" },
   maintenance:    { label:"Maintenance",     icon:"🔧", color:"#ef5350", desc:"Repair/wash/tow invoices" },
   ce_east:        { label:"CE East",         icon:"🏦", color:"#ab47bc", desc:"CE East financials" },
@@ -6928,7 +6933,7 @@ function DataSettings() {
     } : u));
   };
 
-  const confColor = c => c === "high" ? "#3ddc84" : c === "medium" ? "#f5c542" : "#ff8a65";
+  const confColor = c => c === "high" ? "#4ade80" : c === "medium" ? "#fbbf24" : "#5eead4";
 
   return (
     <div>
@@ -6936,7 +6941,7 @@ function DataSettings() {
       <div className="psub">Drop any report — AI auto-detects format and maps columns</div>
 
       <div className="ibox" style={{ marginBottom:14 }}>
-        <strong style={{ color:"#4fc3f7" }}>Supported sources:</strong>{" "}
+        <strong style={{ color:"#38bdf8" }}>Supported sources:</strong>{" "}
         QuickBooks P&L, EFS fuel card exports, Mudflap statements, Samsara mileage reports, payroll summaries, 
         insurance invoices, Penske/TEC/TCI lease statements, trailer invoices, or any CSV/XLSX/PDF with relevant data.
         The AI reads your column headers and figures out the rest. PDFs are parsed and sent to AI for extraction.
@@ -6952,7 +6957,7 @@ function DataSettings() {
           border: `2px dashed ${dragging ? "var(--or)" : "var(--bd)"}`,
           borderRadius: 6, padding: "40px 20px", textAlign: "center",
           cursor: "pointer", marginBottom: 14,
-          background: dragging ? "rgba(244,120,32,.08)" : "var(--s1)",
+          background: dragging ? "rgba(45,212,191,.08)" : "var(--s1)",
           transition: "all .2s",
         }}
       >
@@ -6983,8 +6988,8 @@ function DataSettings() {
               <div style={{ textAlign: "right" }}>
                 {u.status === "parsing" && <span style={{ fontSize: 11, color: "var(--or)" }}>⏳ Parsing...</span>}
                 {u.status === "classifying" && <span style={{ fontSize: 11, color: "var(--or)" }}>🤖 Classifying...</span>}
-                {u.status === "error" && <span style={{ fontSize: 11, color: "#ff5252" }}>✕ Error</span>}
-                {u.status === "applied" && <span style={{ fontSize: 11, color: "#3ddc84" }}>✓ Applied</span>}
+                {u.status === "error" && <span style={{ fontSize: 11, color: "#fb7185" }}>✕ Error</span>}
+                {u.status === "applied" && <span style={{ fontSize: 11, color: "#4ade80" }}>✓ Applied</span>}
                 {u.status === "ready" && (
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ fontSize: 20 }}>{rt.icon}</span>
@@ -7051,7 +7056,7 @@ function DataSettings() {
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {Object.entries(u.constants).map(([key, val]) => (
                     <div key={key} style={{
-                      background: "rgba(244,120,32,.06)", border: "1px solid rgba(244,120,32,.2)", borderRadius: 3,
+                      background: "rgba(45,212,191,.06)", border: "1px solid rgba(45,212,191,.2)", borderRadius: 3,
                       padding: "4px 10px", fontSize: 10,
                     }}>
                       <span style={{ color: "var(--or)", fontWeight: 700 }}>{key}</span>
@@ -7094,12 +7099,12 @@ function DataSettings() {
             {u.status === "ready" && u.dupes && u.dupes.length > 0 && (
               <div style={{
                 marginBottom: 10, padding: "12px 14px", borderRadius: 3,
-                background: "rgba(255,82,82,.08)", border: "1px solid rgba(255,82,82,.25)",
+                background: "rgba(251,113,133,.08)", border: "1px solid rgba(251,113,133,.25)",
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                   <span style={{ fontSize: 18 }}>⚠️</span>
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#ff5252" }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#fb7185" }}>
                       {u.dupes.length} Duplicate Invoice{u.dupes.length > 1 ? "s" : ""} Detected
                     </div>
                     <div style={{ fontSize: 10, color: "var(--mu)" }}>
@@ -7110,16 +7115,16 @@ function DataSettings() {
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {u.dupes.map(d => (
                     <span key={d.invoice} style={{
-                      background: "rgba(255,82,82,.12)", border: "1px solid rgba(255,82,82,.3)",
+                      background: "rgba(251,113,133,.12)", border: "1px solid rgba(251,113,133,.3)",
                       borderRadius: 3, padding: "3px 8px", fontSize: 10,
-                      color: "#ff5252", fontFamily: "var(--f1)", fontWeight: 600,
+                      color: "#fb7185", fontFamily: "var(--f1)", fontWeight: 600,
                     }}>
                       {d.invoice}
                     </span>
                   ))}
                 </div>
                 {u.newInvs && u.newInvs.length > 0 && (
-                  <div style={{ marginTop: 8, fontSize: 10, color: "#3ddc84" }}>
+                  <div style={{ marginTop: 8, fontSize: 10, color: "#4ade80" }}>
                     ✓ {u.newInvs.length} new invoice{u.newInvs.length > 1 ? "s" : ""} will be applied: {u.newInvs.slice(0, 5).join(", ")}{u.newInvs.length > 5 ? ` +${u.newInvs.length - 5} more` : ""}
                   </div>
                 )}
@@ -7151,14 +7156,14 @@ function DataSettings() {
             {u.status === "applied" && (
               <div style={{
                 padding: "8px 14px", borderRadius: 3, fontSize: 11,
-                background: "rgba(61,220,132,.08)", border: "1px solid rgba(61,220,132,.25)",
-                color: "#3ddc84", textAlign: "center",
+                background: "rgba(74,222,128,.08)", border: "1px solid rgba(74,222,128,.25)",
+                color: "#4ade80", textAlign: "center",
               }}>
                 ✓ {u.appliedNote || `${u.rows.length} rows applied`} — {rt.label} updated
               </div>
             )}
             {u.status === "error" && (
-              <div style={{ padding: "8px 14px", borderRadius: 3, fontSize: 11, background: "rgba(255,82,82,.08)", border: "1px solid rgba(255,82,82,.25)", color: "#ff5252" }}>
+              <div style={{ padding: "8px 14px", borderRadius: 3, fontSize: 11, background: "rgba(251,113,133,.08)", border: "1px solid rgba(251,113,133,.25)", color: "#fb7185" }}>
                 {u.notes}
               </div>
             )}
@@ -7210,11 +7215,11 @@ function DataSettings() {
           </div>
           <div className="kpi">
             <div className="klbl">Trucks</div>
-            <div className="kval" style={{ color: "#4fc3f7" }}>{TRUCK_MILES.length}</div>
+            <div className="kval" style={{ color: "#38bdf8" }}>{TRUCK_MILES.length}</div>
           </div>
           <div className="kpi">
             <div className="klbl">Period</div>
-            <div className="kval" style={{ color: "#3ddc84", fontSize: 14 }}>{PERIOD}</div>
+            <div className="kval" style={{ color: "#4ade80", fontSize: 14 }}>{PERIOD}</div>
           </div>
           <div className="kpi">
             <div className="klbl">All-In CPM</div>
@@ -7222,7 +7227,7 @@ function DataSettings() {
           </div>
           <div className="kpi">
             <div className="klbl">Invoices Tracked</div>
-            <div className="kval" style={{ color: "#b39ddb" }}>{invoiceRegistry.size}</div>
+            <div className="kval" style={{ color: "#a78bfa" }}>{invoiceRegistry.size}</div>
             <div className="ksub">Duplicate protection active</div>
           </div>
         </div>
@@ -7592,7 +7597,7 @@ function OfficeStaff() {
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", flexWrap:"wrap", gap:8 }}>
           <div className="ctit" style={{ margin:0 }}>This Week — All-In Payroll <span style={{ color:"var(--mu)", fontWeight:400 }}>· pay day {lastWk}</span></div>
           {wkPrev && (
-            <div style={{ fontSize:12, fontFamily:"var(--f1)", color: wkWoW <= 0 ? "#3ddc84" : "#ff5252" }}>
+            <div style={{ fontSize:12, fontFamily:"var(--f1)", color: wkWoW <= 0 ? "#4ade80" : "#fb7185" }}>
               {wkWoW <= 0 ? "▼" : "▲"} {fd(Math.abs(wkWoW),0)} WoW <span style={{ color:"var(--mu)" }}>(vs {priorWk})</span>
             </div>
           )}
@@ -7600,10 +7605,10 @@ function OfficeStaff() {
         <div style={{ fontFamily:"var(--f2)", fontSize:36, fontWeight:900, color:"var(--or)", lineHeight:1.1, margin:"6px 0 12px" }}>{fd(wkCur.total,0)}</div>
         <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
           {[
-            ["Fleet Drivers", wkCur.fleet, "#f47820"],
-            ["OTR Drivers",   wkCur.otr,   "#b39ddb"],
-            ["Office + Warehouse", wkCur.office, "#4fc3f7"],
-            ["Contractors (all-in)", wkCur.con, "#f5c542"],
+            ["Fleet Drivers", wkCur.fleet, "#2dd4bf"],
+            ["OTR Drivers",   wkCur.otr,   "#a78bfa"],
+            ["Office + Warehouse", wkCur.office, "#38bdf8"],
+            ["Contractors (all-in)", wkCur.con, "#fbbf24"],
           ].map(([lbl,val,col]) => (
             <div key={lbl} style={{ flex:"1 1 140px", background:"var(--s2)", borderRadius:4, padding:"8px 12px" }}>
               <div style={{ fontSize:10, color:"var(--mu)", textTransform:"uppercase", letterSpacing:1 }}>{lbl}</div>
@@ -7626,17 +7631,17 @@ function OfficeStaff() {
         </div>
         <div className="kpi">
           <div className="klbl">W2 Office (Salary)</div>
-          <div className="kval" style={{ color:"#4fc3f7" }}>{fd(w2Total,0)}</div>
+          <div className="kval" style={{ color:"#38bdf8" }}>{fd(w2Total,0)}</div>
           <div className="ksub">{OFFICE_W2.length} employees</div>
         </div>
         <div className="kpi">
           <div className="klbl">Warehouse</div>
-          <div className="kval" style={{ color:"#3ddc84" }}>{fd(whTotal,0)}</div>
+          <div className="kval" style={{ color:"#4ade80" }}>{fd(whTotal,0)}</div>
           <div className="ksub">{WAREHOUSE.length} employees</div>
         </div>
         <div className="kpi">
           <div className="klbl">Contractors</div>
-          <div className="kval" style={{ color:"#f5c542" }}>{fd(conTotal,0)}</div>
+          <div className="kval" style={{ color:"#fbbf24" }}>{fd(conTotal,0)}</div>
           <div className="ksub">{CONTRACTORS.filter(c=>c.total>0).length} active / {CONTRACTORS.length} total</div>
         </div>
       </div>
@@ -7645,14 +7650,14 @@ function OfficeStaff() {
       <div className="card" style={{ marginBottom:14 }}>
         <div className="ctit">Cost Breakdown</div>
         <div className="sbar" style={{ height:32, marginBottom:10 }}>
-          <div className="sseg" style={{ width:`${w2Total/grandTotal*100}%`, background:"#4fc3f7" }}>W2 {fp(w2Total/grandTotal*100)}</div>
-          <div className="sseg" style={{ width:`${whTotal/grandTotal*100}%`, background:"#3ddc84" }}>WH {fp(whTotal/grandTotal*100)}</div>
-          <div className="sseg" style={{ width:`${conTotal/grandTotal*100}%`, background:"#f5c542" }}>1099 {fp(conTotal/grandTotal*100)}</div>
+          <div className="sseg" style={{ width:`${w2Total/grandTotal*100}%`, background:"#38bdf8" }}>W2 {fp(w2Total/grandTotal*100)}</div>
+          <div className="sseg" style={{ width:`${whTotal/grandTotal*100}%`, background:"#4ade80" }}>WH {fp(whTotal/grandTotal*100)}</div>
+          <div className="sseg" style={{ width:`${conTotal/grandTotal*100}%`, background:"#fbbf24" }}>1099 {fp(conTotal/grandTotal*100)}</div>
         </div>
         <div style={{ display:"flex", gap:20, fontSize:11 }}>
-          <span><span style={{color:"#4fc3f7"}}>■</span> W2 Office: {fd(w2Total,0)}</span>
-          <span><span style={{color:"#3ddc84"}}>■</span> Warehouse: {fd(whTotal,0)}</span>
-          <span><span style={{color:"#f5c542"}}>■</span> Contractors: {fd(conTotal,0)}</span>
+          <span><span style={{color:"#38bdf8"}}>■</span> W2 Office: {fd(w2Total,0)}</span>
+          <span><span style={{color:"#4ade80"}}>■</span> Warehouse: {fd(whTotal,0)}</span>
+          <span><span style={{color:"#fbbf24"}}>■</span> Contractors: {fd(conTotal,0)}</span>
         </div>
         <div style={{ display:"flex", gap:20, fontSize:10, color:"var(--mu)", marginTop:8 }}>
           <span>Commissions (W2): {fd(commissionW2,0)}</span>
@@ -7676,7 +7681,7 @@ function OfficeStaff() {
               <div className="ctit">Weekly Cost Trend</div>
               <div style={{ fontSize:11, color:"var(--mu)" }}>
                 Latest <b style={{color:"var(--tx)"}}>{fd(last.total,0)}</b>
-                <span style={{ color: delta>0?"#ff5252":"#3ddc84", marginLeft:8 }}>
+                <span style={{ color: delta>0?"#fb7185":"#4ade80", marginLeft:8 }}>
                   {delta>0?"▲":"▼"} {fd(Math.abs(delta),0)} WoW
                 </span>
                 <span style={{ marginLeft:12 }}>avg {fd(avg,0)}/wk</span>
@@ -7734,7 +7739,7 @@ function OfficeStaff() {
           <div className="card" style={{ marginBottom:14, padding:0 }}>
             <div style={{ padding:"12px 14px 8px" }}>
               <div className="ctit">Weekly Payroll — Net (what came out of the bank), by company</div>
-              <div style={{ fontSize:10, color:"var(--mu)", marginTop:2 }}>Net direct deposit / cash per employee · {PC.weeks.length} weeks · <b style={{color:"var(--tx)"}}>click any employee ▸</b> for gross / taxes / employer cost / loaded total · <span style={{color:"var(--tx)"}}>white = W-2 net</span> · <span style={{color:"#f5c542"}}>amber = 1099 cash</span> · drivers excluded · former dimmed</div>
+              <div style={{ fontSize:10, color:"var(--mu)", marginTop:2 }}>Net direct deposit / cash per employee · {PC.weeks.length} weeks · <b style={{color:"var(--tx)"}}>click any employee ▸</b> for gross / taxes / employer cost / loaded total · <span style={{color:"var(--tx)"}}>white = W-2 net</span> · <span style={{color:"#fbbf24"}}>amber = 1099 cash</span> · drivers excluded · former dimmed</div>
             </div>
             <div style={{ overflowX:"auto", maxWidth:"100%" }}>
               <table style={{ borderCollapse:"collapse", minWidth:nameW + colW*(PC.weeks.length+1) }}>
@@ -7744,7 +7749,7 @@ function OfficeStaff() {
                     {PC.weeks.map(w => (
                       <th key={w} style={{ ...cell, minWidth:colW, borderBottom:"2px solid var(--or)", verticalAlign:"top" }}>
                         <div style={{ color:"var(--or)", fontWeight:700 }}>{w}</div>
-                        <div style={{ color:"var(--gr,#3ddc84)", fontWeight:700, fontSize:13, marginTop:2 }}>{fc(wkTot(w))}</div>
+                        <div style={{ color:"var(--gr,#4ade80)", fontWeight:700, fontSize:13, marginTop:2 }}>{fc(wkTot(w))}</div>
                       </th>
                     ))}
                     <th style={{ ...cell, minWidth:colW, borderBottom:"2px solid var(--or)", verticalAlign:"top" }}>
@@ -7777,25 +7782,25 @@ function OfficeStaff() {
                         <td style={{ ...nameCell, background:open?"var(--s1,#0e1116)":"var(--s2)" }}><span style={{ color:"var(--mu)", marginRight:4, fontSize:9 }}>{open?"▾":"▸"}</span>{r.name}</td>
                         {PC.weeks.map(w => {
                           const net=r.net&&r.net[w], c=r.camts&&r.camts[w];
-                          return <td key={w} style={{ ...cell, color: net!=null?"var(--tx)":(c?"#f5c542":"var(--bd)") }}>
+                          return <td key={w} style={{ ...cell, color: net!=null?"var(--tx)":(c?"#fbbf24":"var(--bd)") }}>
                             {net!=null ? fc(net) : ""}
-                            {c ? <span style={{ color:"#f5c542", display:net!=null?"block":"inline" }}>{fc(c)}</span> : null}
+                            {c ? <span style={{ color:"#fbbf24", display:net!=null?"block":"inline" }}>{fc(c)}</span> : null}
                           </td>;
                         })}
-                        <td style={{ ...cell, fontWeight:700, color:"var(--gr,#3ddc84)" }}>{fc(rowNet(r))}</td>
+                        <td style={{ ...cell, fontWeight:700, color:"var(--gr,#4ade80)" }}>{fc(rowNet(r))}</td>
                       </tr>);
                       if (!open) return [main];
                       const hasK = o => o && Object.keys(o).length;
                       const subs = [];
                       if (hasK(r.gross)) {  // W-2 side (also present for dual people)
                         subs.push(sub("gross","var(--mu)", w=>r.gross&&r.gross[w]));
-                        subs.push(sub("taxes withheld","#ff5252", w=>(r.gross&&r.gross[w]!=null&&r.net&&r.net[w]!=null)?Math.round((r.gross[w]-r.net[w])*100)/100:null));
-                        subs.push(sub("employer cost","#b39ddb", w=>(r.amts&&r.amts[w]!=null&&r.gross&&r.gross[w]!=null)?Math.round((r.amts[w]-r.gross[w])*100)/100:null));
-                        if (hasK(r.camts)) subs.push(sub("cash paid (1099)","#f5c542", w=>r.camts&&r.camts[w]));
+                        subs.push(sub("taxes withheld","#fb7185", w=>(r.gross&&r.gross[w]!=null&&r.net&&r.net[w]!=null)?Math.round((r.gross[w]-r.net[w])*100)/100:null));
+                        subs.push(sub("employer cost","#a78bfa", w=>(r.amts&&r.amts[w]!=null&&r.gross&&r.gross[w]!=null)?Math.round((r.amts[w]-r.gross[w])*100)/100:null));
+                        if (hasK(r.camts)) subs.push(sub("cash paid (1099)","#fbbf24", w=>r.camts&&r.camts[w]));
                       }
-                      if (hasK(r.commission)) subs.push(sub("commission","#4fc3f7", w=>r.commission&&r.commission[w]));
-                      if (hasK(r.car)) subs.push(sub("car allowance","#b39ddb", w=>r.car&&r.car[w]));
-                      if (hasK(r.health)) subs.push(sub("health insurance (co-paid)","#b39ddb", w=>r.health&&r.health[w]));
+                      if (hasK(r.commission)) subs.push(sub("commission","#38bdf8", w=>r.commission&&r.commission[w]));
+                      if (hasK(r.car)) subs.push(sub("car allowance","#a78bfa", w=>r.car&&r.car[w]));
+                      if (hasK(r.health)) subs.push(sub("health insurance (co-paid)","#a78bfa", w=>r.health&&r.health[w]));
                       subs.push(sub("loaded (total cost)","var(--or)", w=>{const s=((r.amts&&r.amts[w])||0)+((r.camts&&r.camts[w])||0)+((r.car&&r.car[w])||0)+((r.health&&r.health[w])||0)+((r.commission&&r.commission[w])||0);return s||null;}));
                       return [main, ...subs];
                     }),
@@ -7931,22 +7936,22 @@ function OfficeStaff() {
                     <tr>
                       <th style={{ textAlign:"left", cursor:"pointer" }} onClick={() => doSort("name")}>Name{sortIcon("name")}</th>
                       <th style={{ cursor:"pointer" }} onClick={() => doSort("catLabel")}>Category{sortIcon("catLabel")}</th>
-                      <th style={{ cursor:"pointer", color:"#4fc3f7" }} onClick={() => doSort("w2Total")}>W2 Cost{sortIcon("w2Total")}</th>
-                      <th style={{ cursor:"pointer", color:"#f5c542" }} onClick={() => doSort("conTotal")}>1099 Paid{sortIcon("conTotal")}</th>
-                      <th style={{ cursor:"pointer", color:"#f5c542" }} onClick={() => doSort("totalCommission")}>Commission{sortIcon("totalCommission")}</th>
-                      <th style={{ cursor:"pointer", color:"#b39ddb" }} onClick={() => doSort("conCar")}>Car{sortIcon("conCar")}</th>
-                      <th style={{ cursor:"pointer", color:"#ff8a65" }} onClick={() => doSort("conHealth")}>Health Ins{sortIcon("conHealth")}</th>
+                      <th style={{ cursor:"pointer", color:"#38bdf8" }} onClick={() => doSort("w2Total")}>W2 Cost{sortIcon("w2Total")}</th>
+                      <th style={{ cursor:"pointer", color:"#fbbf24" }} onClick={() => doSort("conTotal")}>1099 Paid{sortIcon("conTotal")}</th>
+                      <th style={{ cursor:"pointer", color:"#fbbf24" }} onClick={() => doSort("totalCommission")}>Commission{sortIcon("totalCommission")}</th>
+                      <th style={{ cursor:"pointer", color:"#a78bfa" }} onClick={() => doSort("conCar")}>Car{sortIcon("conCar")}</th>
+                      <th style={{ cursor:"pointer", color:"#5eead4" }} onClick={() => doSort("conHealth")}>Health Ins{sortIcon("conHealth")}</th>
                       <th style={{ cursor:"pointer", color:"var(--or)" }} onClick={() => doSort("grandTotal")}>Grand Total{sortIcon("grandTotal")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.map((p,i) => {
-                      const catColors = { "W2 Office":"#4fc3f7", "Warehouse":"#3ddc84", "Contractor":"#f5c542" };
+                      const catColors = { "W2 Office":"#38bdf8", "Warehouse":"#4ade80", "Contractor":"#fbbf24" };
                       return (
                         <tr key={p.name} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                           <td style={{ fontWeight:600 }}>
                             {p.name}
-                            {p.dual && <span style={{ color:"#ff8a65", fontSize:9, marginLeft:4 }}>⚡</span>}
+                            {p.dual && <span style={{ color:"#5eead4", fontSize:9, marginLeft:4 }}>⚡</span>}
                           </td>
                           <td>
                             {p.cats.map(c => (
@@ -7957,11 +7962,11 @@ function OfficeStaff() {
                               }}>{c}</span>
                             ))}
                           </td>
-                          <td style={{ color:p.w2Total > 0 ? "#4fc3f7" : "var(--mu)" }}>{p.w2Total > 0 ? fd(p.w2Total,0) : "—"}</td>
-                          <td style={{ color:p.conTotal > 0 ? "#f5c542" : "var(--mu)" }}>{p.conTotal > 0 ? fd(p.conTotal,0) : "—"}</td>
-                          <td style={{ color:p.totalCommission > 0 ? "#f5c542" : "var(--mu)" }}>{p.totalCommission > 0 ? fd(p.totalCommission,0) : "—"}</td>
-                          <td style={{ color:p.conCar > 0 ? "#b39ddb" : "var(--mu)" }}>{p.conCar > 0 ? fd(p.conCar,0) : "—"}</td>
-                          <td style={{ color:p.conHealth > 0 ? "#ff8a65" : "var(--mu)" }}>{p.conHealth > 0 ? fd(p.conHealth,0) : "—"}</td>
+                          <td style={{ color:p.w2Total > 0 ? "#38bdf8" : "var(--mu)" }}>{p.w2Total > 0 ? fd(p.w2Total,0) : "—"}</td>
+                          <td style={{ color:p.conTotal > 0 ? "#fbbf24" : "var(--mu)" }}>{p.conTotal > 0 ? fd(p.conTotal,0) : "—"}</td>
+                          <td style={{ color:p.totalCommission > 0 ? "#fbbf24" : "var(--mu)" }}>{p.totalCommission > 0 ? fd(p.totalCommission,0) : "—"}</td>
+                          <td style={{ color:p.conCar > 0 ? "#a78bfa" : "var(--mu)" }}>{p.conCar > 0 ? fd(p.conCar,0) : "—"}</td>
+                          <td style={{ color:p.conHealth > 0 ? "#5eead4" : "var(--mu)" }}>{p.conHealth > 0 ? fd(p.conHealth,0) : "—"}</td>
                           <td style={{ color:"var(--or)", fontWeight:700, fontFamily:"var(--f2)", fontSize:13 }}>{fd(p.grandTotal,0)}</td>
                         </tr>
                       );
@@ -7971,11 +7976,11 @@ function OfficeStaff() {
                     <tr>
                       <td>{filtered.length} people</td>
                       <td></td>
-                      <td style={{ color:"#4fc3f7" }}>{fd(fTot("w2Total"),0)}</td>
-                      <td style={{ color:"#f5c542" }}>{fd(fTot("conTotal"),0)}</td>
-                      <td style={{ color:"#f5c542" }}>{fd(fTot("totalCommission"),0)}</td>
-                      <td style={{ color:"#b39ddb" }}>{fd(fTot("conCar"),0)}</td>
-                      <td style={{ color:"#ff8a65" }}>{fd(fTot("conHealth"),0)}</td>
+                      <td style={{ color:"#38bdf8" }}>{fd(fTot("w2Total"),0)}</td>
+                      <td style={{ color:"#fbbf24" }}>{fd(fTot("conTotal"),0)}</td>
+                      <td style={{ color:"#fbbf24" }}>{fd(fTot("totalCommission"),0)}</td>
+                      <td style={{ color:"#a78bfa" }}>{fd(fTot("conCar"),0)}</td>
+                      <td style={{ color:"#5eead4" }}>{fd(fTot("conHealth"),0)}</td>
                       <td style={{ color:"var(--or)", fontWeight:900, fontFamily:"var(--f2)", fontSize:15 }}>{fd(fTot("grandTotal"),0)}</td>
                     </tr>
                   </tfoot>
@@ -7987,13 +7992,13 @@ function OfficeStaff() {
             <div className="g2" style={{ gap:14 }}>
               {/* Dual people */}
               <div className="card">
-                <div className="ctit" style={{ color:"#ff8a65" }}>⚡ W2 → Contractor Transitions</div>
+                <div className="ctit" style={{ color:"#5eead4" }}>⚡ W2 → Contractor Transitions</div>
                 {allPeople.filter(p => p.dual).map(p => (
                   <div key={p.name} style={{ padding:"10px 0", borderBottom:"1px solid var(--bd)" }}>
                     <div style={{ fontFamily:"var(--f2)", fontSize:14, fontWeight:800, marginBottom:4 }}>{p.name}</div>
                     <div style={{ display:"flex", gap:16, fontSize:11 }}>
-                      <span><span style={{ color:"#4fc3f7" }}>W2:</span> {fd(p.w2Total,0)}</span>
-                      <span><span style={{ color:"#f5c542" }}>1099:</span> {fd(p.conTotal,0)}</span>
+                      <span><span style={{ color:"#38bdf8" }}>W2:</span> {fd(p.w2Total,0)}</span>
+                      <span><span style={{ color:"#fbbf24" }}>1099:</span> {fd(p.conTotal,0)}</span>
                       <span style={{ color:"var(--or)", fontWeight:700 }}>Total: {fd(p.grandTotal,0)}</span>
                     </div>
                   </div>
@@ -8002,7 +8007,7 @@ function OfficeStaff() {
 
               {/* Commission eligible */}
               <div className="card">
-                <div className="ctit" style={{ color:"#f5c542" }}>💰 Commission-Eligible</div>
+                <div className="ctit" style={{ color:"#fbbf24" }}>💰 Commission-Eligible</div>
                 {[
                   { name:"Elizabeth Delgado", w2comm:1702.76, concomm:1117.74 },
                   { name:"Christopher Simpson", w2comm:2698.46, concomm:1031.58 },
@@ -8011,7 +8016,7 @@ function OfficeStaff() {
                   <div key={p.name} style={{ padding:"10px 0", borderBottom:"1px solid var(--bd)" }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                       <div style={{ fontSize:12, fontWeight:600 }}>{p.name}</div>
-                      <div style={{ fontFamily:"var(--f2)", fontSize:20, fontWeight:900, color:"#f5c542" }}>{fd(p.w2comm+p.concomm,0)}</div>
+                      <div style={{ fontFamily:"var(--f2)", fontSize:20, fontWeight:900, color:"#fbbf24" }}>{fd(p.w2comm+p.concomm,0)}</div>
                     </div>
                     <div style={{ fontSize:10, color:"var(--mu)" }}>
                       {p.w2comm > 0 && p.concomm > 0
@@ -8051,15 +8056,15 @@ function OfficeStaff() {
                   <tr key={e.name+e.entity} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
                     <td style={{ fontWeight:600 }}>
                       {e.name}
-                      {e.dual && <span style={{ color:"#ff8a65", fontSize:9, marginLeft:4 }}>⚡ DUAL</span>}
+                      {e.dual && <span style={{ color:"#5eead4", fontSize:9, marginLeft:4 }}>⚡ DUAL</span>}
                     </td>
                     <td style={{ color:"var(--mu)", fontSize:10 }}>{e.entity}</td>
-                    <td style={{ color:"#4fc3f7" }}>{e.salary > 0 ? fd(e.salary,0) : "—"}</td>
-                    <td style={{ color:e.commission > 0 ? "#f5c542" : "var(--mu)" }}>{e.commission > 0 ? fd(e.commission,0) : "—"}</td>
-                    <td style={{ color:e.bonus > 0 ? "#3ddc84" : "var(--mu)" }}>{e.bonus > 0 ? fd(e.bonus,0) : "—"}</td>
+                    <td style={{ color:"#38bdf8" }}>{e.salary > 0 ? fd(e.salary,0) : "—"}</td>
+                    <td style={{ color:e.commission > 0 ? "#fbbf24" : "var(--mu)" }}>{e.commission > 0 ? fd(e.commission,0) : "—"}</td>
+                    <td style={{ color:e.bonus > 0 ? "#4ade80" : "var(--mu)" }}>{e.bonus > 0 ? fd(e.bonus,0) : "—"}</td>
                     <td style={{ color:"var(--tx)" }}>{fd(e.gross,0)}</td>
-                    <td style={{ color:"#ff8a65" }}>{fd(e.taxes,0)}</td>
-                    <td style={{ color:e.contrib > 0 ? "#b39ddb" : "var(--mu)" }}>{e.contrib > 0 ? fd(e.contrib,0) : "—"}</td>
+                    <td style={{ color:"#5eead4" }}>{fd(e.taxes,0)}</td>
+                    <td style={{ color:e.contrib > 0 ? "#a78bfa" : "var(--mu)" }}>{e.contrib > 0 ? fd(e.contrib,0) : "—"}</td>
                     <td style={{ color:"var(--or)", fontWeight:700 }}>{fd(e.totalCost,0)}</td>
                     <td style={{ fontSize:9, color:"var(--mu)", maxWidth:140 }}>{e.note}</td>
                   </tr>
@@ -8069,12 +8074,12 @@ function OfficeStaff() {
                 <tr>
                   <td>TOTAL — {OFFICE_W2.length}</td>
                   <td></td>
-                  <td style={{ color:"#4fc3f7" }}>{fd(OFFICE_W2.reduce((s,e)=>s+e.salary,0),0)}</td>
-                  <td style={{ color:"#f5c542" }}>{fd(commissionW2,0)}</td>
-                  <td style={{ color:"#3ddc84" }}>{fd(OFFICE_W2.reduce((s,e)=>s+e.bonus,0),0)}</td>
+                  <td style={{ color:"#38bdf8" }}>{fd(OFFICE_W2.reduce((s,e)=>s+e.salary,0),0)}</td>
+                  <td style={{ color:"#fbbf24" }}>{fd(commissionW2,0)}</td>
+                  <td style={{ color:"#4ade80" }}>{fd(OFFICE_W2.reduce((s,e)=>s+e.bonus,0),0)}</td>
                   <td>{fd(OFFICE_W2.reduce((s,e)=>s+e.gross,0),0)}</td>
-                  <td style={{ color:"#ff8a65" }}>{fd(OFFICE_W2.reduce((s,e)=>s+e.taxes,0),0)}</td>
-                  <td style={{ color:"#b39ddb" }}>{fd(OFFICE_W2.reduce((s,e)=>s+e.contrib,0),0)}</td>
+                  <td style={{ color:"#5eead4" }}>{fd(OFFICE_W2.reduce((s,e)=>s+e.taxes,0),0)}</td>
+                  <td style={{ color:"#a78bfa" }}>{fd(OFFICE_W2.reduce((s,e)=>s+e.contrib,0),0)}</td>
                   <td style={{ color:"var(--or)", fontWeight:800 }}>{fd(w2Total,0)}</td>
                   <td></td>
                 </tr>
@@ -8087,7 +8092,7 @@ function OfficeStaff() {
       {/* ── WAREHOUSE VIEW ── */}
       {view === "warehouse" && (
         <div className="card">
-          <div className="ctit" style={{ color:"#3ddc84" }}>🏗️ Warehouse Staff — {fd(whTotal,0)} Total Cost</div>
+          <div className="ctit" style={{ color:"#4ade80" }}>🏗️ Warehouse Staff — {fd(whTotal,0)} Total Cost</div>
           {WAREHOUSE.map((e,i) => (
             <div key={e.name} style={{
               display:"flex", justifyContent:"space-between", alignItems:"center",
@@ -8095,17 +8100,17 @@ function OfficeStaff() {
               background:"var(--bg)", border:"1px solid var(--bd)", borderRadius:3,
             }}>
               <div>
-                <div style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:800, color:"#3ddc84" }}>{e.name}</div>
+                <div style={{ fontFamily:"var(--f2)", fontSize:18, fontWeight:800, color:"#4ade80" }}>{e.name}</div>
                 <div style={{ display:"flex", gap:16, fontSize:11, color:"var(--mu)", marginTop:4 }}>
                   <span>{e.type}</span>
                   {e.hours > 0 && <span>{fn(e.hours,1)} hrs</span>}
                   {e.regHrs > 0 && <span>Reg {fn(e.regHrs,1)}</span>}
-                  {e.otHrs > 0 && <span style={{ color:"#f5c542" }}>OT {fn(e.otHrs,1)}</span>}
+                  {e.otHrs > 0 && <span style={{ color:"#fbbf24" }}>OT {fn(e.otHrs,1)}</span>}
                   <span>{e.note}</span>
                 </div>
               </div>
               <div style={{ textAlign:"right" }}>
-                <div style={{ fontFamily:"var(--f2)", fontSize:28, fontWeight:900, color:"#3ddc84" }}>{fd(e.totalCost,0)}</div>
+                <div style={{ fontFamily:"var(--f2)", fontSize:28, fontWeight:900, color:"#4ade80" }}>{fd(e.totalCost,0)}</div>
                 <div style={{ fontSize:10, color:"var(--mu)" }}>Gross {fd(e.gross,0)} + Tax {fd(e.taxes,0)}</div>
               </div>
             </div>
@@ -8117,14 +8122,14 @@ function OfficeStaff() {
       {view === "contractors" && (
         <>
           <div className="ibox" style={{ marginBottom:14 }}>
-            <strong style={{ color:"#f5c542" }}>1099 Contractors — paid via Chase/direct deposit.</strong>{" "}
+            <strong style={{ color:"#fbbf24" }}>1099 Contractors — paid via Chase/direct deposit.</strong>{" "}
             Commission-eligible: Elizabeth Delgado, Chris Simpson, Mellody Abrego.{" "}
             Car allowances: Jon Marcus $350/mo, Mellody $334.86/mo.{" "}
             Health ins (company paid): Mellody $368.34/wk, Hilda $118.82/wk, Deb $53.79/wk, Chris $53.79/wk.{" "}
             ⚡ = also has W2 history above.
           </div>
           <div className="card">
-            <div className="ctit" style={{ color:"#f5c542" }}>Contractors — {fd(conTotal,0)} Total Paid</div>
+            <div className="ctit" style={{ color:"#fbbf24" }}>Contractors — {fd(conTotal,0)} Total Paid</div>
             <div style={{ overflowX:"auto" }}>
               <table className="tbl" style={{ fontSize:11 }}>
                 <thead>
@@ -8144,14 +8149,14 @@ function OfficeStaff() {
                     <tr key={c.name} style={{ background:i%2===0?"var(--s2)":"transparent", opacity:c.total===0?0.5:1 }}>
                       <td>
                         <span style={{ fontWeight:600 }}>{c.name}</span>
-                        {c.dual && <span style={{ color:"#ff8a65", fontSize:9, marginLeft:4 }}>⚡</span>}
+                        {c.dual && <span style={{ color:"#5eead4", fontSize:9, marginLeft:4 }}>⚡</span>}
                         {c.dba && <div style={{ fontSize:9, color:"var(--mu)" }}>DBA: {c.dba}</div>}
                       </td>
                       <td style={{ color:c.payments > 0 ? "var(--tx)" : "var(--mu)" }}>{c.payments || "—"}</td>
-                      <td style={{ color:"#4fc3f7" }}>{c.weeklyTotal > 0 ? fd(c.weeklyTotal,0) : "—"}</td>
-                      <td style={{ color:c.carTotal > 0 ? "#b39ddb" : "var(--mu)" }}>{c.carTotal > 0 ? fd(c.carTotal,0) : "—"}</td>
-                      <td style={{ color:c.commission > 0 ? "#f5c542" : "var(--mu)" }}>{c.commission > 0 ? fd(c.commission,0) : "—"}</td>
-                      <td style={{ color:c.healthInsTotal > 0 ? "#ff8a65" : "var(--mu)" }}>{c.healthInsTotal > 0 ? fd(c.healthInsTotal,0) : "—"}
+                      <td style={{ color:"#38bdf8" }}>{c.weeklyTotal > 0 ? fd(c.weeklyTotal,0) : "—"}</td>
+                      <td style={{ color:c.carTotal > 0 ? "#a78bfa" : "var(--mu)" }}>{c.carTotal > 0 ? fd(c.carTotal,0) : "—"}</td>
+                      <td style={{ color:c.commission > 0 ? "#fbbf24" : "var(--mu)" }}>{c.commission > 0 ? fd(c.commission,0) : "—"}</td>
+                      <td style={{ color:c.healthInsTotal > 0 ? "#5eead4" : "var(--mu)" }}>{c.healthInsTotal > 0 ? fd(c.healthInsTotal,0) : "—"}
                         {c.healthIns > 0 && <div style={{ fontSize:9,color:"var(--mu)" }}>${c.healthIns}/wk</div>}
                       </td>
                       <td style={{ color:c.total > 0 ? "var(--or)" : "var(--mu)", fontWeight:700 }}>{c.total > 0 ? fd(c.total,0) : "—"}</td>
@@ -8163,10 +8168,10 @@ function OfficeStaff() {
                   <tr>
                     <td>TOTAL — {CONTRACTORS.filter(c=>c.total>0).length} active</td>
                     <td>{CONTRACTORS.reduce((s,c)=>s+c.payments,0)}</td>
-                    <td style={{ color:"#4fc3f7" }}>{fd(CONTRACTORS.reduce((s,c)=>s+c.weeklyTotal,0),0)}</td>
-                    <td style={{ color:"#b39ddb" }}>{fd(carTotal,0)}</td>
-                    <td style={{ color:"#f5c542" }}>{fd(commissionCon,0)}</td>
-                    <td style={{ color:"#ff8a65" }}>{fd(healthInsTotal,0)}</td>
+                    <td style={{ color:"#38bdf8" }}>{fd(CONTRACTORS.reduce((s,c)=>s+c.weeklyTotal,0),0)}</td>
+                    <td style={{ color:"#a78bfa" }}>{fd(carTotal,0)}</td>
+                    <td style={{ color:"#fbbf24" }}>{fd(commissionCon,0)}</td>
+                    <td style={{ color:"#5eead4" }}>{fd(healthInsTotal,0)}</td>
                     <td style={{ color:"var(--or)", fontWeight:800 }}>{fd(conTotal,0)}</td>
                     <td></td>
                   </tr>
@@ -8262,7 +8267,7 @@ function CashFlowDashboard() {
   const weeklyCarrier = INCOME_2026.carrierPay / 12;
   const weeklyLease = (TRUCK_TOT + TRAILER_TOT) / 12;
 
-  const groupColor = g => g === "Operating" ? "#3ddc84" : g === "CE East" ? "#4fc3f7" : g === "Admin" ? "#f5c542" : g === "Payroll" ? "#ff8a65" : g === "Savings" ? "#b39ddb" : "#5a6370";
+  const groupColor = g => g === "Operating" ? "#4ade80" : g === "CE East" ? "#38bdf8" : g === "Admin" ? "#fbbf24" : g === "Payroll" ? "#5eead4" : g === "Savings" ? "#a78bfa" : "#5a6370";
 
   // This week's payments
   const payments = latest.payments || [];
@@ -8279,30 +8284,30 @@ function CashFlowDashboard() {
     payDays[p.day].push(p);
   });
 
-  const catColor = c => c === "Payroll" ? "#f47820" : c === "Fuel" ? "#f5c542" : c === "Truck Lease" ? "#4fc3f7" :
-    c === "Software" ? "#b39ddb" : c === "Insurance" ? "#3ddc84" : c === "Utilities" ? "#26a69a" :
-    c === "CE East" ? "#4fc3f7" : c === "Loan" ? "#ff5252" : c === "Equipment" ? "#ff8a65" : "#5a6370";
+  const catColor = c => c === "Payroll" ? "#2dd4bf" : c === "Fuel" ? "#fbbf24" : c === "Truck Lease" ? "#38bdf8" :
+    c === "Software" ? "#a78bfa" : c === "Insurance" ? "#4ade80" : c === "Utilities" ? "#26a69a" :
+    c === "CE East" ? "#38bdf8" : c === "Loan" ? "#fb7185" : c === "Equipment" ? "#5eead4" : "#5a6370";
 
   return (
     <div>
       <div className="ptitle">Cash Flow</div>
       <div className="psub">
         Weekly bank snapshot · Monday morning balances · {latest.date || latest.weekLabel}
-        {fetchStatus === "ok" && <span style={{ color:"#3ddc84",marginLeft:8,fontSize:10 }}>● Live from budget calendar (Supabase)</span>}
-        {fetchStatus === "error" && <span style={{ color:"#f5c542",marginLeft:8,fontSize:10 }}>● Using built-in data (Supabase fetch failed)</span>}
+        {fetchStatus === "ok" && <span style={{ color:"#4ade80",marginLeft:8,fontSize:10 }}>● Live from budget calendar (Supabase)</span>}
+        {fetchStatus === "error" && <span style={{ color:"#fbbf24",marginLeft:8,fontSize:10 }}>● Using built-in data (Supabase fetch failed)</span>}
         {fetchStatus === "loading" && <span style={{ color:"var(--mu)",marginLeft:8,fontSize:10 }}>● Loading...</span>}
       </div>
 
       {/* Cash hero */}
       <div style={{
         background:"linear-gradient(135deg,#0f1f12,#0a1508)",
-        border:"2px solid #3ddc84", borderRadius:6, padding:"28px 32px",
+        border:"2px solid #4ade80", borderRadius:6, padding:"28px 32px",
         marginBottom:14, textAlign:"center", position:"relative", overflow:"hidden",
       }}>
         <div style={{ position:"absolute",inset:0,opacity:.03,
-          backgroundImage:"repeating-linear-gradient(0deg,#3ddc84 0px,#3ddc84 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,#3ddc84 0px,#3ddc84 1px,transparent 1px,transparent 40px)" }} />
-        <div style={{ fontSize:9,letterSpacing:4,textTransform:"uppercase",color:"#3ddc84",marginBottom:8,position:"relative" }}>Total Available Cash</div>
-        <div style={{ fontFamily:"var(--f2)",fontSize:64,fontWeight:900,color:"#3ddc84",lineHeight:1,position:"relative" }}>{fd(totalCash,0)}</div>
+          backgroundImage:"repeating-linear-gradient(0deg,#4ade80 0px,#4ade80 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,#4ade80 0px,#4ade80 1px,transparent 1px,transparent 40px)" }} />
+        <div style={{ fontSize:9,letterSpacing:4,textTransform:"uppercase",color:"#4ade80",marginBottom:8,position:"relative" }}>Total Available Cash</div>
+        <div style={{ fontFamily:"var(--f2)",fontSize:64,fontWeight:900,color:"#4ade80",lineHeight:1,position:"relative" }}>{fd(totalCash,0)}</div>
         <div style={{ fontSize:12,color:"var(--mu)",marginTop:10,position:"relative" }}>
           {accts.length} accounts · {latest.date || latest.weekLabel} · excludes personal
         </div>
@@ -8312,22 +8317,22 @@ function CashFlowDashboard() {
       <div style={{ display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:14,marginBottom:14 }}>
         <div className="kpi">
           <div className="klbl">Operating</div>
-          <div className="kval" style={{ color:"#3ddc84" }}>{fd(operating,0)}</div>
+          <div className="kval" style={{ color:"#4ade80" }}>{fd(operating,0)}</div>
           <div className="ksub">CE1 + SF + SF TN · {fp(operating/totalCash*100)} of total</div>
         </div>
         <div className="kpi">
           <div className="klbl">CE East</div>
-          <div className="kval" style={{ color:"#4fc3f7" }}>{fd(ceEast,0)}</div>
+          <div className="kval" style={{ color:"#38bdf8" }}>{fd(ceEast,0)}</div>
           <div className="ksub">PLAT BUS 6053 · {fp(ceEast/totalCash*100)}</div>
         </div>
         <div className="kpi">
           <div className="klbl">Admin / Payroll / Other</div>
-          <div className="kval" style={{ color:"#f5c542" }}>{fd(admin,0)}</div>
+          <div className="kval" style={{ color:"#fbbf24" }}>{fd(admin,0)}</div>
           <div className="ksub">J&A + Payroll + misc</div>
         </div>
         <div className="kpi">
           <div className="klbl">Savings (Amex)</div>
-          <div className="kval" style={{ color:"#b39ddb" }}>{fd(groups["Savings"]||0,0)}</div>
+          <div className="kval" style={{ color:"#a78bfa" }}>{fd(groups["Savings"]||0,0)}</div>
           <div className="ksub">Reserve · not in daily ops</div>
         </div>
       </div>
@@ -8335,30 +8340,30 @@ function CashFlowDashboard() {
       {/* Cash after payments warning */}
       {payments.length > 0 && (
         <div style={{
-          background:cashIsRed ? "rgba(255,82,82,.1)" : "rgba(245,197,66,.08)",
-          border:`2px solid ${cashIsRed ? "rgba(255,82,82,.5)" : "rgba(245,197,66,.3)"}`,
+          background:cashIsRed ? "rgba(251,113,133,.1)" : "rgba(251,191,36,.08)",
+          border:`2px solid ${cashIsRed ? "rgba(251,113,133,.5)" : "rgba(251,191,36,.3)"}`,
           borderRadius:6, padding:"20px 24px", marginBottom:14,
         }}>
           <div style={{ display:"grid",gridTemplateColumns:"1fr auto 1fr auto 1fr",gap:16,alignItems:"center" }}>
             <div style={{ textAlign:"center" }}>
-              <div style={{ fontSize:9,color:"#3ddc84",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Cash Available</div>
-              <div style={{ fontFamily:"var(--f2)",fontSize:32,fontWeight:900,color:"#3ddc84" }}>{fd(totalCash,0)}</div>
+              <div style={{ fontSize:9,color:"#4ade80",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Cash Available</div>
+              <div style={{ fontFamily:"var(--f2)",fontSize:32,fontWeight:900,color:"#4ade80" }}>{fd(totalCash,0)}</div>
             </div>
             <div style={{ fontFamily:"var(--f2)",fontSize:24,color:"var(--mu)" }}>−</div>
             <div style={{ textAlign:"center" }}>
-              <div style={{ fontSize:9,color:"#ff5252",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Due This Week</div>
-              <div style={{ fontFamily:"var(--f2)",fontSize:32,fontWeight:900,color:"#ff5252" }}>{fd(totalDue,0)}</div>
+              <div style={{ fontSize:9,color:"#fb7185",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Due This Week</div>
+              <div style={{ fontFamily:"var(--f2)",fontSize:32,fontWeight:900,color:"#fb7185" }}>{fd(totalDue,0)}</div>
             </div>
             <div style={{ fontFamily:"var(--f2)",fontSize:24,color:"var(--mu)" }}>=</div>
             <div style={{ textAlign:"center" }}>
-              <div style={{ fontSize:9,color:cashIsRed?"#ff5252":"#f5c542",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>
+              <div style={{ fontSize:9,color:cashIsRed?"#fb7185":"#fbbf24",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>
                 {cashIsRed ? "⚠️ Remaining After" : "Remaining After"}
               </div>
-              <div style={{ fontFamily:"var(--f2)",fontSize:32,fontWeight:900,color:cashIsRed?"#ff5252":"#f5c542" }}>{fd(cashAfter,0)}</div>
+              <div style={{ fontFamily:"var(--f2)",fontSize:32,fontWeight:900,color:cashIsRed?"#fb7185":"#fbbf24" }}>{fd(cashAfter,0)}</div>
             </div>
           </div>
           {cashIsRed && (
-            <div style={{ textAlign:"center",marginTop:10,fontSize:12,color:"#ff5252",fontWeight:700 }}>
+            <div style={{ textAlign:"center",marginTop:10,fontSize:12,color:"#fb7185",fontWeight:700 }}>
               ⚠️ Cash will be tight after this week's obligations — ensure funding comes in before Friday payroll
             </div>
           )}
@@ -8386,15 +8391,15 @@ function CashFlowDashboard() {
                     <td style={{ fontWeight:600,fontSize:10 }}>{p.day}</td>
                     <td style={{ textAlign:"left",fontWeight:600 }}>{p.vendor}</td>
                     <td><span style={{ fontSize:9,fontWeight:700,color:catColor(p.cat),background:`${catColor(p.cat)}15`,border:`1px solid ${catColor(p.cat)}40`,borderRadius:2,padding:"1px 6px" }}>{p.cat}</span></td>
-                    <td style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:700,color:p.amount >= 10000 ? "#ff5252" : p.amount >= 2000 ? "#f5c542" : "var(--tx)" }}>{fd(p.amount,2)}</td>
-                    <td><span style={{ fontSize:9,fontWeight:700,color:p.status==="paid"?"#3ddc84":"#f5c542",background:p.status==="paid"?"rgba(61,220,132,.1)":"rgba(245,197,66,.1)",border:`1px solid ${p.status==="paid"?"rgba(61,220,132,.3)":"rgba(245,197,66,.3)"}`,borderRadius:2,padding:"1px 6px" }}>{p.status==="paid"?"✓ Paid":"Due"}</span></td>
+                    <td style={{ fontFamily:"var(--f2)",fontSize:13,fontWeight:700,color:p.amount >= 10000 ? "#fb7185" : p.amount >= 2000 ? "#fbbf24" : "var(--tx)" }}>{fd(p.amount,2)}</td>
+                    <td><span style={{ fontSize:9,fontWeight:700,color:p.status==="paid"?"#4ade80":"#fbbf24",background:p.status==="paid"?"rgba(74,222,128,.1)":"rgba(251,191,36,.1)",border:`1px solid ${p.status==="paid"?"rgba(74,222,128,.3)":"rgba(251,191,36,.3)"}`,borderRadius:2,padding:"1px 6px" }}>{p.status==="paid"?"✓ Paid":"Due"}</span></td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr>
                   <td colSpan={3}>TOTAL DUE</td>
-                  <td style={{ fontFamily:"var(--f2)",fontSize:16,fontWeight:900,color:"#ff5252" }}>{fd(totalDue,2)}</td>
+                  <td style={{ fontFamily:"var(--f2)",fontSize:16,fontWeight:900,color:"#fb7185" }}>{fd(totalDue,2)}</td>
                   <td></td>
                 </tr>
               </tfoot>
@@ -8413,7 +8418,7 @@ function CashFlowDashboard() {
                   <div style={{ width:60,fontSize:11,fontWeight:600,color:allPaid?"var(--mu)":"var(--tx)" }}>{day}</div>
                   <div style={{ flex:1 }}>
                     <div className="bar" style={{ height:20 }}>
-                      <div className="bfil" style={{ width:`${pct}%`,background:allPaid?"var(--mu)":dayTotal>=25000?"#ff5252":dayTotal>=5000?"#f5c542":"#3ddc84",display:"flex",alignItems:"center",paddingLeft:6 }}>
+                      <div className="bfil" style={{ width:`${pct}%`,background:allPaid?"var(--mu)":dayTotal>=25000?"#fb7185":dayTotal>=5000?"#fbbf24":"#4ade80",display:"flex",alignItems:"center",paddingLeft:6 }}>
                         {pct > 12 && <span style={{ fontSize:9,color:"#fff",fontWeight:700 }}>{fd(dayTotal,0)}</span>}
                       </div>
                     </div>
@@ -8447,7 +8452,7 @@ function CashFlowDashboard() {
             <tfoot>
               <tr>
                 <td colSpan={3}>Total</td>
-                <td style={{ fontFamily:"var(--f2)",fontSize:16,fontWeight:900,color:"#3ddc84" }}>{fd(totalCash,2)}</td>
+                <td style={{ fontFamily:"var(--f2)",fontSize:16,fontWeight:900,color:"#4ade80" }}>{fd(totalCash,2)}</td>
               </tr>
             </tfoot>
           </table>
@@ -8458,10 +8463,10 @@ function CashFlowDashboard() {
           <div className="ctit">Estimated Weekly Obligations</div>
           <div style={{ fontSize:10,color:"var(--mu)",marginBottom:10 }}>Based on YTD averages over 12 weeks</div>
           {[
-            { label:"Driver Payroll", val:weeklyPayroll, color:"#f47820" },
-            { label:"Fuel (EFS + Mudflap)", val:weeklyFuel, color:"#f5c542" },
-            { label:"Carrier Pay", val:weeklyCarrier, color:"#ff5252" },
-            { label:"Truck + Trailer Leases", val:weeklyLease, color:"#4fc3f7" },
+            { label:"Driver Payroll", val:weeklyPayroll, color:"#2dd4bf" },
+            { label:"Fuel (EFS + Mudflap)", val:weeklyFuel, color:"#fbbf24" },
+            { label:"Carrier Pay", val:weeklyCarrier, color:"#fb7185" },
+            { label:"Truck + Trailer Leases", val:weeklyLease, color:"#38bdf8" },
           ].map(item => (
             <div key={item.label} style={{ display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid var(--bd)" }}>
               <div style={{ display:"flex",alignItems:"center",gap:8 }}>
@@ -8477,9 +8482,9 @@ function CashFlowDashboard() {
           </div>
 
           {/* Coverage indicator */}
-          <div style={{ marginTop:14,padding:"16px",background:"rgba(61,220,132,.08)",border:"1px solid rgba(61,220,132,.2)",borderRadius:3,textAlign:"center" }}>
-            <div style={{ fontSize:9,color:"#3ddc84",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Cash Runway</div>
-            <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:"#3ddc84" }}>
+          <div style={{ marginTop:14,padding:"16px",background:"rgba(74,222,128,.08)",border:"1px solid rgba(74,222,128,.2)",borderRadius:3,textAlign:"center" }}>
+            <div style={{ fontSize:9,color:"#4ade80",letterSpacing:2,textTransform:"uppercase",marginBottom:4 }}>Cash Runway</div>
+            <div style={{ fontFamily:"var(--f2)",fontSize:36,fontWeight:900,color:"#4ade80" }}>
               {(totalCash / (weeklyPayroll + weeklyFuel + weeklyLease)).toFixed(1)} weeks
             </div>
             <div style={{ fontSize:10,color:"var(--mu)",marginTop:4 }}>
@@ -8502,14 +8507,14 @@ function CashFlowDashboard() {
               <XAxis dataKey="week" tick={{ fill:"var(--mu)",fontSize:10 }} />
               <YAxis tick={{ fill:"var(--mu)",fontSize:9 }} tickFormatter={v=>"$"+Math.round(v/1000)+"k"} />
               <Tooltip content={<CustomTip />} />
-              <Bar dataKey="total" name="Total Cash" fill="#3ddc84" radius={[2,2,0,0]} />
+              <Bar dataKey="total" name="Total Cash" fill="#4ade80" radius={[2,2,0,0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       )}
 
       <div className="ibox" style={{ marginTop:14 }}>
-        <strong style={{ color:"#4fc3f7" }}>Live sync enabled:</strong> Scheduled payments pull from the budget-calendar's Supabase tables (<span style={{ color:"#3ddc84" }}>w_custom_recurring + w_one_time_expenses</span>) via <span style={{ color:"#3ddc84" }}>/api/cash-flow</span>.
+        <strong style={{ color:"#38bdf8" }}>Live sync enabled:</strong> Scheduled payments pull from the budget-calendar's Supabase tables (<span style={{ color:"#4ade80" }}>w_custom_recurring + w_one_time_expenses</span>) via <span style={{ color:"#4ade80" }}>/api/cash-flow</span>.
         Update payments + paid/unpaid status in the budget calendar app — FreightIQ picks it up on next page load. Bank account balances are still hardcoded (no calendar table tracks them); fall back to built-in if Supabase is unreachable.
       </div>
     </div>
@@ -8533,8 +8538,8 @@ function ArDashboard() {
       .then(d => { if (d.error) setErr(d.error); else setData(d); })
       .catch(e => setErr(e.message)).finally(() => setLoading(false));
   }, []);
-  const ageColor = d => d == null ? "#4fc3f7" : d <= 7 ? "#3ddc84" : d <= 14 ? "#f5c542" : d <= 30 ? "#ff8a65" : "#ff5252";
-  const stColor = s => s === "Invoiced" ? "#f5c542" : s === "Delivered" ? "#3ddc84" : "#4fc3f7";
+  const ageColor = d => d == null ? "#38bdf8" : d <= 7 ? "#4ade80" : d <= 14 ? "#fbbf24" : d <= 30 ? "#5eead4" : "#fb7185";
+  const stColor = s => s === "Invoiced" ? "#fbbf24" : s === "Delivered" ? "#4ade80" : "#38bdf8";
   const exportXlsx = () => {
     const src = (data && data.allRows) || [];
     const sheet = src.map(r => ({
@@ -8559,13 +8564,13 @@ function ArDashboard() {
       <div className="psub">Live from Alvys · open delivered/invoiced/in-transit loads with outstanding balance{data ? ` · as of ${new Date(data.fetchedAt).toLocaleString()}` : ""}</div>
 
       {loading && <div className="card" style={{ padding:20 }}>Loading A/R from Alvys…</div>}
-      {err && <div className="card" style={{ padding:16, color:"#ff5252" }}>⚠ Alvys A/R fetch failed: {err}</div>}
+      {err && <div className="card" style={{ padding:16, color:"#fb7185" }}>⚠ Alvys A/R fetch failed: {err}</div>}
 
       {data && (<>
         <div className="g4" style={{ marginBottom:14 }}>
-          <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
+          <div className="kpi" style={{ borderTop:"3px solid #2dd4bf" }}>
             <div className="klbl">Total A/R</div>
-            <div className="kval" style={{ color:"#f47820" }}>{fd(data.totalAR, 0)}</div>
+            <div className="kval" style={{ color:"#2dd4bf" }}>{fd(data.totalAR, 0)}</div>
             <div className="ksub">{data.count} open invoices · avg {data.avgDaysSinceDelivery}d</div>
           </div>
           {["In Transit","Delivered","Invoiced"].map(s => (
@@ -8581,7 +8586,7 @@ function ArDashboard() {
           <div className="ctit">Aging — by days since delivery</div>
           <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginTop:8 }}>
             {Object.entries(data.aging).map(([k,v]) => (
-              <div key={k} style={{ flex:"1 1 120px", padding:"10px 12px", background:"var(--s2)", borderRadius:4, borderLeft:`3px solid ${k==="undelivered"?"#4fc3f7":k==="31+"?"#ff5252":k==="15-30"?"#ff8a65":k==="8-14"?"#f5c542":"#3ddc84"}` }}>
+              <div key={k} style={{ flex:"1 1 120px", padding:"10px 12px", background:"var(--s2)", borderRadius:4, borderLeft:`3px solid ${k==="undelivered"?"#38bdf8":k==="31+"?"#fb7185":k==="15-30"?"#5eead4":k==="8-14"?"#fbbf24":"#4ade80"}` }}>
                 <div style={{ fontSize:10, color:"var(--mu)", textTransform:"uppercase" }}>{k==="undelivered"?"In transit":k+" days"}</div>
                 <div style={{ fontFamily:"var(--f3,Consolas,monospace)", fontWeight:700, fontSize:15 }}>{fd(v,0)}</div>
               </div>
@@ -8594,7 +8599,7 @@ function ArDashboard() {
           {[["detail","📄 Detail ("+data.count+")"],["customer","🏢 By Customer ("+data.byCustomer.length+")"]].map(([id,lbl]) => (
             <button key={id} onClick={() => setView(id)} style={{ padding:"7px 16px", borderRadius:3, cursor:"pointer", fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1, textTransform:"uppercase", background:view===id?"var(--or)":"transparent", color:view===id?"#fff":"var(--mu)", border:`1px solid ${view===id?"var(--or)":"var(--bd)"}` }}>{lbl}</button>
           ))}
-          <button onClick={exportXlsx} style={{ marginLeft:"auto", padding:"7px 16px", borderRadius:3, cursor:"pointer", fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1, textTransform:"uppercase", background:"#3ddc84", color:"#0b0d10", border:"1px solid #3ddc84" }}>⬇ Download Excel</button>
+          <button onClick={exportXlsx} style={{ marginLeft:"auto", padding:"7px 16px", borderRadius:3, cursor:"pointer", fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1, textTransform:"uppercase", background:"#4ade80", color:"#0b0d10", border:"1px solid #4ade80" }}>⬇ Download Excel</button>
           <span style={{ fontSize:10, color:"var(--mu)" }}>{(data.allRows||[]).length} loads (excl. queued/released/completed)</span>
         </div>
 
@@ -8610,7 +8615,7 @@ function ArDashboard() {
                   <tr key={c.customer} style={{ background:i%2?"transparent":"var(--s2)" }}>
                     <td style={{ padding:"9px", fontWeight:600 }}>{c.customer}</td>
                     <td style={{ padding:"9px", textAlign:"center", color:"var(--mu)" }}>{c.loads}</td>
-                    <td style={{ padding:"9px", textAlign:"right", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#f47820" }}>{fd(c.balance,0)}</td>
+                    <td style={{ padding:"9px", textAlign:"right", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#2dd4bf" }}>{fd(c.balance,0)}</td>
                     <td style={{ padding:"9px", textAlign:"right", fontVariantNumeric:"tabular-nums", color:ageColor(c.oldest) }}>{c.oldest}</td>
                   </tr>
                 ))}
@@ -8637,14 +8642,14 @@ function ArDashboard() {
                     <td style={{ padding:"8px 9px", color:"var(--mu)", fontSize:11, whiteSpace:"nowrap" }}>{r.deliveredAt ? r.deliveredAt.slice(0,10) : "—"}</td>
                     <td style={{ padding:"8px 9px", textAlign:"right", fontVariantNumeric:"tabular-nums", color:ageColor(r.daysSinceDelivery), fontWeight:700 }}>{r.daysSinceDelivery==null?"—":r.daysSinceDelivery}</td>
                     <td style={{ padding:"8px 9px", textAlign:"right", fontVariantNumeric:"tabular-nums" }}>{fd(r.invoice,0)}</td>
-                    <td style={{ padding:"8px 9px", textAlign:"right", fontVariantNumeric:"tabular-nums", color:r.paid>0?"#3ddc84":"var(--mu)" }}>{r.paid>0?fd(r.paid,0):"—"}</td>
-                    <td style={{ padding:"8px 9px", textAlign:"right", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#f47820" }}>{fd(r.balance,0)}</td>
+                    <td style={{ padding:"8px 9px", textAlign:"right", fontVariantNumeric:"tabular-nums", color:r.paid>0?"#4ade80":"var(--mu)" }}>{r.paid>0?fd(r.paid,0):"—"}</td>
+                    <td style={{ padding:"8px 9px", textAlign:"right", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#2dd4bf" }}>{fd(r.balance,0)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot><tr>
                 <td colSpan={8} style={{ padding:"10px 9px", fontWeight:700 }}>TOTAL · {data.count} open invoices</td>
-                <td style={{ padding:"10px 9px", textAlign:"right", fontWeight:900, color:"#f47820" }}>{fd(data.totalAR,0)}</td>
+                <td style={{ padding:"10px 9px", textAlign:"right", fontWeight:900, color:"#2dd4bf" }}>{fd(data.totalAR,0)}</td>
               </tr></tfoot>
             </table>
           </div>
@@ -8667,24 +8672,24 @@ function OtrOperations() {
       </div>
 
       <div className="g4" style={{ marginBottom:14 }}>
-        <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #2dd4bf" }}>
           <div className="klbl">OTR Driver Labor</div>
-          <div className="kval" style={{ color:"#f47820" }}>{fd(cum.driverPay, 0)}</div>
+          <div className="kval" style={{ color:"#2dd4bf" }}>{fd(cum.driverPay, 0)}</div>
           <div className="ksub">{fn(cum.driverHours, 0)} hrs · {cum.weeks} week{cum.weeks===1?"":"s"}</div>
         </div>
-        <div className="kpi" style={{ borderTop:"3px solid #ff8a65" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #5eead4" }}>
           <div className="klbl">OTR Fuel</div>
-          <div className="kval" style={{ color:"#ff8a65" }}>{fd(cum.fuelAmt, 0)}</div>
+          <div className="kval" style={{ color:"#5eead4" }}>{fd(cum.fuelAmt, 0)}</div>
           <div className="ksub">{fn(cum.fuelGallons, 0)} gal · {cum.fuelGallons>0?fd(cum.fuelAmt/cum.fuelGallons,3):"—"}/gal avg</div>
         </div>
-        <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #4ade80" }}>
           <div className="klbl">OTR All-In Labor + Fuel</div>
-          <div className="kval" style={{ color:"#3ddc84" }}>{fd(allIn, 0)}</div>
+          <div className="kval" style={{ color:"#4ade80" }}>{fd(allIn, 0)}</div>
           <div className="ksub">{fn(milesEst, 0)} mi est (gal×6.5)</div>
         </div>
-        <div className="kpi" style={{ borderTop:"3px solid #4fc3f7" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #38bdf8" }}>
           <div className="klbl">OTR Drivers</div>
-          <div className="kval" style={{ color:"#4fc3f7" }}>{drivers.length}</div>
+          <div className="kval" style={{ color:"#38bdf8" }}>{drivers.length}</div>
           <div className="ksub">{drivers.map(n=>n.split(" ")[0]).join(", ") || "—"}</div>
         </div>
       </div>
@@ -8705,12 +8710,12 @@ function OtrOperations() {
           <tbody>
             {[...OTR_WEEKLY_LOG].reverse().map((w, i) => (
               <tr key={w.weekStart} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
-                <td style={{ padding:"10px 9px", borderLeft:"4px solid #f47820", fontWeight:600, whiteSpace:"nowrap" }}>{w.weekStart.slice(5)} – {w.weekEnd.slice(5)}</td>
+                <td style={{ padding:"10px 9px", borderLeft:"4px solid #2dd4bf", fontWeight:600, whiteSpace:"nowrap" }}>{w.weekStart.slice(5)} – {w.weekEnd.slice(5)}</td>
                 <td style={{ padding:"10px 9px", color:"#9aa4b3", fontSize:11 }}>{(w.drivers||[]).map(n=>n.split(" ")[0]+" "+(n.split(" ")[1]||"")).join(", ")}</td>
-                <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#f47820", fontWeight:700 }}>{fd(w.driverPay, 0)}</td>
+                <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#2dd4bf", fontWeight:700 }}>{fd(w.driverPay, 0)}</td>
                 <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#9aa4b3" }}>{fn(w.driverHours, 0)}</td>
-                <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#ff8a65" }}>{fd(w.fuelAmt, 0)}</td>
-                <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#3ddc84" }}>{fd((w.driverPay||0)+(w.fuelAmt||0)+(w.contractorPay||0), 0)}</td>
+                <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#5eead4" }}>{fd(w.fuelAmt, 0)}</td>
+                <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#4ade80" }}>{fd((w.driverPay||0)+(w.fuelAmt||0)+(w.contractorPay||0), 0)}</td>
               </tr>
             ))}
           </tbody>
@@ -8750,19 +8755,19 @@ function AtlOperations() {
 
       {/* ATL Billing — load-level revenue (source: 2026-Atlanta Billing.xlsx, refreshed weekly) */}
       <div className="g4" style={{ marginBottom:14 }}>
-        <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #4ade80" }}>
           <div className="klbl">ATL Revenue</div>
-          <div className="kval" style={{ color:"#3ddc84" }}>{fd(ATL_BILLING.revenue, 0)}</div>
+          <div className="kval" style={{ color:"#4ade80" }}>{fd(ATL_BILLING.revenue, 0)}</div>
           <div className="ksub">{ATL_BILLING.loads} loads · as of {ATL_BILLING.asOf}</div>
         </div>
-        <div className="kpi" style={{ borderTop:"3px solid #ff5252" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #fb7185" }}>
           <div className="klbl">ATL Carrier Pay (COGS)</div>
-          <div className="kval" style={{ color:"#ff5252" }}>{fd(ATL_BILLING.carrierPay, 0)}</div>
+          <div className="kval" style={{ color:"#fb7185" }}>{fd(ATL_BILLING.carrierPay, 0)}</div>
           <div className="ksub">{fp(ATL_BILLING.carrierPay / ATL_BILLING.revenue * 100)} of revenue</div>
         </div>
-        <div className="kpi" style={{ borderTop:"3px solid #4fc3f7" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #38bdf8" }}>
           <div className="klbl">ATL Gross Profit</div>
-          <div className="kval" style={{ color:"#4fc3f7" }}>{fd(ATL_BILLING.grossProfit, 0)}</div>
+          <div className="kval" style={{ color:"#38bdf8" }}>{fd(ATL_BILLING.grossProfit, 0)}</div>
           <div className="ksub">{fp(ATL_BILLING.grossMargin)} margin</div>
         </div>
         <div className="kpi" style={{ borderTop:"3px solid #fbbf24" }}>
@@ -8774,24 +8779,24 @@ function AtlOperations() {
 
       {/* Operational KPIs (cumulative across all logged ATL weeks) */}
       <div className="g4" style={{ marginBottom:14 }}>
-        <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #2dd4bf" }}>
           <div className="klbl">ATL Driver Labor</div>
-          <div className="kval" style={{ color:"#f47820" }}>{fd(cum.driverPay, 0)}</div>
+          <div className="kval" style={{ color:"#2dd4bf" }}>{fd(cum.driverPay, 0)}</div>
           <div className="ksub">{fn(cum.driverHours, 0)} hrs · {cum.weeks} weeks</div>
         </div>
-        <div className="kpi" style={{ borderTop:"3px solid #f5c542" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #fbbf24" }}>
           <div className="klbl">ATL Contractors</div>
           <div className="kval" style={{ color:"#fbbf24" }}>{fd(cum.contractorPay, 0)}</div>
           <div className="ksub">{allContractorNames.map(n => n.split(" ")[0]).join(", ") || "—"}</div>
         </div>
-        <div className="kpi" style={{ borderTop:"3px solid #ff8a65" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #5eead4" }}>
           <div className="klbl">ATL Fuel</div>
-          <div className="kval" style={{ color:"#ff8a65" }}>{fd(cum.fuelAmt, 0)}</div>
+          <div className="kval" style={{ color:"#5eead4" }}>{fd(cum.fuelAmt, 0)}</div>
           <div className="ksub">{fn(cum.fuelGallons, 0)} gal · {cum.fuelGallons>0?fd(cum.fuelAmt/cum.fuelGallons,3):"—"}/gal avg</div>
         </div>
-        <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #4ade80" }}>
           <div className="klbl">ATL All-In Labor + Fuel</div>
-          <div className="kval" style={{ color:"#3ddc84" }}>{fd(allInLaborFuel, 0)}</div>
+          <div className="kval" style={{ color:"#4ade80" }}>{fd(allInLaborFuel, 0)}</div>
           <div className="ksub">{fn(atlMilesEst, 0)} mi est · {allInCpm!=null?fd(allInCpm,3)+"/mi":"—"}</div>
         </div>
       </div>
@@ -8816,12 +8821,12 @@ function AtlOperations() {
               const margin = r.revenue > 0 ? r.gross / r.revenue * 100 : 0;
               return (
                 <tr key={r.name} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
-                  <td style={{ padding:"10px 9px", borderLeft:"4px solid #3ddc84", fontWeight:600 }}>{r.name} <span style={{ color:"#9aa4b3", fontSize:10 }}>({r.short})</span></td>
+                  <td style={{ padding:"10px 9px", borderLeft:"4px solid #4ade80", fontWeight:600 }}>{r.name} <span style={{ color:"#9aa4b3", fontSize:10 }}>({r.short})</span></td>
                   <td style={{ padding:"10px 9px", color:"#9aa4b3" }}>{r.loads}</td>
-                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#3ddc84", fontWeight:700 }}>{fd(r.revenue, 0)}</td>
-                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#ff5252" }}>{fd(r.carrier, 0)}</td>
-                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#4fc3f7" }}>{fd(r.gross, 0)}</td>
-                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color: margin >= 20 ? "#3ddc84" : margin >= 10 ? "#fbbf24" : "#ff5252", fontWeight:700 }}>{fp(margin)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#4ade80", fontWeight:700 }}>{fd(r.revenue, 0)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#fb7185" }}>{fd(r.carrier, 0)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:700, color:"#38bdf8" }}>{fd(r.gross, 0)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color: margin >= 20 ? "#4ade80" : margin >= 10 ? "#fbbf24" : "#fb7185", fontWeight:700 }}>{fp(margin)}</td>
                   <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#9aa4b3" }}>{fd(r.revenue / r.loads, 0)}</td>
                 </tr>
               );
@@ -8831,16 +8836,16 @@ function AtlOperations() {
             <tr>
               <td style={{ padding:"12px 9px", fontSize:13 }}>TOTAL · {ATL_BILLING.byDriver.length} drivers</td>
               <td style={{ padding:"12px 9px", fontSize:13 }}>{ATL_BILLING.loads}</td>
-              <td style={{ padding:"12px 9px", fontSize:14, fontWeight:900, color:"#3ddc84" }}>{fd(ATL_BILLING.revenue, 0)}</td>
-              <td style={{ padding:"12px 9px", fontSize:13, color:"#ff5252" }}>{fd(ATL_BILLING.carrierPay, 0)}</td>
-              <td style={{ padding:"12px 9px", fontSize:14, fontWeight:900, color:"#4fc3f7" }}>{fd(ATL_BILLING.grossProfit, 0)}</td>
+              <td style={{ padding:"12px 9px", fontSize:14, fontWeight:900, color:"#4ade80" }}>{fd(ATL_BILLING.revenue, 0)}</td>
+              <td style={{ padding:"12px 9px", fontSize:13, color:"#fb7185" }}>{fd(ATL_BILLING.carrierPay, 0)}</td>
+              <td style={{ padding:"12px 9px", fontSize:14, fontWeight:900, color:"#38bdf8" }}>{fd(ATL_BILLING.grossProfit, 0)}</td>
               <td style={{ padding:"12px 9px", fontSize:13, fontWeight:700 }}>{fp(ATL_BILLING.grossMargin)}</td>
               <td style={{ padding:"12px 9px", fontSize:13 }}>{fd(ATL_BILLING.revenue / ATL_BILLING.loads, 0)}</td>
             </tr>
           </tfoot>
         </table>
         <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>
-          Source: <span style={{ color:"#4fc3f7" }}>2026-Atlanta Billing.xlsx</span> · all {ATL_BILLING.loads} loads count as ATL revenue (the <code>Assigned</code> column only reflects QBO booking routing — some loads invoiced under SF/Corp or CE East, but the load itself is ATL ops). Refresh weekly via <code>scripts/parse_atl_billing.py</code>.
+          Source: <span style={{ color:"#38bdf8" }}>2026-Atlanta Billing.xlsx</span> · all {ATL_BILLING.loads} loads count as ATL revenue (the <code>Assigned</code> column only reflects QBO booking routing — some loads invoiced under SF/Corp or CE East, but the load itself is ATL ops). Refresh weekly via <code>scripts/parse_atl_billing.py</code>.
         </div>
       </div>
 
@@ -8870,13 +8875,13 @@ function AtlOperations() {
               const wkTotal = (w.driverPay||0) + (w.fuelAmt||0) + (w.contractorPay||0);
               return (
                 <tr key={`${w.weekStart}-${w.weekEnd}`} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
-                  <td style={{ padding:"10px 9px", borderLeft:"4px solid #f47820", fontWeight:700, fontFamily:"var(--f2)" }}>
+                  <td style={{ padding:"10px 9px", borderLeft:"4px solid #2dd4bf", fontWeight:700, fontFamily:"var(--f2)" }}>
                     {w.weekStart.slice(5)} → {w.weekEnd.slice(5)}
                   </td>
                   <td style={{ padding:"10px 9px", fontSize:10, color:"#9aa4b3" }}>{rosterTxt}</td>
                   <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums" }}>{fd(w.driverPay||0,0)}</td>
                   <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#9aa4b3" }}>{fn(w.driverHours||0,0)}</td>
-                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#ff8a65" }}>{fd(w.fuelAmt||0,0)}</td>
+                  <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#5eead4" }}>{fd(w.fuelAmt||0,0)}</td>
                   <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", color:"#fbbf24" }}>{w.contractorPay>0?fd(w.contractorPay,0):"—"}</td>
                   <td style={{ padding:"10px 9px", fontVariantNumeric:"tabular-nums", fontWeight:800 }}>{fd(wkTotal,0)}</td>
                 </tr>
@@ -8888,7 +8893,7 @@ function AtlOperations() {
               <td style={{ padding:"12px 9px", fontSize:12 }} colSpan={2}>TOTAL · {ATL_WEEKLY_LOG.length} weeks</td>
               <td style={{ padding:"12px 9px", fontSize:13, fontWeight:800 }}>{fd(cum.driverPay,0)}</td>
               <td style={{ padding:"12px 9px", fontSize:12 }}>{fn(cum.driverHours,0)}</td>
-              <td style={{ padding:"12px 9px", fontSize:13, color:"#ff8a65", fontWeight:800 }}>{fd(cum.fuelAmt,0)}</td>
+              <td style={{ padding:"12px 9px", fontSize:13, color:"#5eead4", fontWeight:800 }}>{fd(cum.fuelAmt,0)}</td>
               <td style={{ padding:"12px 9px", fontSize:13, color:"#fbbf24", fontWeight:800 }}>{fd(cum.contractorPay,0)}</td>
               <td style={{ padding:"12px 9px", fontSize:14, fontWeight:900 }}>{fd(allInLaborFuel,0)}</td>
             </tr>
@@ -8955,19 +8960,19 @@ function Budgeting() {
     // backgrounds — replaces lavender / indigo / gray washouts.
     const b = [
       { key:"carrier",   label:"Carrier Pay (COGS)",  val:0, color:"#ff6b6b", icon:"📦" },
-      { key:"driver",    label:"Driver Labor",         val:0, color:"#f47820", icon:"🚚" },
-      { key:"office",    label:"Office Labor",         val:0, color:"#4fc3f7", icon:"🏢" },
+      { key:"driver",    label:"Driver Labor",         val:0, color:"#2dd4bf", icon:"🚚" },
+      { key:"office",    label:"Office Labor",         val:0, color:"#38bdf8", icon:"🏢" },
       { key:"contract",  label:"Contractor Payroll",   val:0, color:"#fbbf24", icon:"📋" },
       { key:"taxes",     label:"Payroll Taxes & Benefits", val:0, color:"#c4b5fd", icon:"💼" },
-      { key:"fuel",      label:"Fuel",                 val:0, color:"#ff8a65", icon:"⛽" },
-      { key:"truckRent", label:"Truck Rentals",        val:0, color:"#c084fc", icon:"🚛" },
+      { key:"fuel",      label:"Fuel",                 val:0, color:"#5eead4", icon:"⛽" },
+      { key:"truckRent", label:"Truck Rentals",        val:0, color:"#a78bfa", icon:"🚛" },
       { key:"trailRent", label:"Trailer Rentals",      val:0, color:"#5eead4", icon:"🚜" },
       { key:"truckIns",  label:"Truck Insurance",      val:0, color:"#f472b6", icon:"🛡" },
       { key:"otherIns",  label:"Other Insurance",      val:0, color:"#e879f9", icon:"🏥" },
       { key:"maint",     label:"Maint & Storage",      val:0, color:"#fbbf24", icon:"🔧" },
-      { key:"owner",     label:"Owner Draws + Purchases", val:0, color:"#3ddc84", icon:"👑" },
+      { key:"owner",     label:"Owner Draws + Purchases", val:0, color:"#4ade80", icon:"👑" },
       { key:"ceEast",    label:"CE East Operations",   val:0, color:"#a78bfa", icon:"🏦" },
-      { key:"badDebt",   label:"Bad Debt",             val:0, color:"#ff5252", icon:"💸" },
+      { key:"badDebt",   label:"Bad Debt",             val:0, color:"#fb7185", icon:"💸" },
       { key:"assetLoan", label:"Asset Loan Payments",  val:0, color:"#93c5fd", icon:"🚙" },
       { key:"legal",     label:"Legal & Professional", val:0, color:"#86efac", icon:"⚖" },
       { key:"facilities", label:"Facilities & Utilities", val:0, color:"#fde68a", icon:"🏠" },
@@ -9145,16 +9150,16 @@ function Budgeting() {
       <div className="psub">QBO P&L weekly run rate · {PERIOD} ({days} days / {weeksElapsed.toFixed(1)} weeks) · {pnl ? "Live QB" : pnlLoading ? "Loading…" : "Static fallback"}</div>
 
       {pnlError && (
-        <div className="ibox" style={{ borderColor:"rgba(255,82,82,.4)", background:"rgba(255,82,82,.08)" }}>
+        <div className="ibox" style={{ borderColor:"rgba(251,113,133,.4)", background:"rgba(251,113,133,.08)" }}>
           <strong style={{ color:"var(--rd)" }}>⚠ QB P&L fetch failed:</strong> {pnlError} · using static fallback from last QB extraction
         </div>
       )}
 
       {/* Summary KPIs */}
       <div className="g4" style={{ marginBottom:14, gridTemplateColumns:"repeat(5,1fr)" }}>
-        <div className="kpi" style={{ borderTop:"3px solid #ff5252" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #fb7185" }}>
           <div className="klbl">Total Weekly Spend</div>
-          <div className="kval" style={{ color:"#ff5252" }}>{fd(totalWeeklyExp, 0)}</div>
+          <div className="kval" style={{ color:"#fb7185" }}>{fd(totalWeeklyExp, 0)}</div>
           <div className="ksub">{fd(totalAnnualExp, 0)} annualized</div>
         </div>
         <div className="kpi" style={{ borderTop:"3px solid #f59e0b" }}>
@@ -9162,19 +9167,19 @@ function Budgeting() {
           <div className="kval" style={{ color:"#f59e0b" }}>{fd(weeklyExCarrier, 0)}</div>
           <div className="ksub">operating spend, COGS removed · {fd(annualExCarrier, 0)} annualized</div>
         </div>
-        <div className="kpi" style={{ borderTop:"3px solid #3ddc84" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #4ade80" }}>
           <div className="klbl">Weekly Revenue (avg)</div>
-          <div className="kval" style={{ color:"#3ddc84" }}>{fd(weeklyRev, 0)}</div>
+          <div className="kval" style={{ color:"#4ade80" }}>{fd(weeklyRev, 0)}</div>
           <div className="ksub">{weeksElapsed.toFixed(1)} weeks · {fd(INCOME_2026.total, 0)} YTD</div>
         </div>
-        <div className="kpi" style={{ borderTop:`3px solid ${netMargin>=0?"#3ddc84":"#ff5252"}` }}>
+        <div className="kpi" style={{ borderTop:`3px solid ${netMargin>=0?"#4ade80":"#fb7185"}` }}>
           <div className="klbl">Net Income Margin</div>
-          <div className="kval" style={{ color: netMargin>=0?"#3ddc84":"#ff5252" }}>{fp(netMargin)}</div>
+          <div className="kval" style={{ color: netMargin>=0?"#4ade80":"#fb7185" }}>{fp(netMargin)}</div>
           <div className="ksub">{fd(weeklyNetIncome, 0)}/wk net income · {fd(INCOME_2026.netIncome, 0)} YTD</div>
         </div>
-        <div className="kpi" style={{ borderTop:"3px solid #f47820" }}>
+        <div className="kpi" style={{ borderTop:"3px solid #2dd4bf" }}>
           <div className="klbl">With What-Ifs</div>
-          <div className="kval" style={{ color: adjNetMargin>=0?"#3ddc84":"#ff5252" }}>{fp(adjNetMargin)}</div>
+          <div className="kval" style={{ color: adjNetMargin>=0?"#4ade80":"#fb7185" }}>{fp(adjNetMargin)}</div>
           <div className="ksub">{fd(adjNetIncome, 0)}/wk clearing · {activeScn.length} active scenarios</div>
         </div>
       </div>
@@ -9240,7 +9245,7 @@ function Budgeting() {
         <div className="ctit">🎯 What-If Simulator · Add hypothetical expenses</div>
 
         {setupErr && (
-          <div className="ibox" style={{ borderColor:"rgba(245,197,66,.5)", background:"rgba(245,197,66,.08)", marginBottom:14 }}>
+          <div className="ibox" style={{ borderColor:"rgba(251,191,36,.5)", background:"rgba(251,191,36,.08)", marginBottom:14 }}>
             <strong style={{ color:"var(--ye)" }}>⚙ Setup needed:</strong> {setupErr}
           </div>
         )}
@@ -9277,24 +9282,24 @@ function Budgeting() {
             <div className="g2" style={{ gap:10 }}>
               <div className="met">
                 <div className="mlbl">Added /wk</div>
-                <div className="mval" style={{ color:"#f5c542", fontSize:22 }}>{fd(scnWeekly, 0)}</div>
+                <div className="mval" style={{ color:"#fbbf24", fontSize:22 }}>{fd(scnWeekly, 0)}</div>
                 <div className="msub">{fd(scnWeekly * 4.33, 0)}/mo · {fd(scnWeekly * 52, 0)}/yr</div>
               </div>
               <div className="met">
                 <div className="mlbl">Net Margin Δ</div>
-                <div className="mval" style={{ color: (adjNetMargin-netMargin) >= 0 ? "#3ddc84" : "#ff5252", fontSize:22 }}>
+                <div className="mval" style={{ color: (adjNetMargin-netMargin) >= 0 ? "#4ade80" : "#fb7185", fontSize:22 }}>
                   {adjNetMargin - netMargin >= 0 ? "+" : ""}{(adjNetMargin - netMargin).toFixed(1)} pts
                 </div>
                 <div className="msub">{fp(netMargin)} → {fp(adjNetMargin)}</div>
               </div>
               <div className="met">
                 <div className="mlbl">Weekly Clearing (after)</div>
-                <div className="mval" style={{ color: adjNetIncome >= 0 ? "#3ddc84" : "#ff5252", fontSize:22 }}>{fd(adjNetIncome, 0)}</div>
+                <div className="mval" style={{ color: adjNetIncome >= 0 ? "#4ade80" : "#fb7185", fontSize:22 }}>{fd(adjNetIncome, 0)}</div>
                 <div className="msub">before {fd(weeklyNetIncome, 0)} · Δ {scnWeekly >= 0 ? "−" : "+"}{fd(Math.abs(scnWeekly), 0)}</div>
               </div>
               <div className="met">
                 <div className="mlbl">Annual Clearing (after)</div>
-                <div className="mval" style={{ color: adjNetIncome * 52 >= 0 ? "#3ddc84" : "#ff5252", fontSize:22 }}>{fd(adjNetIncome * 52, 0)}</div>
+                <div className="mval" style={{ color: adjNetIncome * 52 >= 0 ? "#4ade80" : "#fb7185", fontSize:22 }}>{fd(adjNetIncome * 52, 0)}</div>
                 <div className="msub">before {fd(weeklyNetIncome * 52, 0)} · Δ {scnWeekly >= 0 ? "−" : "+"}{fd(Math.abs(scnWeekly * 52), 0)}</div>
               </div>
             </div>
@@ -9369,21 +9374,21 @@ function Checklist() {
   const getMonthLabel = () => new Date().toLocaleDateString("en-US", { month:"long", year:"numeric" });
 
   const WEEKLY_ITEMS = [
-    { section: "Fleet Overview & CPM", icon: "🏢", color: "#f47820", source: "QuickBooks + EFS", items: [
+    { section: "Fleet Overview & CPM", icon: "🏢", color: "#2dd4bf", source: "QuickBooks + EFS", items: [
       { id: "w_qb_labor", label: "Upload QuickBooks payroll report", sub: "Updates LABOR total for CPM" },
       { id: "w_efs_fuel", label: "Upload EFS fuel card export", sub: "Updates FUEL_TOT, driver fuel spend, gallons" },
       { id: "w_mudflap", label: "Upload Mudflap fuel statement", sub: "Combines with EFS for total fuel" },
       { id: "w_qb_pl", label: "Upload QuickBooks P&L (if available)", sub: "Updates insurance, maintenance, storage, uniforms totals" },
     ]},
-    { section: "Income", icon: "💵", color: "#3ddc84", source: "Triumph / Flexent", items: [
+    { section: "Income", icon: "💵", color: "#4ade80", source: "Triumph / Flexent", items: [
       { id: "w_income_weekly", label: "Update weekly revenue (CE, SF, DI splits)", sub: "Income tab — weekly trend data" },
       { id: "w_carrier_pay", label: "Verify carrier pay / COGS for the week", sub: "Gross profit calculation" },
     ]},
-    { section: "Trucks & Mileage", icon: "📍", color: "#4fc3f7", source: "Samsara", items: [
+    { section: "Trucks & Mileage", icon: "📍", color: "#38bdf8", source: "Samsara", items: [
       { id: "w_samsara", label: "Drop Samsara Vehicle Mileage xlsx into incoming-freightiq/", sub: "Run scripts/parse_samsara_mileage.py to regenerate MILES + TRUCK_MILES" },
       { id: "w_verify_miles", label: "Verify MILES total matches Samsara", sub: "Used in CPM denominator — must be accurate" },
     ]},
-    { section: "Driver Detail", icon: "🚛", color: "#f5c542", source: "Payroll + Fuel", items: [
+    { section: "Driver Detail", icon: "🚛", color: "#fbbf24", source: "Payroll + Fuel", items: [
       { id: "w_driver_review", label: "Review top 5 highest-CPM drivers", sub: "Flag any anomalies — new drivers, leave, etc." },
       { id: "w_fuel_outliers", label: "Check fuel outliers (high $/gal, high gallons)", sub: "Fuel Analysis tab — look for waste" },
     ]},
@@ -9391,7 +9396,7 @@ function Checklist() {
       { id: "w_ce_revenue", label: "Update CE East weekly revenue", sub: "From Triumph CE East account" },
       { id: "w_ce_ar", label: "Check A/R balances — funding, released, unreleased", sub: "Balance sheet accuracy" },
     ]},
-    { section: "Office Staff", icon: "🏢", color: "#ff8a65", source: "QuickBooks + Chase", items: [
+    { section: "Office Staff", icon: "🏢", color: "#5eead4", source: "QuickBooks + Chase", items: [
       { id: "w_office_payroll", label: "Verify W2 office payroll ran (SF + J&A)", sub: "QuickBooks — salaried + hourly employees" },
       { id: "w_contractor_payments", label: "Verify contractor payments sent (Chase)", sub: "Jon Marcus, Mellody, Gabriel, Hilda, Maria, Logic, etc." },
       { id: "w_commissions", label: "Calculate & pay commissions (if applicable)", sub: "Elizabeth Delgado, Chris Simpson, Mellody Abrego" },
@@ -9401,7 +9406,7 @@ function Checklist() {
   ];
 
   const MONTHLY_ITEMS = [
-    { section: "Truck Invoices", icon: "🚛", color: "#ff8a65", source: "TCI / Penske / TEC", items: [
+    { section: "Truck Invoices", icon: "🚛", color: "#5eead4", source: "TCI / Penske / TEC", items: [
       { id: "m_tci_lease", label: "Upload TCI lease invoices", sub: "Monthly fixed + variable mileage charges" },
       { id: "m_tci_service", label: "Upload TCI service invoices (if any)", sub: "Liftgate installs, repairs, etc." },
       { id: "m_tci_rental", label: "Upload TCI rental invoices (box truck, etc.)", sub: "Unit #19129 and any temp rentals" },
@@ -9422,12 +9427,12 @@ function Checklist() {
       { id: "m_truck_maint", label: "Upload truck maintenance invoices", sub: "Prime Wash, AutoForce, Titan Glass, towing, batteries, etc." },
       { id: "m_trailer_maint", label: "Upload trailer maintenance invoices", sub: "TravelCenters of America, MKD Express, etc." },
     ]},
-    { section: "Insurance & Other", icon: "🛡️", color: "#b39ddb", source: "QuickBooks", items: [
+    { section: "Insurance & Other", icon: "🛡️", color: "#a78bfa", source: "QuickBooks", items: [
       { id: "m_insurance", label: "Verify insurance premium ($6,375/wk) in QuickBooks", sub: "Confirm weeks billed match period" },
       { id: "m_uniforms", label: "Upload Unifirst / Safety Guard invoices", sub: "Monthly uniform service + any shoe purchases" },
       { id: "m_storage", label: "Upload storage/parking invoices", sub: "Storage on Wheels, Total Transportation, Parking Service Center" },
     ]},
-    { section: "Office Staff", icon: "🏢", color: "#ff8a65", source: "QuickBooks + Chase", items: [
+    { section: "Office Staff", icon: "🏢", color: "#5eead4", source: "QuickBooks + Chase", items: [
       { id: "m_office_gusto_sf", label: "Export Show Freight payroll summary from QuickBooks", sub: "Updates W2 office staff data — SF entity" },
       { id: "m_office_gusto_ja", label: "Export J&A Management payroll summary from QuickBooks", sub: "Updates W2 office staff data — J&A entity" },
       { id: "m_office_contractors", label: "Export Chase contractor payment history", sub: "All contractor payments for the month" },
@@ -9436,7 +9441,7 @@ function Checklist() {
       { id: "m_contractor_health", label: "Verify monthly health insurance totals", sub: "Mellody, Hilda, Deb, Chris — company-paid" },
       { id: "m_commission_reconcile", label: "Reconcile commission payments vs earned", sub: "Elizabeth, Chris, Mellody — W2 and/or 1099" },
     ]},
-    { section: "QuickBooks Reconciliation", icon: "📊", color: "#f47820", source: "QuickBooks", items: [
+    { section: "QuickBooks Reconciliation", icon: "📊", color: "#2dd4bf", source: "QuickBooks", items: [
       { id: "m_qb_reconcile", label: "Reconcile QuickBooks totals vs invoice totals", sub: "Truck/trailer QB totals should match sum of vendor invoices" },
       { id: "m_qb_period", label: "Update PERIOD label if date range changed", sub: "Currently: " + PERIOD },
       { id: "m_qb_push", label: "Push updated App.jsx to GitHub (via Claude)", sub: "Bake in new permanent data → Vercel redeploys" },
@@ -9489,16 +9494,16 @@ function Checklist() {
     const total = sec.items.length;
     const allDone = done === total;
     return (
-      <div key={sec.section} className="card" style={{ marginBottom: 10, borderLeft: `3px solid ${allDone ? "#3ddc84" : sec.color}` }}>
+      <div key={sec.section} className="card" style={{ marginBottom: 10, borderLeft: `3px solid ${allDone ? "#4ade80" : sec.color}` }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <div>
-            <div style={{ fontFamily: "var(--f2)", fontSize: 14, fontWeight: 800, letterSpacing: 1, color: allDone ? "#3ddc84" : sec.color }}>
+            <div style={{ fontFamily: "var(--f2)", fontSize: 14, fontWeight: 800, letterSpacing: 1, color: allDone ? "#4ade80" : sec.color }}>
               {sec.icon} {sec.section} {allDone && "✓"}
             </div>
             <div style={{ fontSize: 10, color: "var(--mu)" }}>Source: {sec.source}</div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontFamily: "var(--f2)", fontSize: 18, fontWeight: 800, color: allDone ? "#3ddc84" : done > 0 ? "#f5c542" : "var(--mu)" }}>
+            <div style={{ fontFamily: "var(--f2)", fontSize: 18, fontWeight: 800, color: allDone ? "#4ade80" : done > 0 ? "#fbbf24" : "var(--mu)" }}>
               {done}/{total}
             </div>
           </div>
@@ -9514,10 +9519,10 @@ function Checklist() {
             }}>
             <div style={{
               width: 20, height: 20, borderRadius: 3, flexShrink: 0, marginTop: 1,
-              border: `2px solid ${checks[item.id] ? "#3ddc84" : "var(--bd)"}`,
-              background: checks[item.id] ? "rgba(61,220,132,.15)" : "transparent",
+              border: `2px solid ${checks[item.id] ? "#4ade80" : "var(--bd)"}`,
+              background: checks[item.id] ? "rgba(74,222,128,.15)" : "transparent",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 12, color: "#3ddc84",
+              fontSize: 12, color: "#4ade80",
             }}>
               {checks[item.id] && "✓"}
             </div>
@@ -9552,35 +9557,35 @@ function Checklist() {
       {/* Progress hero */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
         <div style={{
-          background: wPct === 100 ? "rgba(61,220,132,.08)" : "var(--s1)",
-          border: `2px solid ${wPct === 100 ? "#3ddc84" : "var(--or)"}`,
+          background: wPct === 100 ? "rgba(74,222,128,.08)" : "var(--s1)",
+          border: `2px solid ${wPct === 100 ? "#4ade80" : "var(--or)"}`,
           borderRadius: 6, padding: "22px", textAlign: "center",
         }}>
-          <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: wPct === 100 ? "#3ddc84" : "var(--or)", marginBottom: 6 }}>
+          <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: wPct === 100 ? "#4ade80" : "var(--or)", marginBottom: 6 }}>
             Weekly — {weekLabel}
           </div>
-          <div style={{ fontFamily: "var(--f2)", fontSize: 56, fontWeight: 900, color: wPct === 100 ? "#3ddc84" : wPct > 0 ? "#f5c542" : "var(--mu)" }}>
+          <div style={{ fontFamily: "var(--f2)", fontSize: 56, fontWeight: 900, color: wPct === 100 ? "#4ade80" : wPct > 0 ? "#fbbf24" : "var(--mu)" }}>
             {wPct}%
           </div>
           <div style={{ fontSize: 11, color: "var(--mu)", marginTop: 4 }}>{wDone} of {wTotal} tasks complete</div>
           <div className="bar" style={{ marginTop: 10 }}>
-            <div className="bfil" style={{ width: `${wPct}%`, background: wPct === 100 ? "#3ddc84" : "var(--or)", transition: "width .3s" }} />
+            <div className="bfil" style={{ width: `${wPct}%`, background: wPct === 100 ? "#4ade80" : "var(--or)", transition: "width .3s" }} />
           </div>
         </div>
         <div style={{
-          background: mPct === 100 ? "rgba(61,220,132,.08)" : "var(--s1)",
-          border: `2px solid ${mPct === 100 ? "#3ddc84" : "#4fc3f7"}`,
+          background: mPct === 100 ? "rgba(74,222,128,.08)" : "var(--s1)",
+          border: `2px solid ${mPct === 100 ? "#4ade80" : "#38bdf8"}`,
           borderRadius: 6, padding: "22px", textAlign: "center",
         }}>
-          <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: mPct === 100 ? "#3ddc84" : "#4fc3f7", marginBottom: 6 }}>
+          <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: mPct === 100 ? "#4ade80" : "#38bdf8", marginBottom: 6 }}>
             Monthly — {monthLabel}
           </div>
-          <div style={{ fontFamily: "var(--f2)", fontSize: 56, fontWeight: 900, color: mPct === 100 ? "#3ddc84" : mPct > 0 ? "#f5c542" : "var(--mu)" }}>
+          <div style={{ fontFamily: "var(--f2)", fontSize: 56, fontWeight: 900, color: mPct === 100 ? "#4ade80" : mPct > 0 ? "#fbbf24" : "var(--mu)" }}>
             {mPct}%
           </div>
           <div style={{ fontSize: 11, color: "var(--mu)", marginTop: 4 }}>{mDone} of {mTotal} tasks complete</div>
           <div className="bar" style={{ marginTop: 10 }}>
-            <div className="bfil" style={{ width: `${mPct}%`, background: mPct === 100 ? "#3ddc84" : "#4fc3f7", transition: "width .3s" }} />
+            <div className="bfil" style={{ width: `${mPct}%`, background: mPct === 100 ? "#4ade80" : "#38bdf8", transition: "width .3s" }} />
           </div>
         </div>
       </div>
@@ -9593,7 +9598,7 @@ function Checklist() {
         <button className="btn btn-o" onClick={resetMonthly} style={{ flex: 1, fontSize: 10, padding: "7px 12px" }}>
           🔄 Start New Month
         </button>
-        <button className="btn btn-o" onClick={resetAll} style={{ flex: "none", fontSize: 10, padding: "7px 12px", color: "#ff5252", borderColor: "#ff5252" }}>
+        <button className="btn btn-o" onClick={resetAll} style={{ flex: "none", fontSize: 10, padding: "7px 12px", color: "#fb7185", borderColor: "#fb7185" }}>
           Reset All
         </button>
       </div>
@@ -9603,20 +9608,20 @@ function Checklist() {
         📋 Weekly Tasks
       </div>
       <div className="ibox" style={{ marginBottom: 14 }}>
-        <strong style={{ color: "#4fc3f7" }}>Do these every week.</strong>{" "}
+        <strong style={{ color: "#38bdf8" }}>Do these every week.</strong>{" "}
         These uploads feed the Fleet Overview, CPM Calculator, Driver Detail, Fuel Analysis, Income, and CE East tabs.
         QuickBooks and EFS are the primary sources — they control your CPM numbers.
       </div>
       {WEEKLY_ITEMS.map(renderSection)}
 
       {/* Monthly checklist */}
-      <div style={{ fontFamily: "var(--f2)", fontSize: 20, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: "#4fc3f7", marginTop: 20, marginBottom: 10 }}>
+      <div style={{ fontFamily: "var(--f2)", fontSize: 20, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: "#38bdf8", marginTop: 20, marginBottom: 10 }}>
         📋 Monthly Tasks
       </div>
       <div className="ibox" style={{ marginBottom: 14 }}>
-        <strong style={{ color: "#f5c542" }}>Do these once a month</strong> (usually first week after month-end).{" "}
+        <strong style={{ color: "#fbbf24" }}>Do these once a month</strong> (usually first week after month-end).{" "}
         These invoices populate the Trucks and Trailers tabs.
-        They do <strong style={{ color: "#ff5252" }}>NOT</strong> affect CPM — that comes from QuickBooks only.
+        They do <strong style={{ color: "#fb7185" }}>NOT</strong> affect CPM — that comes from QuickBooks only.
         Duplicate invoices are auto-detected in the Upload tab.
       </div>
       {MONTHLY_ITEMS.map(renderSection)}
@@ -9674,17 +9679,17 @@ function PasswordGate({ children }) {
   };
   if (unlocked) return children;
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#0b0d10", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'IBM Plex Mono', monospace", color: "#e8eaf0" }}>
-      <form onSubmit={submit} style={{ background: "#12151c", border: "2px solid #f47820", borderRadius: 8, padding: "40px 36px", width: "100%", maxWidth: 400, boxShadow: "0 0 60px rgba(244,120,32,.15)" }}>
-        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 28, fontWeight: 900, color: "#f47820", letterSpacing: 3, textAlign: "center", marginBottom: 4 }}>⬡ FREIGHTIQ</div>
+    <div style={{ position: "fixed", inset: 0, background: "#0b0d10", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", color: "#eef1f6" }}>
+      <form onSubmit={submit} style={{ background: "#12151c", border: "2px solid #2dd4bf", borderRadius: 8, padding: "40px 36px", width: "100%", maxWidth: 400, boxShadow: "0 0 60px rgba(45,212,191,.15)" }}>
+        <div style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 28, fontWeight: 900, color: "#2dd4bf", letterSpacing: 3, textAlign: "center", marginBottom: 4 }}>⬡ FREIGHTIQ</div>
         <div style={{ fontSize: 11, color: "#5a6370", textAlign: "center", letterSpacing: 2, textTransform: "uppercase", marginBottom: 24 }}>Show Freight Inc · Authorized Access</div>
         <input
           type="password" value={pw} onChange={(e) => { setPw(e.target.value); setError(false); }}
           placeholder="Password" autoFocus
-          style={{ width: "100%", padding: "12px 14px", fontSize: 14, background: "#0b0d10", border: `2px solid ${error ? "#ff5252" : "#1f2535"}`, borderRadius: 6, color: "#e8eaf0", fontFamily: "inherit", outline: "none", marginBottom: 12, transition: "border-color .2s" }}
+          style={{ width: "100%", padding: "12px 14px", fontSize: 14, background: "#0b0d10", border: `2px solid ${error ? "#fb7185" : "#1f2535"}`, borderRadius: 6, color: "#e8eaf0", fontFamily: "inherit", outline: "none", marginBottom: 12, transition: "border-color .2s" }}
         />
-        {error && <div style={{ fontSize: 12, color: "#ff5252", marginBottom: 12, textAlign: "center" }}>Incorrect password</div>}
-        <button type="submit" style={{ width: "100%", padding: "12px", background: "linear-gradient(135deg,#f47820,#c45e10)", border: "none", borderRadius: 6, color: "#fff", fontFamily: "'Barlow Condensed', sans-serif", fontSize: 14, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer" }}>Unlock</button>
+        {error && <div style={{ fontSize: 12, color: "#fb7185", marginBottom: 12, textAlign: "center" }}>Incorrect password</div>}
+        <button type="submit" style={{ width: "100%", padding: "12px", background: "linear-gradient(135deg,#2dd4bf,#14b8a6)", border: "none", borderRadius: 6, color: "#fff", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 14, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer" }}>Unlock</button>
         <div style={{ fontSize: 10, color: "#5a6370", textAlign: "center", marginTop: 16 }}>Stays unlocked for {VALID_DAYS} days on this device</div>
       </form>
     </div>
@@ -9818,7 +9823,7 @@ export default function App() {
             <span className="bdg bdg-o">Fuel {fd(FUEL_TOT, 0)}</span>
             <span className="bdg bdg-o">Ins {fd(INS_TOT, 0)}</span>
             <span className="bdg bdg-o">Equip {fd(EQUIP_TOT, 0)}</span>
-            <span className="bdg" style={{background:"rgba(61,220,132,.1)",color:"#3ddc84",border:"1px solid rgba(61,220,132,.4)"}}>Basic {fd(BASIC_CPM_V, 3)}</span>
+            <span className="bdg" style={{background:"rgba(74,222,128,.1)",color:"#4ade80",border:"1px solid rgba(74,222,128,.4)"}}>Basic {fd(BASIC_CPM_V, 3)}</span>
             <span className="bdg bdg-g">All-In {fd(ALLIN_CPM_V, 3)}</span>
           </div>
         </header>
