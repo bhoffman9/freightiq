@@ -1283,7 +1283,9 @@ export default function BudgetCalendar() {
       deleteItem(getItemKey(expense, `${currentYear}-${currentMonth}-${day}`));
     } else {
       setExpenses(prev => prev.map(exp => exp.id === expense.id ? { ...exp, amount: newAmount } : exp));
-      if (expense.id && (expense.id.startsWith('exp-new-') || expense.id.startsWith('moved-') || expense.id.startsWith('edited-'))) {
+      // Any non-recurring expense with an id is a one-time row — upsert so the edit STICKS.
+      // (Previously missed quick-add ids `exp-quick-*`, so those edits silently reverted on reload.)
+      if (expense.id) {
         saveOneTimeExpense({ ...expense, amount: newAmount });
       }
     }
@@ -1312,7 +1314,7 @@ export default function BudgetCalendar() {
       deleteItem(getItemKey(expense, `${currentYear}-${currentMonth}-${day}`));
     } else {
       setExpenses(prev => prev.map(exp => exp.id === expense.id ? { ...exp, account: editAccountValue } : exp));
-      if (expense.id && (expense.id.startsWith('exp-new-') || expense.id.startsWith('moved-') || expense.id.startsWith('edited-'))) {
+      if (expense.id) {
         saveOneTimeExpense({ ...expense, account: editAccountValue });
       }
     }
@@ -2748,7 +2750,7 @@ export default function BudgetCalendar() {
                                 <button
                                   onClick={() => !viewingArchive && toggleCheck(itemKey)}
                                   disabled={viewingArchive}
-                                  className={`mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${isChecked ? 'bg-green-500 border-green-500' : 'border-gray-400'} ${viewingArchive ? 'cursor-default' : 'cursor-pointer'}`}
+                                  className={`mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 shadow-sm ${isChecked ? 'bg-green-600 border-green-700' : 'bg-white border-gray-600 hover:border-green-600 hover:bg-green-50'} ${viewingArchive ? 'cursor-default' : 'cursor-pointer'}`}
                                 >
                                   {isChecked && <Check className="w-3 h-3 text-white" />}
                                 </button>
@@ -2827,7 +2829,11 @@ export default function BudgetCalendar() {
                                       <button onClick={cancelEditAmount} className="p-0.5 bg-gray-400 hover:bg-gray-500 text-white rounded"><X className="w-2.5 h-2.5" /></button>
                                     </div>
                                   ) : expense.amount === 0 ? (
-                                    <div className="text-xs text-orange-600 font-bold italic">REMINDER</div>
+                                    <div
+                                      className={`text-xs text-orange-600 font-bold italic ${viewingArchive ? '' : 'cursor-pointer hover:bg-orange-100 rounded px-1'}`}
+                                      onClick={() => !viewingArchive && startEditAmount(itemKey, 0)}
+                                      title={viewingArchive ? '' : 'Click to set an amount'}
+                                    >REMINDER</div>
                                   ) : (
                                     <div
                                       className={`text-xs ${isChecked ? 'line-through text-gray-400' : 'text-green-700'} font-bold ${viewingArchive ? '' : 'cursor-pointer hover:bg-green-100'} inline-block px-1 rounded`}
