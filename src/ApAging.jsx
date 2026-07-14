@@ -2432,7 +2432,7 @@ export default function ApAging() {
    STYLES
    ══════════════════════════════════════════════════ */
 const styles = {
-  page: { maxWidth: 1600, margin: "0 auto", padding: "16px", background: "#0b0d10" },
+  page: { maxWidth: "none", margin: "0 auto", padding: "16px", background: "#0b0d10" },
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 },
   logo: { width: 40, height: 40, borderRadius: 8, background: "linear-gradient(135deg, #3b82f6, #1d4ed8)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#fff", letterSpacing: 1 },
   title: { fontSize: 20, fontWeight: 700, color: "#f1f5f9", letterSpacing: -0.5 },

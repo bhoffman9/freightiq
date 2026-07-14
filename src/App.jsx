@@ -304,6 +304,7 @@ body { background: var(--bg); color: var(--tx); font-family: var(--f1); }
 
 /* layout */
 .main { flex: 1; padding: 22px 32px; max-width: 1400px; width: 100%; margin: 0 auto; }
+.main-wide { max-width: none; }
 .ptitle { font-family: var(--f2); font-size: 32px; font-weight: 900; letter-spacing: 2px;
   text-transform: uppercase; margin-bottom: 3px; }
 .psub { font-size: 10px; color: var(--mu); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
@@ -9813,7 +9814,7 @@ export default function App() {
           ))}
         </nav>
 
-        <main className="main">
+        <main className={`main${(tab === "apaging" || tab === "calendar") ? " main-wide" : ""}`}>
           {/* AP Aging + Budget Calendar read their own Supabase/API, NOT the
               mutated module constants — so they must NOT be caught in the
               dataVersion remount (that would unmount mid-edit and drop unsaved
