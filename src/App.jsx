@@ -3,6 +3,7 @@ import { BarChart, Bar, LineChart, Line, ComposedChart, XAxis, YAxis, Tooltip, R
 import * as Papa from "papaparse";
 import * as XLSX from "xlsx";
 import ApAging from "./ApAging.jsx";
+import BudgetCalendar from "./BudgetCalendar.jsx";
 
 // ── Data Context (for Upload tab communication) ──────────────
 const DataContext = createContext(null);
@@ -686,6 +687,7 @@ const TABS = [
   { id: "ar",       icon: "📋", label: "A/R" },
   { id: "otr",      icon: "🛣️", label: "OTR Ops" },
   { id: "cashflow", icon: "💰", label: "Cash Flow" },
+  { id: "calendar", icon: "📅", label: "Budget Calendar" },
   { id: "apaging",  icon: "🧾", label: "AP Aging" },
   { id: "budget",   icon: "📋", label: "Budgeting" },
   { id: "settings", icon: "📂", label: "Upload" },
@@ -9755,6 +9757,7 @@ export default function App() {
     if (tab === "budget")   return <Budgeting />;
     if (tab === "office")   return <OfficeStaff />;
     if (tab === "apaging")  return <ApAging />;
+    if (tab === "calendar") return <BudgetCalendar />;
     if (tab === "settings") return <DataSettings />;
     if (tab === "checklist") return <Checklist />;
     return null;
