@@ -8365,7 +8365,7 @@ function CashFlowDashboard() {
           e.inflow += a.inflow; e.outflow += a.outflow; e.net += a.net;
         });
         const entRows = Object.entries(ent).sort((a,b) => b[1].outflow - a[1].outflow);
-        const recs = (bankFlow.recurring || []).filter(r => !r.known && r.kind !== "generic");
+        const recs = (bankFlow.recurring || []).filter(r => !r.known && (r.kind === "bill" || r.kind === "loan"));
         return (
           <div style={{ marginBottom:14 }}>
             <div className="ptitle" style={{ fontSize:22, marginTop:8, marginBottom:4 }}>Weekly Bank Flow</div>

@@ -90,8 +90,9 @@ export default async function handler(req, res) {
         const cat = r.category || '';
         const kind =
           /PAYROLL/i.test(merchant) ? 'payroll' :
+          /\bWIRE\b|DOMESTIC WIRE|WIRE TRANS|ONLINE TRANSFER/i.test(merchant) ? 'transfer' :
           cat === 'LOAN_PAYMENTS' ? 'loan' :
-          /^(ONLINE ACH PAYMENT|ONLINE REALTIME VENDOR|BASIC ONLINE)/i.test(merchant) ? 'generic' :
+          /^(ONLINE ACH PAYMENT|ONLINE REALTIME VENDOR|ONLINE REALTIME PAYROLL|ONLINE PAYMENT|BASIC ONLINE)\b/i.test(merchant) ? 'generic' :
           'bill';
         const amount = num(r.amount);
         return {
