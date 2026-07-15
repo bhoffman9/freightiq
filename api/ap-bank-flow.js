@@ -40,6 +40,14 @@ function monthlyEst(amount, gap) {
 
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
+// entity -> default Budget Calendar account label (best-effort; user edits in the calendar)
+const ACCT_BUDGET = { SF: 'AUTO SF', CE: 'AUTO CE', 'CE East': 'CE EAST', 'J&A': 'AUTO J&A', DockIt: 'CE', Payroll: 'SF', Other: 'SF' };
+
+// Title-case a normalized merchant string for a clean calendar name.
+function titleCase(s) {
+  return String(s || '').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).trim();
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'GET only' }); }
   if (!requireApAuth(req, res)) return;
@@ -50,7 +58,7 @@ export default async function handler(req, res) {
       sb.from('fdw_v_bank_weekly').select('*').order('week_start', { ascending: true }),
       sb.from('fdw_v_bank_account').select('*'),
       sb.from('fdw_v_bank_recurring').select('*'),
-      sb.from('w_custom_recurring').select('name,amount'),
+      sb.from('w_custom_recurring').select('id,name,amount,account,recur_type,recur_day'),
     ]);
     for (const r of [wk, acc, rec, known]) if (r.error) throw new Error(r.error.message);
 
@@ -78,15 +86,15 @@ export default async function handler(req, res) {
     );
     totals.weeks = weekly.length;
 
-    // known-recurring tokens from the Budget Calendar (to flag already-tracked)
-    const knownNames = (known.data || []).map((k) => norm(k.name)).filter((s) => s.length >= 4);
+    // Budget Calendar recurring rows (to flag already-tracked + detect amount drift)
+    const knownRows = (known.data || []).map((k) => ({ ...k, _n: norm(k.name), _amt: num(k.amount) }));
 
     const recurring = (rec.data || [])
       .map((r) => {
         const gap = r.n > 1 ? Math.round(Number(r.span_days) / (r.n - 1)) : null;
+        const cad = cadence(gap);
         const merchant = String(r.merchant || '').trim();
         const mnorm = norm(merchant);
-        const isKnown = knownNames.some((kn) => mnorm.includes(kn) || (kn.length >= 5 && kn.includes(mnorm)));
         const cat = r.category || '';
         const kind =
           /PAYROLL/i.test(merchant) ? 'payroll' :
@@ -95,11 +103,29 @@ export default async function handler(req, res) {
           /^(ONLINE ACH PAYMENT|ONLINE REALTIME VENDOR|ONLINE REALTIME PAYROLL|ONLINE PAYMENT|BASIC ONLINE)\b/i.test(merchant) ? 'generic' :
           'bill';
         const amount = num(r.amount);
+
+        // match to a Budget Calendar recurring row (loose name containment)
+        const match = knownRows.find((k) =>
+          k._n.length >= 4 && (mnorm.includes(k._n) || (k._n.length >= 5 && k._n.includes(mnorm))));
+
+        // fields for a one-click "add to Budget Calendar"
+        const recurType = (cad === 'weekly' || cad === 'biweekly') ? 'weekly-day' : 'monthly-date';
+        const recurDay = recurType === 'weekly-day' ? (Number(r.dow) || 1) : (Number(r.dom) || 1);
+        const entity = (ACCT[r.acct_last4] || {}).entity || 'Other';
+
         return {
-          merchant, amount, count: r.n, gapDays: gap, cadence: cadence(gap),
+          merchant, amount, count: r.n, gapDays: gap, cadence: cad,
           monthlyEst: monthlyEst(amount, gap), firstSeen: r.first_seen, lastSeen: r.last_seen,
           acctLast4: r.acct_last4, acctLabel: (ACCT[r.acct_last4] || {}).label || r.acct_name,
-          category: cat, kind, known: isKnown,
+          category: cat, kind, known: !!match,
+          // add-to-calendar payload
+          suggestName: titleCase(merchant), suggestAccount: ACCT_BUDGET[entity] || 'SF',
+          recurType, recurDay,
+          // drift vs the matched calendar row (null if not tracked)
+          calId: match ? match.id : null,
+          calAmount: match ? match._amt : null,
+          calName: match ? match.name : null,
+          drift: match ? Math.round((amount - match._amt) * 100) / 100 : null,
         };
       })
       .sort((a, b) => b.monthlyEst - a.monthlyEst);

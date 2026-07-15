@@ -58,7 +58,9 @@ SELECT merchant,
        (max(posted_date) - min(posted_date)) AS span_days,
        max(account_last4)                AS acct_last4,
        max(account_name)                 AS acct_name,
-       mode() WITHIN GROUP (ORDER BY category) AS category
+       mode() WITHIN GROUP (ORDER BY category) AS category,
+       mode() WITHIN GROUP (ORDER BY extract(day   FROM posted_date)::int) AS dom,  -- typical day-of-month
+       mode() WITHIN GROUP (ORDER BY extract(isodow FROM posted_date)::int) AS dow   -- typical day-of-week (1=Mon..7=Sun)
 FROM normed
 WHERE merchant <> '' AND length(merchant) >= 3
 GROUP BY merchant, amount

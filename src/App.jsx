@@ -8252,6 +8252,19 @@ function CashFlowDashboard() {
       .catch(() => setBankStatus("error"));
   }, []);
 
+  // Add / update Budget Calendar recurring (w_custom_recurring) from a candidate.
+  const [recurActions, setRecurActions] = useState({}); // key -> saving|done|error
+  const saveRecurring = async (key, body) => {
+    setRecurActions(p => ({ ...p, [key]: "saving" }));
+    try {
+      const r = await fetch("/api/ap-recurring-save", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      });
+      const d = await r.json().catch(() => ({}));
+      setRecurActions(p => ({ ...p, [key]: (r.ok && d.ok) ? "done" : "error" }));
+    } catch { setRecurActions(p => ({ ...p, [key]: "error" })); }
+  };
+
   // Use live data if available, fallback to hardcoded
   const snapshot = liveData ? {
     date: liveData.week || CASH_SNAPSHOTS[0].date,
@@ -8366,6 +8379,8 @@ function CashFlowDashboard() {
         });
         const entRows = Object.entries(ent).sort((a,b) => b[1].outflow - a[1].outflow);
         const recs = (bankFlow.recurring || []).filter(r => !r.known && (r.kind === "bill" || r.kind === "loan"));
+        const drifted = (bankFlow.recurring || []).filter(r => r.known && r.calId && Math.abs(r.drift || 0) >= 1);
+        const recBtn = { background:"var(--orl)", color:"var(--or)", border:"1px solid var(--or)", borderRadius:3, padding:"2px 9px", fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"var(--f1)", whiteSpace:"nowrap" };
         return (
           <div style={{ marginBottom:14 }}>
             <div className="ptitle" style={{ fontSize:22, marginTop:8, marginBottom:4 }}>Weekly Bank Flow</div>
@@ -8411,21 +8426,47 @@ function CashFlowDashboard() {
                 </table>
               </div>
             </div>
+            {drifted.length > 0 && (
+              <div className="card" style={{ marginBottom:14, border:"1px solid rgba(251,191,36,.35)" }}>
+                <div className="ctit" style={{ marginBottom:4 }}>Tracked Recurring · amount changed in the bank feed</div>
+                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:10 }}>Already in the Budget Calendar, but the bank now shows a different amount. Update to keep the calendar current.</div>
+                <table className="tbl"><thead><tr><th>Vendor (calendar)</th><th>In Calendar</th><th>Bank Now</th><th>Δ</th><th></th></tr></thead>
+                  <tbody>{drifted.map((r,i) => {
+                    const key = `upd:${r.calId}`; const st = recurActions[key];
+                    return (
+                      <tr key={i}>
+                        <td>{r.calName}</td>
+                        <td>{fd(r.calAmount,2)}</td>
+                        <td style={{ color:"#fbbf24" }}>{fd(r.amount,2)}</td>
+                        <td style={{ color:r.drift>0?"#fb7185":"#4ade80" }}>{r.drift>0?"+":""}{fd(r.drift,2)}</td>
+                        <td>{st==="done" ? <span style={{ color:"#4ade80", fontSize:11 }}>✓ Updated</span> :
+                          <button disabled={st==="saving"} onClick={() => saveRecurring(key, { action:"update", id:r.calId, amount:r.amount })} style={recBtn}>{st==="saving"?"…":st==="error"?"retry":"Update"}</button>}</td>
+                      </tr>
+                    );
+                  })}</tbody>
+                </table>
+              </div>
+            )}
             {recs.length > 0 && (
               <div className="card" style={{ marginBottom:14 }}>
                 <div className="ctit" style={{ marginBottom:4 }}>Potential Recurring Bills · detected from bank feed</div>
-                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:10 }}>Same payee + amount ≥3× on a cadence, not already in the Budget Calendar. Add the real ones there.</div>
-                <table className="tbl"><thead><tr><th>Vendor</th><th>Amount</th><th>Cadence</th><th>Seen</th><th>~ / Month</th><th>Account</th></tr></thead>
-                  <tbody>{recs.slice(0,18).map((r,i) => (
-                    <tr key={i}>
-                      <td style={{ textTransform:"capitalize" }}>{r.merchant.toLowerCase()}</td>
-                      <td>{fd(r.amount,2)}</td>
-                      <td><span style={{ fontSize:10, padding:"1px 7px", borderRadius:3, background:"rgba(56,189,248,.12)", color:"#38bdf8" }}>{r.cadence}</span></td>
-                      <td>{r.count}×</td>
-                      <td style={{ color:"#fbbf24" }}>{fd(r.monthlyEst,0)}</td>
-                      <td style={{ fontSize:11, color:"var(--mu)" }}>{r.acctLabel}</td>
-                    </tr>
-                  ))}</tbody>
+                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:10 }}>Same payee + amount ≥3× on a cadence, not already in the Budget Calendar. Click ➕ Add to drop it in (editable there after).</div>
+                <table className="tbl"><thead><tr><th>Vendor</th><th>Amount</th><th>Cadence</th><th>Seen</th><th>~ / Month</th><th>Account</th><th></th></tr></thead>
+                  <tbody>{recs.slice(0,20).map((r,i) => {
+                    const key = `add:${r.merchant}:${r.amount}`; const st = recurActions[key];
+                    return (
+                      <tr key={i}>
+                        <td style={{ textTransform:"capitalize" }}>{r.merchant.toLowerCase()}</td>
+                        <td>{fd(r.amount,2)}</td>
+                        <td><span style={{ fontSize:10, padding:"1px 7px", borderRadius:3, background:"rgba(56,189,248,.12)", color:"#38bdf8" }}>{r.cadence}</span></td>
+                        <td>{r.count}×</td>
+                        <td style={{ color:"#fbbf24" }}>{fd(r.monthlyEst,0)}</td>
+                        <td style={{ fontSize:11, color:"var(--mu)" }}>{r.acctLabel}</td>
+                        <td>{st==="done" ? <span style={{ color:"#4ade80", fontSize:11 }}>✓ Added</span> :
+                          <button disabled={st==="saving"} onClick={() => saveRecurring(key, { action:"add", name:r.suggestName, amount:r.amount, account:r.suggestAccount, recur_type:r.recurType, recur_day:r.recurDay })} style={recBtn}>{st==="saving"?"…":st==="error"?"retry":"➕ Add"}</button>}</td>
+                      </tr>
+                    );
+                  })}</tbody>
                 </table>
               </div>
             )}
