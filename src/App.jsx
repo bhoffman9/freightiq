@@ -8240,6 +8240,18 @@ function CashFlowDashboard() {
       .catch(() => setFetchStatus("error"));
   }, []);
 
+  // Live bank cash-flow (Plaid Chase feed via /api/ap-bank-flow): weekly
+  // in/out, per-entity totals, and detected recurring-bill candidates.
+  const [bankFlow, setBankFlow] = useState(null);
+  const [bankStatus, setBankStatus] = useState("idle");
+  useEffect(() => {
+    setBankStatus("loading");
+    fetch("/api/ap-bank-flow")
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(d => { setBankFlow(d); setBankStatus("ok"); })
+      .catch(() => setBankStatus("error"));
+  }, []);
+
   // Use live data if available, fallback to hardcoded
   const snapshot = liveData ? {
     date: liveData.week || CASH_SNAPSHOTS[0].date,
@@ -8336,6 +8348,90 @@ function CashFlowDashboard() {
           <div className="ksub">Reserve · not in daily ops</div>
         </div>
       </div>
+
+      {/* ─── LIVE BANK FLOW (Plaid Chase feed) ─── */}
+      {bankStatus === "loading" && <div className="psub" style={{ marginBottom:14 }}>● Loading live bank flow…</div>}
+      {bankStatus === "error" && <div className="psub" style={{ color:"#fbbf24", marginBottom:14 }}>● Live bank flow unavailable (fetch failed)</div>}
+      {bankFlow && bankFlow.weekly && bankFlow.weekly.length > 0 && (() => {
+        const wk = bankFlow.weekly;
+        const t = bankFlow.totals || { inflow:0, outflow:0, net:0, weeks:wk.length };
+        const chartData = wk.map(w => ({
+          label: new Date(w.weekStart + "T00:00:00").toLocaleDateString("en-US", { month:"short", day:"numeric" }),
+          In: Math.round(w.inflow), Out: -Math.round(w.outflow), Net: Math.round(w.net),
+        }));
+        const ent = {};
+        (bankFlow.accounts || []).forEach(a => {
+          const e = ent[a.entity] || (ent[a.entity] = { inflow:0, outflow:0, net:0 });
+          e.inflow += a.inflow; e.outflow += a.outflow; e.net += a.net;
+        });
+        const entRows = Object.entries(ent).sort((a,b) => b[1].outflow - a[1].outflow);
+        const recs = (bankFlow.recurring || []).filter(r => !r.known && r.kind !== "generic");
+        return (
+          <div style={{ marginBottom:14 }}>
+            <div className="ptitle" style={{ fontSize:22, marginTop:8, marginBottom:4 }}>Weekly Bank Flow</div>
+            <div className="psub" style={{ marginBottom:14 }}>
+              Live from Plaid · Chase · {t.weeks} weeks
+              <span style={{ color:"#4ade80", marginLeft:8, fontSize:10 }}>● {(bankFlow.accounts||[]).length} accounts</span>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:14 }}>
+              <div className="kpi"><div className="klbl">Money In · {t.weeks}w</div><div className="kval" style={{ color:"#4ade80" }}>{fd(t.inflow,0)}</div><div className="ksub">≈ {fd(t.inflow/t.weeks,0)}/wk avg</div></div>
+              <div className="kpi"><div className="klbl">Money Out · {t.weeks}w</div><div className="kval" style={{ color:"#fb7185" }}>{fd(t.outflow,0)}</div><div className="ksub">≈ {fd(t.outflow/t.weeks,0)}/wk avg</div></div>
+              <div className="kpi"><div className="klbl">Net Change</div><div className="kval" style={{ color:t.net>=0?"#4ade80":"#fb7185" }}>{t.net>=0?"+":""}{fd(t.net,0)}</div><div className="ksub">across all accounts</div></div>
+            </div>
+            <div className="card" style={{ marginBottom:14 }}>
+              <div className="ctit" style={{ marginBottom:10 }}>Weekly In vs Out</div>
+              <ResponsiveContainer width="100%" height={240}>
+                <ComposedChart data={chartData} margin={{ top:6, right:8, left:0, bottom:0 }}>
+                  <CartesianGrid stroke="#1f2535" vertical={false} />
+                  <XAxis dataKey="label" tick={{ fill:"#8791a3", fontSize:10 }} axisLine={{ stroke:"#1f2535" }} tickLine={false} />
+                  <YAxis tick={{ fill:"#8791a3", fontSize:10 }} axisLine={false} tickLine={false} tickFormatter={v => `$${Math.round(Math.abs(v)/1000)}k`} />
+                  <Tooltip contentStyle={{ background:"#181c26", border:"1px solid #1f2535", borderRadius:4, fontFamily:"var(--f3)" }} formatter={(v,n) => [fd(Math.abs(v),0), n]} />
+                  <ReferenceLine y={0} stroke="#5a6370" />
+                  <Bar dataKey="In" fill="#4ade80" radius={[2,2,0,0]} />
+                  <Bar dataKey="Out" fill="#fb7185" radius={[0,0,2,2]} />
+                  <Line dataKey="Net" stroke="#38bdf8" strokeWidth={2} dot={false} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+              <div className="card">
+                <div className="ctit" style={{ marginBottom:8 }}>By Entity · window total</div>
+                <table className="tbl"><thead><tr><th>Entity</th><th>In</th><th>Out</th><th>Net</th></tr></thead>
+                  <tbody>{entRows.map(([e,v]) => (
+                    <tr key={e}><td>{e}</td><td style={{ color:"#4ade80" }}>{fd(v.inflow,0)}</td><td style={{ color:"#fb7185" }}>{fd(v.outflow,0)}</td><td style={{ color:v.net>=0?"#4ade80":"#fb7185" }}>{v.net>=0?"+":""}{fd(v.net,0)}</td></tr>
+                  ))}</tbody>
+                </table>
+              </div>
+              <div className="card">
+                <div className="ctit" style={{ marginBottom:8 }}>Last 8 weeks</div>
+                <table className="tbl"><thead><tr><th>Week of</th><th>In</th><th>Out</th><th>Net</th></tr></thead>
+                  <tbody>{[...wk].slice(-8).reverse().map(w => (
+                    <tr key={w.weekStart}><td>{new Date(w.weekStart+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})}</td><td style={{ color:"#4ade80" }}>{fd(w.inflow,0)}</td><td style={{ color:"#fb7185" }}>{fd(w.outflow,0)}</td><td style={{ color:w.net>=0?"#4ade80":"#fb7185" }}>{w.net>=0?"+":""}{fd(w.net,0)}</td></tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            </div>
+            {recs.length > 0 && (
+              <div className="card" style={{ marginBottom:14 }}>
+                <div className="ctit" style={{ marginBottom:4 }}>Potential Recurring Bills · detected from bank feed</div>
+                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:10 }}>Same payee + amount ≥3× on a cadence, not already in the Budget Calendar. Add the real ones there.</div>
+                <table className="tbl"><thead><tr><th>Vendor</th><th>Amount</th><th>Cadence</th><th>Seen</th><th>~ / Month</th><th>Account</th></tr></thead>
+                  <tbody>{recs.slice(0,18).map((r,i) => (
+                    <tr key={i}>
+                      <td style={{ textTransform:"capitalize" }}>{r.merchant.toLowerCase()}</td>
+                      <td>{fd(r.amount,2)}</td>
+                      <td><span style={{ fontSize:10, padding:"1px 7px", borderRadius:3, background:"rgba(56,189,248,.12)", color:"#38bdf8" }}>{r.cadence}</span></td>
+                      <td>{r.count}×</td>
+                      <td style={{ color:"#fbbf24" }}>{fd(r.monthlyEst,0)}</td>
+                      <td style={{ fontSize:11, color:"var(--mu)" }}>{r.acctLabel}</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Cash after payments warning */}
       {payments.length > 0 && (
