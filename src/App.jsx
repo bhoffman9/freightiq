@@ -8767,12 +8767,36 @@ function ArDashboard() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
   const [view, setView] = useState("detail"); // detail | customer
+  const [asOf, setAsOf] = useState("");        // "" = live; else snapshot date
+  const [snapDates, setSnapDates] = useState([]); // available snapshot dates
+  const [snapMeta, setSnapMeta] = useState(null); // { requested, actual, exact } when viewing a snapshot
+
+  // available snapshot dates (for the as-of picker)
   useEffect(() => {
-    setLoading(true); setErr(null);
-    fetch("/api/alvys-ar").then(r => r.json())
-      .then(d => { if (d.error) setErr(d.error); else setData(d); })
-      .catch(e => setErr(e.message)).finally(() => setLoading(false));
+    fetch("/api/ar-snapshot?list=1").then(r => r.json())
+      .then(d => setSnapDates((d.dates || []).map(x => x.snapshot_date))).catch(() => {});
   }, []);
+
+  // load live AR, or a snapshot when an as-of date is chosen
+  useEffect(() => {
+    setLoading(true); setErr(null); setSnapMeta(null);
+    if (!asOf) {
+      fetch("/api/alvys-ar").then(r => r.json())
+        .then(d => { if (d.error) setErr(d.error); else setData(d); })
+        .catch(e => setErr(e.message)).finally(() => setLoading(false));
+    } else {
+      fetch(`/api/ar-snapshot?date=${asOf}`).then(r => r.json())
+        .then(d => {
+          if (d.error) { setErr(d.error); setData(null); return; }
+          const s = d.snapshot, rows = s.rows || [];
+          const avg = rows.length ? Math.round(rows.reduce((a, r) => a + (r.daysSinceDelivery || 0), 0) / rows.length) : 0;
+          setData({ totalAR: s.total_ar, count: s.load_count, aging: s.aging, byStatus: s.by_status,
+            byCustomer: s.by_customer, rows, allRows: rows, avgDaysSinceDelivery: avg,
+            fetchedAt: s.created_at, note: "Snapshot — A/R as it stood on this date." });
+          setSnapMeta({ requested: asOf, actual: s.snapshot_date, exact: d.exact });
+        }).catch(e => setErr(e.message)).finally(() => setLoading(false));
+    }
+  }, [asOf]);
   const ageColor = d => d == null ? "#38bdf8" : d <= 7 ? "#4ade80" : d <= 14 ? "#fbbf24" : d <= 30 ? "#5eead4" : "#fb7185";
   const stColor = s => s === "Invoiced" ? "#fbbf24" : s === "Delivered" ? "#4ade80" : "#38bdf8";
   const exportXlsx = () => {
@@ -8807,9 +8831,28 @@ function ArDashboard() {
   return (
     <div>
       <div className="ptitle">📋 Accounts Receivable</div>
-      <div className="psub">Live from Alvys · open delivered/in-transit loads with outstanding balance (invoiced excluded){data ? ` · as of ${new Date(data.fetchedAt).toLocaleString()}` : ""}</div>
+      <div className="psub">{asOf ? "A/R snapshot" : "Live from Alvys"} · open delivered/in-transit loads with outstanding balance (invoiced excluded){data ? ` · as of ${asOf ? asOf : new Date(data.fetchedAt).toLocaleString()}` : ""}</div>
 
-      {loading && <div className="card" style={{ padding:20 }}>Loading A/R from Alvys…</div>}
+      <div style={{ display:"flex", gap:10, alignItems:"center", marginBottom:12, flexWrap:"wrap" }}>
+        <span style={{ fontSize:11, color:"var(--mu)", textTransform:"uppercase", letterSpacing:1 }}>As of date:</span>
+        <input type="date" value={asOf} max={new Date().toISOString().slice(0,10)}
+          onChange={e => setAsOf(e.target.value)}
+          style={{ fontSize:12, padding:"4px 8px", background:"var(--bg)", color:"var(--tx)", border:"1px solid var(--bd)", borderRadius:3, fontFamily:"var(--f1)" }} />
+        {asOf
+          ? <button onClick={() => setAsOf("")} style={{ fontSize:11, padding:"4px 10px", background:"transparent", color:"var(--or)", border:"1px solid var(--or)", borderRadius:3, cursor:"pointer", fontFamily:"var(--f1)" }}>● Back to live</button>
+          : <span style={{ fontSize:11, color:"#4ade80" }}>● Live (today)</span>}
+        <span style={{ fontSize:10, color:"var(--mu)" }}>
+          {snapDates.length ? `${snapDates.length} daily snapshot${snapDates.length>1?"s":""} available (since ${snapDates[snapDates.length-1]})` : "daily snapshots start accumulating today — pick a date once history builds"}
+        </span>
+      </div>
+
+      {snapMeta && !snapMeta.exact && (
+        <div className="card" style={{ padding:"8px 14px", marginBottom:12, fontSize:11, color:"#fbbf24", border:"1px solid rgba(251,191,36,.3)" }}>
+          No snapshot exactly on {snapMeta.requested} — showing the nearest earlier snapshot ({snapMeta.actual}).
+        </div>
+      )}
+
+      {loading && <div className="card" style={{ padding:20 }}>Loading A/R…</div>}
       {err && <div className="card" style={{ padding:16, color:"#fb7185" }}>⚠ Alvys A/R fetch failed: {err}</div>}
 
       {data && (<>
