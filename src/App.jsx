@@ -8254,6 +8254,7 @@ function CashFlowDashboard() {
 
   // Add / update Budget Calendar recurring (w_custom_recurring) from a candidate.
   const [recurActions, setRecurActions] = useState({}); // key -> saving|done|error
+  const [recurAcct, setRecurAcct] = useState({});       // candidate key -> chosen account
   const saveRecurring = async (key, body) => {
     setRecurActions(p => ({ ...p, [key]: "saving" }));
     try {
@@ -8462,9 +8463,11 @@ function CashFlowDashboard() {
               <div className="card" style={{ marginBottom:14 }}>
                 <div className="ctit" style={{ marginBottom:4 }}>Potential Recurring Bills · detected from bank feed</div>
                 <div style={{ fontSize:11, color:"var(--mu)", marginBottom:10 }}>Same payee + amount ≥3× on a cadence, not already in the Budget Calendar. Click ➕ Add to drop it in (editable there after).</div>
-                <table className="tbl"><thead><tr><th>Vendor</th><th>Amount</th><th>Cadence</th><th>Seen</th><th>~ / Month</th><th>Account</th><th></th></tr></thead>
+                <table className="tbl"><thead><tr><th>Vendor</th><th>Amount</th><th>Cadence</th><th>Seen</th><th>~ / Month</th><th>Bank acct</th><th>Budget account</th><th></th></tr></thead>
                   <tbody>{recs.slice(0,20).map((r,i) => {
                     const key = `add:${r.merchant}:${r.amount}`; const st = recurActions[key];
+                    const acct = recurAcct[key] ?? r.suggestAccount;
+                    const opts = (bankFlow.recurAccounts && bankFlow.recurAccounts.length) ? bankFlow.recurAccounts : [r.suggestAccount];
                     return (
                       <tr key={i}>
                         <td style={{ textTransform:"capitalize" }}>{r.merchant.toLowerCase()}</td>
@@ -8473,8 +8476,13 @@ function CashFlowDashboard() {
                         <td>{r.count}×</td>
                         <td style={{ color:"#fbbf24" }}>{fd(r.monthlyEst,0)}</td>
                         <td style={{ fontSize:11, color:"var(--mu)" }}>{r.acctLabel}</td>
-                        <td>{st==="done" ? <span style={{ color:"#4ade80", fontSize:11 }}>✓ Added</span> :
-                          <button disabled={st==="saving"} onClick={() => saveRecurring(key, { action:"add", name:r.suggestName, amount:r.amount, account:r.suggestAccount, recur_type:r.recurType, recur_day:r.recurDay })} style={recBtn}>{st==="saving"?"…":st==="error"?"retry":"➕ Add"}</button>}</td>
+                        <td>{st==="done" ? null :
+                          <select value={acct} disabled={st==="saving"} onChange={e => setRecurAcct(p => ({ ...p, [key]: e.target.value }))}
+                            style={{ fontSize:11, padding:"2px 4px", background:"var(--bg)", color:"var(--tx)", border:"1px solid var(--bd)", borderRadius:3, fontFamily:"var(--f1)", maxWidth:130 }}>
+                            {[...new Set([acct, ...opts])].map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>}</td>
+                        <td>{st==="done" ? <span style={{ color:"#4ade80", fontSize:11 }}>✓ Added → {acct}</span> :
+                          <button disabled={st==="saving"} onClick={() => saveRecurring(key, { action:"add", name:r.suggestName, amount:r.amount, account:acct, recur_type:r.recurType, recur_day:r.recurDay })} style={recBtn}>{st==="saving"?"…":st==="error"?"retry":"➕ Add"}</button>}</td>
                       </tr>
                     );
                   })}</tbody>

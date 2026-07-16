@@ -89,6 +89,11 @@ export default async function handler(req, res) {
     // Budget Calendar recurring rows (to flag already-tracked + detect amount drift)
     const knownRows = (known.data || []).map((k) => ({ ...k, _n: norm(k.name), _amt: num(k.amount) }));
 
+    // account options for the "Add to calendar" dropdown = existing calendar
+    // accounts ∪ a base set (so the list is always usable even if the table is thin)
+    const BASE_ACCTS = ['SF', 'CE', 'CE EAST', 'J&A', 'AUTO SF', 'AUTO CE', 'AUTO CE EAST', 'AUTO J&A', 'ZELLE SF'];
+    const recurAccounts = [...new Set([...(known.data || []).map((k) => k.account).filter(Boolean), ...BASE_ACCTS])].sort();
+
     const recurring = (rec.data || [])
       .map((r) => {
         const gap = r.n > 1 ? Math.round(Number(r.span_days) / (r.n - 1)) : null;
@@ -131,7 +136,7 @@ export default async function handler(req, res) {
       .sort((a, b) => b.monthlyEst - a.monthlyEst);
 
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
-    return res.status(200).json({ weekly, accounts, totals, recurring, generatedAt: new Date().toISOString() });
+    return res.status(200).json({ weekly, accounts, totals, recurring, recurAccounts, generatedAt: new Date().toISOString() });
   } catch (e) {
     return res.status(500).json({ error: String(e.message || e) });
   }
