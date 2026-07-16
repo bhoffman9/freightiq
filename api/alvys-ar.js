@@ -22,10 +22,11 @@ export default async function handler(req, res) {
     const token = authData.access_token;
     if (!token) return res.status(502).json({ error: "Alvys auth failed" });
 
-    // Everything except Queued / Released / Completed (per Ben). The AR view
-    // narrows to In Transit/Delivered/Invoiced with balance; the full set
-    // (incl Covered/Open) is returned as allRows for the Excel download.
-    const statuses = ["Covered", "Open", "In Transit", "Delivered", "Invoiced"];
+    // Everything except Queued / Released / Completed / Invoiced (per Ben —
+    // invoiced loads are accounted/factored, tracked in Flexent, not here).
+    // AR = In Transit/Delivered with balance; the full set (incl Covered/Open)
+    // is returned as allRows for the Excel download.
+    const statuses = ["Covered", "Open", "In Transit", "Delivered"];
     const items = [];
     for (let page = 0; page < 20; page++) {
       const r = await fetch("https://integrations.alvys.com/api/p/v1/loads/search", {
@@ -62,8 +63,8 @@ export default async function handler(req, res) {
         daysSinceInvoice: days(l.InvoicedAt),
       };
     });
-    // AR = delivered/invoiced/in-transit with an outstanding balance
-    const rows = allRows.filter(r => ["In Transit", "Delivered", "Invoiced"].includes(r.status) && r.balance > 0.01);
+    // AR = delivered/in-transit with an outstanding balance (invoiced excluded)
+    const rows = allRows.filter(r => ["In Transit", "Delivered"].includes(r.status) && r.balance > 0.01);
 
     // aging by days since delivery (unbilled/uncollected)
     const buckets = { "0-3": 0, "4-7": 0, "8-14": 0, "15-30": 0, "31+": 0, "undelivered": 0 };
@@ -97,7 +98,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       totalAR, count: rows.length, avgDaysSinceDelivery: avgDays,
       aging: buckets, byStatus, byCustomer, rows, allRows,
-      note: "Carrier not available from Alvys load API. AR = delivered/invoiced/in-transit loads with outstanding balance (CustomerRate+FSC+accessorials − TotalPaid). Factored invoices move to Flexent once sold.",
+      note: "Carrier not available from Alvys load API. AR = delivered/in-transit loads with outstanding balance (CustomerRate+FSC+accessorials − TotalPaid). Invoiced loads are excluded (accounted/factored — tracked in Flexent).",
       fetchedAt: new Date().toISOString(),
     });
   } catch (e) {

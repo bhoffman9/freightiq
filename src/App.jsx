@@ -8777,38 +8777,59 @@ function ArDashboard() {
   const stColor = s => s === "Invoiced" ? "#fbbf24" : s === "Delivered" ? "#4ade80" : "#38bdf8";
   const exportXlsx = () => {
     const src = (data && data.allRows) || [];
-    const sheet = src.map(r => ({
+    const toSheet = rows => rows.map(r => ({
       "Load #": r.loadNumber, "Order #": r.orderNumber, "PO #": r.po, "Ref #": r.ref,
       "Customer": r.customer, "Status": r.status, "Invoice As": r.invoiceAs,
       "Origin": r.origin, "Destination": r.destination,
       "Picked Up": r.pickedUpAt ? r.pickedUpAt.slice(0,10) : "",
       "Delivered": r.deliveredAt ? r.deliveredAt.slice(0,10) : "",
-      "Invoiced": r.invoicedAt ? r.invoicedAt.slice(0,10) : "",
       "Invoice $": r.invoice, "Paid $": r.paid, "Balance $": r.balance,
-      "Days Since Delivery": r.daysSinceDelivery, "Days Since Invoice": r.daysSinceInvoice,
+      "Days Since Delivery": r.daysSinceDelivery,
     }));
-    const ws = XLSX.utils.json_to_sheet(sheet);
+    const total = rows => +rows.reduce((s,r)=>s+(r.balance||0),0).toFixed(2);
+    const ce = src.filter(r => /capacity express/i.test(r.invoiceAs || ""));
+    const sf = src.filter(r => /show freight/i.test(r.invoiceAs || ""));
+    const other = src.filter(r => !/capacity express|show freight/i.test(r.invoiceAs || ""));
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "AR Report");
-    XLSX.writeFile(wb, `Alvys_AR_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(toSheet(ce)), `CE AR (${fd(total(ce),0)})`.slice(0,31));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(toSheet(sf)), `SF AR (${fd(total(sf),0)})`.slice(0,31));
+    if (other.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(toSheet(other)), "Other");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(toSheet(src)), "All AR");
+    XLSX.writeFile(wb, `Alvys_AR_CE-SF_${new Date().toISOString().slice(0,10)}.xlsx`);
   };
+
+  const arRows = (data && data.rows) || [];
+  const ceRows = arRows.filter(r => /capacity express/i.test(r.invoiceAs || ""));
+  const sfRows = arRows.filter(r => /show freight/i.test(r.invoiceAs || ""));
+  const ceAR = +ceRows.reduce((s,r)=>s+(r.balance||0),0).toFixed(2);
+  const sfAR = +sfRows.reduce((s,r)=>s+(r.balance||0),0).toFixed(2);
 
   return (
     <div>
       <div className="ptitle">📋 Accounts Receivable</div>
-      <div className="psub">Live from Alvys · open delivered/invoiced/in-transit loads with outstanding balance{data ? ` · as of ${new Date(data.fetchedAt).toLocaleString()}` : ""}</div>
+      <div className="psub">Live from Alvys · open delivered/in-transit loads with outstanding balance (invoiced excluded){data ? ` · as of ${new Date(data.fetchedAt).toLocaleString()}` : ""}</div>
 
       {loading && <div className="card" style={{ padding:20 }}>Loading A/R from Alvys…</div>}
       {err && <div className="card" style={{ padding:16, color:"#fb7185" }}>⚠ Alvys A/R fetch failed: {err}</div>}
 
       {data && (<>
         <div className="g4" style={{ marginBottom:14 }}>
-          <div className="kpi" style={{ borderTop:"3px solid #2dd4bf" }}>
+          <div className="kpi" style={{ borderTop:"3px solid var(--or)" }}>
             <div className="klbl">Total A/R</div>
-            <div className="kval" style={{ color:"#2dd4bf" }}>{fd(data.totalAR, 0)}</div>
-            <div className="ksub">{data.count} open invoices · avg {data.avgDaysSinceDelivery}d</div>
+            <div className="kval" style={{ color:"var(--or)" }}>{fd(data.totalAR, 0)}</div>
+            <div className="ksub">{data.count} open · avg {data.avgDaysSinceDelivery}d</div>
           </div>
-          {["In Transit","Delivered","Invoiced"].map(s => (
+          <div className="kpi" style={{ borderTop:"3px solid #38bdf8" }}>
+            <div className="klbl">CE A/R</div>
+            <div className="kval" style={{ color:"#38bdf8" }}>{fd(ceAR, 0)}</div>
+            <div className="ksub">Capacity Express · {ceRows.length} loads</div>
+          </div>
+          <div className="kpi" style={{ borderTop:"3px solid #2dd4bf" }}>
+            <div className="klbl">SF A/R</div>
+            <div className="kval" style={{ color:"#2dd4bf" }}>{fd(sfAR, 0)}</div>
+            <div className="ksub">Show Freight · {sfRows.length} loads</div>
+          </div>
+          {["In Transit","Delivered"].map(s => (
             <div key={s} className="kpi" style={{ borderTop:`3px solid ${stColor(s)}` }}>
               <div className="klbl">{s}</div>
               <div className="kval" style={{ color:stColor(s) }}>{fd((data.byStatus[s] && data.byStatus[s].balance) || 0, 0)}</div>
@@ -8834,8 +8855,8 @@ function ArDashboard() {
           {[["detail","📄 Detail ("+data.count+")"],["customer","🏢 By Customer ("+data.byCustomer.length+")"]].map(([id,lbl]) => (
             <button key={id} onClick={() => setView(id)} style={{ padding:"7px 16px", borderRadius:3, cursor:"pointer", fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1, textTransform:"uppercase", background:view===id?"var(--or)":"transparent", color:view===id?"#fff":"var(--mu)", border:`1px solid ${view===id?"var(--or)":"var(--bd)"}` }}>{lbl}</button>
           ))}
-          <button onClick={exportXlsx} style={{ marginLeft:"auto", padding:"7px 16px", borderRadius:3, cursor:"pointer", fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1, textTransform:"uppercase", background:"#4ade80", color:"#0b0d10", border:"1px solid #4ade80" }}>⬇ Download Excel</button>
-          <span style={{ fontSize:10, color:"var(--mu)" }}>{(data.allRows||[]).length} loads (excl. queued/released/completed)</span>
+          <button onClick={exportXlsx} style={{ marginLeft:"auto", padding:"7px 16px", borderRadius:3, cursor:"pointer", fontFamily:"var(--f2)", fontSize:12, fontWeight:700, letterSpacing:1, textTransform:"uppercase", background:"#4ade80", color:"#0b0d10", border:"1px solid #4ade80" }}>⬇ Download Excel (CE / SF split)</button>
+          <span style={{ fontSize:10, color:"var(--mu)" }}>{(data.allRows||[]).length} loads · CE + SF + All tabs (excl. queued/released/completed/invoiced)</span>
         </div>
 
         {view === "customer" && (
