@@ -92,7 +92,7 @@ def wk_of(dt):
 rows = {}
 def getrow(comp, k, name, former):
     r = rows.get((comp, k))
-    if not r: r = rows[(comp, k)] = {'name':name,'former':former,'amts':{},'camts':{},'net':{},'gross':{},'car':{},'health':{},'commission':{}}
+    if not r: r = rows[(comp, k)] = {'name':name,'former':former,'amts':{},'camts':{},'net':{},'gross':{},'car':{},'health':{},'commission':{},'reimb':{}}
     return r
 
 def addw2(checks, office_only, src):
@@ -148,22 +148,23 @@ def canon(raw):
     if 'bill a' in s or 'deb adamson' in s: return (('adamson','d'), None, {'J&A':1.0}, True)
     return ('UNMAPPED', raw, {}, False)
 
-def add_contractor(dt, raw, amt):
+def add_contractor(dt, raw, amt, key='camts'):
     c = canon(raw)
     if c is None: return
     if c[0] == 'UNMAPPED': print('  UNMAPPED PAYEE (skipped):', raw); return
     rk, disp, weights, former = c; wl = wk_of(dt)
     for comp, w in weights.items():
         ex = rows.get((comp, rk)); nm = ex['name'] if ex else (disp + (f" ({int(w*100)}%)" if w < 1 else ""))
-        r = getrow(comp, rk, nm, former if not ex else ex['former']); r['camts'][wl] = round(r['camts'].get(wl,0) + amt*w, 2)
+        r = getrow(comp, rk, nm, former if not ex else ex['former']); r[key][wl] = round(r[key].get(wl,0) + amt*w, 2)
 
 qb = xlrd.open_workbook(QB_CON).sheets()[0]
 for r in range(5, qb.nrows):
     d,n,cat,a = qb.cell(r,0).value, qb.cell(r,1).value, qb.cell(r,5).value, qb.cell(r,6).value
     if not d or not n: continue
-    if 'reimbur' in str(cat).lower(): continue   # exclude reimbursements
     try: a = float(a)
     except: continue
+    if 'reimbur' in str(cat).lower():        # reimbursements -> separate bucket (toggle in UI)
+        add_contractor(mdate(str(d).strip()), str(n).strip(), a, 'reimb'); continue
     add_contractor(mdate(str(d).strip()), str(n).strip(), a)
 
 for row in list(csv.reader(open(CHASE, encoding='utf-8-sig')))[1:]:
@@ -298,14 +299,16 @@ for s in SECT:
     if not rs: continue
     for r in rs: r['total'] = round(sum(r['amts'].values()) + sum(r['camts'].values()) + sum(r['car'].values()) + sum(r['health'].values()) + sum(r['commission'].values()), 2)
     rs = sorted(rs, key=lambda r: (r['former'], '1099' in r['name'], r['name']))
-    tot = {}; ct = {}; lt = {}
+    tot = {}; ct = {}; lt = {}; rt = {}
     for wl in wlabel:
         a = round(sum(r['amts'].get(wl,0) for r in rs), 2); cc = round(sum(r['camts'].get(wl,0) for r in rs), 2)
         ll = round(sum(r['camts'].get(wl,0)+r['car'].get(wl,0)+r['health'].get(wl,0)+r['commission'].get(wl,0) for r in rs), 2)
+        rr = round(sum(r['reimb'].get(wl,0) for r in rs), 2)
         if a: tot[wl] = a
         if cc: ct[wl] = cc
         if ll: lt[wl] = ll
-    out.append({'name':s, 'rows':rs, 'totals':tot, 'ctotals':ct, 'ltotals':lt})
+        if rr: rt[wl] = rr
+    out.append({'name':s, 'rows':rs, 'totals':tot, 'ctotals':ct, 'ltotals':lt, 'rtotals':rt})
 
 period = f"Jan 2 – {weeks[-1].month}/{weeks[-1].day+6}/{weeks[-1].year}"
 data = {'source':f'W-2 paychecks (loaded) + contractors NET cash (car/health/commission broken out in dropdown) · {len(wlabel)} weeks · columns = pay day', 'weeks':wlabel, 'sections':out}
