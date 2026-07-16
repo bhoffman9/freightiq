@@ -10076,7 +10076,7 @@ export default function App() {
     if (tab === "revenue")  return <RevenueDashboard />;
     if (tab === "ceeast")   return <CEEast />;
     if (tab === "cashflow") return <CashFlowDashboard />;
-    if (tab === "atl")      return <><AtlOperations /><div style={{ marginTop:28, borderTop:"2px solid var(--bd)", paddingTop:20 }}><OtrOperations /></div></>;
+    if (tab === "atl")      return <AtlOperations />;
     if (tab === "ar")       return <ArDashboard />;
     if (tab === "budget")   return <Budgeting />;
     if (tab === "office")   return <OfficeStaff />;
