@@ -8379,7 +8379,17 @@ function CashFlowDashboard() {
         });
         const entRows = Object.entries(ent).sort((a,b) => b[1].outflow - a[1].outflow);
         const recs = (bankFlow.recurring || []).filter(r => !r.known && (r.kind === "bill" || r.kind === "loan"));
-        const drifted = (bankFlow.recurring || []).filter(r => r.known && r.calId && Math.abs(r.drift || 0) >= 1);
+        // Amount-drift on tracked recurring: one suggestion per calendar item
+        // (highest-count bank group), bills/loans only, exclude variable payroll.
+        const driftMap = {};
+        (bankFlow.recurring || []).forEach(r => {
+          if (!r.known || !r.calId || Math.abs(r.drift || 0) < 1) return;
+          if (r.kind !== "bill" && r.kind !== "loan") return;
+          if (/payroll/i.test(r.calName || "")) return;
+          const cur = driftMap[r.calId];
+          if (!cur || r.count > cur.count) driftMap[r.calId] = r;
+        });
+        const drifted = Object.values(driftMap).sort((a,b) => Math.abs(b.drift) - Math.abs(a.drift));
         const recBtn = { background:"var(--orl)", color:"var(--or)", border:"1px solid var(--or)", borderRadius:3, padding:"2px 9px", fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"var(--f1)", whiteSpace:"nowrap" };
         return (
           <div style={{ marginBottom:14 }}>
@@ -8429,13 +8439,14 @@ function CashFlowDashboard() {
             {drifted.length > 0 && (
               <div className="card" style={{ marginBottom:14, border:"1px solid rgba(251,191,36,.35)" }}>
                 <div className="ctit" style={{ marginBottom:4 }}>Tracked Recurring · amount changed in the bank feed</div>
-                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:10 }}>Already in the Budget Calendar, but the bank now shows a different amount. Update to keep the calendar current.</div>
-                <table className="tbl"><thead><tr><th>Vendor (calendar)</th><th>In Calendar</th><th>Bank Now</th><th>Δ</th><th></th></tr></thead>
+                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:10 }}>Matched by name to the bank feed — <b>verify the vendor matches</b> before updating (fuzzy match). Then Update sets the calendar amount to what the bank shows.</div>
+                <table className="tbl"><thead><tr><th>Calendar item</th><th>Bank vendor</th><th>In Calendar</th><th>Bank Now</th><th>Δ</th><th></th></tr></thead>
                   <tbody>{drifted.map((r,i) => {
                     const key = `upd:${r.calId}`; const st = recurActions[key];
                     return (
                       <tr key={i}>
                         <td>{r.calName}</td>
+                        <td style={{ fontSize:11, color:"var(--mu)", textTransform:"capitalize" }}>{r.merchant.toLowerCase()}</td>
                         <td>{fd(r.calAmount,2)}</td>
                         <td style={{ color:"#fbbf24" }}>{fd(r.amount,2)}</td>
                         <td style={{ color:r.drift>0?"#fb7185":"#4ade80" }}>{r.drift>0?"+":""}{fd(r.drift,2)}</td>
