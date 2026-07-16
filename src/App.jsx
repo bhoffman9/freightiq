@@ -8363,6 +8363,55 @@ function CashFlowDashboard() {
         </div>
       </div>
 
+      {/* ─── FUND PAYROLL (per-entity transfer amounts) ─── */}
+      {(() => {
+        const pw = OFFICE_PAYCHECKS.weeks || [];
+        const lw = pw[pw.length - 1];
+        if (!lw) return null;
+        const officeBy = {};
+        (OFFICE_PAYCHECKS.sections || []).forEach(s => { officeBy[s.name] = (s.totals?.[lw] || 0); });
+        const fleet = DRIVER_WEEKLY.fleet?.[lw] || 0;
+        const otr = DRIVER_WEEKLY.otr?.[lw] || 0;
+        const byEnt = [
+          { ent: "SF", label: "Show Freight", amt: (officeBy["SF"] || 0) + fleet + otr, sub: "office + fleet + OTR drivers" },
+          { ent: "CE", label: "Capacity Express", amt: officeBy["CE"] || 0, sub: "office W-2" },
+          { ent: "CE East", label: "CE East", amt: officeBy["CE East"] || 0, sub: "office W-2" },
+          { ent: "J&A", label: "J&A Management", amt: officeBy["J&A"] || 0, sub: "office W-2" },
+        ].filter(e => e.amt > 0);
+        const total = byEnt.reduce((s, e) => s + e.amt, 0);
+        // upcoming pay day = last computed pay day + 7d
+        const [mm, dd] = lw.split("/").map(Number);
+        const nd = new Date(2026, (mm || 1) - 1, dd || 1); nd.setDate(nd.getDate() + 7);
+        const txDay = nd.getDate(), txMonth = nd.getMonth() + 1, txYear = nd.getFullYear();
+        const nextLabel = `${txMonth}/${txDay}`;
+        const recBtnP = { background:"var(--orl)", color:"var(--or)", border:"1px solid var(--or)", borderRadius:3, padding:"3px 10px", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"var(--f1)", whiteSpace:"nowrap" };
+        return (
+          <div className="card" style={{ marginBottom:14, borderLeft:"3px solid var(--or)" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", flexWrap:"wrap", gap:8, marginBottom:4 }}>
+              <div className="ctit" style={{ margin:0 }}>Fund Payroll · transfer per entity</div>
+              <div style={{ fontSize:11, color:"var(--mu)" }}>est. from pay day {lw} · for next run ~{nextLabel}</div>
+            </div>
+            <div style={{ fontFamily:"var(--f3)", fontSize:30, fontWeight:600, color:"var(--or)", letterSpacing:"-0.5px", margin:"4px 0 12px" }}>{fd(total,0)}<span style={{ fontSize:12, color:"var(--mu)", fontWeight:400, marginLeft:8 }}>total W-2 payroll</span></div>
+            <table className="tbl"><thead><tr><th>Entity</th><th>Transfer</th><th>Basis</th><th></th></tr></thead>
+              <tbody>{byEnt.map(e => {
+                const key = `pay:${e.ent}:${txYear}-${txMonth}`; const st = recurActions[key];
+                return (
+                  <tr key={e.ent}>
+                    <td>{e.label}</td>
+                    <td style={{ color:"var(--or)", fontWeight:700 }}>{fd(e.amt,0)}</td>
+                    <td style={{ fontSize:11, color:"var(--mu)" }}>{e.sub}</td>
+                    <td>{st==="done" ? <span style={{ color:"#4ade80", fontSize:11 }}>✓ On calendar {nextLabel}</span> :
+                      <button disabled={st==="saving"} onClick={() => saveRecurring(key, { action:"onetime", name:`Transfer to Payroll — ${e.ent}`, amount:Math.round(e.amt*100)/100, account:e.ent, day:txDay, month:txMonth, year:txYear })} style={recBtnP}>{st==="saving"?"…":st==="error"?"retry":"➕ Add to calendar"}</button>}</td>
+                  </tr>
+                );
+              })}</tbody>
+              <tfoot><tr><td>Total</td><td>{fd(total,0)}</td><td></td><td></td></tr></tfoot>
+            </table>
+            <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>Loaded W-2 cost (gross + employer taxes + 401k). Drivers roll into SF. Contractors excluded (paid separately). Amount is last computed week — verify against the upcoming run.</div>
+          </div>
+        );
+      })()}
+
       {/* ─── LIVE BANK FLOW (Plaid Chase feed) ─── */}
       {bankStatus === "loading" && <div className="psub" style={{ marginBottom:14 }}>● Loading live bank flow…</div>}
       {bankStatus === "error" && <div className="psub" style={{ color:"#fbbf24", marginBottom:14 }}>● Live bank flow unavailable (fetch failed)</div>}

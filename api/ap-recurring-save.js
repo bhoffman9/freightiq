@@ -58,7 +58,31 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, action: 'add', row });
     }
 
-    return res.status(400).json({ error: "action must be 'add' or 'update'" });
+    // Write a dated one-time expense (e.g. a payroll transfer) into the calendar.
+    if (b.action === 'onetime') {
+      const name = String(b.name || '').trim();
+      if (!name) return res.status(400).json({ error: 'name required' });
+      const day = parseInt(b.day, 10), month = parseInt(b.month, 10), year = parseInt(b.year, 10);
+      if (!(day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2020)) {
+        return res.status(400).json({ error: 'valid day/month/year required' });
+      }
+      const account = String(b.account || '').trim();
+      // idempotent per (name, month, year): update if it already exists, else insert
+      const { data: dup } = await sb.from('w_one_time_expenses')
+        .select('id').ilike('name', name).eq('month', month).eq('year', year).limit(1);
+      if (dup && dup.length) {
+        const { error } = await sb.from('w_one_time_expenses').update({ amount, day, account }).eq('id', dup[0].id);
+        if (error) throw new Error(error.message);
+        return res.status(200).json({ ok: true, action: 'onetime-updated', id: dup[0].id });
+      }
+      const id = `exp-payroll-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+      const row = { id, name, amount, day, month, year, account };
+      const { error } = await sb.from('w_one_time_expenses').insert(row);
+      if (error) throw new Error(error.message);
+      return res.status(200).json({ ok: true, action: 'onetime', row });
+    }
+
+    return res.status(400).json({ error: "action must be 'add', 'update', or 'onetime'" });
   } catch (e) {
     return res.status(500).json({ error: String(e.message || e) });
   }
