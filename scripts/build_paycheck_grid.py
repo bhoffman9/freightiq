@@ -109,13 +109,14 @@ def addw2(checks, office_only, src):
 
 addw2(sf, True, 'SF'); addw2(ja, False, 'J&A')
 
-# --- Driver + OTR weekly series (for the owner-facing "This Week — All-In
-# Payroll" card on the Office Staff tab). Drivers are excluded from the grid
-# above, but the SF PaycheckHistory contains them. Bucket SF checks by pay
-# week: OTR (Baker/Dawson/Pacitti) vs fleet drivers (everyone not office/OTR).
-# Convert gross → loaded by a fleet factor calibrated so the YTD sum matches
-# LABOR (fleet) and the OTR carve-out total from App.jsx.
-OTR_LN = {'baker', 'dawson', 'pacitti'}
+# --- Driver weekly series (for the owner-facing "This Week — All-In Payroll"
+# card + Fund Payroll panel). Drivers are excluded from the grid above, but the
+# SF PaycheckHistory contains them. Bucket SF checks by pay week: the carved-out
+# ex-OTR drivers (Baker/Dawson/Pacitti — now ATL, still not fleet) vs fleet
+# drivers. Convert gross → loaded by a factor calibrated so the YTD sum matches
+# LABOR (fleet) + the carve-out total from App.jsx. NOTE: the emitted DRIVER_WEEKLY
+# key is still named 'otr' (internal only) — it's the ex-OTR/ATL driver bucket.
+OTR_LN = {'baker', 'dawson', 'pacitti'}   # ex-OTR, now ATL; kept separate from fleet LABOR
 _drv_g, _otr_g = {}, {}
 for d, n, tp, nt in sf:
     k = key(n)

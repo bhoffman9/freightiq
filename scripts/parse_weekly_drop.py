@@ -38,11 +38,11 @@ SF_OFFICE = {
     "Wilson Antionette", # ATL office support, reclassified from driver Jul 2026
 }
 
-# OTR (over-the-road) drivers — carved OUT of fleet CPM (see CLAUDE.md "OTR Operations"
-# + OTR_WEEKLY_LOG in App.jsx). They ARE SF W2 so they appear in the payroll file, but
-# their pay/hours must NOT land in fleet LABOR/TOTAL_HRS — they get their own bucket.
-# Update this set when Ben moves a driver in/out of OTR (fluid, like ATL).
-SF_OTR = {
+# Ex-OTR drivers — now ATL, carved OUT of fleet CPM (OTR op dropped 2026-07-16;
+# folded into ATL_WEEKLY_LOG in App.jsx). They ARE SF W2 so they appear in the payroll
+# file, but their pay/hours must NOT land in fleet LABOR/TOTAL_HRS — separate bucket.
+# Update this set when Ben moves a driver in/out of the ATL driver set.
+SF_ATL = {
     "Baker Anthony", "Dawson Brian", "Pacitti Michael R",
 }
 
@@ -142,7 +142,7 @@ def summarize_sf_payroll(path):
         cost = cost_row[c] if isinstance(cost_row[c], (int, float)) else 0
         if name in SF_OFFICE:
             bucket = office
-        elif name in SF_OTR:
+        elif name in SF_ATL:
             bucket = otr
         else:
             bucket = drivers
@@ -248,12 +248,12 @@ def main():
         sfp = summarize_sf_payroll(sf_path)
         out_sum.write(f"[SF PAYROLL] {sfp['period']}\n")
         out_sum.write(f"  Total (all staff):   {sfp['all_hours']:>8.2f} hrs  ${sfp['all_cost']:>12,.2f}\n")
-        out_sum.write(f"  Drivers only (CPM):  {sfp['driver_total_hours']:>8.2f} hrs  ${sfp['driver_total_cost']:>12,.2f}  (fleet LABOR — excl office + OTR)\n")
+        out_sum.write(f"  Drivers only (CPM):  {sfp['driver_total_hours']:>8.2f} hrs  ${sfp['driver_total_cost']:>12,.2f}  (fleet LABOR — excl office + ATL drivers)\n")
         out_sum.write(f"  Active driver count: {len([d for d in sfp['drivers'] if d['hours'] > 0])}\n")
         out_sum.write(f"  Office excluded:     {len(sfp['office'])} ({', '.join(o['name'] for o in sfp['office'])})\n")
         otr = sfp.get('otr', [])
         if otr:
-            out_sum.write(f"  OTR excluded:        {len(otr)} ({', '.join(o['name'] for o in otr)}) — ${sfp['otr_total_cost']:,.2f}, {sfp['otr_total_hours']:.2f} hrs → OTR_WEEKLY_LOG, NOT fleet LABOR\n")
+            out_sum.write(f"  ATL drivers excluded:{len(otr)} ({', '.join(o['name'] for o in otr)}) — ${sfp['otr_total_cost']:,.2f}, {sfp['otr_total_hours']:.2f} hrs → ATL_WEEKLY_LOG, NOT fleet LABOR\n")
         out_sum.write("\n")
         out_sum.write("  Per-driver:\n")
         for d in sfp['drivers']:

@@ -7494,33 +7494,33 @@ const ATL_WEEKLY_LOG = [
   {
     weekStart: "2026-06-22",
     weekEnd: "2026-06-28",
-    drivers: ["Alshamaa Manar", "Johnson Christopher", "Logan LaDyle", "Tucker Robert", "Wainwright Michael W"],
-    // Same 5 (Ben confirmed Jun 29). Manar had no pay/fuel activity this week ($0).
-    driverPay: 9323.37,        // exact: 5-driver delta Jun 26 vs Jun 19 PAYROLL YTD
-    driverHours: 309.32,
-    fuelAmt: 5883.41,          // exact: 5-driver delta Jun 26 vs Jun 19 FUEL YTD
-    fuelGallons: 1276.01,
+    drivers: ["Alshamaa Manar", "Johnson Christopher", "Logan LaDyle", "Tucker Robert", "Wainwright Michael W", "Baker Anthony", "Dawson Brian", "Pacitti Michael R"],
+    // 5 ATL + ex-OTR Baker/Dawson/Pacitti folded in (OTR dropped 2026-07-16). Manar $0 this week.
+    driverPay: 16758.60,       // ATL 5-driver $9,323.37 + ex-OTR Baker/Dawson/Pacitti $7,435.23
+    driverHours: 384.41,       // ATL 309.32 + OTR 75.09
+    fuelAmt: 15359.96,         // ATL $5,883.41 + ex-OTR $9,476.55 (cards 27450/17451/87455)
+    fuelGallons: 3249.83,      // ATL 1,276.01 + OTR 1,973.82
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
     ],
     contractorPay: 1850,
-    note: "Same roster. Mon Jun 22 – Fri Jun 26 (5 days; payroll/EFS close Fri Jun 26).",
+    note: "Mon Jun 22 – Fri Jun 26. 5 ATL drivers + ex-OTR Baker/Dawson/Pacitti folded in (OTR op dropped; their labor/fuel now ATL). All exact.",
   },
   {
     weekStart: "2026-06-29",
     weekEnd: "2026-07-05",
-    drivers: ["Johnson Christopher", "Logan LaDyle", "Tucker Robert", "Wainwright Michael W", "Pacitti Michael R"],
-    // Manar terminated (was ATL) — dropped. Pacitti was ATL this week INSTEAD of OTR
-    // (per Ben) — his pay/fuel counts here (ex-OTR; OTR dropped, drivers under ATL).
-    driverPay: 9393.50,        // exact: fleet 4 delta (Jul 2 vs Jun 26) $7,279.97 + Pacitti $2,113.53 (his 6/29-wk gross $1,899.80 × 1.1125 loaded factor)
-    driverHours: 282.25,       // fleet 217.85 + Pacitti 64.40
-    fuelAmt: 6210.17,          // exact: fleet 4 $4,858.77 + Pacitti $1,351.40 (card 87455 txns 6/29+7/2+7/3)
-    fuelGallons: 1347.45,
+    drivers: ["Johnson Christopher", "Logan LaDyle", "Tucker Robert", "Wainwright Michael W", "Pacitti Michael R", "Baker Anthony", "Dawson Brian"],
+    // Manar terminated (was ATL) — dropped. Pacitti already ATL. Baker/Dawson
+    // ex-OTR folded in (OTR dropped 2026-07-16 — their labor/fuel now ATL).
+    driverPay: 14630.59,       // ATL $9,393.50 (fleet4 $7,279.97 + Pacitti $2,113.53) + ex-OTR Baker/Dawson $5,237.09
+    driverHours: 282.25,       // ATL 282.25 + OTR 0 (Baker/Dawson not logging hours)
+    fuelAmt: 9290.26,          // ATL $6,210.17 + ex-OTR Baker/Dawson $3,080.09 (cards 27450/17451)
+    fuelGallons: 1994.78,      // ATL 1,347.45 + OTR 647.33
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
     ],
     contractorPay: 1850,
-    note: "Mon Jun 29 – Fri Jul 3 (payroll/EFS close). Roster: CJ/LaDyle/Tucker/Wainwright + Pacitti (moved from OTR to ATL this week). All figures exact (Pacitti pay from PaycheckHistory × loaded factor, fuel from card 87455 txns). Agent Kevin $500 separate (not in ATL total).",
+    note: "Mon Jun 29 – Fri Jul 3. ATL (CJ/LaDyle/Tucker/Wainwright + Pacitti) + ex-OTR Baker/Dawson folded in (OTR dropped; labor/fuel now ATL). All exact. Agent Kevin $500 separate (not in ATL total).",
   },
 ];
 

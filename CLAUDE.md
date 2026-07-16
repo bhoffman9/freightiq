@@ -16,7 +16,7 @@ The rules below have each shipped wrong numbers when missed. They live in full d
 - **CPM always divides by `MILES`, never `MILES_EST`.** MILES_EST (gallons×6.5) is fuel-price math only. → Drift pattern A
 - **`PERIOD` is the ONLY date string you hand-type.** Everything else (day counts, quarters, subtitles) derives. Hand-typing a quarter/day-count anywhere else is a future regression. → "Update App.jsx constants"
 - **LABOR comment keeps the digit adjacent to "drivers"** ("42 drivers active"), or `extract-metrics.js` regex sets `metrics.json drivers:0`. → drivers:N regression
-- **ATL / OTR / Agent are per-week — ASK Ben every drop, never generalize** one week's roster to adjacent weeks. Agents are a separate bucket, never nested under ATL/owner. → Step 0
+- **ATL / Agent are per-week — ASK Ben every drop, never generalize** one week's roster to adjacent weeks. Agents are a separate bucket, never nested under ATL/owner. → Step 0
 - **The office + contractor half is NOT optional.** `OFFICE_W2`/`WAREHOUSE` + `CONTRACTORS` refresh every week — drivers/fuel/income alone ≠ done. → checklist #10
 - **Never clear `incoming-freightiq/` until the weekly is built, pushed, and verified live** — the payroll XLS is untracked and unrecoverable. → checklist #11
 - **CPM source purity:** `FUEL_TOT` = EFS only (never QBO fuel line); `INS_TOT` = SF Truck Insurance only. → CPM Definitions
@@ -150,7 +150,6 @@ freightiq/
 | Per Load CPM | `PerLoadCPM()` | Booking simulator, fleet cost cards, live Alvys loads |
 | Revenue | `RevenueDashboard()` | **LIVE from `/api/alvys-loads`** (as of Jul 2 2026 — was a static `ALVYS` snapshot). Alvys pipeline by status + top customers; CE/SF split derived from each load's `invoiceAs`. Falls back to static `ALVYS` (yellow warning) if the fetch fails. NOTE: this is booked pipeline across ALL statuses (mostly Queued/Covered) ≠ QBO-invoiced revenue on the Income tab. |
 | A/R | `ArDashboard()` | **LIVE** accounts receivable from `/api/alvys-ar` — total AR, by-status KPIs, aging buckets (days since delivery), full detail table + by-customer. **⬇ Download Excel** exports everything except Queued/Released/Completed (SheetJS). Carrier NOT available from Alvys API (flagged). |
-| OTR Ops | `OtrOperations()` | Over-the-road drivers — separate op like ATL, **carved out of fleet CPM**. Reads `OTR_WEEKLY_LOG` + `otrSum()`; cost-only KPIs + per-week roster/cost table. See "OTR Operations" section. |
 | Driver Detail | `DriverDetail()` | Per-driver labor + fuel + combined CPM |
 | Trucks & Mileage | `TrucksMileage()` | Per-truck miles + state breakdown from Samsara Vehicle Mileage xlsx (static) |
 | Fuel Analysis | `FuelAnalysis()` | Per-driver fuel spend, avg $/gal |
@@ -270,25 +269,11 @@ Agent payments are a separate draw category in QBO — **NOT inside `Total for O
 
 Card-47458 footnote: previously misattributed to Wright Robert (frozen) — reassigned to Tucker Robert in the May 16 update. Wright stays frozen at $2,170.77 (his card 37405 portion only).
 
-### OTR Operations — over-the-road drivers, carved out of the fleet CPM
+### Ex-OTR drivers → folded into ATL (OTR dropped 2026-07-16)
 
-OTR (added Jun 29 2026) is a **separate driver operation like ATL, but explicitly EXCLUDED from the fleet CPM** (per Ben — OTR gets its own calcs later). Structure mirrors ATL: `OTR_WEEKLY_LOG[]` (per-week roster + driverPay/hours/fuel; drivers move in/out) + `otrSum()` + `OtrOperations()` tab (cost-only KPIs + per-week table, no revenue yet).
+OTR was a short-lived separate op (Jun 22 – Jul 16 2026). Ben killed it. **Baker Anthony, Dawson Brian, Pacitti Michael R are now ATL drivers.** `OtrOperations()` / `OTR_WEEKLY_LOG` / `otrSum()` were removed; their two weeks of labor/fuel were folded into `ATL_WEEKLY_LOG` (weeks 6/22 + 6/29). They remain **carved out of fleet CPM** — still NOT in `PAYROLL`/`FUEL`; `LABOR`/`FUEL_TOT`/`GALLONS`/`TOTAL_HRS` still exclude their **$14,785.86 labor / $13,890.04 fuel**. ATL is carved out of fleet CPM too, so the exclusion is still correct — just attributed to ATL now (their labor/fuel show as ATL charges). The parser's `SF_OTR` set (`parse_weekly_drop.py`) + `build_paycheck_grid.py`'s OTR bucket are relabeled ATL but still exclude these drivers from fleet `LABOR`.
 
-**The carve-out is real (unlike ATL, which stays in PAYROLL):**
-- OTR drivers are NOT in `PAYROLL`/`FUEL`. When a driver becomes OTR, remove them from PAYROLL + FUEL and **reduce `LABOR`, `TOTAL_HRS`, `FUEL_TOT`, `GALLONS`** by their amounts (their EFS cards are subtracted from FUEL_TOT — noted in the FUEL_TOT comment). Then add them to `OTR_WEEKLY_LOG`.
-- So `LABOR` = SF fleet drivers only (excl. OTR). `PAYROLL.sum` should equal `LABOR`.
-- Launch roster (Jun 22-28): Baker Anthony, Dawson Brian, Pacitti Michael R.
-
-**The parser is OTR-aware (added Jul 2026).** `scripts/parse_weekly_drop.py` has an `SF_OTR` set (Baker/Dawson/Pacitti) alongside `SF_OFFICE`. It buckets SF payroll into fleet drivers / office / OTR and prints a separate "OTR excluded" line, so fleet `LABOR` auto-excludes OTR each week. Keep `SF_OTR` in sync when Ben moves someone in/out of OTR.
-
-**OTR designation is fluid week-to-week (like ATL).** A driver can be OTR one week and ATL the next (e.g., Pacitti was OTR at launch, then ATL for Jun 29-Jul 5). When that happens: put their week in the ATL log, NOT the OTR log, and exclude them from the OTR week (no double-count). Their YTD stays carved out of fleet LABOR either way (they're not a fleet driver).
-
-**Computing OTR/moved-driver weekly $ EXACTLY (don't estimate).** OTR drivers aren't in PAYROLL/FUEL, so there's no per-driver YTD delta in App.jsx — but the source files have it:
-- **Pay:** sum the driver's checks for that pay week from the SF PaycheckHistory, × their loaded factor (loaded YTD ÷ gross YTD ≈ 1.11-1.13). This is exact.
-- **Fuel:** sum their EFS card's transactions in the date range from `_parse_output.txt` (the EFS PDF dump has dated, transaction-level lines — filter to fuel lines ending `USD/Gallons`, skip parking/DEF). Exact.
-- Do this instead of pro-rating a YTD number.
-
-**"This Week — All-In Payroll" card (Office Staff tab) uses `DRIVER_WEEKLY`** — a constant emitted by `build_paycheck_grid.py` holding fleet + OTR loaded cost per pay week (calibrated so YTD sums reconcile exactly to LABOR + the OTR carve-out). Drivers are excluded from the paycheck grid itself but `DRIVER_WEEKLY` adds them back just for that card. See the Office Staff grid section.
+**`DRIVER_WEEKLY`** (emitted by `build_paycheck_grid.py`) holds fleet + ex-OTR loaded cost per pay week (calibrated so YTD reconciles to LABOR + the carve-out); consumed by the **"This Week — All-In Payroll" card** + the **Fund Payroll panel** (Cash Flow tab). Drivers are excluded from the paycheck grid itself; `DRIVER_WEEKLY` adds them back for those.
 
 **`metrics.json drivers:N` regression (bit us Jun 29):** `extract-metrics.js` regex is `(\d+)\s*drivers` — the FIRST match wins. Keep the digit adjacent to "drivers" in the LABOR comment (e.g. "42 drivers active", NOT "42 active"), or it grabs a later "3 drivers" comment and metrics shows `drivers:3`. Verify `metrics.json` drivers count after every weekly build.
 
@@ -339,7 +324,6 @@ If you're adding a new live data source that needs to drive CPM or other derived
 - `DETAIL{}` — transaction breakdowns (labor, fuel, insurance, trucks, trailers, maintenance)
 - `ASCEND{}` — Historical Ascend TMS data (Jan-Mar 2026, no longer active)
 - `ALVYS{}` — Alvys TMS pipeline snapshot — now only a **fallback** for the Revenue tab (which is live via `/api/alvys-loads`); refresh only if you want an accurate offline fallback
-- `OTR_WEEKLY_LOG` / `otrSum()` — over-the-road drivers, carved out of the fleet CPM (see "OTR Operations")
 
 **Current period:** Jan 1 – Jun 14, 2026 (165 days)
 
@@ -500,7 +484,7 @@ The Office Staff tab has a **Weekly Checks** sub-tab: a per-employee × per-week
 - **Cells:** W-2 = full loaded cost (gross × that person's employer-tax/401k factor from `OFFICE_W2`/`WAREHOUSE`) shown white; 1099 = actual dated contractor payments shown amber. Reconciles: W-2 portion = sum of `OFFICE_W2`+`WAREHOUSE` totalCost.
 - **Columns = PAY DAY, not Monday week-start (per Ben, Jul 2026).** Each Mon–Sun bucket is labeled with the most-common check date that week (`PD` map in the script; `wk_of()` returns the payday label). `MANUAL_CONTRACTORS` is still hand-keyed by Monday ("6/29") but auto-maps to the payday label via `PD_BY_MONLABEL` so contractors land in the same column as that week's W-2 checks.
 - **Contractors are ALL-IN (per Ben, Jul 2026):** cells include cash + **car allowances (monthly) + company health insurance (weekly)**, not just cash payments. Reconciles to the Cost Breakdown footnotes (car ~$4.8K, health ~$15.5K YTD). See the `HEALTH_WK` / `CAR` blocks in the script. Reimbursements still excluded.
-- **`DRIVER_WEEKLY` constant** (emitted by the same script): fleet + OTR loaded cost per pay week, calibrated so YTD sums reconcile to LABOR + the OTR carve-out. Powers the **"This Week — All-In Payroll" card** at the top of the Office Staff tab (owner-facing: Drivers + OTR + Office/WH + Contractors, all-in, with WoW). Drivers are excluded from the grid but `DRIVER_WEEKLY` adds them back for that card only.
+- **`DRIVER_WEEKLY` constant** (emitted by the same script): fleet + ex-OTR loaded cost per pay week, calibrated so YTD sums reconcile to LABOR + the carve-out. Powers the **"This Week — All-In Payroll" card** at the top of the Office Staff tab + the Fund Payroll panel (owner-facing: Drivers + Office/WH + Contractors, all-in, with WoW). Drivers are excluded from the grid but `DRIVER_WEEKLY` adds them back for that card only.
 - **Company map** (`W2DIV` + `canon()`): per-person CE/SF/CE East/J&A with 50/50 splits (Bart & Gabriel Colon = CE/SF; Harold & Kidist = CE/CE East; Nathan & Cecy = CE).
 - **Dual people** (W-2→1099): Delgado, Simpson, Debra, **Biniyam (= ENM Trucking)** merge into ONE row — W-2 weeks white, 1099 weeks amber. Payee aliases: Bill A→Deb, Neon Vibes→Mellody, Salman→Hilda, Christopher→Simpson, ENM→Biniyam.
 - **`OFFICE` list** (drivers excluded from the grid) includes `wilson` (Antionette Wilson = ATL office support, reclassified from driver Jul 2026).
@@ -577,7 +561,7 @@ Ben paying attention to dashboard details is the LAST line of defense, not the f
 **H2. Hardcoded rates/multipliers that should DERIVE from live constants.** If a rate is just a ratio of two constants that already update weekly, compute it — don't hardcode a number that silently drifts. Fixed Jul 2026: `HOURLY_RATE` in the Per Load CPM simulator was a hardcoded `31.15` (a stale `LABOR/TOTAL_HRS`); changed to `const HOURLY_RATE = LABOR / TOTAL_HRS` so it self-updates every drop (~$31.36 now). When you see a bare numeric rate/price/multiplier, ask "is this derivable from constants that already move?" — if yes, derive it.
 
 ### Office vs Driver split (SF Payroll):
-**Office staff** (excluded from PAYROLL/CPM): Arias Adrian, Eagleton Gentry J (warehouse), Figueroa Andres (warehouse), Fissehaye Biniyam G, Gonzalez Gabriel, Grosser Scot E, Kennon Jessica S (ATL office, terminated May 2026), Mahan Tasha (office/warehouse, started Jun 2026), Naruszewicz Bartosz, Rivera Cecilia I, Wilson Antionette (ATL office support, reclassified from driver Jul 2026), Youngblood Nathan. **OTR (separate carve-out, not office):** Baker Anthony, Dawson Brian, Pacitti Michael R — in `SF_OTR`, excluded from fleet LABOR, tracked in `OTR_WEEKLY_LOG`. Everyone else = drivers. (Both sets encoded in `scripts/parse_weekly_drop.py` — keep in sync.)
+**Office staff** (excluded from PAYROLL/CPM): Arias Adrian, Eagleton Gentry J (warehouse), Figueroa Andres (warehouse), Fissehaye Biniyam G, Gonzalez Gabriel, Grosser Scot E, Kennon Jessica S (ATL office, terminated May 2026), Mahan Tasha (office/warehouse, started Jun 2026), Naruszewicz Bartosz, Rivera Cecilia I, Wilson Antionette (ATL office support, reclassified from driver Jul 2026), Youngblood Nathan. **Ex-OTR (now ATL, carved out of fleet LABOR):** Baker Anthony, Dawson Brian, Pacitti Michael R — in `SF_OTR` (relabeled ATL), excluded from fleet LABOR, folded into `ATL_WEEKLY_LOG`. Everyone else = drivers. (Both sets encoded in `scripts/parse_weekly_drop.py` — keep in sync.)
 
 ### EFS card → driver mapping
 Cards are mapped to drivers via inline comments in `FUEL{}` (e.g. `// card 27406`). Several cards split between active and *inactive (frozen) drivers — when a card's total is unchanged WoW but the card has frozen contributors, the entire card is dormant. New activity on a split card goes to the active driver(s); frozen drivers' historical values stay locked. EFS cards that don't map to a `PAYROLL[]` driver (warehouse / office / unknown) are excluded from per-driver `FUEL{}` but **still counted in `FUEL_TOT`** so the fleet CPM math reconciles to the EFS report total.
