@@ -710,13 +710,10 @@ const TABS = [
   { id: "ceeast",   icon: "🏦", label: "CE East" },
   { id: "atl",      icon: "🍑", label: "ATL Ops" },
   { id: "ar",       icon: "📋", label: "A/R" },
-  { id: "otr",      icon: "🛣️", label: "OTR Ops" },
   { id: "cashflow", icon: "💰", label: "Cash Flow" },
   { id: "calendar", icon: "📅", label: "Budget Calendar" },
   { id: "apaging",  icon: "🧾", label: "AP Aging" },
   { id: "budget",   icon: "📋", label: "Budgeting" },
-  { id: "settings", icon: "📂", label: "Upload" },
-  { id: "checklist", icon: "✅", label: "Checklist" },
 ];
 
 
@@ -5417,8 +5414,11 @@ function RevenueDashboard() {
       const sf = dd.loads.filter(l => /show freight/i.test(l.invoiceAs || ""));
       const byStatus = Object.entries(dd.byStatus || {}).map(([status, v]) => ({ status, loads: v.loads, rev: v.revenue })).filter(s => s.loads > 0);
 
-      // ── Next-4-weeks revenue forecast from OPEN (not-yet-delivered) loads ──
-      const OPEN = new Set(["Queued", "Covered", "Open", "In Transit", "Dispatched", "Booked"]);
+      // ── Next-4-weeks revenue forecast from NOT-YET-ACCOUNTED loads ──
+      // Once a load hits queued/released/invoiced it's accounted revenue (counted
+      // elsewhere) — exclude those; everything earlier is still forecast.
+      const ACCOUNTED = new Set(["queued", "released", "invoiced", "completed"]);
+      const isForecast = l => !ACCOUNTED.has(String(l.status || "").toLowerCase());
       const parseD = s => { const t = Date.parse(s); return isNaN(t) ? null : new Date(t); };
       const mondayOf = dt => { const d = new Date(dt); const wd = (d.getDay() + 6) % 7; d.setHours(0,0,0,0); d.setDate(d.getDate() - wd); return d; };
       const wk0 = mondayOf(new Date());
@@ -5429,7 +5429,7 @@ function RevenueDashboard() {
         return { label: `${s.getMonth()+1}/${s.getDate()}`, endLabel: `${e.getMonth()+1}/${e.getDate()}`, rev:0, loads:0, ce:0, sf:0 };
       });
       dd.loads.forEach(l => {
-        if (!OPEN.has(l.status)) return;
+        if (!isForecast(l)) return;
         const dt = parseD(l.deliveryDate) || parseD(l.pickupDate);
         if (!dt || dt < wk0 || dt >= horizon) return;
         const idx = Math.floor((mondayOf(dt) - wk0) / (7*86400000));
@@ -5438,7 +5438,7 @@ function RevenueDashboard() {
         if (/capacity express/i.test(l.invoiceAs || "")) w.ce += l.revenue || 0;
         else if (/show freight/i.test(l.invoiceAs || "")) w.sf += l.revenue || 0;
       });
-      const undated = dd.loads.filter(l => OPEN.has(l.status) && !(parseD(l.deliveryDate) || parseD(l.pickupDate))).length;
+      const undated = dd.loads.filter(l => isForecast(l) && !(parseD(l.deliveryDate) || parseD(l.pickupDate))).length;
 
       setAlvysLive({
         period: "Live — Alvys TMS",
@@ -5492,7 +5492,7 @@ function RevenueDashboard() {
               <div className="card" style={{ marginBottom:14, borderLeft:"3px solid #4ade80" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", flexWrap:"wrap", gap:8, marginBottom:4 }}>
                   <div className="ctit" style={{ margin:0 }}>Revenue Forecast · next 4 weeks (open loads)</div>
-                  <div style={{ fontSize:11, color:"var(--mu)" }}>by delivery week · Queued/Covered/Open/In-Transit</div>
+                  <div style={{ fontSize:11, color:"var(--mu)" }}>by delivery week · excludes queued / released / invoiced</div>
                 </div>
                 <div style={{ fontFamily:"var(--f3)", fontSize:30, fontWeight:600, color:"#4ade80", letterSpacing:"-0.5px", margin:"4px 0 12px" }}>{fd(ftot,0)}<span style={{ fontSize:12, color:"var(--mu)", fontWeight:400, marginLeft:8 }}>{fn(floads,0)} loads booked, next 28 days</span></div>
                 <ResponsiveContainer width="100%" height={180}>
@@ -5517,7 +5517,7 @@ function RevenueDashboard() {
                   ))}</tbody>
                   <tfoot><tr><td>4-wk total</td><td>{floads}</td><td>{fd(fc.reduce((s,w)=>s+w.ce,0),0)}</td><td>{fd(fc.reduce((s,w)=>s+w.sf,0),0)}</td><td>{fd(ftot,0)}</td></tr></tfoot>
                 </table>
-                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>Booked pipeline by scheduled delivery date. Excludes delivered/invoiced. {alvysLive.forecastUndated > 0 && `${alvysLive.forecastUndated} open loads have no delivery date (not shown).`}</div>
+                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>Not-yet-accounted pipeline by scheduled delivery date. Excludes queued / released / invoiced (counted as revenue once they hit those statuses). {alvysLive.forecastUndated > 0 && `${alvysLive.forecastUndated} forecast loads have no delivery date (not shown).`}</div>
               </div>
             );
           })()}
@@ -10076,15 +10076,12 @@ export default function App() {
     if (tab === "revenue")  return <RevenueDashboard />;
     if (tab === "ceeast")   return <CEEast />;
     if (tab === "cashflow") return <CashFlowDashboard />;
-    if (tab === "atl")      return <AtlOperations />;
+    if (tab === "atl")      return <><AtlOperations /><div style={{ marginTop:28, borderTop:"2px solid var(--bd)", paddingTop:20 }}><OtrOperations /></div></>;
     if (tab === "ar")       return <ArDashboard />;
-    if (tab === "otr")      return <OtrOperations />;
     if (tab === "budget")   return <Budgeting />;
     if (tab === "office")   return <OfficeStaff />;
     if (tab === "apaging")  return <ApAging />;
     if (tab === "calendar") return <BudgetCalendar />;
-    if (tab === "settings") return <DataSettings />;
-    if (tab === "checklist") return <Checklist />;
     return null;
   };
 
