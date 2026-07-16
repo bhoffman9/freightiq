@@ -5416,12 +5416,37 @@ function RevenueDashboard() {
       const ce = dd.loads.filter(l => /capacity express/i.test(l.invoiceAs || ""));
       const sf = dd.loads.filter(l => /show freight/i.test(l.invoiceAs || ""));
       const byStatus = Object.entries(dd.byStatus || {}).map(([status, v]) => ({ status, loads: v.loads, rev: v.revenue })).filter(s => s.loads > 0);
+
+      // ── Next-4-weeks revenue forecast from OPEN (not-yet-delivered) loads ──
+      const OPEN = new Set(["Queued", "Covered", "Open", "In Transit", "Dispatched", "Booked"]);
+      const parseD = s => { const t = Date.parse(s); return isNaN(t) ? null : new Date(t); };
+      const mondayOf = dt => { const d = new Date(dt); const wd = (d.getDay() + 6) % 7; d.setHours(0,0,0,0); d.setDate(d.getDate() - wd); return d; };
+      const wk0 = mondayOf(new Date());
+      const horizon = new Date(wk0); horizon.setDate(horizon.getDate() + 28);
+      const fweeks = [0,1,2,3].map(i => {
+        const s = new Date(wk0); s.setDate(s.getDate() + i*7);
+        const e = new Date(s); e.setDate(e.getDate() + 6);
+        return { label: `${s.getMonth()+1}/${s.getDate()}`, endLabel: `${e.getMonth()+1}/${e.getDate()}`, rev:0, loads:0, ce:0, sf:0 };
+      });
+      dd.loads.forEach(l => {
+        if (!OPEN.has(l.status)) return;
+        const dt = parseD(l.deliveryDate) || parseD(l.pickupDate);
+        if (!dt || dt < wk0 || dt >= horizon) return;
+        const idx = Math.floor((mondayOf(dt) - wk0) / (7*86400000));
+        if (idx < 0 || idx > 3) return;
+        const w = fweeks[idx]; w.rev += l.revenue || 0; w.loads++;
+        if (/capacity express/i.test(l.invoiceAs || "")) w.ce += l.revenue || 0;
+        else if (/show freight/i.test(l.invoiceAs || "")) w.sf += l.revenue || 0;
+      });
+      const undated = dd.loads.filter(l => OPEN.has(l.status) && !(parseD(l.deliveryDate) || parseD(l.pickupDate))).length;
+
       setAlvysLive({
         period: "Live — Alvys TMS",
         totalLoads: dd.total || dd.loads.length, totalRev: byStatus.reduce((s, x) => s + x.rev, 0),
         ceLoads: ce.length, ceRev: rev(ce), sfLoads: sf.length, sfRev: rev(sf),
         byStatus,
         topCustomers: (dd.topCustomers || []).map(c => ({ name: c.name, loads: c.loads, rev: c.revenue })),
+        forecast: fweeks, forecastUndated: undated,
         fetchedAt: dd.fetchedAt,
       });
     }).catch(() => {});
@@ -5456,6 +5481,46 @@ function RevenueDashboard() {
           <div style={{ fontSize:11, marginBottom:10, color: alvysLive ? "#4ade80" : "#fbbf24" }}>
             {alvysLive ? `🟢 Live from Alvys · ${fn(AV.totalLoads,0)} loads · as of ${new Date(alvysLive.fetchedAt).toLocaleString()}` : "🟡 Static snapshot (live fetch pending/failed)"}
           </div>
+
+          {/* ── NEXT-4-WEEKS REVENUE FORECAST (open loads by delivery week) ── */}
+          {alvysLive && alvysLive.forecast && (() => {
+            const fc = alvysLive.forecast;
+            const ftot = fc.reduce((s,w) => s + w.rev, 0);
+            const floads = fc.reduce((s,w) => s + w.loads, 0);
+            const chartData = fc.map(w => ({ label: w.label, CE: Math.round(w.ce), SF: Math.round(w.sf) }));
+            return (
+              <div className="card" style={{ marginBottom:14, borderLeft:"3px solid #4ade80" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", flexWrap:"wrap", gap:8, marginBottom:4 }}>
+                  <div className="ctit" style={{ margin:0 }}>Revenue Forecast · next 4 weeks (open loads)</div>
+                  <div style={{ fontSize:11, color:"var(--mu)" }}>by delivery week · Queued/Covered/Open/In-Transit</div>
+                </div>
+                <div style={{ fontFamily:"var(--f3)", fontSize:30, fontWeight:600, color:"#4ade80", letterSpacing:"-0.5px", margin:"4px 0 12px" }}>{fd(ftot,0)}<span style={{ fontSize:12, color:"var(--mu)", fontWeight:400, marginLeft:8 }}>{fn(floads,0)} loads booked, next 28 days</span></div>
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={chartData} margin={{ top:6, right:8, left:0, bottom:0 }}>
+                    <CartesianGrid stroke="#1f2535" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fill:"#8791a3", fontSize:11 }} axisLine={{ stroke:"#1f2535" }} tickLine={false} />
+                    <YAxis tick={{ fill:"#8791a3", fontSize:10 }} axisLine={false} tickLine={false} tickFormatter={v => `$${Math.round(v/1000)}k`} />
+                    <Tooltip contentStyle={{ background:"#181c26", border:"1px solid #1f2535", borderRadius:4, fontFamily:"var(--f3)" }} formatter={(v,n) => [fd(v,0), n]} />
+                    <Bar dataKey="CE" stackId="a" fill="#38bdf8" />
+                    <Bar dataKey="SF" stackId="a" fill="#2dd4bf" radius={[2,2,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <table className="tbl" style={{ marginTop:10 }}><thead><tr><th>Week of</th><th>Loads</th><th>CE</th><th>SF</th><th>Revenue</th></tr></thead>
+                  <tbody>{fc.map((w,i) => (
+                    <tr key={i}>
+                      <td>{w.label}–{w.endLabel}{i===0 && <span style={{ color:"#4ade80", fontSize:10, marginLeft:6 }}>this wk</span>}</td>
+                      <td>{w.loads}</td>
+                      <td style={{ color:"#38bdf8" }}>{fd(w.ce,0)}</td>
+                      <td style={{ color:"#2dd4bf" }}>{fd(w.sf,0)}</td>
+                      <td style={{ color:"#4ade80", fontWeight:700 }}>{fd(w.rev,0)}</td>
+                    </tr>
+                  ))}</tbody>
+                  <tfoot><tr><td>4-wk total</td><td>{floads}</td><td>{fd(fc.reduce((s,w)=>s+w.ce,0),0)}</td><td>{fd(fc.reduce((s,w)=>s+w.sf,0),0)}</td><td>{fd(ftot,0)}</td></tr></tfoot>
+                </table>
+                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>Booked pipeline by scheduled delivery date. Excludes delivered/invoiced. {alvysLive.forecastUndated > 0 && `${alvysLive.forecastUndated} open loads have no delivery date (not shown).`}</div>
+              </div>
+            );
+          })()}
           <div className="g4" style={{ marginBottom:14 }}>
             {[
               { label:"Total Pipeline", val:fd(AV.totalRev,0), color:"#4ade80", sub:`${fn(AV.totalLoads,0)} loads across all statuses` },
