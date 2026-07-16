@@ -25,10 +25,6 @@
     {
       "path": "/api/fdw-samsara",
       "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/ar-snapshot",
-      "schedule": "0 10 * * *"
     }
   ]
 }
