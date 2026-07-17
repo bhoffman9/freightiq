@@ -57,40 +57,52 @@ function collect() {
   const props = PropertiesService.getScriptProperties();
   let sent = 0;
 
+  let fails = 0;
   for (const cfg of CONFIG.LABELS) {
     if (sent >= CONFIG.MAX_MSGS_PER_RUN) break;
-    const label = GmailApp.getUserLabelByName(cfg.name);
-    if (!label) { Logger.log('Label not found (skipping): ' + cfg.name); continue; }
+    // Per-label guard: a Gmail hiccup on one label must NEVER abort the whole
+    // run (an uncaught throw here is what lets Google auto-disable the trigger).
+    try {
+      const label = GmailApp.getUserLabelByName(cfg.name);
+      if (!label) { Logger.log('Label not found (skipping): ' + cfg.name); continue; }
 
-    const wmKey = 'wm_' + cfg.name;
-    const wm = Number(props.getProperty(wmKey) || 0);
-    const floor = Math.max(wm, Date.now() - CONFIG.LOOKBACK_DAYS * 864e5);
-    let newest = wm;
+      const wmKey = 'wm_' + cfg.name;
+      const wm = Number(props.getProperty(wmKey) || 0);
+      const floor = Math.max(wm, Date.now() - CONFIG.LOOKBACK_DAYS * 864e5);
+      let newest = wm;
 
-    // Flatten label's recent threads → messages newer than the watermark.
-    const msgs = [];
-    label.getThreads(0, 60).forEach(th =>
-      th.getMessages().forEach(m => {
-        const t = m.getDate().getTime();
-        if (t > floor) msgs.push(m);
-      })
-    );
-    msgs.sort((a, b) => a.getDate() - b.getDate());
+      // Flatten label's recent threads → messages newer than the watermark.
+      const msgs = [];
+      label.getThreads(0, 60).forEach(th =>
+        th.getMessages().forEach(m => {
+          const t = m.getDate().getTime();
+          if (t > floor) msgs.push(m);
+        })
+      );
+      msgs.sort((a, b) => a.getDate() - b.getDate());
 
-    for (const m of msgs) {
-      if (sent >= CONFIG.MAX_MSGS_PER_RUN) break;
-      try {
-        if (forward(m, cfg)) sent++;
-        newest = Math.max(newest, m.getDate().getTime());
-      } catch (e) {
-        Logger.log('forward error [' + cfg.name + ']: ' + e);
-        // leave watermark below this msg so it retries next run
-        break;
+      for (const m of msgs) {
+        if (sent >= CONFIG.MAX_MSGS_PER_RUN) break;
+        try {
+          if (forward(m, cfg)) sent++;
+          // advance the watermark past this message so a permanently-bad one
+          // (e.g. a filename the server rejects) can't block the whole label.
+          newest = Math.max(newest, m.getDate().getTime());
+        } catch (e) {
+          fails++;
+          Logger.log('forward error [' + cfg.name + '] msg ' + m.getId() + ': ' + e);
+          // CONTINUE (not break): skip this one, keep processing newer mail.
+          // Watermark still advances so we don't re-send the same poison forever.
+          newest = Math.max(newest, m.getDate().getTime());
+        }
       }
+      if (newest > wm) props.setProperty(wmKey, String(newest));
+    } catch (e) {
+      fails++;
+      Logger.log('label error [' + cfg.name + ']: ' + e);
     }
-    if (newest > wm) props.setProperty(wmKey, String(newest));
   }
-  Logger.log('collect() sent ' + sent + ' message(s).');
+  Logger.log('collect() sent ' + sent + ' message(s), ' + fails + ' skipped.');
 }
 
 function forward(msg, cfg) {
