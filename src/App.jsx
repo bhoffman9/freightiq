@@ -9932,6 +9932,11 @@ export default function App() {
   const [equipmentData, setEquipmentData] = useState(null);
   const [equipmentError, setEquipmentError] = useState(null);
   const [warehouseLive, setWarehouseLive] = useState(false);
+  const [health, setHealth] = useState(null); // Gmail collector liveness
+
+  useEffect(() => {
+    fetch("/api/fdw-health").then(r => r.json()).then(d => { if (!d.error) setHealth(d); }).catch(() => {});
+  }, [dataVersion]);
 
   // Best-effort one-time cleanup of old Samsara live-mileage caches.
   // The API was retired in June 2026; MILES is now refreshed by manually
@@ -10063,6 +10068,18 @@ export default function App() {
             </button>
           ))}
         </nav>
+
+        {health && health.collectorStale && (
+          <div style={{ background:"rgba(251,113,133,.12)", borderBottom:"1px solid #fb7185", color:"#fb7185",
+            padding:"8px 22px", fontSize:12, fontFamily:"var(--f1)", display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
+            <span style={{ fontWeight:700 }}>⚠ Invoice auto-ingestion stalled</span>
+            <span style={{ color:"var(--tx)" }}>
+              Gmail collector last ran {health.minutesSince == null ? "never" : `${health.minutesSince} min ago`} (expected every 10 min).
+              New vendor invoices won't reach AP until it's running.
+            </span>
+            <span style={{ color:"var(--mu)" }}>Fix: script.google.com → gmail_collector → Triggers (re-enable / re-authorize).</span>
+          </div>
+        )}
 
         <main className={`main${(tab === "apaging" || tab === "calendar") ? " main-wide" : ""}`}>
           {/* AP Aging + Budget Calendar read their own Supabase/API, NOT the

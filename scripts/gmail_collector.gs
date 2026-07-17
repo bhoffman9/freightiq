@@ -103,6 +103,17 @@ function collect() {
     }
   }
   Logger.log('collect() sent ' + sent + ' message(s), ' + fails + ' skipped.');
+
+  // Liveness heartbeat — lets the dashboard tell "collector dead" from "no new
+  // invoices today". Best-effort; never let it fail the run.
+  try {
+    UrlFetchApp.fetch(CONFIG.ENDPOINT.replace(/\/fdw-ingest$/, '/fdw-heartbeat'), {
+      method: 'post', contentType: 'application/json',
+      headers: { 'X-FDW-Secret': CONFIG.SECRET },
+      payload: JSON.stringify({ sent: sent, fails: fails }),
+      muteHttpExceptions: true,
+    });
+  } catch (e) { Logger.log('heartbeat error: ' + e); }
 }
 
 function forward(msg, cfg) {
