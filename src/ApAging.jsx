@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import * as XLSX from "xlsx";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 /* ══════════════════════════════════════════════════════
@@ -351,6 +352,30 @@ export default function ApAging() {
   // ── search, toasts, inline edit, recent payments, confirm modal ──
   const [searchQuery, setSearchQuery] = useState("");
   const [showUpload, setShowUpload] = useState(false); // drop zone collapsed by default (Gmail auto-ingests)
+  const [apReportAsOf, setApReportAsOf] = useState(""); // AP report as-of date (blank = today)
+  const [apReportBusy, setApReportBusy] = useState(false);
+  const downloadApReport = async () => {
+    const d = apReportAsOf || new Date().toISOString().slice(0, 10);
+    setApReportBusy(true);
+    try {
+      const data = await fetch(`/api/ap-report?asOf=${d}`).then(r => r.json());
+      if (data.error) { addToast("AP report failed: " + data.error, "error"); return; }
+      const detail = (data.rows || []).map(x => ({
+        "Vendor": x.vendor, "Invoice #": x.invoiceNumber, "Invoice Date": x.invoiceDate,
+        "Due Date": x.dueDate, "Amount": x.amount, "Paid": x.paid, "Balance": x.balance, "Days Overdue": x.daysOverdue,
+      }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detail), "AP Detail");
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet((data.byVendor || []).map(v => ({ Vendor: v.vendor, Invoices: v.invoices, Balance: v.balance }))), "By Vendor");
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(Object.entries(data.aging || {}).map(([Bucket, Balance]) => ({ Bucket, Balance }))), "Aging");
+      XLSX.writeFile(wb, `AP_Report_${d}.xlsx`);
+      addToast(`AP report as of ${d}: ${fmt(data.total)} · ${data.count} invoices`, "success");
+    } catch (e) {
+      addToast("AP report error: " + e.message, "error");
+    } finally {
+      setApReportBusy(false);
+    }
+  };
   const [toasts, setToasts] = useState([]); // [{id, type, message, action?, actionLabel?}]
   const [editingCell, setEditingCell] = useState(null); // {invoiceId, field, value}
   const [recentPayments, setRecentPayments] = useState([]);
@@ -1192,6 +1217,8 @@ export default function ApAging() {
           <button style={{ ...S.btn, ...(view === "expected" ? S.btnActive : {}) }} onClick={() => { setView("expected"); loadEquipment(); }} aria-label="Expected">Expected</button>
           <button style={{ ...S.btn, ...(view === "analytics" ? S.btnActive : {}) }} onClick={() => setView("analytics")} aria-label="Analytics">Analytics</button>
           <button style={S.btn} onClick={() => setShowRecentPayments(true)} aria-label="Recent payments" title="Recent payments">💸 Payments</button>
+          <input type="date" value={apReportAsOf} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setApReportAsOf(e.target.value)} title="AP report as-of date (blank = today)" style={{ ...S.btn, padding: "6px 8px", cursor: "text" }} />
+          <button style={S.btn} disabled={apReportBusy} onClick={downloadApReport} aria-label="Download AP report" title="Download AP report (Excel) as of the date, or today">📥 {apReportBusy ? "…" : "AP Report"}</button>
           <button style={S.btnPrimary} aria-label="Add new invoice (N)" title="Add invoice (N)" onClick={() => {
             let draft = {};
             try { const saved = localStorage.getItem(DRAFT_KEY); if (saved) draft = JSON.parse(saved); } catch {}
