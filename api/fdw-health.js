@@ -18,7 +18,11 @@ export default async function handler(req, res) {
     const minutesSince = lastSeen ? Math.round((now - lastSeen) / 60000) : null;
     const lastIngest = run.data && run.data[0] ? run.data[0].started_at : null;
     const ingestHoursSince = lastIngest ? Math.round((now - new Date(lastIngest).getTime()) / 3600000) : null;
-    const collectorStale = lastSeen == null || minutesSince > 60;
+    // Prefer the heartbeat (precise: runs every 10min). Until it's live (collector
+    // not yet pinging), fall back to ingestion recency so we don't false-alarm.
+    const collectorStale = lastSeen != null
+      ? minutesSince > 60
+      : (ingestHoursSince == null || ingestHoursSince > 26);
     return res.status(200).json({
       collectorStale, minutesSince, lastSeen: lastSeenIso,
       lastSent: h.data ? h.data.last_sent : null, lastFails: h.data ? h.data.last_fails : null,
