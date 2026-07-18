@@ -71,8 +71,9 @@ export default async function handler(req, res) {
     let skipped = 0, unmapped = 0, lowConf = 0, badAmount = 0, held = 0;
     for (const r of rows || []) {
       const amt = Number(r.amount);
-      // reject malformed/non-positive amounts — never auto-post a $0 or NaN payable
-      if (!r.invoice_no || !Number.isFinite(amt) || amt <= 0) { badAmount++; continue; }
+      // reject malformed/zero amounts — never auto-post a $0 or NaN payable.
+      // Negatives are allowed (credit memos) but always held for review below.
+      if (!r.invoice_no || !Number.isFinite(amt) || amt === 0) { badAmount++; continue; }
       // don't auto-post low-confidence extractions as live payables (they'd need eyes)
       if (String(r.confidence || '').toLowerCase() === 'low') { lowConf++; continue; }
       const vendorName = VENDOR_MAP[r.source];
@@ -85,7 +86,9 @@ export default async function handler(req, res) {
       // Everything else is HELD for review — kept out of the payable list until
       // you approve it, so being busy just delays the oddballs, nothing bad.
       const vmax = vendorMax[vendorName] || 0;
-      const needsReview = String(r.confidence).toLowerCase() !== 'high' || vmax === 0 || amt > vmax * 1.5;
+      // Credit memos (amt < 0) always get eyes; otherwise auto-approve only
+      // high-confidence, in-range amounts.
+      const needsReview = amt < 0 || String(r.confidence).toLowerCase() !== 'high' || vmax === 0 || amt > vmax * 1.5;
       if (needsReview) held++;
       const desc = `[auto] ${r.unit_ids ? 'Units ' + r.unit_ids : (r.category || 'equipment')} · Gmail-parsed (${r.confidence || 'med'} conf)${needsReview ? ' · NEEDS REVIEW' : ''}`;
       toInsert.push({

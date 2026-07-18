@@ -73,19 +73,31 @@ export async function parseVendorInvoice(buf, filename, source) {
   const isCsv = /\.csv$/i.test(filename);
   const text = isCsv ? buf.toString('utf8') : await pdfText(buf);
 
-  let reply;
+  const fromText = () => callClaude(
+    `Source: ${source}\nFilename: ${filename}\n\nInvoice text:\n"""\n${text.slice(0, 14000)}\n"""`);
+  // Visual read of the actual PDF — catches invoices whose total lives in an
+  // image/table the text layer drops (and recovers image-only / corrupt PDFs).
+  const fromDoc = () => callClaude([
+    { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: buf.toString('base64') } },
+    { type: 'text', text: `Source: ${source}\nFilename: ${filename}\nExtract the invoice fields as specified.` },
+  ]);
+
+  let inv;
   if (text && text.length >= MIN_TEXT) {
-    // text-layer path
-    reply = await callClaude(
-      `Source: ${source}\nFilename: ${filename}\n\nInvoice text:\n"""\n${text.slice(0, 14000)}\n"""`);
+    inv = shape(parseJson(await fromText()));
+    // Escalate: if the text layer didn't yield a usable amount (or low confidence),
+    // re-read the PDF visually before giving up. This is what recovers the TEC/etc.
+    // invoices whose total isn't in the extracted text layer.
+    if (!isCsv && (inv.amount == null || String(inv.confidence).toLowerCase() === 'low')) {
+      try {
+        const d = shape(parseJson(await fromDoc()));
+        if (d.amount != null) inv = d;   // prefer the visual read when it found a total
+      } catch { /* keep the text-path result */ }
+    }
   } else if (!isCsv) {
-    // document fallback — hand Claude the raw PDF (reads image-only / corrupt PDFs)
-    reply = await callClaude([
-      { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: buf.toString('base64') } },
-      { type: 'text', text: `Source: ${source}\nFilename: ${filename}\nExtract the invoice fields as specified.` },
-    ]);
+    inv = shape(parseJson(await fromDoc()));
   } else {
     const e = new Error(`empty CSV (${text.length} chars)`); e.quarantine = true; throw e;
   }
-  return shape(parseJson(reply));
+  return inv;
 }

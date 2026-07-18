@@ -158,8 +158,9 @@ async function handleVendor(row) {
     if (e.quarantine) { await quarantine(row, e.message, row.extracted || {}); return 'quarantined'; }
     throw e; // transient (AI/network) — leave unprocessed for retry
   }
-  // Honest gate: need a positive total + a date, else quarantine (don't guess).
-  if (inv.amount == null || inv.amount <= 0 || !inv.invoiceDate) {
+  // Honest gate: need a non-zero total + a date, else quarantine (don't guess).
+  // Negative totals are allowed — they're credit memos (valid AP events).
+  if (inv.amount == null || inv.amount === 0 || !inv.invoiceDate) {
     await quarantine(row, `ai extract incomplete (amount=${inv.amount}, date=${inv.invoiceDate}, conf=${inv.confidence})`, inv._raw);
     return 'quarantined';
   }
