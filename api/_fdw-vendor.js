@@ -7,7 +7,8 @@
 // gate in the caller keeps it honest (quarantine, not guess).
 import pdf from 'pdf-parse/lib/pdf-parse.js';
 
-const MODEL = 'claude-sonnet-5';
+const MODEL = 'claude-sonnet-5';       // primary (fast, handles most invoices)
+const MODEL_HARD = 'claude-opus-4-8';  // last-resort escalation for stubborn PDFs
 const MIN_TEXT = 40; // below this, treat the text layer as unusable
 
 const EXTRACT_SYS =
@@ -30,13 +31,13 @@ async function pdfText(buf) {
   catch { return ''; } // corrupt/unsupported → empty triggers the document fallback
 }
 
-async function callClaude(userContent) {
+async function callClaude(userContent, model = MODEL) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error('ANTHROPIC_API_KEY not set');
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: MODEL, max_tokens: 2048, system: EXTRACT_SYS,
+    body: JSON.stringify({ model, max_tokens: 2048, system: EXTRACT_SYS,
       messages: [{ role: 'user', content: userContent }] }),
   });
   const data = await r.json();
@@ -73,31 +74,35 @@ export async function parseVendorInvoice(buf, filename, source) {
   const isCsv = /\.csv$/i.test(filename);
   const text = isCsv ? buf.toString('utf8') : await pdfText(buf);
 
-  const fromText = () => callClaude(
-    `Source: ${source}\nFilename: ${filename}\n\nInvoice text:\n"""\n${text.slice(0, 14000)}\n"""`);
+  const fromText = (model) => callClaude(
+    `Source: ${source}\nFilename: ${filename}\n\nInvoice text:\n"""\n${text.slice(0, 14000)}\n"""`, model);
   // Visual read of the actual PDF — catches invoices whose total lives in an
   // image/table the text layer drops (and recovers image-only / corrupt PDFs).
-  const fromDoc = () => callClaude([
+  const fromDoc = (model) => callClaude([
     { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: buf.toString('base64') } },
     { type: 'text', text: `Source: ${source}\nFilename: ${filename}\nExtract the invoice fields as specified.` },
-  ]);
+  ], model);
+  const tryShape = async (fn) => { try { const s = shape(parseJson(await fn())); return s; } catch { return null; } };
 
   let inv;
   if (text && text.length >= MIN_TEXT) {
-    inv = shape(parseJson(await fromText()));
-    // Escalate: if the text layer didn't yield a usable amount (or low confidence),
-    // re-read the PDF visually before giving up. This is what recovers the TEC/etc.
-    // invoices whose total isn't in the extracted text layer.
+    inv = shape(parseJson(await fromText()));                 // 1) Sonnet, text layer
+    // 2) Sonnet, visual read — if the text layer gave no amount / low confidence.
     if (!isCsv && (inv.amount == null || String(inv.confidence).toLowerCase() === 'low')) {
-      try {
-        const d = shape(parseJson(await fromDoc()));
-        if (d.amount != null) inv = d;   // prefer the visual read when it found a total
-      } catch { /* keep the text-path result */ }
+      const d = await tryShape(() => fromDoc());
+      if (d && d.amount != null) inv = d;
     }
   } else if (!isCsv) {
-    inv = shape(parseJson(await fromDoc()));
+    inv = shape(parseJson(await fromDoc()));                  // 1) Sonnet, visual (no text layer)
   } else {
     const e = new Error(`empty CSV (${text.length} chars)`); e.quarantine = true; throw e;
+  }
+
+  // 3) Last resort: after Sonnet failed to find a total (text + visual), escalate
+  // the hardest PDFs to Opus. Only the stubborn few ever reach this, so it's cheap.
+  if (!isCsv && inv.amount == null) {
+    const o = (await tryShape(() => fromDoc(MODEL_HARD))) || (text.length >= MIN_TEXT ? await tryShape(() => fromText(MODEL_HARD)) : null);
+    if (o && o.amount != null) inv = o;
   }
   return inv;
 }
