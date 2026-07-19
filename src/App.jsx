@@ -174,30 +174,37 @@ let FUEL = {
 // All other costs come from QuickBooks P&L.
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
-let LABOR     = 1197915.05; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru ~Jul 2 (payroll-only refresh — payroll file ~1wk ahead of the Jun 28 PERIOD; fuel/miles/income still Jun 26-28). 29 drivers active (frozen + 12 terminated Jul 2026 keep YTD so LABOR reconciles). EXCLUDES Baker/Dawson/Pacitti $14,785.86 (ex-OTR drivers, folding into ATL) + Wilson Antionette (ATL office, moved to OFFICE_W2)
-let FUEL_TOT  = 603068.29;  // EFS fleet only — thru Jul 4 (EFS report total $616,958.33 minus OTR cards 27450/17451/87455 $13,890.04; OTR carved out of CPM)
-let GALLONS   = 111256.42;  // EFS 114,182.80 minus OTR 2,926.38
+let LABOR     = 1194076.47; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru Jul 19. 53 drivers active (frozen + terminated keep YTD so LABOR reconciles). EXCLUDES all 9 ATL drivers (Baker/Dawson/Pacitti/Griffin/Johnson/Logan/Phillips/Tucker/Wainwright) $135,927.66 / 3,806.65 hrs → ATL_WEEKLY_LOG + ATL CPM, NOT fleet. + Wilson Antionette (ATL office → OFFICE_W2)
+let FUEL_TOT  = 582645.56;  // EFS fleet only — EFS report total $684,885.52 minus the 9 ATL cards (27450/17451/87455/37459/57457/47458/67463/07454/87457) $102,239.96; ATL carved out of fleet CPM
+let GALLONS   = 106813.86;  // EFS 127,422.28 minus ATL 20,608.42
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
-let MILES     = 737887.1;     // Samsara Vehicle Mileage report, Jan 1 – Jun 27, 2026 (49 logged). PENDING: Samsara xlsx for the Jul 5 period not yet dropped — MILES lags the rest by ~1wk. Update via scripts/parse_samsara_mileage.py when it lands.
-let TRUCK_COUNT = 30;       // ACTIVE fleet trucks per Ben's truck-count sheet. NOTE: TRUCK_MILES now has 49 entries from the mileage report; cumulative miles feed MILES + CPM but departed/temp trucks don't count toward the active fleet. (Confirm active count with Ben.)
-let TOTAL_HRS  = 38193.24;  // Payroll hours — fleet drivers only (office + OTR + Wilson excluded), thru ~Jul 2
+let MILES     = 770130.4;     // Samsara Vehicle Mileage (Jan 1 – Jul 17, 2026): fleet total 863,455.7 minus the 7 ATL trucks (685/674/669/686/673/675/488) 93,325.3. Regenerate via scripts/parse_samsara_mileage.py.
+let TRUCK_COUNT = 30;       // ACTIVE fleet trucks per Ben's truck-count sheet (ATL trucks tracked separately). Confirm active count with Ben.
+let TOTAL_HRS  = 37899.12;  // Payroll hours — fleet drivers only (office + 9 ATL drivers + Wilson excluded), thru Jul 19
 let INS_WEEK  = 6375;
-let INS_TOT    = 163284.16;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru Jul 5 — caught up (+$14.7K, June/July truck-ins posted)
-let TRUCK_TOT  = 489911.62;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI + Ryder) thru Jul 5
-let TRAILER_TOT = 215129.80; // QuickBooks: Trailer Rentals (McKinney + Xtra + Utility + Premier + Boxwheel + Ten) thru Jul 5
+let INS_TOT    = 182338.58;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru Jul 19
+let TRUCK_TOT  = 507278.59;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI + Ryder) thru Jul 19
+let TRAILER_TOT = 243326.16; // QuickBooks: Trailer Rentals (McKinney + Xtra + Utility + Premier + Boxwheel + Ten) thru Jul 19
 let EQUIP_TOT   = TRUCK_TOT + TRAILER_TOT;
-let TRUCK_MAINT  = 7783.45;   // Prime Wash, AutoForce, Titan Glass, Towing, Batteries, TZ Parts, eBay, SF Heavy Equipment thru Jul 5
-let TRAIL_MAINT  = 5656.52;   // TravelCenters of America, MKD Express thru Jul 5
-let STORAGE      = 53835.40;  // Storage/Parking per P&L thru Jul 5
+let TRUCK_MAINT  = 7783.45;   // Prime Wash, AutoForce, Titan Glass, Towing, Batteries, TZ Parts, eBay, SF Heavy Equipment thru Jul 19
+let TRAIL_MAINT  = 7235.30;   // TravelCenters of America, MKD Express thru Jul 19
+let STORAGE      = 57566.62;  // Storage/Parking per P&L thru Jul 19
 let MAINT_TOT    = TRUCK_MAINT + TRAIL_MAINT + STORAGE;
-let UNIFORMS     = 10863.06;  // Unifirst + Safety Guard Shoe thru Jul 5 — caught up off prior unchanged streak
+let UNIFORMS     = 12288.54;  // Unifirst + Safety Guard Shoe thru Jul 19
+// ── ATL operation (carved out of fleet CPM) — its own CPM tab ───
+let ATL_LABOR   = 135927.66;  // 9 ATL drivers YTD (gross+taxes+401k)
+let ATL_HRS     = 3806.65;
+let ATL_FUEL    = 102239.96;  // 9 ATL EFS cards YTD
+let ATL_GALLONS = 20608.42;
+let ATL_MILES   = 93325.3;    // Samsara: trucks 685/674/669/686/673/675/488
+let ATL_TRUCKS  = ["685","674","669","686","673","675","488"];
 // Basic CPM = Labor + Fuel + Truck Rentals + Insurance only
 let BASIC_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT;
 let BASIC_CPM_V = BASIC_COST / MILES;
 // All-In CPM = everything tracked
 let ALLIN_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT + TRAILER_TOT + TRUCK_MAINT + TRAIL_MAINT + STORAGE + UNIFORMS;
 let ALLIN_CPM_V = ALLIN_COST / MILES;
-let PERIOD    = "Jan 1 - Jul 12, 2026";
+let PERIOD    = "Jan 1 - Jul 19, 2026";
 // Derived day count parsed from PERIOD — keeps subtitle labels honest without
 // having to bump a magic number every week. If PERIOD parsing fails, fall back
 // to current behavior (Jan 1 → today).
@@ -709,6 +716,7 @@ const TABS = [
   { id: "income",  icon: "💵", label: "Income" },
   { id: "ceeast",   icon: "🏦", label: "CE East" },
   { id: "atl",      icon: "🍑", label: "ATL Ops" },
+  { id: "atlcpm",   icon: "🍑", label: "ATL CPM" },
   { id: "ar",       icon: "📋", label: "A/R" },
   { id: "cashflow", icon: "💰", label: "Cash Flow" },
   { id: "calendar", icon: "📅", label: "Budget Calendar" },
@@ -8958,6 +8966,81 @@ function ArDashboard() {
   );
 }
 
+function AtlCpm() {
+  const combined = ATL_LABOR + ATL_FUEL;
+  const cpm = ATL_MILES ? combined / ATL_MILES : 0;
+  const laborCpm = ATL_MILES ? ATL_LABOR / ATL_MILES : 0;
+  const fuelCpm = ATL_MILES ? ATL_FUEL / ATL_MILES : 0;
+  const ppg = ATL_GALLONS ? ATL_FUEL / ATL_GALLONS : 0;
+  const fleetCpm = MILES ? (LABOR + FUEL_TOT) / MILES : 0;   // fleet labor+fuel CPM
+  const cards = [
+    ["ATL Labor", fd(ATL_LABOR, 0), `${fn(ATL_HRS, 0)} hrs · 9 drivers`, "#2dd4bf"],
+    ["ATL Fuel", fd(ATL_FUEL, 0), `${fn(ATL_GALLONS, 0)} gal · ${fd(ppg, 2)}/gal`, "#fbbf24"],
+    ["ATL Miles", fn(ATL_MILES, 0), `${ATL_TRUCKS.length} trucks`, "#38bdf8"],
+    ["Combined Cost", fd(combined, 0), "labor + fuel", "#a78bfa"],
+  ];
+  return (
+    <div>
+      <div className="ptitle">🍑 ATL CPM</div>
+      <div className="psub">Atlanta operation · cost per mile (labor + fuel) · {PERIOD} · carved out of fleet CPM</div>
+
+      {/* Hero CPM */}
+      <div style={{ background:"linear-gradient(135deg,#1a1408,#0f0b05)", border:`2px solid ${cpmColor(cpm)}`,
+        borderRadius:6, padding:"28px 32px", marginBottom:14, textAlign:"center" }}>
+        <div style={{ fontSize:9, letterSpacing:4, textTransform:"uppercase", color:cpmColor(cpm), marginBottom:8 }}>ATL Cost Per Mile · labor + fuel</div>
+        <div style={{ fontFamily:"var(--f3)", fontSize:64, fontWeight:600, color:cpmColor(cpm), lineHeight:1, letterSpacing:"-2px" }}>{fd(cpm, 3)}</div>
+        <div style={{ fontSize:12, color:"var(--mu)", marginTop:10 }}>
+          {fd(combined, 0)} ÷ {fn(ATL_MILES, 0)} mi · <span style={{ color: cpm > fleetCpm ? "#fb7185" : "#4ade80" }}>{cpm > fleetCpm ? "▲" : "▼"} vs fleet {fd(fleetCpm, 3)}</span>
+        </div>
+      </div>
+
+      {/* KPI cards */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:14 }}>
+        {cards.map(([lbl, val, sub, col]) => (
+          <div key={lbl} className="kpi">
+            <div className="klbl">{lbl}</div>
+            <div className="kval" style={{ color:col }}>{val}</div>
+            <div className="ksub">{sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* CPM breakdown */}
+      <div className="card" style={{ marginBottom:14 }}>
+        <div className="ctit" style={{ marginBottom:12 }}>CPM Breakdown</div>
+        {[["Labor", laborCpm, "#2dd4bf"], ["Fuel", fuelCpm, "#fbbf24"]].map(([lbl, v, col]) => (
+          <div key={lbl} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:10 }}>
+            <div style={{ width:70, fontSize:12, color:"var(--mu)", fontFamily:"var(--f2)", fontWeight:700 }}>{lbl}</div>
+            <div style={{ flex:1, height:22, background:"var(--bg)", borderRadius:3, overflow:"hidden" }}>
+              <div style={{ width:`${(v / cpm) * 100}%`, height:"100%", background:col, opacity:.85 }} />
+            </div>
+            <div style={{ width:80, textAlign:"right", fontFamily:"var(--f3)", fontSize:15, fontWeight:600, color:col }}>{fd(v, 3)}</div>
+          </div>
+        ))}
+        <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>
+          Labor + fuel only — the two components carved out of fleet. Truck/trailer lease + insurance for ATL are not yet allocated separately.
+        </div>
+      </div>
+
+      {/* Trucks + drivers */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+        <div className="card">
+          <div className="ctit" style={{ marginBottom:8 }}>ATL Trucks ({ATL_TRUCKS.length})</div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+            {ATL_TRUCKS.map(t => <span key={t} style={{ fontFamily:"var(--f3)", fontSize:13, fontWeight:600, color:"#38bdf8", background:"rgba(56,189,248,.12)", border:"1px solid rgba(56,189,248,.3)", borderRadius:3, padding:"3px 9px" }}>#{t}</span>)}
+          </div>
+        </div>
+        <div className="card">
+          <div className="ctit" style={{ marginBottom:8 }}>ATL Drivers (9)</div>
+          <div style={{ fontSize:12, color:"var(--tx)", lineHeight:1.7 }}>
+            Baker · Dawson · Pacitti · Griffin · Johnson · Logan · Phillips · Tucker · Wainwright
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AtlOperations() {
   const cum = atlSum();
   const atlMilesEst = cum.fuelGallons * 6.5;
@@ -10030,6 +10113,7 @@ export default function App() {
     if (tab === "ceeast")   return <CEEast />;
     if (tab === "cashflow") return <CashFlowDashboard />;
     if (tab === "atl")      return <AtlOperations />;
+    if (tab === "atlcpm")   return <AtlCpm />;
     if (tab === "ar")       return <ArDashboard />;
     if (tab === "budget")   return <Budgeting />;
     if (tab === "office")   return <OfficeStaff />;

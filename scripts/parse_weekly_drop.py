@@ -43,7 +43,10 @@ SF_OFFICE = {
 # file, but their pay/hours must NOT land in fleet LABOR/TOTAL_HRS — separate bucket.
 # Update this set when Ben moves a driver in/out of the ATL driver set.
 SF_ATL = {
+    # Ben's ATL roster for the week of 2026-07-19 (per-week; update every drop).
     "Baker Anthony", "Dawson Brian", "Pacitti Michael R",
+    "Griffin Corey", "Johnson Christopher M", "Logan LaDyle",
+    "Phillips Anthony P", "Tucker Robert", "Wainwright Michael W",
 }
 
 
