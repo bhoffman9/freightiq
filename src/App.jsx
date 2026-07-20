@@ -8396,6 +8396,7 @@ function CashFlowDashboard() {
         {balLive && <span style={{ color:"#4ade80",marginLeft:8,fontSize:10 }}>● {accts.length} Chase accounts live</span>}
         {!balLive && balStatus === "loading" && <span style={{ color:"var(--mu)",marginLeft:8,fontSize:10 }}>● Loading balances…</span>}
         {!balLive && balStatus === "error" && <span style={{ color:"#fbbf24",marginLeft:8,fontSize:10 }}>● Balances feed failed — showing built-in snapshot</span>}
+        {!balLive && balStatus === "ok" && balData && balData.real === false && <span style={{ color:"#fbbf24",marginLeft:8,fontSize:10 }}>● Live balances pending — Plaid snapshot stale (last {balData.latestSnapshotDate||"?"}); showing built-in</span>}
         {fetchStatus === "ok" && <span style={{ color:"#4ade80",marginLeft:8,fontSize:10 }}>● Payments live (budget calendar)</span>}
         {fetchStatus === "error" && <span style={{ color:"#fbbf24",marginLeft:8,fontSize:10 }}>● Payments: built-in data</span>}
       </div>

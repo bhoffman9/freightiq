@@ -71,26 +71,39 @@ export default async function handler(req, res) {
       weekStart = (preQ.data || [])[0] || null;
     }
 
-    const accounts = (latest?.accounts || []).map((a) => {
+    // Only trust the real production Chase accounts. Leftover Plaid *sandbox*
+    // snapshots (test accounts like "Plaid Checking 0000") must never render as
+    // real money — filter to the known last4s. If a snapshot has none, it's
+    // stale/sandbox: report real:false so the UI falls back instead of lying.
+    const REAL = new Set(Object.keys(ACCT));
+    const realAccts = (snap) => (snap?.accounts || []).filter((a) => REAL.has(a.last4));
+    const latestReal = realAccts(latest);
+    const wsReal = realAccts(weekStart);
+    const isReal = latestReal.length > 0;
+
+    const accounts = latestReal.map((a) => {
       const meta = ACCT[a.last4] || {};
       return {
         name: meta.label || a.name || a.last4,
         last4: a.last4 || null,
         balance: num(a.balance),
         available: a.available != null ? num(a.available) : null,
-        group: meta.group || a.group || a.type || 'Other',
+        group: meta.group || 'Other',
       };
     }).sort((x, y) => y.balance - x.balance);
 
     return res.status(200).json({
       monday,
-      currentDate: latest?.snapshot_date || null,
-      currentBalance: aggTotal(latest?.accounts),
-      weekStartDate: weekStart?.snapshot_date || null,
-      weekStartBalance: weekStart ? aggTotal(weekStart.accounts) : null,
-      weekStartExact: !!(weekStart && weekStart.snapshot_date === monday),
+      real: isReal,
+      note: isReal ? null : 'no real Chase snapshot yet — latest fdw_cash_snapshot is stale/sandbox',
+      currentDate: isReal ? (latest?.snapshot_date || null) : null,
+      currentBalance: isReal ? aggTotal(latestReal) : null,
+      weekStartDate: isReal && wsReal.length ? (weekStart?.snapshot_date || null) : null,
+      weekStartBalance: isReal && wsReal.length ? aggTotal(wsReal) : null,
+      weekStartExact: !!(isReal && wsReal.length && weekStart && weekStart.snapshot_date === monday),
       accounts,
       count: accounts.length,
+      latestSnapshotDate: latest?.snapshot_date || null, // diagnostic even when stale
       generatedAt: new Date().toISOString(),
     });
   } catch (e) {
