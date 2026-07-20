@@ -99,10 +99,20 @@ export default async function handler(req, res) {
     ]);
     for (const q of [recQ, custQ, oneQ, txnQ]) if (q.error) throw new Error(q.error.message);
 
-    const bankRecurring = (recQ.data || []);
+    // internal transfers between Ben's own accounts are not bills — exclude them
+    const OWN_LAST4 = new Set(Object.keys(ACCT_ENTITY));
+    const isInternalTransfer = (t) => {
+      if (/^TRANSFER/i.test(String(t.category || ''))) return true;
+      const d = String(t.raw_desc || '');
+      if (/\b(online|book|wire|zelle|internal)\s+transfer\b/i.test(d)) return true;
+      const m4 = d.match(/\b\d{4}\b/g) || [];
+      return m4.some((x) => OWN_LAST4.has(x)); // desc references one of our own accounts
+    };
+
+    const bankRecurring = (recQ.data || []).filter((r) => !isInternalTransfer({ raw_desc: r.merchant, category: r.category }));
     const custom = (custQ.data || []).map((c) => ({ ...c, amount: num(c.amount) }));
     const oneTimes = (oneQ.data || []).map((o) => ({ ...o, amount: num(o.amount) }));
-    const txns = (txnQ.data || []).filter((t) => !t.pending && num(t.amount) > 0); // outflows only
+    const txns = (txnQ.data || []).filter((t) => !t.pending && num(t.amount) > 0 && !isInternalTransfer(t)); // real outflows only
 
     // canonical tracked set (for matching)
     const tracked = [
@@ -112,12 +122,11 @@ export default async function handler(req, res) {
     const trackedMatch = (merchant) => tracked.find((t) => nameMatch(t.name, merchant));
 
     // 1 + 2: walk bank recurring, classify as untracked (add) or amount-drift (update)
-    const untrackedRecurring = [], wrongAmount = [];
+    const untrackedRaw = [];
+    const matchedByTracked = new Map(); // trackedKey -> { tracked, hits:[{amount, merchant, lastSeen, acctLast4}] }
     for (const r of bankRecurring) {
       const merchant = String(r.merchant || '').trim();
       const amt = Math.round(num(r.amount) * 100) / 100;
-      // skip internal transfers / payroll wires (not calendar bills)
-      if (/\b(WIRE|ZELLE|ONLINE TRANSFER|BOOK TRANSFER)\b/i.test(merchant)) continue;
       const gap = r.n > 1 ? Math.round(num(r.span_days) / (r.n - 1)) : null;
       const cad = cadence(gap);
       const entity = ACCT_ENTITY[r.acct_last4] || 'SF';
@@ -125,26 +134,52 @@ export default async function handler(req, res) {
       const recurDay = recurType === 'weekly-day' ? (Number.isFinite(r.dow) ? (r.dow === 0 ? 7 : r.dow) : 1) : (Number(r.dom) || 1);
       const m = trackedMatch(merchant);
       if (!m) {
-        untrackedRecurring.push({
-          key: `ur:${r.acct_last4}:${merchant}:${amt}`,
-          merchant, amount: amt, cadence: cad, count: r.n,
-          lastSeen: r.last_seen, acctLast4: r.acct_last4,
-          suggestName: merchant.replace(/\s+/g, ' ').slice(0, 40).toUpperCase(),
-          suggestAccount: entity, recurType, recurDay,
-        });
+        untrackedRaw.push({ merchant, amount: amt, cadence: cad, count: r.n, lastSeen: r.last_seen, acctLast4: r.acct_last4, entity, recurType, recurDay });
       } else {
-        const diff = Math.round((amt - m.amount) * 100) / 100;
-        if (Math.abs(diff) > WRONG_MIN && Math.abs(diff) / Math.max(1, m.amount) > WRONG_PCT) {
-          wrongAmount.push({
-            key: `wa:${m.source}:${m.id || m.name}`,
-            trackedName: m.name, trackedAmount: m.amount, source: m.source,
-            customId: m.source === 'custom' ? m.id : null,
-            bankMerchant: merchant, bankAmount: amt, diff,
-            lastSeen: r.last_seen, acctLast4: r.acct_last4,
-          });
-        }
+        const tk = `${m.source}:${m.id || m.name}`;
+        if (!matchedByTracked.has(tk)) matchedByTracked.set(tk, { tracked: m, hits: [] });
+        matchedByTracked.get(tk).hits.push({ amount: amt, merchant, lastSeen: r.last_seen, acctLast4: r.acct_last4 });
       }
     }
+
+    // dedup untracked recurring by first distinctive token (collapses "ALTUS
+    // RECEIVABLE" / "ALTUS RECEIVABLES MANA LA"); keep the biggest/most-frequent.
+    const urByKey = new Map();
+    for (const u of untrackedRaw) {
+      const k = (tokens(u.merchant)[0] || norm(u.merchant) || u.merchant);
+      const prev = urByKey.get(k);
+      if (!prev || u.count > prev.count || (u.count === prev.count && u.amount > prev.amount)) urByKey.set(k, u);
+    }
+    const untrackedRecurring = [...urByKey.values()]
+      .sort((a, b) => b.amount - a.amount)
+      .map((u) => ({
+        key: `ur:${u.acctLast4}:${norm(u.merchant)}`,
+        merchant: u.merchant, amount: u.amount, cadence: u.cadence, count: u.count,
+        lastSeen: u.lastSeen, acctLast4: u.acctLast4,
+        suggestName: u.merchant.replace(/\s+/g, ' ').slice(0, 40).toUpperCase(),
+        suggestAccount: u.entity, recurType: u.recurType, recurDay: u.recurDay,
+      }));
+
+    // amount drift — ONE row per tracked item. Suppress variable-amount vendors
+    // (inconsistent bank amounts aren't a reliable "wrong estimate").
+    const wrongAmount = [];
+    for (const { tracked: m, hits } of matchedByTracked.values()) {
+      const amts = hits.map((h) => h.amount);
+      const lo = Math.min(...amts), hi = Math.max(...amts);
+      if (lo > 0 && hi / lo > 1.15) continue; // variable payment — skip
+      const bankAmt = Math.round((amts.reduce((s, a) => s + a, 0) / amts.length) * 100) / 100; // consistent avg
+      const diff = Math.round((bankAmt - m.amount) * 100) / 100;
+      if (Math.abs(diff) <= WRONG_MIN || Math.abs(diff) / Math.max(1, m.amount) <= WRONG_PCT) continue;
+      const last = hits.sort((a, b) => String(b.lastSeen).localeCompare(String(a.lastSeen)))[0];
+      wrongAmount.push({
+        key: `wa:${m.source}:${m.id || m.name}`,
+        trackedName: m.name, trackedAmount: m.amount, source: m.source,
+        customId: m.source === 'custom' ? m.id : null,
+        bankMerchant: last.merchant, bankAmount: bankAmt, diff,
+        lastSeen: last.lastSeen, acctLast4: last.acctLast4,
+      });
+    }
+    wrongAmount.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
 
     // 3: large one-offs — big recent debits not in any recurring group and not
     // matching a tracked bill or an existing one-time near that date
@@ -176,15 +211,17 @@ export default async function handler(req, res) {
     // 4: tracked recurring with no bank hit in the window (weekly/monthly only —
     // quarterly/biweekly items may legitimately not appear in NOHIT_DAYS)
     const trackedNoBankHit = [];
-    const merchantsInWindow = txns.map((t) => t.raw_desc);
-    const hasBankHit = (name) => merchantsInWindow.some((desc) => nameMatch(name, desc));
+    // Conservative: consider a bill "seen" if a debit matches its name OR sits
+    // within 1% of its amount (likely the same bill under a different bank name).
+    const hasBankHit = (name, amount) => txns.some((t) =>
+      nameMatch(name, t.raw_desc) || Math.abs(num(t.amount) - amount) <= Math.max(0.5, amount * 0.01));
     const nohitCandidates = [
       ...HARDCODED_RECURRING.filter((h) => !h.quarterly && !h.biweekly)
         .map((h) => ({ name: h.name, amount: h.amount, source: 'hardcoded' })),
       ...custom.map((c) => ({ name: c.name, amount: c.amount, source: 'custom', id: c.id })),
     ];
     for (const c of nohitCandidates) {
-      if (hasBankHit(c.name)) continue;
+      if (hasBankHit(c.name, c.amount)) continue;
       trackedNoBankHit.push({
         key: `nb:${c.source}:${c.id || c.name}`,
         name: c.name, amount: c.amount, source: c.source,
