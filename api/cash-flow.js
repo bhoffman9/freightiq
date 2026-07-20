@@ -28,12 +28,12 @@ function inferCatFromAccount(acct) {
   return 'Other';
 }
 
+// Sunday-anchored week (Sun–Sat) to match the Budget Calendar's week rows.
 function weekRange(d) {
-  const day = d.getDay();
-  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const day = d.getDay(); // 0=Sun..6=Sat
   const start = new Date(d);
   start.setHours(0, 0, 0, 0);
-  start.setDate(d.getDate() + diffToMonday);
+  start.setDate(d.getDate() - day);
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
   return { start, end };

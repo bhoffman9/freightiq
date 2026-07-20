@@ -29,12 +29,12 @@ const ACCT = {
   '1508': { label: 'DockIt LLC', group: 'Other' },
 };
 
-// Monday (UTC) of the week containing d, as YYYY-MM-DD.
-function mondayOf(d) {
+// Start of the week (Sunday, UTC) containing d, as YYYY-MM-DD. Sunday-anchored
+// to match the Budget Calendar's Sun–Sat week rows.
+function weekStartOf(d) {
   const day = d.getUTCDay(); // 0=Sun..6=Sat
-  const diff = day === 0 ? -6 : 1 - day;
   const m = new Date(d);
-  m.setUTCDate(d.getUTCDate() + diff);
+  m.setUTCDate(d.getUTCDate() - day);
   return m.toISOString().slice(0, 10);
 }
 
@@ -53,20 +53,20 @@ export default async function handler(req, res) {
     const latest = (latestQ.data || [])[0] || null;
 
     const today = req.query.date ? new Date(req.query.date) : new Date();
-    const monday = mondayOf(today);
+    const wkStart = weekStartOf(today); // Sunday, matches the calendar's Sun–Sat week
 
-    // week anchor: earliest snapshot on/after Monday (closest to true week-start we have)
+    // week anchor: earliest snapshot on/after the week start (closest we have)
     const wsQ = await sb
       .from('fdw_cash_snapshot').select('snapshot_date,accounts')
-      .gte('snapshot_date', monday).order('snapshot_date', { ascending: true }).limit(1);
+      .gte('snapshot_date', wkStart).order('snapshot_date', { ascending: true }).limit(1);
     if (wsQ.error) throw wsQ.error;
     let weekStart = (wsQ.data || [])[0] || null;
 
-    // fallback: no snapshot yet this week -> latest available before Monday
+    // fallback: no snapshot yet this week -> latest available before the week start
     if (!weekStart) {
       const preQ = await sb
         .from('fdw_cash_snapshot').select('snapshot_date,accounts')
-        .lt('snapshot_date', monday).order('snapshot_date', { ascending: false }).limit(1);
+        .lt('snapshot_date', wkStart).order('snapshot_date', { ascending: false }).limit(1);
       if (preQ.error) throw preQ.error;
       weekStart = (preQ.data || [])[0] || null;
     }
@@ -96,14 +96,14 @@ export default async function handler(req, res) {
     // via the plaid-sync cron). Same key/data for everyone, so CDN-cacheable.
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     return res.status(200).json({
-      monday,
+      weekStart: wkStart,   // Sunday of the current week (Sun–Sat, matches the calendar)
       real: isReal,
       note: isReal ? null : 'no real Chase snapshot yet — latest fdw_cash_snapshot is stale/sandbox',
       currentDate: isReal ? (latest?.snapshot_date || null) : null,
       currentBalance: isReal ? aggTotal(latestReal) : null,
       weekStartDate: isReal && wsReal.length ? (weekStart?.snapshot_date || null) : null,
       weekStartBalance: isReal && wsReal.length ? aggTotal(wsReal) : null,
-      weekStartExact: !!(isReal && wsReal.length && weekStart && weekStart.snapshot_date === monday),
+      weekStartExact: !!(isReal && wsReal.length && weekStart && weekStart.snapshot_date === wkStart),
       accounts,
       count: accounts.length,
       latestSnapshotDate: latest?.snapshot_date || null, // diagnostic even when stale

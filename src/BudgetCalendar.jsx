@@ -1199,6 +1199,13 @@ export default function BudgetCalendar() {
     const y = d.overflow ? d.overflowYear : currentYear;
     return sum + getDayPendingTotal(d.day, m, y);
   }, 0);
+  // All scheduled bills for the week (paid + unpaid) — matches the cash-flow
+  // projection banner's "Bills this week". getWeekTotal is unpaid-only (pending).
+  const getWeekBillsTotal = (weekDays) => weekDays.reduce((sum, d) => {
+    const m = d.overflow ? d.overflowMonth : currentMonth;
+    const y = d.overflow ? d.overflowYear : currentYear;
+    return sum + getDayTotal(d.day, m, y);
+  }, 0);
 
   // Safe month navigation: flush any pending debounced changes first, then
   // block saves during load (so empty-state interim can't diff-wipe the old
@@ -1609,29 +1616,26 @@ export default function BudgetCalendar() {
       <b>Budget Calendar isn't configured.</b> Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in Vercel and redeploy. Editing is disabled until then so nothing is lost.
     </div>
   );
-  // Week-end cash projection (floor): start from the Monday-anchor bank balance
-  // and subtract this week's scheduled bills (from the anchor day through Sunday).
-  // No income modeled — conservative low point. Only shown on the current month.
+  // Week-end cash projection (floor): start from the week-start bank balance and
+  // subtract ALL of this week's scheduled bills. The week is Sun–Sat to match the
+  // calendar's own week rows, so "Bills this week" == summing the calendar cells
+  // for the current week. No income modeled — conservative low point.
   const _viewingCurrentMonth = currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear();
   const weekProj = (() => {
-    if (!weekCash || weekCash.weekStartBalance == null || !weekCash.monday || !_viewingCurrentMonth) return null;
-    // Anchor the week to the SERVER's Monday (weekCash.monday) so the balance
-    // snapshot and the bill window always describe the same week — a client-vs-UTC
-    // date split at a week boundary would otherwise empty the loop.
-    const monday = new Date(weekCash.monday + 'T00:00:00');
-    const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
-    const anchor = weekCash.weekStartDate ? new Date(weekCash.weekStartDate + 'T00:00:00') : monday;
-    const from = anchor > monday ? anchor : monday;
+    if (!weekCash || weekCash.weekStartBalance == null || !weekCash.weekStart || !_viewingCurrentMonth) return null;
+    const wkStart = new Date(weekCash.weekStart + 'T00:00:00'); // Sunday
+    const wkEnd = new Date(wkStart); wkEnd.setDate(wkStart.getDate() + 6); // Saturday
     let out = 0;
-    for (let d = new Date(from); d <= sunday; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(wkStart); d <= wkEnd; d.setDate(d.getDate() + 1)) {
       const exps = getExpensesForDay(d.getDate(), d.getMonth(), d.getFullYear());
       out += exps.reduce((s, e) => s + (Number(e.amount) || 0), 0);
     }
+    out = Math.round(out * 100) / 100;
     return {
       start: weekCash.weekStartBalance, startDate: weekCash.weekStartDate, exact: weekCash.weekStartExact,
       current: weekCash.currentBalance, currentDate: weekCash.currentDate,
-      outflows: out, end: weekCash.weekStartBalance - out,
-      monday, sunday,
+      outflows: out, end: Math.round((weekCash.weekStartBalance - out) * 100) / 100,
+      wkStart, wkEnd,
     };
   })();
   const _money = (n) => `$${Math.round(n).toLocaleString('en-US')}`;
@@ -1702,11 +1706,11 @@ export default function BudgetCalendar() {
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "stretch", gap: 10, marginBottom: 12, padding: "12px 14px", background: "#0f172a", borderRadius: 10, color: "#e2e8f0" }}>
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", paddingRight: 14, borderRight: "1px solid #1e293b" }}>
               <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "#94a3b8" }}>This week</div>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{_md(weekProj.monday)} – {_md(weekProj.sunday)}</div>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>{_md(weekProj.wkStart)} – {_md(weekProj.wkEnd)}</div>
             </div>
             <div style={{ flex: 1, minWidth: 120 }}>
               <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "#94a3b8" }}>
-                {weekProj.exact ? "Start balance (Mon)" : `Start balance (${weekProj.startDate ? _md(new Date(weekProj.startDate + 'T00:00:00')) : "wk"})`}
+                {weekProj.exact ? "Start balance (Sun)" : `Start balance (${weekProj.startDate ? _md(new Date(weekProj.startDate + 'T00:00:00')) : "wk"})`}
               </div>
               <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "ui-monospace,monospace" }}>{_money(weekProj.start)}</div>
             </div>
@@ -2902,7 +2906,8 @@ export default function BudgetCalendar() {
             <div className="sticky top-0 z-20 mb-2 px-3 py-2 bg-green-600 text-white rounded-lg shadow-md flex items-center justify-between">
               <span className="text-sm font-bold tracking-wide">Week {weekIdx + 1}</span>
               <span className="text-sm font-bold">
-                Pending: ${getWeekTotal(week).toLocaleString('en-US',{minimumFractionDigits:2})}
+                Bills: ${getWeekBillsTotal(week).toLocaleString('en-US',{minimumFractionDigits:2})}
+                <span className="opacity-80 font-medium"> · Pending: ${getWeekTotal(week).toLocaleString('en-US',{minimumFractionDigits:2})}</span>
               </span>
             </div>
 
