@@ -26,7 +26,23 @@ export default async function handler(req, res) {
       .sort((a, b) => (a.y - b.y) || (a.m - b.m));
     const delOffice = (di.data || []).filter((d) => isOffice(d.item_key));
 
+    // Idealease/Ryder invoice amounts (to set roster monthly_cost accurately)
+    const [inv] = await Promise.all([
+      sb.from('invoices').select('vendor_name,amount,invoice_date,description').is('deleted_at', null)
+        .or('vendor_name.ilike.*idealease*,vendor_name.ilike.*ryder*'),
+    ]);
+    const irStats = {};
+    for (const i of (inv.data || [])) {
+      const v = /ideal/i.test(i.vendor_name) ? 'Idealease' : 'Ryder';
+      const s = irStats[v] || (irStats[v] = { count: 0, total: 0, recent: 0, recentTotal: 0, sample: [] });
+      const amt = parseFloat(i.amount) || 0;
+      s.count++; s.total += amt;
+      if ((i.invoice_date || '') >= '2026-06') { s.recent++; s.recentTotal += amt; }
+      if (s.sample.length < 4) s.sample.push({ d: i.invoice_date, amt, desc: (i.description || '').slice(0, 50) });
+    }
+
     return res.json({
+      idealeaseRyder: irStats,
       oneTime: { total: (ot.data || []).length, byMonth: byMo(ot.data || []), officeCount: officeOT.length, officeSample: officeOT.slice(0, 40) },
       checked: { total: (ci.data || []).length, byMonth: byMo(ci.data || []) },
       deleted: { total: (di.data || []).length, sampleKeys: (di.data || []).slice(0, 10), officeDeletedCount: delOffice.length, officeDeletedSample: delOffice.slice(0, 40), columns: di.data && di.data[0] ? Object.keys(di.data[0]) : [] },
