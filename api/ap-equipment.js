@@ -16,7 +16,7 @@ const VENDOR_ALIASES = {
   'tci dedicated logistics, leasing & rental': 'TCI', 'tci dedicated logistics': 'TCI', 'tci': 'TCI',
   'transportation commodities inc': 'TCI', 'transportation commodities': 'TCI',
   'mckinney trailers': 'McKinney', 'mckinney trailer rentals': 'McKinney',
-  'xtra lease': 'XTRA Lease',
+  'xtra lease': 'XTRA Lease', 'xtra lease llc': 'XTRA Lease',
   'mountain west utility trailer': 'Mountain West', 'mountain west utility trailer, inc': 'Mountain West', 'utility trailer': 'Mountain West',
   'ten trailer leasing': 'Ten Trailer Leasing', 'ten trailer': 'Ten Trailer Leasing',
   'premier trailer leasing': 'Premier Trailer', 'premier trailer': 'Premier Trailer', 'premier trailers': 'Premier Trailer',
