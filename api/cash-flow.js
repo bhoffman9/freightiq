@@ -196,11 +196,20 @@ export default async function handler(req, res) {
       }
       const julyOne = (oneTime.data || []).filter(o => o.year === startYear && (o.month === startMonth0 || o.month === endMonth0))
         .map(o => ({ id: o.id, name: o.name, amount: o.amount, day: o.day, month: o.month }));
+      // per-day sums (hardcoded net + DB payments)
+      const perDay = {};
+      for (let dd = new Date(start); dd <= end; dd.setDate(dd.getDate() + 1)) {
+        const y = dd.getFullYear(), m0 = dd.getMonth(), day = dd.getDate();
+        let s = 0;
+        for (const it of hardcodedItemsForDate(dd)) { const a = netAmount(it.id, it.amount, y, m0, day); if (a != null) s += a; }
+        perDay[day] = Math.round(s * 100) / 100;
+      }
+      for (const p of payments) { const dn = parseInt(String(p.day).replace(/\D/g, ''), 10); perDay[dn] = Math.round(((perDay[dn] || 0) + p.amount) * 100) / 100; }
       return res.json({
         scheduledOutflows, recurringBillsTotal, dbTotal: Math.round(dbTotal * 100) / 100,
         overrides: overrides.data,
         deletedKeys: [...deletedSet].filter(k => k.startsWith(`${startYear}-${startMonth0}-`)),
-        hardcoded: hc, payments, julyOneTime: julyOne,
+        hardcoded: hc, payments, julyOneTime: julyOne, perDay,
         customRecurring: (recurring.data || []).map(r => ({ id: r.id, name: r.name, amount: r.amount, recur_type: r.recur_type, recur_day: r.recur_day })),
       });
     }
