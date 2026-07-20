@@ -31,6 +31,10 @@
     {
       "path": "/api/ar-snapshot",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/daily-snapshot",
+      "schedule": "15 10 * * *"
     }
   ]
 }

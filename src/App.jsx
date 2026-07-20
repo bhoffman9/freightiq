@@ -5762,14 +5762,27 @@ function RevenueDashboard() {
           {(() => {
             const weeks = TMS_HISTORY.weeks.filter(w => w.loads >= 40); // real full operating weeks (excl. export-horizon tail)
             if (!weeks.length) return null;
+            // ── Match each revenue week (Sun–Sat) to THAT week's actual driver payroll
+            // (fleet + ex-OTR loaded cost, from DRIVER_WEEKLY). Pay-day labels are the
+            // Friday inside the Sun–Sat window, so match by date range — no flat proxy.
+            const pdDates = (DRIVER_WEEKLY.weeks||[]).map(l => { const [m,d]=l.split('/').map(Number); return { label:l, t:Date.UTC(2026,m-1,d) }; });
+            const payrollFor = (key) => {
+              const [Y,M,D] = key.split('-').map(Number); const start = Date.UTC(Y,M-1,D), end = start + 6*864e5;
+              const hit = pdDates.find(p => p.t >= start && p.t <= end);
+              return hit ? (DRIVER_WEEKLY.fleet?.[hit.label]||0) + (DRIVER_WEEKLY.otr?.[hit.label]||0) : null;
+            };
             const recent = weeks.slice(-4), n = recent.length;
             const sumRev = recent.reduce((s,w)=>s+w.rev,0), sumLoads = recent.reduce((s,w)=>s+w.loads,0), sumMiles = recent.reduce((s,w)=>s+w.miles,0);
             const avgRev = sumRev/n, avgLoads = sumLoads/n, avgMiles = sumMiles/n;
-            const pw = DRIVER_WEEKLY.weeks || []; const lw = pw[pw.length-1];
-            const weeklyPayroll = (DRIVER_WEEKLY.fleet?.[lw] || 0) + (DRIVER_WEEKLY.otr?.[lw] || 0);
+            const recentPay = recent.map(w => payrollFor(w.key)).filter(p => p != null);
+            const avgPay = recentPay.length ? recentPay.reduce((a,b)=>a+b,0)/recentPay.length : 0;
+            // Revenue ÷ Payroll = average of each week's own ratio (not avgRev/avgPay) so
+            // one lopsided week can't skew it. Only weeks with a matched payroll count.
+            const ratios = recent.map(w => { const p = payrollFor(w.key); return p ? w.rev/p : null; }).filter(x => x != null);
+            const revPerPay = ratios.length ? ratios.reduce((a,b)=>a+b,0)/ratios.length : null;
             const drivers = ACTIVE_DRIVERS_COUNT, trucks = TRUCK_COUNT;
             const kpis = [
-              { l:"Revenue ÷ Payroll", v: weeklyPayroll>0?`${(avgRev/weeklyPayroll).toFixed(2)}×`:"—", work:`${fd(avgRev,0)} rev ÷ ${fd(weeklyPayroll,0)} payroll`, c:"#4ade80" },
+              { l:"Revenue ÷ Payroll", v: revPerPay!=null?`${revPerPay.toFixed(2)}×`:"—", work:`avg of ${ratios.length} wks · ${fd(avgRev,0)} ÷ ${fd(avgPay,0)}/wk`, c:"#4ade80" },
               { l:"Revenue / Driver", v: fd(avgRev/drivers,0), work:`${fd(avgRev,0)} ÷ ${drivers} drivers`, c:"#38bdf8" },
               { l:"Revenue / Truck", v: fd(avgRev/trucks,0), work:`${fd(avgRev,0)} ÷ ${trucks} trucks`, c:"#fbbf24" },
               { l:"Loads / Driver", v: (avgLoads/drivers).toFixed(1), work:`${fn(avgLoads,0)} loads ÷ ${drivers} drivers`, c:"#a78bfa" },
@@ -5778,7 +5791,7 @@ function RevenueDashboard() {
               ["Avg weekly revenue", fd(avgRev,0), `${n}-wk avg · ${fd(sumRev,0)} ÷ ${n}`],
               ["Avg weekly loads", fn(avgLoads,0), `${fn(sumLoads,0)} ÷ ${n}`],
               ["Avg loaded miles/wk", fn(avgMiles,0), `${fn(sumMiles,0)} ÷ ${n}`],
-              ["Driver payroll/wk", fd(weeklyPayroll,0), `pay wk ${lw||"—"}`],
+              ["Driver payroll/wk", fd(avgPay,0), `per-wk matched · ${recentPay.length} wks`],
               ["Active drivers", drivers, "PAYROLL active"],
               ["Active trucks", trucks, "in-service fleet"],
               ["Revenue / mile", avgMiles?fd(avgRev/avgMiles,2):"—", `${fd(avgRev,0)} ÷ ${fn(avgMiles,0)} mi`],
@@ -5809,20 +5822,22 @@ function RevenueDashboard() {
                   </div>
                 </div>
                 <div style={{ overflowX:"auto" }}>
-                  <table className="tbl"><thead><tr><th>Week of</th><th>Loads</th><th>Miles</th><th>Revenue</th><th>Rev/Driver</th><th>Rev/Truck</th><th>Rev/Mile</th><th>Loads/Driver</th></tr></thead>
-                    <tbody>{[...weeks].reverse().slice(0,12).map(w => (
+                  <table className="tbl"><thead><tr><th>Week of</th><th>Loads</th><th>Miles</th><th>Revenue</th><th>Driver Pay</th><th>Rev÷Pay</th><th>Rev/Driver</th><th>Rev/Truck</th><th>Rev/Mile</th><th>Loads/Driver</th></tr></thead>
+                    <tbody>{[...weeks].reverse().slice(0,12).map(w => { const pay = payrollFor(w.key); return (
                       <tr key={w.key}>
                         <td>{w.label}</td><td>{w.loads}</td><td style={{ color:"var(--mu)" }}>{fn(w.miles,0)}</td>
                         <td style={{ color:"#4ade80", fontWeight:700 }}>{fd(w.rev,0)}</td>
+                        <td style={{ color:"#fb7185" }}>{pay!=null?fd(pay,0):"—"}</td>
+                        <td style={{ color:"#4ade80", fontWeight:700 }}>{pay?`${(w.rev/pay).toFixed(2)}×`:"—"}</td>
                         <td style={{ color:"#38bdf8" }}>{fd(w.rev/drivers,0)}</td>
                         <td style={{ color:"#fbbf24" }}>{fd(w.rev/trucks,0)}</td>
                         <td style={{ color:"#a78bfa" }}>{w.miles?fd(w.rev/w.miles,2):"—"}</td>
                         <td style={{ color:"var(--mu)" }}>{(w.loads/drivers).toFixed(1)}</td>
                       </tr>
-                    ))}</tbody>
+                    ); })}</tbody>
                   </table>
                 </div>
-                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>Show-Freight-carrier revenue (the fleet's own hauled loads) ÷ {drivers} active drivers / {trucks} trucks · {fd(weeklyPayroll,0)}/wk driver payroll. Full operating weeks only (≥40 loads); export-horizon tail excluded. Per-truck Samsara miles → $/truck-mile once the monthly xlsx lands.</div>
+                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>Show-Freight-carrier revenue (the fleet's own hauled loads) ÷ {drivers} active drivers / {trucks} trucks. <b>Rev÷Pay uses each week's actual driver payroll</b> (fleet + ex-OTR loaded cost from that week's paychecks, matched by pay date), averaged {fd(avgPay,0)}/wk. Full operating weeks only (≥40 loads); export-horizon tail excluded. Per-truck Samsara miles → $/truck-mile once the monthly xlsx lands.</div>
               </div>
             );
           })()}
@@ -9168,6 +9183,88 @@ function CashFlowDashboard() {
 // per-week ATL_WEEKLY_LOG array — roster + contribution numbers per
 // week, since drivers/contractors can be ATL one week and not the next.
 // There are no sticky entity:"ATL" tags on PAYROLL/FUEL/CONTRACTORS.
+// Executive point-in-time balances log — AP / AR / cash / pipeline over time,
+// from /api/daily-snapshot (unified fdw_daily_snapshot). Degrades cleanly: if the
+// one-time migration isn't applied yet it shows the setup step but still plots AR
+// history from the existing fdw_ar_snapshot so the card is never empty.
+function BalancesTrend() {
+  const [rows, setRows] = useState(null);
+  const [state, setState] = useState("load"); // load | ok | setup | err
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/daily-snapshot?range=180").then(r => r.json().then(j => ({ ok: r.ok, status: r.status, j })))
+      .then(({ status, j }) => {
+        if (cancelled) return;
+        if (status === 503 || j.error === "table-not-found") {
+          // fallback: AR-only history from the existing snapshot table
+          fetch("/api/ar-snapshot?list=1").then(r => r.json()).then(d => {
+            if (cancelled) return;
+            const ar = (d.dates || []).slice().reverse().map(x => ({ snapshot_date: x.snapshot_date, ar_total: x.total_ar }));
+            setRows(ar); setState("setup");
+          }).catch(() => { if (!cancelled) { setRows([]); setState("setup"); } });
+          return;
+        }
+        if (j.error) { setState("err"); return; }
+        setRows(j.rows || []); setState("ok");
+      }).catch(() => { if (!cancelled) setState("err"); });
+    return () => { cancelled = true; };
+  }, []);
+
+  if (state === "load") return <div className="card" style={{ padding:16, marginBottom:14, color:"var(--mu)", fontSize:12 }}>Loading balance history…</div>;
+  if (state === "err") return null;
+  const data = (rows || []).map(r => ({
+    d: r.snapshot_date ? r.snapshot_date.slice(5) : "",
+    ap: r.ap_total != null ? +r.ap_total : null, ar: r.ar_total != null ? +r.ar_total : null,
+    cash: r.cash_total != null ? +r.cash_total : null, pipe: r.pipeline_total != null ? +r.pipeline_total : null,
+    net: (r.cash_total != null && r.ar_total != null && r.ap_total != null) ? +r.cash_total + +r.ar_total - +r.ap_total : null,
+  }));
+  const last = data[data.length - 1] || {};
+  const has = k => data.some(x => x[k] != null);
+  const series = [
+    { k:"cash", l:"Cash", c:"#4ade80" }, { k:"ar", l:"A/R", c:"#38bdf8" },
+    { k:"ap", l:"A/P", c:"#fb7185" }, { k:"pipe", l:"Pipeline", c:"#a78bfa" },
+  ].filter(s => has(s.k));
+  const kpis = [
+    { l:"Cash on hand", v:last.cash, c:"#4ade80" }, { l:"A/R (open)", v:last.ar, c:"#38bdf8" },
+    { l:"A/P (open)", v:last.ap, c:"#fb7185" }, { l:"Net working capital", v:last.net, c:"#2dd4bf", sub:"cash + A/R − A/P" },
+  ];
+  return (
+    <div className="card" style={{ marginBottom:14, borderLeft:"3px solid #2dd4bf" }}>
+      <div className="ctit">Balances — point in time <span style={{ fontSize:10, color:"var(--mu)", fontWeight:400 }}>· logged daily · {data.length} day{data.length===1?"":"s"} of history</span></div>
+      {state === "setup" && (
+        <div style={{ padding:"8px 12px", margin:"8px 0", fontSize:11, color:"#fbbf24", background:"rgba(251,191,36,.08)", border:"1px solid rgba(251,191,36,.3)", borderRadius:4 }}>
+          One-time setup to log AP/cash/pipeline too: run <code>supabase/migrations/fdw_daily_snapshot.sql</code> in the Supabase SQL editor, then hit <code>/api/daily-snapshot?backfill=1</code> (cron-authed) to seed AP history. Showing A/R history only until then.
+        </div>
+      )}
+      <div className="g4" style={{ margin:"10px 0 14px" }}>
+        {kpis.filter(k => k.v != null).map((k,i) => (
+          <div className="kpi" key={i} style={{ borderLeft:`3px solid ${k.c}` }}>
+            <div className="klbl">{k.l}</div>
+            <div className="kval" style={{ color:k.c }}>{fd(k.v,0)}</div>
+            {k.sub && <div className="ksub">{k.sub}</div>}
+          </div>
+        ))}
+      </div>
+      {data.length > 1 ? (
+        <ResponsiveContainer width="100%" height={240}>
+          <LineChart data={data} margin={{ top:6, right:12, left:8, bottom:4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--bd)" />
+            <XAxis dataKey="d" tick={{ fontSize:10, fill:"var(--mu)" }} minTickGap={24} />
+            <YAxis tick={{ fontSize:10, fill:"var(--mu)" }} tickFormatter={v => `$${Math.round(v/1000)}k`} width={48} />
+            <Tooltip contentStyle={{ background:"var(--s1)", border:"1px solid var(--bd)", fontSize:11 }} formatter={v => fd(v,0)} />
+            {series.map(s => <Line key={s.k} type="monotone" dataKey={s.k} name={s.l} stroke={s.c} dot={false} strokeWidth={2} connectNulls />)}
+          </LineChart>
+        </ResponsiveContainer>
+      ) : (
+        <div style={{ fontSize:11, color:"var(--mu)", padding:"6px 2px" }}>History builds one point per day — the trend line appears once there are 2+ days logged.</div>
+      )}
+      <div style={{ display:"flex", gap:14, flexWrap:"wrap", marginTop:8 }}>
+        {series.map(s => <span key={s.k} style={{ fontSize:10, color:"var(--mu)" }}><span style={{ display:"inline-block", width:9, height:9, background:s.c, borderRadius:2, marginRight:4 }} />{s.l}</span>)}
+      </div>
+    </div>
+  );
+}
+
 function ArDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -9251,6 +9348,8 @@ function ArDashboard() {
           {snapDates.length ? `${snapDates.length} daily snapshot${snapDates.length>1?"s":""} available (since ${snapDates[snapDates.length-1]})` : "daily snapshots start accumulating today — pick a date once history builds"}
         </span>
       </div>
+
+      <BalancesTrend />
 
       {snapMeta && !snapMeta.exact && (
         <div className="card" style={{ padding:"8px 14px", marginBottom:12, fontSize:11, color:"#fbbf24", border:"1px solid rgba(251,191,36,.3)" }}>
