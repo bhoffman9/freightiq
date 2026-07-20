@@ -19,7 +19,10 @@ export default async function handler(req, res) {
 
   const b = req.body || {};
   const amount = Number(b.amount);
-  if (!isFinite(amount) || amount <= 0) return res.status(400).json({ error: 'amount must be a positive number' });
+  const needsAmount = ['add', 'update', 'onetime'].includes(b.action);
+  if (needsAmount && (!isFinite(amount) || amount <= 0)) {
+    return res.status(400).json({ error: 'amount must be a positive number' });
+  }
 
   try {
     const sb = getSupabase();
@@ -66,23 +69,37 @@ export default async function handler(req, res) {
       if (!(day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2020)) {
         return res.status(400).json({ error: 'valid day/month/year required' });
       }
+      // The calendar stores w_one_time_expenses.month 0-INDEXED (0=Jan). Callers
+      // pass 1-indexed (getMonth()+1), so convert here — otherwise the expense
+      // lands a month late in the calendar.
+      const month0 = month - 1;
       const account = String(b.account || '').trim();
       // idempotent per (name, month, year): update if it already exists, else insert
       const { data: dup } = await sb.from('w_one_time_expenses')
-        .select('id').ilike('name', name).eq('month', month).eq('year', year).limit(1);
+        .select('id').ilike('name', name).eq('month', month0).eq('year', year).limit(1);
       if (dup && dup.length) {
         const { error } = await sb.from('w_one_time_expenses').update({ amount, day, account }).eq('id', dup[0].id);
         if (error) throw new Error(error.message);
         return res.status(200).json({ ok: true, action: 'onetime-updated', id: dup[0].id });
       }
-      const id = `exp-payroll-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-      const row = { id, name, amount, day, month, year, account };
+      const id = `exp-oneoff-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+      const row = { id, name, amount, day, month: month0, year, account };
       const { error } = await sb.from('w_one_time_expenses').insert(row);
       if (error) throw new Error(error.message);
       return res.status(200).json({ ok: true, action: 'onetime', row });
     }
 
-    return res.status(400).json({ error: "action must be 'add', 'update', or 'onetime'" });
+    // Remove a user-added recurring bill (w_custom_recurring) — used when a
+    // tracked bill never clears the bank. Hardcoded calendar bills can't be
+    // removed this way (they're not table rows).
+    if (b.action === 'remove-recurring') {
+      if (!b.id) return res.status(400).json({ error: 'id required for remove-recurring' });
+      const { error } = await sb.from('w_custom_recurring').delete().eq('id', b.id);
+      if (error) throw new Error(error.message);
+      return res.status(200).json({ ok: true, action: 'remove-recurring', id: b.id });
+    }
+
+    return res.status(400).json({ error: "action must be 'add', 'update', 'onetime', or 'remove-recurring'" });
   } catch (e) {
     return res.status(500).json({ error: String(e.message || e) });
   }
