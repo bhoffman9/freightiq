@@ -5510,6 +5510,7 @@ const ALVYS = {
 
 function RevenueDashboard() {
   const [view, setView] = useState("alvys");
+  const [histGran, setHistGran] = useState("week"); // week | month
   const [alvysLive, setAlvysLive] = useState(null);
   useEffect(() => {
     fetch("/api/alvys-loads").then(r => r.json()).then(dd => {
@@ -5545,6 +5546,25 @@ function RevenueDashboard() {
       });
       const undated = dd.loads.filter(l => isForecast(l) && !(parseD(l.deliveryDate) || parseD(l.pickupDate))).length;
 
+      // ── Historical breakdown: bucket ALL dated loads by week (Sun–Sat) + month ──
+      const sundayOf = dt => { const x = new Date(dt); x.setHours(0,0,0,0); x.setDate(x.getDate() - x.getDay()); return x; };
+      const wkMap = {}, moMap = {};
+      dd.loads.forEach(l => {
+        const dt = parseD(l.deliveryDate) || parseD(l.pickupDate);
+        if (!dt) return;
+        const r = l.revenue || 0;
+        const isCE = /capacity express/i.test(l.invoiceAs || "");
+        const isSF = /show freight/i.test(l.invoiceAs || "");
+        const ws = sundayOf(dt), wkey = ws.toISOString().slice(0,10);
+        const w = wkMap[wkey] || (wkMap[wkey] = { key: wkey, label: `${ws.getMonth()+1}/${ws.getDate()}`, rev:0, loads:0, ce:0, sf:0 });
+        w.rev += r; w.loads++; if (isCE) w.ce += r; else if (isSF) w.sf += r;
+        const mkey = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}`;
+        const m = moMap[mkey] || (moMap[mkey] = { key: mkey, label: `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][dt.getMonth()]} ${dt.getFullYear()}`, rev:0, loads:0, ce:0, sf:0 });
+        m.rev += r; m.loads++; if (isCE) m.ce += r; else if (isSF) m.sf += r;
+      });
+      const histWeeks = Object.values(wkMap).sort((a,b) => a.key.localeCompare(b.key));
+      const histMonths = Object.values(moMap).sort((a,b) => a.key.localeCompare(b.key));
+
       setAlvysLive({
         period: "Live — Alvys TMS",
         totalLoads: dd.total || dd.loads.length, totalRev: byStatus.reduce((s, x) => s + x.rev, 0),
@@ -5552,6 +5572,7 @@ function RevenueDashboard() {
         byStatus,
         topCustomers: (dd.topCustomers || []).map(c => ({ name: c.name, loads: c.loads, rev: c.revenue })),
         forecast: fweeks, forecastUndated: undated,
+        histWeeks, histMonths,
         fetchedAt: dd.fetchedAt,
       });
     }).catch(() => {});
@@ -5626,6 +5647,58 @@ function RevenueDashboard() {
               </div>
             );
           })()}
+
+          {/* ── HISTORICAL BREAKDOWN (all loads by delivery week / month) ── */}
+          {alvysLive && alvysLive.histWeeks && (() => {
+            const rows = histGran === "month" ? alvysLive.histMonths : alvysLive.histWeeks;
+            if (!rows.length) return null;
+            const tot = rows.reduce((s,r) => s + r.rev, 0);
+            const totLoads = rows.reduce((s,r) => s + r.loads, 0);
+            const chartData = rows.map(r => ({ label: r.label, CE: Math.round(r.ce), SF: Math.round(r.sf) }));
+            const now = new Date();
+            const todayKey = histGran === "month"
+              ? `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`
+              : (() => { const x = new Date(); x.setHours(0,0,0,0); x.setDate(x.getDate()-x.getDay()); return x.toISOString().slice(0,10); })();
+            return (
+              <div className="card" style={{ marginBottom:14, borderLeft:"3px solid #38bdf8" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", flexWrap:"wrap", gap:8, marginBottom:8 }}>
+                  <div className="ctit" style={{ margin:0 }}>Historical Revenue · by {histGran === "month" ? "month" : "week"}</div>
+                  <div style={{ display:"flex", gap:6 }}>
+                    {[["week","Week"],["month","Month"]].map(([id,lbl]) => (
+                      <button key={id} onClick={()=>setHistGran(id)} style={{ padding:"4px 14px",borderRadius:3,cursor:"pointer",fontSize:11,fontWeight:700,fontFamily:"var(--f1)",background:histGran===id?"var(--orl)":"transparent",color:histGran===id?"var(--or)":"var(--mu)",border:`1px solid ${histGran===id?"var(--or)":"var(--bd)"}` }}>{lbl}</button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ fontFamily:"var(--f3)", fontSize:26, fontWeight:600, color:"#38bdf8", margin:"2px 0 12px" }}>{fd(tot,0)}<span style={{ fontSize:12, color:"var(--mu)", fontWeight:400, marginLeft:8 }}>{fn(totLoads,0)} loads · {rows.length} {histGran==="month"?"months":"weeks"}</span></div>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={chartData} margin={{ top:6, right:8, left:0, bottom:0 }}>
+                    <CartesianGrid stroke="#1f2535" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fill:"#8791a3", fontSize:10 }} axisLine={{ stroke:"#1f2535" }} tickLine={false} interval="preserveStartEnd" />
+                    <YAxis tick={{ fill:"#8791a3", fontSize:10 }} axisLine={false} tickLine={false} tickFormatter={v => `$${Math.round(v/1000)}k`} />
+                    <Tooltip contentStyle={{ background:"#181c26", border:"1px solid #1f2535", borderRadius:4, fontFamily:"var(--f3)" }} formatter={(v,n) => [fd(v,0), n]} />
+                    <Bar dataKey="CE" stackId="a" fill="#38bdf8" />
+                    <Bar dataKey="SF" stackId="a" fill="#2dd4bf" radius={[2,2,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <div style={{ overflowX:"auto", maxHeight:340, marginTop:10 }}>
+                  <table className="tbl"><thead><tr><th>{histGran==="month"?"Month":"Week of"}</th><th>Loads</th><th>CE</th><th>SF</th><th>Revenue</th></tr></thead>
+                    <tbody>{[...rows].reverse().map((r,i) => (
+                      <tr key={r.key} style={{ background: r.key===todayKey ? "rgba(45,212,191,.08)" : (i%2===0?"var(--s2)":"transparent") }}>
+                        <td>{r.label}{r.key===todayKey && <span style={{ color:"#2dd4bf", fontSize:10, marginLeft:6 }}>current</span>}</td>
+                        <td>{r.loads}</td>
+                        <td style={{ color:"#38bdf8" }}>{fd(r.ce,0)}</td>
+                        <td style={{ color:"#2dd4bf" }}>{fd(r.sf,0)}</td>
+                        <td style={{ color:"#4ade80", fontWeight:700 }}>{fd(r.rev,0)}</td>
+                      </tr>
+                    ))}</tbody>
+                    <tfoot><tr><td>Total</td><td>{totLoads}</td><td>{fd(rows.reduce((s,r)=>s+r.ce,0),0)}</td><td>{fd(rows.reduce((s,r)=>s+r.sf,0),0)}</td><td>{fd(tot,0)}</td></tr></tfoot>
+                  </table>
+                </div>
+                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>All Alvys loads by delivery date (CE/SF via invoiceAs). Past weeks = realized/booked, future = pipeline. Alvys holds ~April onward; Jan–Mar in the Ascend view; accounting-truth monthly in the Income tab (QBO).</div>
+              </div>
+            );
+          })()}
+
           <div className="g4" style={{ marginBottom:14 }}>
             {[
               { label:"Total Pipeline", val:fd(AV.totalRev,0), color:"#4ade80", sub:`${fn(AV.totalLoads,0)} loads across all statuses` },
