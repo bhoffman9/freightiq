@@ -19,17 +19,18 @@ import xlrd, io, json, re, csv, datetime, glob, sys
 ROOT = '.'
 INC = 'incoming-freightiq'
 
-def find(pattern):
+def find(pattern, required=True):
     hits = sorted(glob.glob(f'{INC}/{pattern}'))
     if not hits:
-        sys.exit(f'MISSING: no file matching {pattern} in {INC}/')
+        if required: sys.exit(f'MISSING: no file matching {pattern} in {INC}/')
+        return None
     return hits[-1]  # latest
 
 SF_PC = find('ShowFreightInc_PaycheckHistory_*.xls')
 JA_PC = find('J&A*PaycheckHistory*.xls')
 QB_CON = find('J&A*ContractorPayments*.xls')
-CHASE = find('VendorEmployeePayments*.csv')
-print('using:', SF_PC.split("/")[-1], '|', JA_PC.split("/")[-1], '|', QB_CON.split("/")[-1], '|', CHASE.split("/")[-1])
+CHASE = find('VendorEmployeePayments*.csv', required=False)  # frozen 1099 history now lives in the grid; optional on weekly drops
+print('using:', SF_PC.split("/")[-1], '|', JA_PC.split("/")[-1], '|', QB_CON.split("/")[-1], '|', (CHASE.split("/")[-1] if CHASE else '(no Chase csv — preserved from grid)'))
 
 app = io.open('src/App.jsx', encoding='utf-8').read()
 
@@ -170,7 +171,7 @@ for r in range(5, qb.nrows):
         add_contractor(mdate(str(d).strip()), str(n).strip(), a, 'reimb'); continue
     add_contractor(mdate(str(d).strip()), str(n).strip(), a)
 
-for row in list(csv.reader(open(CHASE, encoding='utf-8-sig')))[1:]:
+for row in (list(csv.reader(open(CHASE, encoding='utf-8-sig')))[1:] if CHASE else []):
     if len(row) < 6: continue
     payto = re.sub(r'\s*\(\.\.\.\d+\)', '', row[0]).strip()
     try: a = float(row[5])
@@ -315,6 +316,57 @@ for s in SECT:
 
 period = f"Jan 2 – {weeks[-1].month}/{weeks[-1].day+6}/{weeks[-1].year}"
 data = {'source':f'W-2 paychecks (loaded) + contractors NET cash (car/health/commission broken out in dropdown) · {len(wlabel)} weeks · columns = pay day', 'weeks':wlabel, 'sections':out}
+
+# ---- RELIABILITY GUARD (never-again for the Apr–May 1099 wipe) --------------
+# A weekly export that only covers the current pay period (e.g. a July-only
+# ContractorPayments.xls) used to silently overwrite prior weeks, since the 1099
+# grid weeks come solely from that file. Fix: MERGE this rebuild into the grid
+# already on disk — new value wins per (person,week,field); the existing grid
+# fills anything this export doesn't cover — then ABORT if the result would ever
+# have fewer cells than what's on disk (a partial export). --allow-shrink to
+# override intentionally (e.g. genuinely removing weeks).
+PERWEEK = ['amts','net','gross','camts','car','health','commission','reimb']
+def _normname(n): return re.sub(r'[^a-z0-9]', '', n.lower())
+def _wsort(w): mo,d = w.split('/'); return (int(mo), int(d))
+_om = re.search(r'const OFFICE_PAYCHECKS = (\{.*?\});', app, re.S)
+old = json.loads(_om.group(1)) if _om else None
+if old:
+    oldrows = {(s['name'], _normname(r['name'])): r for s in old['sections'] for r in s['rows']}
+    newrows = {(s['name'], _normname(r['name'])): r for s in data['sections'] for r in s['rows']}
+    wlabel = sorted(dict.fromkeys(old['weeks'] + list(wlabel)), key=_wsort)
+    data['weeks'] = wlabel
+    for (sn, nk), orow in oldrows.items():
+        nrow = newrows.get((sn, nk))
+        if not nrow:  # person absent from this export → preserve their entire row
+            sec = next((s for s in data['sections'] if s['name'] == sn), None)
+            if sec is None: data['sections'].append({'name':sn,'rows':[],'totals':{},'ctotals':{},'ltotals':{},'rtotals':{}}); sec = data['sections'][-1]
+            nrow = {'name':orow['name'],'former':orow.get('former',False), **{pk:{} for pk in PERWEEK}}
+            sec['rows'].append(nrow); newrows[(sn,nk)] = nrow
+        for pk in PERWEEK:
+            m = dict(orow.get(pk,{})); m.update(nrow.get(pk,{})); nrow[pk] = m  # new wins, old fills gaps
+    for s in data['sections']:
+        for r in s['rows']:
+            for pk in PERWEEK: r.setdefault(pk, {})
+            r['total'] = round(sum(r['amts'].values())+sum(r['camts'].values())+sum(r['car'].values())+sum(r['health'].values())+sum(r['commission'].values()), 2)
+        s['rows'] = sorted(s['rows'], key=lambda r: (r['former'], '1099' in r['name'], r['name']))
+        tot={};ct={};lt={};rt={}
+        for wl in wlabel:
+            a=round(sum(r['amts'].get(wl,0) for r in s['rows']),2); cc=round(sum(r['camts'].get(wl,0) for r in s['rows']),2)
+            ll=round(sum(r['camts'].get(wl,0)+r['car'].get(wl,0)+r['health'].get(wl,0)+r['commission'].get(wl,0) for r in s['rows']),2)
+            rr=round(sum(r['reimb'].get(wl,0) for r in s['rows']),2)
+            if a:tot[wl]=a
+            if cc:ct[wl]=cc
+            if ll:lt[wl]=ll
+            if rr:rt[wl]=rr
+        s['totals']=tot;s['ctotals']=ct;s['ltotals']=lt;s['rtotals']=rt
+    data['source'] = f'W-2 paychecks (loaded) + contractors NET cash (car/health/commission in dropdown) · {len(wlabel)} weeks · columns = pay day · accumulated (never overwrites prior weeks)'
+    def _cells(g): return sum(1 for s in g['sections'] for r in s['rows'] for pk in PERWEEK for _ in r.get(pk,{}))
+    oc, nc = _cells(old), _cells(data)
+    if nc < oc and '--allow-shrink' not in sys.argv:
+        sys.exit(f'\n*** ABORT: rebuild would DROP data ({oc} -> {nc} cells). A partial/short export is\n'
+                 f'    the likely cause. Nothing was written. Verify the incoming files, then re-run\n'
+                 f'    with --allow-shrink ONLY if the removal is intentional. ***')
+    print(f'merge-guard: {oc} -> {nc} cells (accumulated with grid on disk)')
 
 # write straight into App.jsx
 new = json.dumps(data)

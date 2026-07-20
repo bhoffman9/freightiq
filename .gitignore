@@ -15,3 +15,12 @@ node_modules/
 
 # Playwright MCP QA artifacts
 .playwright-mcp/
+
+# Weekly payroll drops — employee-level pay data, keep out of git (workflow re-drops them)
+incoming-freightiq/
+# QA screenshots + scratch parse artifacts
+/*.png
+/sc_clean.py
+/sc_u.txt
+scripts/_*.txt
+scripts/_*.js
