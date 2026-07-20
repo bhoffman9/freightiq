@@ -4587,12 +4587,13 @@ function IncomeDashboard() {
       {/* ── OVERVIEW ── */}
       {view === "overview" && (
         <>
-          {/* Revenue hero row — 3 companies prominent */}
-          <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14 }}>
+          {/* Revenue hero row — CE / SF / DI + ATL Ops (ATL is booked within CE/SF, shown separately) */}
+          <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:10,marginBottom:14 }}>
             {[
               { label:"CE Revenue", val:INCOME_2026.ce, color:"#2dd4bf", pct:INCOME_2026.ce/INCOME_2026.total*100 },
               { label:"SF Revenue", val:INCOME_2026.sf, color:"#38bdf8", pct:INCOME_2026.sf/INCOME_2026.total*100 },
               { label:"DI Revenue", val:INCOME_2026.di, color:"#a78bfa", pct:INCOME_2026.di/INCOME_2026.total*100 },
+              { label:"🍑 ATL Ops", val:ATL_BILLING.revenue, color:"#fbbf24", pct:ATL_BILLING.revenue/INCOME_2026.total*100, note:`${ATL_BILLING.loads} loads · booked within CE/SF` },
             ].map(co => (
               <div key={co.label} style={{
                 background:"var(--s1)",border:`1px solid ${co.color}50`,borderRadius:6,
@@ -4601,9 +4602,9 @@ function IncomeDashboard() {
                 <div style={{ position:"absolute",inset:0,opacity:.04,
                   backgroundImage:`repeating-linear-gradient(0deg,${co.color} 0px,${co.color} 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,${co.color} 0px,${co.color} 1px,transparent 1px,transparent 32px)` }} />
                 <div style={{ fontSize:9,letterSpacing:3,textTransform:"uppercase",color:co.color,marginBottom:6,position:"relative" }}>{co.label}</div>
-                <div style={{ fontFamily:"var(--f2)",fontSize:46,fontWeight:900,lineHeight:1,color:co.color,position:"relative" }}>{fd(co.val,0)}</div>
+                <div style={{ fontFamily:"var(--f3)",fontSize:38,fontWeight:600,lineHeight:1,letterSpacing:"-1px",color:co.color,position:"relative" }}>{fd(co.val,0)}</div>
                 <div style={{ fontSize:11,color:"var(--mu)",marginTop:8,position:"relative" }}>{fp(co.pct)} of {fd(INCOME_2026.total,0)} total</div>
-                <div style={{ fontSize:11,color:"var(--mu)",marginTop:3,position:"relative" }}>({fd(co.val/ytdDays*365,0)} proj. full year)</div>
+                <div style={{ fontSize:11,color:"var(--mu)",marginTop:3,position:"relative" }}>{co.note ? co.note : `(${fd(co.val/ytdDays*365,0)} proj. full year)`}</div>
                 <div className="bar" style={{ marginTop:8,position:"relative" }}>
                   <div className="bfil" style={{ width:`${co.pct}%`,background:co.color }} />
                 </div>
@@ -10133,6 +10134,7 @@ export default function App() {
       <style>{CSS}</style>
       <div className="app">
         <header className="hdr">
+          <img src="/logos/showfreight.png" alt="Show Freight Inc" style={{ height:34, width:"auto", marginRight:4, objectFit:"contain" }} />
           <div className="logo">⬡ Freight<b>IQ</b></div>
           <div className="hsub">Show Freight Inc · {PERIOD}</div>
           <div className="hbdg">
