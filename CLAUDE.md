@@ -158,13 +158,12 @@ freightiq/
 | Office Staff | `OfficeStaff()` | Office/warehouse/contractor payroll |
 | Income | `IncomeDashboard()` | Live QB P&L + weekly/monthly income with YoY comparison |
 | CE East | `CEEast()` | Live QBO P&L + Balance Sheet for the CE East entity. Uses a separate QBO token (`ce_east`) in the shared `qbo_tokens` table — when this token expires (401s in the console), re-auth via the CFO Dashboard (see "Re-authorizing QBO" below) |
-| ATL Ops | `AtlOperations()` | Atlanta operations launched May 4, 2026. Reads `ATL_WEEKLY_LOG[]` — per-week roster + contribution amounts (drivers, contractors, driverPay/driverHours/fuelAmt/fuelGallons/contractorPay). NO sticky `entity:"ATL"` tags anymore — designations toggle week-to-week. **Every week ask Ben which drivers + contractors were ATL FOR THAT WEEK.** Agents (Kevin) are NOT in ATL_WEEKLY_LOG — separate bucket entirely. See `feedback_atl_weekly`, `feedback_atl_no_generalize`, and the data layer section below |
+| ATL Ops | `AtlOperations()` | Atlanta operations launched May 4, 2026. Reads `ATL_WEEKLY_LOG[]` — per-week roster + contribution amounts. NO sticky `entity:"ATL"` tags — designations toggle week-to-week. **Every week ask Ben which drivers + contractors + trucks were ATL FOR THAT WEEK.** Agents (Kevin) are NOT in ATL_WEEKLY_LOG — separate bucket. See `feedback_atl_weekly`, `feedback_atl_no_generalize`, `reference_atl_weekly_log` |
+| ATL CPM | `AtlCpm()` | **Dedicated ATL cost-per-mile tab (added 2026-07-19).** ATL labor + fuel ÷ ATL miles (~$2.55/mi) from `ATL_LABOR`/`ATL_FUEL`/`ATL_MILES`/`ATL_TRUCKS` constants. ALL ATL drivers are now carved out of fleet CPM (not just ex-OTR trio); Ben gives the ATL truck#s each week → ATL_MILES = their Samsara miles. Primary ATL view (holds exact YTD). |
 | Cash Flow | `CashFlowDashboard()` | Weekly cash snapshot. Bank-balance accounts are hardcoded in `CASH_SNAPSHOTS` (no Supabase table tracks them). Scheduled payments pull live from `/api/cash-flow` which queries the budget-calendar's `w_*` Supabase tables. Subtitle shows "Live from budget calendar (Supabase)" when the fetch succeeds |
 | Budgeting | `Budgeting()` | QBO P&L rolled into 19 weekly-budget buckets + Agent bucket + Supabase-backed what-if simulator. See "Budgeting tab" section below for bucket-mapping rules. Agent bucket pulls from `AGENTS[]` (NOT subtracted from owner — Kevin's draws are a separate QBO category) |
 | AP Aging | `ApAging()` — src/ApAging.jsx | AP aging dashboard folded in from the standalone app. Invoices/payments/equipment, aging buckets, PDF upload+AI-extract, payment recording, remittances, review-queue + trash. Reads `/api/ap-*`. See "Consolidated dashboards" |
 | Budget Calendar | `BudgetCalendar()` — src/BudgetCalendar.jsx | Work bill/expense calendar folded in from budget-calendar (`w_*` tables). Byte-for-byte port — DO NOT touch its persistence. See "Consolidated dashboards" |
-| Upload | `DataSettings()` | Drop CSV/XLSX files, AI auto-maps columns |
-| Checklist | `Checklist()` | Weekly/monthly data update tasks |
 
 ## Consolidated dashboards — AP Aging + Budget Calendar tabs (folded in Jul 2026)
 
@@ -269,9 +268,9 @@ Agent payments are a separate draw category in QBO — **NOT inside `Total for O
 
 Card-47458 footnote: previously misattributed to Wright Robert (frozen) — reassigned to Tucker Robert in the May 16 update. Wright stays frozen at $2,170.77 (his card 37405 portion only).
 
-### Ex-OTR drivers → folded into ATL (OTR dropped 2026-07-16)
+### ATL fully carved out of fleet CPM (2026-07-19; OTR dropped completely)
 
-OTR was a short-lived separate op (Jun 22 – Jul 16 2026). Ben killed it. **Baker Anthony, Dawson Brian, Pacitti Michael R are now ATL drivers.** `OtrOperations()` / `OTR_WEEKLY_LOG` / `otrSum()` were removed; their two weeks of labor/fuel were folded into `ATL_WEEKLY_LOG` (weeks 6/22 + 6/29). They remain **carved out of fleet CPM** — still NOT in `PAYROLL`/`FUEL`; `LABOR`/`FUEL_TOT`/`GALLONS`/`TOTAL_HRS` still exclude their **$14,785.86 labor / $13,890.04 fuel**. ATL is carved out of fleet CPM too, so the exclusion is still correct — just attributed to ATL now (their labor/fuel show as ATL charges). The parser's `SF_OTR` set (`parse_weekly_drop.py`) + `build_paycheck_grid.py`'s OTR bucket are relabeled ATL but still exclude these drivers from fleet `LABOR`.
+OTR is gone (`OtrOperations()`/`OTR_WEEKLY_LOG`/`otrSum()` removed). As of the 7/19 drop, **ALL ATL drivers are carved out of fleet CPM**, not just the ex-OTR trio. The carve set = that week's ATL roster (Ben gives it — 7/19 was 9: Baker/Dawson/Pacitti/Griffin/Johnson/Logan/Phillips/Tucker/Wainwright). `LABOR`/`FUEL_TOT`/`GALLONS`/`TOTAL_HRS`/`MILES` all EXCLUDE the ATL drivers + their 7 ATL trucks; the carve reconciles **exactly** (Fleet+ATL fuel == EFS total; Fleet+ATL miles == Samsara total). ATL gets its own `ATL_LABOR`/`ATL_FUEL`/`ATL_MILES`/etc. constants + the **🍑 ATL CPM tab** (~$2.55/mi). Each weekly drop, update the ATL roster in TWO places: `SF_ATL` in `parse_weekly_drop.py` + `OTR_LN` (last names) in `build_paycheck_grid.py`, then re-run. The `build_paycheck_grid.py` regex for the carve-out amount matches `ATL drivers \([^)]*\) \$...` in the LABOR comment.
 
 **`DRIVER_WEEKLY`** (emitted by `build_paycheck_grid.py`) holds fleet + ex-OTR loaded cost per pay week (calibrated so YTD reconciles to LABOR + the carve-out); consumed by the **"This Week — All-In Payroll" card** + the **Fund Payroll panel** (Cash Flow tab). Drivers are excluded from the paycheck grid itself; `DRIVER_WEEKLY` adds them back for those.
 
@@ -429,6 +428,16 @@ Reads everything in `incoming-freightiq/`, writes:
 - `_office_extract.json` / `_pnl_extract.json` — cached structured extracts (skip re-parsing across iterations).
 
 If P&L files are present, parse them separately for `INCOME_2026` updates (the main parser doesn't write a summary section for them yet — read straight from the .xlsx using openpyxl).
+
+### Weekly array generators — DON'T hand-edit the big arrays (added 2026-07-19)
+`PAYROLL[]` (54 rows), `FUEL{}` (~50 rows), `TRUCK_MILES[]` (~50 rows), `OFFICE_W2[]`/`WAREHOUSE[]` are now REGENERATED by scripts, each with a reconciliation check. Hand-editing them ships errors. After updating `SF_ATL`/`OTR_LN` to this week's ATL roster + running `parse_weekly_drop.py`, run:
+```bash
+python scripts/gen_office.py          # OFFICE_W2 + WAREHOUSE (run FIRST — grid uses its factors)
+python scripts/build_paycheck_grid.py # OFFICE_PAYCHECKS + DRIVER_WEEKLY
+python scripts/gen_weekly_arrays.py   # writes _gen_payroll.txt + _gen_fuel.txt → splice into App.jsx
+python scripts/gen_truck_miles.py     # TRUCK_MILES (flags departed + 7 ATL trucks)
+```
+Then splice `_gen_payroll.txt`/`_gen_fuel.txt` in (regex-replace `let PAYROLL = [...]` / `let FUEL = {...}`). See `reference_weekly_generators` memory for the reconciliation checks (PAYROLL sum == LABOR; Fleet+ATL fuel == EFS total; Fleet+ATL miles == Samsara total). Still hand-updated each week: the fleet CONSTANTS (LABOR/FUEL_TOT/GALLONS/MILES/INS/TRUCK/TRAILER/etc. + ATL_* constants), `PERIOD`, `INCOME_2026`, `ATL_BILLING`, `ATL_WEEKLY_LOG` entry.
 
 ### Update App.jsx constants
 
