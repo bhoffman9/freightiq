@@ -147,6 +147,8 @@ def canon(raw):
     if 'delgado' in s: return (('delgado','e'), None, {'J&A':1.0}, True)
     if s == 'christopher' or 'chris simpson' in s: return (('simpson','c'), None, {'J&A':1.0}, True)
     if 'bill a' in s or 'deb adamson' in s: return (('adamson','d'), None, {'J&A':1.0}, True)
+    if 'erika' in s and 'valenc' in s: return (('con','ERI'), 'Erika Valencio · 1099', {'J&A':1.0}, False)
+    if 'kacy' in s or ('richardson' in s and 'kac' in s): return (('con','KAC'), 'Kacy Richardson · 1099', {'J&A':1.0}, False)
     return ('UNMAPPED', raw, {}, False)
 
 def add_contractor(dt, raw, amt, key='camts'):
