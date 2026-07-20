@@ -707,8 +707,7 @@ const TABS = [
   { id: "driver",   icon: "🚛", label: "Driver Detail" },
   { id: "trucks",   icon: "📍", label: "Trucks & Mileage" },
   { id: "fuel",     icon: "🛢", label: "Fuel Analysis" },
-  { id: "trucks2",  icon: "🚛", label: "Trucks" },
-  { id: "trailers", icon: "🚜", label: "Trailers" },
+  { id: "assets",   icon: "🚚", label: "Assets" },
   { id: "office",   icon: "🏢", label: "Office Staff" },
   { id: "income",  icon: "💵", label: "Income" },
   { id: "ceeast",   icon: "🏦", label: "CE East" },
@@ -2859,6 +2858,103 @@ const TEC_EQUIPMENT = {
 };
 
 // ── TRUCKS TAB ────────────────────────────────────────────────
+// Unified Assets tab — trucks + trailers from the AP Aging equipment feed
+// (/api/ap-equipment → fdw_equipment_invoice). Master tracker + monthly-cost
+// totals (trucks / trailers / combined). No mileage/CPM (that's the Samsara tab).
+function AssetsTab() {
+  const equipment = useEquipment();
+  const [cat, setCat] = useState("all"); // all | truck | trailer
+  const vendorColor = (v) => v === "TCI" ? "#2dd4bf" : v === "Penske" ? "#fb7185"
+    : (v?.includes("TEC") || v?.includes("Transco")) ? "#38bdf8" : v === "Ryder" ? "#26a69a"
+    : v?.includes("Idealease") ? "#a78bfa" : v?.includes("McKinney") ? "#fbbf24"
+    : v?.includes("Utility") ? "#4ade80" : "#5a6370";
+
+  if (!equipment) return <div style={{ padding:40, textAlign:"center", color:"var(--mu)" }}>Loading equipment data from AP Aging…</div>;
+
+  const units = equipment.units || [];
+  const trucks = units.filter(u => u.category === "truck");
+  const trailers = units.filter(u => u.category === "trailer");
+  const activeMo = (arr) => arr.filter(a => a.status === "Active").reduce((s,a) => s + (a.monthlyCost||0), 0);
+  const aCount = (arr) => arr.filter(a => a.status === "Active").length;
+  const truckMo = activeMo(trucks), trailerMo = activeMo(trailers);
+  const otherMo = activeMo(units.filter(u => u.category !== "truck" && u.category !== "trailer"));
+  const combinedMo = truckMo + trailerMo + otherMo;
+
+  const shown = cat === "truck" ? trucks : cat === "trailer" ? trailers : units;
+  const totalBilled = shown.reduce((s,a) => s + (a.totalBilled||0), 0);
+  const totalPaid = shown.reduce((s,a) => s + (a.totalPaid||0), 0);
+  const totalOut = shown.reduce((s,a) => s + (a.outstanding||0), 0);
+  const sorted = [...shown].sort((a,b) =>
+    (a.category||"").localeCompare(b.category||"") ||
+    (a.fleetNumber||"").localeCompare(b.fleetNumber||"", undefined, { numeric:true }));
+  const catBadge = (c) => <span style={{ fontSize:9,fontWeight:700,color:c==="truck"?"#38bdf8":"#4ade80",background:c==="truck"?"rgba(56,189,248,.12)":"rgba(74,222,128,.12)",border:`1px solid ${c==="truck"?"rgba(56,189,248,.3)":"rgba(74,222,128,.3)"}`,borderRadius:2,padding:"1px 6px",textTransform:"capitalize" }}>{c}</span>;
+
+  return (
+    <div>
+      <div className="ptitle">🚚 Assets</div>
+      <div className="psub">Master equipment tracker · trucks + trailers · live from AP Aging invoices · {PERIOD}</div>
+
+      <div className="g4" style={{ marginBottom:14 }}>
+        <div className="kpi" style={{ borderLeft:"3px solid var(--or)" }}>
+          <div className="klbl">Combined Monthly</div>
+          <div className="kval" style={{ color:"var(--or)" }}>{fd(combinedMo,0)}</div>
+          <div className="ksub">{aCount(trucks)+aCount(trailers)} active units · {fd(combinedMo*12,0)}/yr</div>
+        </div>
+        <div className="kpi">
+          <div className="klbl">Trucks Monthly</div>
+          <div className="kval" style={{ color:"#38bdf8" }}>{fd(truckMo,0)}</div>
+          <div className="ksub">{aCount(trucks)} active · {trucks.length} total</div>
+        </div>
+        <div className="kpi">
+          <div className="klbl">Trailers Monthly</div>
+          <div className="kval" style={{ color:"#4ade80" }}>{fd(trailerMo,0)}</div>
+          <div className="ksub">{aCount(trailers)} active · {trailers.length} total</div>
+        </div>
+        <div className="kpi">
+          <div className="klbl">Outstanding · {cat}</div>
+          <div className="kval" style={{ color: totalOut>0?"#fb7185":"#4ade80" }}>{fd(totalOut,0)}</div>
+          <div className="ksub">{fd(totalBilled,0)} billed · {fd(totalPaid,0)} paid</div>
+        </div>
+      </div>
+
+      <div style={{ display:"flex",gap:8,marginBottom:12 }}>
+        {[["all","All Assets"],["truck","Trucks"],["trailer","Trailers"]].map(([id,lbl]) => (
+          <button key={id} onClick={()=>setCat(id)} style={{ padding:"6px 16px",borderRadius:4,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"var(--f1)",background:cat===id?"var(--orl)":"transparent",color:cat===id?"var(--or)":"var(--mu)",border:`1px solid ${cat===id?"var(--or)":"var(--bd)"}` }}>{lbl}</button>
+        ))}
+      </div>
+
+      <div className="card">
+        <div className="ctit">{cat==="all"?"All Assets":cat==="truck"?"Trucks":"Trailers"} — {shown.length} Units <span style={{ fontSize:10,color:"#4ade80",fontWeight:400 }}>· Live from AP Aging</span></div>
+        <div style={{ overflowX:"auto" }}>
+          <table className="tbl" style={{ fontSize:10 }}>
+            <thead><tr><th>Fleet #</th><th>Type</th><th>Vendor</th><th>Unit</th><th>Make/Model</th><th>Monthly</th><th>Inv</th><th>Billed</th><th>Paid</th><th>Outstanding</th><th>Status</th></tr></thead>
+            <tbody>
+              {sorted.map((a,i) => (
+                <tr key={a.id} style={{ background:i%2===0?"var(--s2)":"transparent", opacity:a.status==="Active"?1:0.5 }}>
+                  <td style={{ fontFamily:"var(--f2)",fontSize:15,fontWeight:900,color:vendorColor(a.vendor),letterSpacing:1 }}>#{a.fleetNumber}</td>
+                  <td>{catBadge(a.category)}</td>
+                  <td style={{ fontWeight:700,color:vendorColor(a.vendor) }}>{a.vendor}</td>
+                  <td style={{ color:"var(--mu)",fontFamily:"var(--f2)",fontSize:11 }}>{a.vendorUnit}</td>
+                  <td>{a.make && a.make !== "—" && a.make !== "â€”" ? `${a.make} ${a.model||""}` : "—"}</td>
+                  <td style={{ color:(a.monthlyCost||0)>0?"#fbbf24":"var(--mu)",fontWeight:600 }}>{(a.monthlyCost||0)>0?fd(a.monthlyCost,0):"—"}</td>
+                  <td>{a.invoiceCount||0}</td>
+                  <td style={{ color:"#fb7185" }}>{(a.totalBilled||0)>0?fd(a.totalBilled,0):"—"}</td>
+                  <td style={{ color:"#4ade80" }}>{(a.totalPaid||0)>0?fd(a.totalPaid,0):"—"}</td>
+                  <td style={{ color:(a.outstanding||0)>0?"#fb7185":"var(--mu)",fontWeight:600 }}>{(a.outstanding||0)>0?fd(a.outstanding,0):"—"}</td>
+                  <td><span style={{ fontSize:9,fontWeight:700,color:a.status==="Active"?"#4ade80":"#fb7185",background:a.status==="Active"?"rgba(74,222,128,.1)":"rgba(251,113,133,.1)",border:`1px solid ${a.status==="Active"?"rgba(74,222,128,.3)":"rgba(251,113,133,.3)"}`,borderRadius:2,padding:"1px 6px" }}>{a.status}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div style={{ marginTop:10,fontSize:10,color:equipment?._error?"#fb7185":"var(--mu)" }}>
+          {equipment?._error ? `⚠ AP Aging fetch failed: ${equipment._error}` : <>Live from AP Aging · Updated {equipment?.updatedAt ? new Date(equipment.updatedAt).toLocaleDateString() : "—"}</>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TrucksTab() {
   const [view, setView] = useState("assets"); // assets | tci | penske | lease | rentals | shop
   const equipment = useEquipment();
@@ -10207,8 +10303,7 @@ export default function App() {
     if (tab === "driver")   return <DriverDetail />;
     if (tab === "trucks")   return <TrucksMileage />;
     if (tab === "fuel")     return <FuelAnalysis />;
-    if (tab === "trucks2")  return <TrucksTab />;
-    if (tab === "trailers") return <TrailerFleet />;
+    if (tab === "assets")   return <AssetsTab />;
     if (tab === "income")   return <IncomeDashboard />;
     if (tab === "revenue")  return <RevenueDashboard />;
     if (tab === "ceeast")   return <CEEast />;
