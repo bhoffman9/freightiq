@@ -73,7 +73,11 @@ export default async function handler(req, res) {
           body: JSON.stringify({ sync_cursor: cursor, last_sync_at: new Date().toISOString() }),
         });
 
-        const bal = await plaid('/accounts/balance/get', { access_token: it.access_token });
+        // Use /accounts/get (cached balances, refreshed by the sync above) rather
+        // than /accounts/balance/get — the latter needs the paid "Balance" product,
+        // which this Plaid app isn't authorized for (INVALID_PRODUCT). Cached
+        // balances are current as of this daily sync, which is all we need.
+        const bal = await plaid('/accounts/get', { access_token: it.access_token });
         for (const a of bal.accounts || []) balances.push({
           name: a.name, last4: a.mask, balance: a.balances?.current, available: a.balances?.available,
           type: a.subtype, institution: it.institution,
