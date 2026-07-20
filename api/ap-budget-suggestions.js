@@ -74,8 +74,10 @@ function nameMatch(trackedName, bankMerchant) {
 function cleanName(s) {
   let x = String(s || '');
   x = x.replace(/ORIG CO NAME:/ig, ' ').replace(/ORIG ID:\S*/ig, ' ')
-       .replace(/\bDES:\S*/ig, ' ').replace(/\bID:\S*/ig, ' ')
+       .replace(/\bDESC DATE:.*$/ig, ' ').replace(/\bDES:\S*/ig, ' ').replace(/\bID:\S*/ig, ' ')
+       .replace(/\bCO ENTRY DESCR:.*$/ig, ' ')
        .replace(/\bonline (ach |realtime )?(vendor )?payment\b/ig, ' ')
+       .replace(/^\s*to\s+/i, ' ')
        .replace(/\b\d{6,}\b/g, ' ')
        .replace(/\s+/g, ' ').trim();
   return (x || String(s || '')).slice(0, 40).toUpperCase();

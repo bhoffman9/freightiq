@@ -8314,6 +8314,20 @@ function CashFlowDashboard() {
       .catch(() => setBalStatus("error"));
   }, []);
 
+  // Bank-feed suggestions (untracked bills / wrong amounts / large one-offs /
+  // tracked-no-bank-hit). Same endpoint the Budget Calendar tab uses.
+  const [suggData, setSuggData] = useState(null);
+  const [suggStat, setSuggStat] = useState("idle");
+  const [suggHidden, setSuggHidden] = useState(() => new Set());
+  useEffect(() => {
+    setSuggStat("loading");
+    fetch("/api/ap-budget-suggestions")
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(d => { if (d && !d.error) { setSuggData(d); setSuggStat("ok"); } else setSuggStat("error"); })
+      .catch(() => setSuggStat("error"));
+  }, []);
+  const hideSugg = (k) => setSuggHidden(p => new Set(p).add(k));
+
   // Add / update Budget Calendar recurring (w_custom_recurring) from a candidate.
   const [recurActions, setRecurActions] = useState({}); // key -> saving|done|error
   const [recurAcct, setRecurAcct] = useState({});       // candidate key -> chosen account
@@ -8517,19 +8531,6 @@ function CashFlowDashboard() {
           e.inflow += a.inflow; e.outflow += a.outflow; e.net += a.net;
         });
         const entRows = Object.entries(ent).sort((a,b) => b[1].outflow - a[1].outflow);
-        const recs = (bankFlow.recurring || []).filter(r => !r.known && (r.kind === "bill" || r.kind === "loan"));
-        // Amount-drift on tracked recurring: one suggestion per calendar item
-        // (highest-count bank group), bills/loans only, exclude variable payroll.
-        const driftMap = {};
-        (bankFlow.recurring || []).forEach(r => {
-          if (!r.known || !r.calId || Math.abs(r.drift || 0) < 1) return;
-          if (r.kind !== "bill" && r.kind !== "loan") return;
-          if (/payroll/i.test(r.calName || "")) return;
-          const cur = driftMap[r.calId];
-          if (!cur || r.count > cur.count) driftMap[r.calId] = r;
-        });
-        const drifted = Object.values(driftMap).sort((a,b) => Math.abs(b.drift) - Math.abs(a.drift));
-        const recBtn = { background:"var(--orl)", color:"var(--or)", border:"1px solid var(--or)", borderRadius:3, padding:"2px 9px", fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"var(--f1)", whiteSpace:"nowrap" };
         return (
           <div style={{ marginBottom:14 }}>
             <div className="ptitle" style={{ fontSize:22, marginTop:8, marginBottom:4 }}>Weekly Bank Flow</div>
@@ -8575,55 +8576,97 @@ function CashFlowDashboard() {
                 </table>
               </div>
             </div>
-            {drifted.length > 0 && (
-              <div className="card" style={{ marginBottom:14, border:"1px solid rgba(251,191,36,.35)" }}>
-                <div className="ctit" style={{ marginBottom:4 }}>Tracked Recurring · amount changed in the bank feed</div>
-                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:10 }}>Matched by name to the bank feed — <b>verify the vendor matches</b> before updating (fuzzy match). Then Update sets the calendar amount to what the bank shows.</div>
-                <table className="tbl"><thead><tr><th>Calendar item</th><th>Bank vendor</th><th>In Calendar</th><th>Bank Now</th><th>Δ</th><th></th></tr></thead>
-                  <tbody>{drifted.map((r,i) => {
-                    const key = `upd:${r.calId}`; const st = recurActions[key];
-                    return (
-                      <tr key={i}>
-                        <td>{r.calName}</td>
-                        <td style={{ fontSize:11, color:"var(--mu)", textTransform:"capitalize" }}>{r.merchant.toLowerCase()}</td>
-                        <td>{fd(r.calAmount,2)}</td>
-                        <td style={{ color:"#fbbf24" }}>{fd(r.amount,2)}</td>
-                        <td style={{ color:r.drift>0?"#fb7185":"#4ade80" }}>{r.drift>0?"+":""}{fd(r.drift,2)}</td>
-                        <td>{st==="done" ? <span style={{ color:"#4ade80", fontSize:11 }}>✓ Updated</span> :
-                          <button disabled={st==="saving"} onClick={() => saveRecurring(key, { action:"update", id:r.calId, amount:r.amount })} style={recBtn}>{st==="saving"?"…":st==="error"?"retry":"Update"}</button>}</td>
-                      </tr>
-                    );
-                  })}</tbody>
+          </div>
+        );
+      })()}
+
+      {/* ─── BANK SUGGESTIONS (4 buckets, from /api/ap-budget-suggestions) ─── */}
+      {suggData && (() => {
+        const vis = (arr) => (suggData[arr] || []).filter(x => !suggHidden.has(x.key) && recurActions[`s:${x.key}`] !== "done");
+        const UR = vis("untrackedRecurring"), WA = vis("wrongAmount"), OO = vis("largeOneOff"), NB = vis("trackedNoBankHit");
+        const total = UR.length + WA.length + OO.length + NB.length;
+        if (total === 0) return null;
+        const aBtn = { background:"rgba(45,212,191,.14)", color:"var(--or)", border:"1px solid var(--or)", borderRadius:3, padding:"2px 9px", fontSize:10, fontWeight:700, cursor:"pointer", fontFamily:"var(--f1)", whiteSpace:"nowrap" };
+        const dBtn = { background:"transparent", color:"var(--mu)", border:"1px solid var(--bd)", borderRadius:3, padding:"2px 8px", fontSize:10, cursor:"pointer", fontFamily:"var(--f1)" };
+        const done = (k) => recurActions[`s:${k}`] === "done";
+        const busy = (k) => recurActions[`s:${k}`] === "saving";
+        const apply = (k, body) => saveRecurring(`s:${k}`, body);
+        return (
+          <div style={{ marginBottom:14 }}>
+            <div className="ptitle" style={{ fontSize:22, marginTop:8, marginBottom:4 }}>🏦 Bank Suggestions <span style={{ color:"var(--or)" }}>({total})</span></div>
+            <div className="psub" style={{ marginBottom:12 }}>Reconciled vs the Budget Calendar (incl. hardcoded bills) · high-confidence · one-click to apply</div>
+
+            {UR.length > 0 && (
+              <div className="card" style={{ marginBottom:12 }}>
+                <div className="ctit" style={{ marginBottom:4 }}>Untracked recurring bills · {UR.length}</div>
+                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:8 }}>Recurring bank debits not on the calendar. ➕ Add drops them in (editable there after).</div>
+                <table className="tbl"><thead><tr><th>Vendor</th><th>Amount</th><th>Cadence</th><th>Seen</th><th>Account</th><th></th></tr></thead>
+                  <tbody>{UR.slice(0,25).map(u => (
+                    <tr key={u.key}>
+                      <td>{u.suggestName}</td><td>{fd(u.amount,2)}</td>
+                      <td><span style={{ fontSize:10, padding:"1px 7px", borderRadius:3, background:"rgba(56,189,248,.12)", color:"#38bdf8" }}>{u.cadence}</span></td>
+                      <td>{u.count}×</td><td style={{ fontSize:11, color:"var(--mu)" }}>{u.suggestAccount}</td>
+                      <td style={{ whiteSpace:"nowrap" }}>{done(u.key) ? <span style={{ color:"#4ade80", fontSize:11 }}>✓ Added</span> : <>
+                        <button disabled={busy(u.key)} style={aBtn} onClick={() => apply(u.key, { action:"add", name:u.suggestName, amount:u.amount, account:u.suggestAccount, recur_type:u.recurType, recur_day:u.recurDay })}>{busy(u.key)?"…":"➕ Add"}</button>
+                        <button style={{ ...dBtn, marginLeft:6 }} onClick={() => hideSugg(u.key)}>Dismiss</button></>}</td>
+                    </tr>
+                  ))}</tbody>
                 </table>
               </div>
             )}
-            {recs.length > 0 && (
-              <div className="card" style={{ marginBottom:14 }}>
-                <div className="ctit" style={{ marginBottom:4 }}>Potential Recurring Bills · detected from bank feed</div>
-                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:10 }}>Same payee + amount ≥3× on a cadence, not already in the Budget Calendar. Click ➕ Add to drop it in (editable there after).</div>
-                <table className="tbl"><thead><tr><th>Vendor</th><th>Amount</th><th>Cadence</th><th>Seen</th><th>~ / Month</th><th>Bank acct</th><th>Budget account</th><th></th></tr></thead>
-                  <tbody>{recs.slice(0,20).map((r,i) => {
-                    const key = `add:${r.merchant}:${r.amount}`; const st = recurActions[key];
-                    const acct = recurAcct[key] ?? r.suggestAccount;
-                    const opts = (bankFlow.recurAccounts && bankFlow.recurAccounts.length) ? bankFlow.recurAccounts : [r.suggestAccount];
-                    return (
-                      <tr key={i}>
-                        <td style={{ textTransform:"capitalize" }}>{r.merchant.toLowerCase()}</td>
-                        <td>{fd(r.amount,2)}</td>
-                        <td><span style={{ fontSize:10, padding:"1px 7px", borderRadius:3, background:"rgba(56,189,248,.12)", color:"#38bdf8" }}>{r.cadence}</span></td>
-                        <td>{r.count}×</td>
-                        <td style={{ color:"#fbbf24" }}>{fd(r.monthlyEst,0)}</td>
-                        <td style={{ fontSize:11, color:"var(--mu)" }}>{r.acctLabel}</td>
-                        <td>{st==="done" ? null :
-                          <select value={acct} disabled={st==="saving"} onChange={e => setRecurAcct(p => ({ ...p, [key]: e.target.value }))}
-                            style={{ fontSize:11, padding:"2px 4px", background:"var(--bg)", color:"var(--tx)", border:"1px solid var(--bd)", borderRadius:3, fontFamily:"var(--f1)", maxWidth:130 }}>
-                            {[...new Set([acct, ...opts])].map(o => <option key={o} value={o}>{o}</option>)}
-                          </select>}</td>
-                        <td>{st==="done" ? <span style={{ color:"#4ade80", fontSize:11 }}>✓ Added → {acct}</span> :
-                          <button disabled={st==="saving"} onClick={() => saveRecurring(key, { action:"add", name:r.suggestName, amount:r.amount, account:acct, recur_type:r.recurType, recur_day:r.recurDay })} style={recBtn}>{st==="saving"?"…":st==="error"?"retry":"➕ Add"}</button>}</td>
-                      </tr>
-                    );
-                  })}</tbody>
+
+            {WA.length > 0 && (
+              <div className="card" style={{ marginBottom:12, border:"1px solid rgba(251,191,36,.35)" }}>
+                <div className="ctit" style={{ marginBottom:4 }}>Amount looks wrong · {WA.length}</div>
+                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:8 }}>Tracked bills whose bank amount differs from your estimate. <b>Verify the vendor</b> before setting.</div>
+                <table className="tbl"><thead><tr><th>Calendar item</th><th>Bank vendor</th><th>Calendar</th><th>Bank</th><th>Δ</th><th></th></tr></thead>
+                  <tbody>{WA.map(w => (
+                    <tr key={w.key}>
+                      <td>{w.trackedName}</td><td style={{ fontSize:11, color:"var(--mu)", textTransform:"capitalize" }}>{(w.bankMerchant||"").toLowerCase()}</td>
+                      <td>{fd(w.trackedAmount,2)}</td><td style={{ color:"#fbbf24" }}>{fd(w.bankAmount,2)}</td>
+                      <td style={{ color:w.diff>0?"#fb7185":"#4ade80" }}>{w.diff>0?"+":""}{fd(w.diff,2)}</td>
+                      <td style={{ whiteSpace:"nowrap" }}>{done(w.key) ? <span style={{ color:"#4ade80", fontSize:11 }}>✓ Updated</span> : <>
+                        {w.customId ? <button disabled={busy(w.key)} style={aBtn} onClick={() => apply(w.key, { action:"update", id:w.customId, amount:w.bankAmount })}>{busy(w.key)?"…":`Set ${fd(w.bankAmount,0)}`}</button>
+                          : <span style={{ fontSize:11, color:"var(--mu)" }}>edit in calendar</span>}
+                        <button style={{ ...dBtn, marginLeft:6 }} onClick={() => hideSugg(w.key)}>Dismiss</button></>}</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            )}
+
+            {OO.length > 0 && (
+              <div className="card" style={{ marginBottom:12 }}>
+                <div className="ctit" style={{ marginBottom:4 }}>Large one-off debits · {OO.length}</div>
+                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:8 }}>Big non-recurring bank debits not on the calendar. Log so the week projection isn't blindsided.</div>
+                <table className="tbl"><thead><tr><th>Vendor</th><th>Amount</th><th>Date</th><th>Account</th><th></th></tr></thead>
+                  <tbody>{OO.slice(0,20).map(o => (
+                    <tr key={o.key}>
+                      <td>{o.suggestName}</td><td>{fd(o.amount,2)}</td><td style={{ fontSize:11, color:"var(--mu)" }}>{o.date}</td>
+                      <td style={{ fontSize:11, color:"var(--mu)" }}>{o.suggestAccount}</td>
+                      <td style={{ whiteSpace:"nowrap" }}>{done(o.key) ? <span style={{ color:"#4ade80", fontSize:11 }}>✓ Logged</span> : <>
+                        <button disabled={busy(o.key)} style={aBtn} onClick={() => apply(o.key, { action:"onetime", name:o.suggestName, amount:o.amount, day:o.day, month:o.month, year:o.year, account:o.suggestAccount })}>{busy(o.key)?"…":"➕ Log"}</button>
+                        <button style={{ ...dBtn, marginLeft:6 }} onClick={() => hideSugg(o.key)}>Dismiss</button></>}</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            )}
+
+            {NB.length > 0 && (
+              <div className="card" style={{ marginBottom:12 }}>
+                <div className="ctit" style={{ marginBottom:4 }}>On calendar, no matching bank debit · {NB.length}</div>
+                <div style={{ fontSize:11, color:"var(--mu)", marginBottom:8 }}>No debit found in the last 45 days — verify these are still active (may clear under a different name).</div>
+                <table className="tbl"><thead><tr><th>Calendar item</th><th>Amount</th><th>Source</th><th></th></tr></thead>
+                  <tbody>{NB.map(n => (
+                    <tr key={n.key}>
+                      <td>{n.name}</td><td>{fd(n.amount,2)}</td><td style={{ fontSize:11, color:"var(--mu)" }}>{n.source}</td>
+                      <td style={{ whiteSpace:"nowrap" }}>{done(n.key) ? <span style={{ color:"#4ade80", fontSize:11 }}>✓ Removed</span> : <>
+                        {n.removable ? <button disabled={busy(n.key)} style={{ ...aBtn, color:"#fb7185", borderColor:"#fb7185", background:"rgba(251,113,133,.12)" }} onClick={() => apply(n.key, { action:"remove-recurring", id:n.customId })}>{busy(n.key)?"…":"Remove"}</button>
+                          : <span style={{ fontSize:11, color:"var(--mu)" }}>review</span>}
+                        <button style={{ ...dBtn, marginLeft:6 }} onClick={() => hideSugg(n.key)}>Dismiss</button></>}</td>
+                    </tr>
+                  ))}</tbody>
                 </table>
               </div>
             )}

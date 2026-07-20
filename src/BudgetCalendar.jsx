@@ -109,6 +109,42 @@ export default function BudgetCalendar() {
       .catch(() => {});
     return () => { alive = false; };
   }, []);
+
+  // Bank-feed suggestions (untracked bills / wrong amounts / large one-offs /
+  // tracked-no-bank-hit). Apply goes through /api/ap-recurring-save, which is
+  // safe against the calendar's diff-based sync; we reload the affected table
+  // after a write so the change shows without a full refresh.
+  const [suggestions, setSuggestions] = useState(null);
+  const [suggStatus, setSuggStatus] = useState('idle');
+  const [suggOpen, setSuggOpen] = useState(false);
+  const [suggDismissed, setSuggDismissed] = useState(() => new Set());
+  const [suggApplying, setSuggApplying] = useState({});
+  const loadSuggestions = React.useCallback(() => {
+    setSuggStatus('loading');
+    fetch('/api/ap-budget-suggestions')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (d && !d.error) { setSuggestions(d); setSuggStatus('ok'); } else setSuggStatus('error'); })
+      .catch(() => setSuggStatus('error'));
+  }, []);
+  React.useEffect(() => { loadSuggestions(); }, [loadSuggestions]);
+  const applySuggestion = async (key, body, reload) => {
+    setSuggApplying(p => ({ ...p, [key]: 'saving' }));
+    try {
+      const r = await fetch('/api/ap-recurring-save', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok && d.ok) {
+        setSuggApplying(p => ({ ...p, [key]: 'done' }));
+        setSuggDismissed(p => new Set(p).add(key));
+        if (reload === 'recurring') { try { await loadCustomRecurring(); } catch {} }
+        if (reload === 'onetime') { try { await loadOneTimeExpenses(); } catch {} }
+      } else {
+        setSuggApplying(p => ({ ...p, [key]: 'error' }));
+      }
+    } catch { setSuggApplying(p => ({ ...p, [key]: 'error' })); }
+  };
+  const dismissSugg = (key) => setSuggDismissed(p => new Set(p).add(key));
   const [expenses, setExpenses] = useState(initialExpenses);
   const [checkedItems, setCheckedItems] = useState({});
   const [deletedItems, setDeletedItems] = useState({});
@@ -1588,6 +1624,11 @@ export default function BudgetCalendar() {
   })();
   const _money = (n) => `$${Math.round(n).toLocaleString('en-US')}`;
   const _md = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
+  const sVisible = (arr) => (arr || []).filter(x => !suggDismissed.has(x.key));
+  const sCount = suggestions
+    ? sVisible(suggestions.untrackedRecurring).length + sVisible(suggestions.wrongAmount).length
+      + sVisible(suggestions.largeOneOff).length + sVisible(suggestions.trackedNoBankHit).length
+    : 0;
 
   return (
     <div className="budget-root">
@@ -1656,6 +1697,105 @@ export default function BudgetCalendar() {
             </div>
           </div>
         )}
+
+        {/* BANK SUGGESTIONS — untracked bills / wrong amounts / large one-offs / no-bank-hit */}
+        {suggestions && sCount > 0 && (() => {
+          const bStyle = (bg, bd, col) => ({ background: bg, border: `1px solid ${bd}`, color: col, borderRadius: 6, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' });
+          const addBtn = bStyle('#dcfce7', '#86efac', '#15803d');
+          const editBtn = bStyle('#fef9c3', '#fde047', '#a16207');
+          const dropBtn = bStyle('#f1f5f9', '#cbd5e1', '#64748b');
+          const rowWrap = { maxHeight: 240, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 };
+          const row = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6, padding: '6px 10px', fontSize: 13 };
+          const applied = (k) => suggApplying[k] === 'done';
+          const busy = (k) => suggApplying[k] === 'saving';
+          const secHdr = (label, n, color) => (
+            <div style={{ fontSize: 12, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: 0.4, margin: '10px 0 6px' }}>{label} · {n}</div>
+          );
+          const UR = sVisible(suggestions.untrackedRecurring);
+          const WA = sVisible(suggestions.wrongAmount);
+          const OO = sVisible(suggestions.largeOneOff);
+          const NB = sVisible(suggestions.trackedNoBankHit);
+          return (
+            <div style={{ marginBottom: 12, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', cursor: 'pointer' }} onClick={() => setSuggOpen(o => !o)}>
+                <div style={{ fontWeight: 700, color: '#0f172a', fontSize: 14 }}>
+                  {suggOpen ? '▾' : '▸'} 🏦 Bank suggestions <span style={{ color: '#2563eb' }}>({sCount})</span>
+                </div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>
+                  {UR.length} untracked · {WA.length} wrong amt · {OO.length} one-off · {NB.length} no-hit
+                  <button onClick={(e) => { e.stopPropagation(); loadSuggestions(); }} style={{ ...dropBtn, marginLeft: 10, padding: '3px 8px' }} disabled={suggStatus === 'loading'}>↻</button>
+                </div>
+              </div>
+              {suggOpen && (
+                <div style={{ padding: '0 14px 12px' }}>
+                  {/* 1. Untracked recurring */}
+                  {UR.length > 0 && <>{secHdr('Untracked recurring bills', UR.length, '#15803d')}
+                    <div style={rowWrap}>{UR.map(u => (
+                      <div key={u.key} style={row}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.suggestName}</div>
+                          <div style={{ fontSize: 11, color: '#64748b' }}>{_money(u.amount)} · {u.cadence} · seen {u.count}× · would add to {u.suggestAccount}</div>
+                        </div>
+                        {applied(u.key) ? <span style={{ color: '#15803d', fontSize: 12, fontWeight: 700 }}>✓ added</span> : <>
+                          <button disabled={busy(u.key)} style={addBtn} onClick={() => applySuggestion(u.key, { action: 'add', name: u.suggestName, amount: u.amount, account: u.suggestAccount, recur_type: u.recurType, recur_day: u.recurDay }, 'recurring')}>{busy(u.key) ? '…' : '+ Add'}</button>
+                          <button style={dropBtn} onClick={() => dismissSugg(u.key)}>Dismiss</button>
+                        </>}
+                      </div>
+                    ))}</div></>}
+
+                  {/* 2. Wrong amounts */}
+                  {WA.length > 0 && <>{secHdr('Amount looks wrong', WA.length, '#a16207')}
+                    <div style={rowWrap}>{WA.map(w => (
+                      <div key={w.key} style={row}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, color: '#0f172a' }}>{w.trackedName}</div>
+                          <div style={{ fontSize: 11, color: '#64748b' }}>calendar {_money(w.trackedAmount)} → bank {_money(w.bankAmount)} <span style={{ color: w.diff > 0 ? '#dc2626' : '#15803d' }}>({w.diff > 0 ? '+' : ''}{_money(w.diff)})</span></div>
+                        </div>
+                        {applied(w.key) ? <span style={{ color: '#15803d', fontSize: 12, fontWeight: 700 }}>✓ updated</span> : <>
+                          {w.customId
+                            ? <button disabled={busy(w.key)} style={editBtn} onClick={() => applySuggestion(w.key, { action: 'update', id: w.customId, amount: w.bankAmount }, 'recurring')}>{busy(w.key) ? '…' : `Set ${_money(w.bankAmount)}`}</button>
+                            : <span style={{ fontSize: 11, color: '#94a3b8' }} title="Hardcoded bill — edit it in the calendar">edit in calendar</span>}
+                          <button style={dropBtn} onClick={() => dismissSugg(w.key)}>Dismiss</button>
+                        </>}
+                      </div>
+                    ))}</div></>}
+
+                  {/* 3. Large one-offs */}
+                  {OO.length > 0 && <>{secHdr('Large one-off debits (not on calendar)', OO.length, '#b91c1c')}
+                    <div style={rowWrap}>{OO.map(o => (
+                      <div key={o.key} style={row}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{o.suggestName}</div>
+                          <div style={{ fontSize: 11, color: '#64748b' }}>{_money(o.amount)} · {o.date} · would log to {o.suggestAccount}</div>
+                        </div>
+                        {applied(o.key) ? <span style={{ color: '#15803d', fontSize: 12, fontWeight: 700 }}>✓ logged</span> : <>
+                          <button disabled={busy(o.key)} style={addBtn} onClick={() => applySuggestion(o.key, { action: 'onetime', name: o.suggestName, amount: o.amount, day: o.day, month: o.month, year: o.year, account: o.suggestAccount }, 'onetime')}>{busy(o.key) ? '…' : '+ Log one-time'}</button>
+                          <button style={dropBtn} onClick={() => dismissSugg(o.key)}>Dismiss</button>
+                        </>}
+                      </div>
+                    ))}</div></>}
+
+                  {/* 4. Tracked, no bank hit */}
+                  {NB.length > 0 && <>{secHdr('On calendar but no matching bank debit', NB.length, '#64748b')}
+                    <div style={rowWrap}>{NB.map(n => (
+                      <div key={n.key} style={row}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, color: '#0f172a' }}>{n.name}</div>
+                          <div style={{ fontSize: 11, color: '#64748b' }}>{_money(n.amount)} · no debit found in last 45d — verify it's still active</div>
+                        </div>
+                        {applied(n.key) ? <span style={{ color: '#15803d', fontSize: 12, fontWeight: 700 }}>✓ removed</span> : <>
+                          {n.removable
+                            ? <button disabled={busy(n.key)} style={bStyle('#fee2e2', '#fca5a5', '#b91c1c')} onClick={() => applySuggestion(n.key, { action: 'remove-recurring', id: n.customId }, 'recurring')}>{busy(n.key) ? '…' : 'Remove'}</button>
+                            : <span style={{ fontSize: 11, color: '#94a3b8' }} title="Hardcoded bill">review</span>}
+                          <button style={dropBtn} onClick={() => dismissSugg(n.key)}>Dismiss</button>
+                        </>}
+                      </div>
+                    ))}</div></>}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* HEADER */}
         <div className="flex items-center justify-between mb-3">
