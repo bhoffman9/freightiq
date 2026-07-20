@@ -6,6 +6,16 @@
 import fs from 'fs';
 import pg from 'pg';
 
+// Auto-load gitignored .env.db (PGHOST/PGUSER/PGPASSWORD/…) if present, so runs
+// need no inline secrets. Existing process.env wins (explicit overrides file).
+try {
+  const envPath = new URL('../.env.db', import.meta.url);
+  for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)\s*$/i);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+  }
+} catch { /* no .env.db — rely on process.env */ }
+
 const arg = process.argv[2];
 if (!arg) { console.error('usage: dbrun.mjs <file.sql | -c "SQL">'); process.exit(1); }
 const sql = arg === '-c' ? process.argv[3] : fs.readFileSync(arg, 'utf8');

@@ -15,7 +15,8 @@ import { getSupabase } from './_qbo-helpers.js';
 
 const BASE = process.env.PUBLIC_BASE_URL || 'https://freightiq-nine-two.vercel.app';
 const VOID = new Set(['void', 'cancelled', 'canceled', 'deleted']);
-const REAL = new Set(['5744', '0197', '8618', '4626', '9016', '3931', '2170', '6410', '7156']); // real Chase last4s (see ap-balances)
+// Real production Chase last4s — MUST mirror ACCT in api/ap-balances.js (source of truth).
+const REAL = new Set(['3028', '0870', '7173', '1927', '7165', '6053', '4842', '0703', '1508']);
 const today = () => new Date().toISOString().slice(0, 10);
 const isMissingTable = (msg) => /relation .*fdw_daily_snapshot.* does not exist|could not find the table/i.test(msg || '');
 
