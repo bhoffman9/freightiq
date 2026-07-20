@@ -5705,7 +5705,11 @@ function RevenueDashboard() {
             const complete = alvysLive.histWeeks.filter(w => new Date(w.key+"T00:00:00") < nowSun && w.rev > 0);
             if (!complete.length) return null;
             const recent = complete.slice(-8);
-            const avg4 = recent.slice(-4);
+            // Alvys ages invoiced loads out, so old weeks hold only a few residual
+            // loads — average only real operating weeks (≥10 loads) so the KPIs
+            // reflect actual utilization, not the sparse tail.
+            const meaningful = complete.filter(w => w.loads >= 10);
+            const avg4 = (meaningful.length ? meaningful : complete).slice(-4);
             const avgRev = avg4.reduce((s,w)=>s+w.rev,0)/(avg4.length||1);
             const avgLoads = avg4.reduce((s,w)=>s+w.loads,0)/(avg4.length||1);
             const pw = DRIVER_WEEKLY.weeks || []; const lw = pw[pw.length-1];
@@ -5719,7 +5723,7 @@ function RevenueDashboard() {
             ];
             return (
               <div className="card" style={{ marginBottom:14, borderLeft:"3px solid var(--or)" }}>
-                <div className="ctit">Fleet Utilization <span style={{ fontSize:10, color:"var(--mu)", fontWeight:400 }}>· avg of last {avg4.length} complete wks · Alvys revenue ÷ SF fleet</span></div>
+                <div className="ctit">Fleet Utilization <span style={{ fontSize:10, color:"var(--mu)", fontWeight:400 }}>· avg of last {avg4.length} full operating wk{avg4.length!==1?"s":""} (≥10 loads) · Alvys revenue ÷ SF fleet</span></div>
                 <div className="g4" style={{ margin:"10px 0 14px" }}>
                   {kpis.map((k,i)=>(
                     <div className="kpi" key={i} style={{ borderLeft:`3px solid ${k.c}` }}>
