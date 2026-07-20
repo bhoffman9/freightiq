@@ -31,57 +31,69 @@ export default async function handler(req, res) {
     const items = await sb('fdw_plaid_item?select=item_id,access_token,institution,sync_cursor,accounts');
     let upserted = 0, removed = 0;
     const balances = [];
+    const itemErrors = [];
 
+    // Process each item independently — a single dead item (e.g. a leftover
+    // sandbox token that now 401s in production) must NOT abort the run or
+    // block the balance snapshot for the healthy items.
     for (const it of items) {
-      const accMap = Object.fromEntries((it.accounts || []).map((a) => [a.account_id, a]));
+      try {
+        const accMap = Object.fromEntries((it.accounts || []).map((a) => [a.account_id, a]));
 
-      // incremental transactions/sync
-      let cursor = it.sync_cursor || null, hasMore = true;
-      const adds = [], dels = [];
-      while (hasMore) {
-        const d = await plaid('/transactions/sync', { access_token: it.access_token, cursor: cursor || undefined, count: 500 });
-        for (const t of [...(d.added || []), ...(d.modified || [])]) adds.push(t);
-        for (const t of d.removed || []) dels.push(t.transaction_id);
-        cursor = d.next_cursor; hasMore = d.has_more;
-      }
+        // incremental transactions/sync
+        let cursor = it.sync_cursor || null, hasMore = true;
+        const adds = [], dels = [];
+        while (hasMore) {
+          const d = await plaid('/transactions/sync', { access_token: it.access_token, cursor: cursor || undefined, count: 500 });
+          for (const t of [...(d.added || []), ...(d.modified || [])]) adds.push(t);
+          for (const t of d.removed || []) dels.push(t.transaction_id);
+          cursor = d.next_cursor; hasMore = d.has_more;
+        }
 
-      if (adds.length) {
-        const rows = adds.map((t) => ({
-          plaid_txn_id: t.transaction_id, account_id: t.account_id,
-          account_name: accMap[t.account_id]?.name || null, account_last4: accMap[t.account_id]?.mask || null,
-          institution: it.institution, posted_date: t.date, amount: t.amount, raw_desc: t.name,
-          category: t.personal_finance_category?.primary || (Array.isArray(t.category) ? t.category[0] : null),
-          pending: !!t.pending,
-        }));
-        await sb('fdw_bank_feed_txn?on_conflict=plaid_txn_id', {
-          method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(rows),
+        if (adds.length) {
+          const rows = adds.map((t) => ({
+            plaid_txn_id: t.transaction_id, account_id: t.account_id,
+            account_name: accMap[t.account_id]?.name || null, account_last4: accMap[t.account_id]?.mask || null,
+            institution: it.institution, posted_date: t.date, amount: t.amount, raw_desc: t.name,
+            category: t.personal_finance_category?.primary || (Array.isArray(t.category) ? t.category[0] : null),
+            pending: !!t.pending,
+          }));
+          await sb('fdw_bank_feed_txn?on_conflict=plaid_txn_id', {
+            method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(rows),
+          });
+          upserted += rows.length;
+        }
+        if (dels.length) {
+          const inlist = dels.map(encodeURIComponent).join(',');
+          await sb(`fdw_bank_feed_txn?plaid_txn_id=in.(${inlist})`, { method: 'DELETE', headers: { Prefer: 'return=minimal' } });
+          removed += dels.length;
+        }
+        await sb(`fdw_plaid_item?item_id=eq.${encodeURIComponent(it.item_id)}`, {
+          method: 'PATCH', headers: { Prefer: 'return=minimal' },
+          body: JSON.stringify({ sync_cursor: cursor, last_sync_at: new Date().toISOString() }),
         });
-        upserted += rows.length;
-      }
-      if (dels.length) {
-        const inlist = dels.map(encodeURIComponent).join(',');
-        await sb(`fdw_bank_feed_txn?plaid_txn_id=in.(${inlist})`, { method: 'DELETE', headers: { Prefer: 'return=minimal' } });
-        removed += dels.length;
-      }
-      await sb(`fdw_plaid_item?item_id=eq.${encodeURIComponent(it.item_id)}`, {
-        method: 'PATCH', headers: { Prefer: 'return=minimal' },
-        body: JSON.stringify({ sync_cursor: cursor, last_sync_at: new Date().toISOString() }),
-      });
 
-      const bal = await plaid('/accounts/balance/get', { access_token: it.access_token });
-      for (const a of bal.accounts || []) balances.push({
-        name: a.name, last4: a.mask, balance: a.balances?.current, available: a.balances?.available,
-        type: a.subtype, institution: it.institution,
+        const bal = await plaid('/accounts/balance/get', { access_token: it.access_token });
+        for (const a of bal.accounts || []) balances.push({
+          name: a.name, last4: a.mask, balance: a.balances?.current, available: a.balances?.available,
+          type: a.subtype, institution: it.institution,
+        });
+      } catch (e) {
+        itemErrors.push({ item_id: it.item_id, institution: it.institution, error: String(e.message || e) });
+      }
+    }
+
+    // Only write a snapshot if we actually collected balances — never overwrite
+    // a good snapshot with an empty one.
+    const today = new Date().toISOString().slice(0, 10);
+    if (balances.length) {
+      await sb('fdw_cash_snapshot?on_conflict=snapshot_date', {
+        method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({ snapshot_date: today, accounts: balances }),
       });
     }
 
-    const today = new Date().toISOString().slice(0, 10);
-    await sb('fdw_cash_snapshot?on_conflict=snapshot_date', {
-      method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ snapshot_date: today, accounts: balances }),
-    });
-
-    return res.status(200).json({ ok: true, items: items.length, txns_upserted: upserted, txns_removed: removed, accounts: balances.length });
+    return res.status(200).json({ ok: true, items: items.length, txns_upserted: upserted, txns_removed: removed, accounts: balances.length, snapshotWritten: balances.length > 0, itemErrors });
   } catch (e) {
     return res.status(500).json({ error: String(e.message || e) });
   }
