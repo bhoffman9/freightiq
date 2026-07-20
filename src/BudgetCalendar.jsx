@@ -97,6 +97,18 @@ export default function BudgetCalendar() {
 
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+  // Live bank balances (Plaid daily snapshots) for the week-end cash projection.
+  // Read-only — does NOT touch the calendar's persistence model.
+  const [weekCash, setWeekCash] = useState(null);
+  React.useEffect(() => {
+    let alive = true;
+    fetch('/api/ap-balances')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (alive && d && !d.error) setWeekCash(d); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
   const [expenses, setExpenses] = useState(initialExpenses);
   const [checkedItems, setCheckedItems] = useState({});
   const [deletedItems, setDeletedItems] = useState({});
@@ -1549,6 +1561,33 @@ export default function BudgetCalendar() {
       <b>Budget Calendar isn't configured.</b> Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in Vercel and redeploy. Editing is disabled until then so nothing is lost.
     </div>
   );
+  // Week-end cash projection (floor): start from the Monday-anchor bank balance
+  // and subtract this week's scheduled bills (from the anchor day through Sunday).
+  // No income modeled — conservative low point. Only shown on the current month.
+  const _viewingCurrentMonth = currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear();
+  const weekProj = (() => {
+    if (!weekCash || weekCash.weekStartBalance == null || !_viewingCurrentMonth) return null;
+    const t = new Date(); t.setHours(0, 0, 0, 0);
+    const dow = t.getDay();
+    const monday = new Date(t); monday.setDate(t.getDate() + (dow === 0 ? -6 : 1 - dow));
+    const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+    const anchor = weekCash.weekStartDate ? new Date(weekCash.weekStartDate + 'T00:00:00') : monday;
+    const from = anchor > monday ? anchor : monday;
+    let out = 0;
+    for (let d = new Date(from); d <= sunday; d.setDate(d.getDate() + 1)) {
+      const exps = getExpensesForDay(d.getDate(), d.getMonth(), d.getFullYear());
+      out += exps.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    }
+    return {
+      start: weekCash.weekStartBalance, startDate: weekCash.weekStartDate, exact: weekCash.weekStartExact,
+      current: weekCash.currentBalance, currentDate: weekCash.currentDate,
+      outflows: out, end: weekCash.weekStartBalance - out,
+      monday, sunday,
+    };
+  })();
+  const _money = (n) => `$${Math.round(n).toLocaleString('en-US')}`;
+  const _md = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
+
   return (
     <div className="budget-root">
       {lastDeleted && (
@@ -1587,6 +1626,33 @@ export default function BudgetCalendar() {
             <AlertTriangle className="w-6 h-6 flex-shrink-0" />
             <div className="flex-1 text-sm font-semibold">A change didn't save — your last edit may not be stored. Check your connection, then reload to see the true state.</div>
             <button onClick={() => window.location.reload()} className="px-3 py-1.5 bg-white text-red-700 rounded text-sm font-bold">Reload</button>
+          </div>
+        )}
+
+        {/* WEEK CASH PROJECTION (live Plaid balance − this week's bills; floor, no income) */}
+        {weekProj && (
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "stretch", gap: 10, marginBottom: 12, padding: "12px 14px", background: "#0f172a", borderRadius: 10, color: "#e2e8f0" }}>
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", paddingRight: 14, borderRight: "1px solid #1e293b" }}>
+              <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "#94a3b8" }}>This week</div>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>{_md(weekProj.monday)} – {_md(weekProj.sunday)}</div>
+            </div>
+            <div style={{ flex: 1, minWidth: 120 }}>
+              <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "#94a3b8" }}>
+                {weekProj.exact ? "Start balance (Mon)" : `Start balance (${weekProj.startDate ? _md(new Date(weekProj.startDate + 'T00:00:00')) : "wk"})`}
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "ui-monospace,monospace" }}>{_money(weekProj.start)}</div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", fontSize: 22, color: "#64748b" }}>−</div>
+            <div style={{ flex: 1, minWidth: 120 }}>
+              <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "#94a3b8" }}>Bills this week</div>
+              <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "ui-monospace,monospace", color: "#fca5a5" }}>{_money(weekProj.outflows)}</div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", fontSize: 22, color: "#64748b" }}>=</div>
+            <div style={{ flex: 1, minWidth: 140, background: weekProj.end < 10000 ? "#3f1d1d" : "#052e2b", borderRadius: 8, padding: "6px 12px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: weekProj.end < 10000 ? "#fca5a5" : "#5eead4" }}>Projected week-end</div>
+              <div style={{ fontSize: 22, fontWeight: 900, fontFamily: "ui-monospace,monospace", color: weekProj.end < 10000 ? "#fb7185" : "#2dd4bf" }}>{_money(weekProj.end)}</div>
+              <div style={{ fontSize: 9, color: "#64748b" }}>floor · no income · live today {_money(weekProj.current)}</div>
+            </div>
           </div>
         )}
 

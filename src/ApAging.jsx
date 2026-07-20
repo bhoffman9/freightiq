@@ -385,6 +385,12 @@ export default function ApAging() {
   const [confirmDialog, setConfirmDialog] = useState(null); // {message, onConfirm}
   const [quickFilter, setQuickFilter] = useState(null); // 'overdue' | 'thisWeek' | null
 
+  /* ── Bank Matches (Plaid → open invoices) ── */
+  const [bankMatches, setBankMatches] = useState([]);
+  const [bankStatus, setBankStatus] = useState("idle"); // idle|loading|ok|error
+  const [dismissedMatches, setDismissedMatches] = useState(() => new Set());
+  const [confirmingMatch, setConfirmingMatch] = useState(null); // txnId being recorded
+
   const fileRef = useRef();
   const searchInputRef = useRef();
   const draftSaveTimer = useRef();
@@ -410,6 +416,44 @@ export default function ApAging() {
   }, []);
 
   useEffect(() => { if (view === "equipment") loadEquipment(); }, [view, loadEquipment]);
+
+  /* ── Bank Matches: pull Plaid outflows matched to open invoices ── */
+  const loadBankMatches = useCallback(async () => {
+    setBankStatus("loading");
+    try {
+      const res = await fetch("/api/ap-payment-suggestions");
+      const data = await res.json();
+      if (Array.isArray(data.suggestions)) { setBankMatches(data.suggestions); setBankStatus("ok"); }
+      else setBankStatus("error");
+    } catch { setBankStatus("error"); }
+  }, []);
+  useEffect(() => { loadBankMatches(); }, [loadBankMatches]);
+
+  // Record one matched payment against its invoice (atomic ap_record_payment).
+  const confirmBankMatch = async (m) => {
+    setConfirmingMatch(m.txnId);
+    try {
+      const amt = Math.min(m.txnAmount, m.balance); // pay to zero, capped at the bank debit
+      const res = await fetch("/api/ap-payments", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          invoiceId: m.invoiceId, amount: amt, paymentDate: m.txnDate,
+          paymentMethod: "ACH", note: `Bank-matched: ${m.txnDesc || ""}`.slice(0, 200),
+        }),
+      });
+      if (res.ok) {
+        setBankMatches((prev) => prev.filter((x) => x.txnId !== m.txnId));
+        load();
+        addToast(`Recorded ${fmt(amt)} to ${m.vendorName} from bank match`, "success");
+      } else {
+        const err = await res.json().catch(() => ({}));
+        addToast(err.error || "Payment failed", "error");
+      }
+    } catch (e) { addToast("Payment failed: " + (e.message || e), "error"); }
+    setConfirmingMatch(null);
+  };
+  const dismissBankMatch = (m) => setDismissedMatches((prev) => new Set(prev).add(m.txnId));
+  const visibleBankMatches = bankMatches.filter((m) => !dismissedMatches.has(m.txnId));
 
   /* ── Toast notifications ── */
   const addToast = useCallback((message, type = "info", opts = {}) => {
@@ -1216,6 +1260,7 @@ export default function ApAging() {
           <button style={{ ...S.btn, ...(view === "equipment" ? S.btnActive : {}) }} onClick={() => setView("equipment")} aria-label="Equipment">Equipment</button>
           <button style={{ ...S.btn, ...(view === "expected" ? S.btnActive : {}) }} onClick={() => { setView("expected"); loadEquipment(); }} aria-label="Expected">Expected</button>
           <button style={{ ...S.btn, ...(view === "analytics" ? S.btnActive : {}) }} onClick={() => setView("analytics")} aria-label="Analytics">Analytics</button>
+          <button style={{ ...S.btn, ...(view === "bank" ? S.btnActive : {}) }} onClick={() => { setView("bank"); loadBankMatches(); }} aria-label="Bank Matches" title="Payments matched from the Plaid bank feed">🏦 Bank Matches{visibleBankMatches.length ? ` (${visibleBankMatches.length})` : ""}</button>
           <button style={S.btn} onClick={() => setShowRecentPayments(true)} aria-label="Recent payments" title="Recent payments">💸 Payments</button>
           <input type="date" value={apReportAsOf} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setApReportAsOf(e.target.value)} title="AP report as-of date (blank = today)" style={{ ...S.btn, padding: "6px 8px", cursor: "text" }} />
           <button style={S.btn} disabled={apReportBusy} onClick={downloadApReport} aria-label="Download AP report" title="Download AP report (Excel) as of the date, or today">📥 {apReportBusy ? "…" : "AP Report"}</button>
@@ -1326,6 +1371,82 @@ export default function ApAging() {
         <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
           <button onClick={() => setShowUpload(true)} style={{ ...S.btn, fontSize: 12 }}>📄 Upload a PDF invoice</button>
           <span style={{ fontSize: 11, color: "#475569" }}>Most invoices now auto-ingest from email</span>
+        </div>
+      )}
+
+      {/* ── Bank Matches (Plaid feed → open invoices) ── */}
+      {view === "bank" && (
+        <div style={{ background: "#0d1117", border: "1px solid #1e293b", borderRadius: 8, overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #1e293b" }}>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "#e2e8f0" }}>🏦 Bank Matches</div>
+              <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
+                Outflows from the Plaid bank feed matched to open invoices by vendor + amount. Confirm to record the payment.
+              </div>
+            </div>
+            <button style={S.btn} onClick={loadBankMatches} disabled={bankStatus === "loading"}>
+              {bankStatus === "loading" ? "Refreshing…" : "↻ Refresh"}
+            </button>
+          </div>
+
+          {bankStatus === "error" && (
+            <div style={{ padding: 16, color: "#fca5a5", fontSize: 13 }}>Could not load bank matches.</div>
+          )}
+          {bankStatus !== "error" && visibleBankMatches.length === 0 && (
+            <div style={{ padding: 24, color: "#94a3b8", fontSize: 13, textAlign: "center" }}>
+              {bankStatus === "loading" ? "Scanning the bank feed…" : "No unmatched bank payments right now. New Chase debits that line up with an open invoice will appear here."}
+            </div>
+          )}
+          {visibleBankMatches.length > 0 && (
+            <div style={{ overflowX: "auto" }}>
+              <table style={S.table}>
+                <thead>
+                  <tr>
+                    <th style={S.th}>Vendor</th>
+                    <th style={S.th}>Invoice</th>
+                    <th style={{ ...S.th, textAlign: "right" }}>Balance</th>
+                    <th style={S.th}>Bank debit</th>
+                    <th style={{ ...S.th, textAlign: "right" }}>Amount</th>
+                    <th style={S.th}>Account</th>
+                    <th style={S.th}>Match</th>
+                    <th style={{ ...S.th, textAlign: "right" }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleBankMatches.map((m) => (
+                    <tr key={m.txnId} style={{ borderBottom: "1px solid #131a26" }}>
+                      <td style={{ ...S.td, fontWeight: 600, color: "#e2e8f0", whiteSpace: "normal" }}>{m.vendorName}</td>
+                      <td style={{ ...S.td, color: "#94a3b8" }}>{m.invoiceNumber || "—"}</td>
+                      <td style={{ ...S.td, textAlign: "right", fontFamily: "ui-monospace,monospace" }}>{fmt(m.balance)}</td>
+                      <td style={{ ...S.td, color: "#94a3b8", whiteSpace: "normal", maxWidth: 260 }}>
+                        <div style={{ fontSize: 11 }}>{m.txnDate}</div>
+                        <div style={{ fontSize: 11, color: "#64748b" }}>{m.txnDesc}</div>
+                      </td>
+                      <td style={{ ...S.td, textAlign: "right", fontFamily: "ui-monospace,monospace" }}>{fmt(m.txnAmount)}</td>
+                      <td style={{ ...S.td, color: "#94a3b8" }}>{m.account}</td>
+                      <td style={S.td}>
+                        <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999,
+                          background: m.confidence === "high" ? "#064e3b" : "#422006",
+                          color: m.confidence === "high" ? "#6ee7b7" : "#fcd34d" }}>
+                          {m.confidence === "high" ? "exact" : "≈"}
+                        </span>
+                      </td>
+                      <td style={{ ...S.td, textAlign: "right", whiteSpace: "nowrap" }}>
+                        <button style={{ ...S.btnPrimary, padding: "6px 12px", minHeight: 30, marginRight: 6 }}
+                          disabled={confirmingMatch === m.txnId}
+                          onClick={() => confirmBankMatch(m)}>
+                          {confirmingMatch === m.txnId ? "…" : "✓ Confirm"}
+                        </button>
+                        <button style={{ ...S.btn, padding: "6px 10px", minHeight: 30 }}
+                          disabled={confirmingMatch === m.txnId}
+                          onClick={() => dismissBankMatch(m)}>Dismiss</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

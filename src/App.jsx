@@ -8302,6 +8302,18 @@ function CashFlowDashboard() {
       .catch(() => setBankStatus("error"));
   }, []);
 
+  // Live bank balances (Plaid daily snapshots via /api/ap-balances): current
+  // aggregate + this week's Monday-anchor balance for the week-end projection.
+  const [balData, setBalData] = useState(null);
+  const [balStatus, setBalStatus] = useState("idle");
+  useEffect(() => {
+    setBalStatus("loading");
+    fetch("/api/ap-balances")
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(d => { setBalData(d); setBalStatus("ok"); })
+      .catch(() => setBalStatus("error"));
+  }, []);
+
   // Add / update Budget Calendar recurring (w_custom_recurring) from a candidate.
   const [recurActions, setRecurActions] = useState({}); // key -> saving|done|error
   const [recurAcct, setRecurAcct] = useState({});       // candidate key -> chosen account
@@ -8325,8 +8337,11 @@ function CashFlowDashboard() {
   } : CASH_SNAPSHOTS[CASH_SNAPSHOTS.length - 1];
 
   const latest = snapshot;
-  const accts = latest.accounts;
-  const totalCash = accts.reduce((s,a) => s + a.balance, 0);
+  // Prefer live Plaid balances (fdw_cash_snapshot via /api/ap-balances); fall
+  // back to the hardcoded snapshot only if the feed is unavailable.
+  const balLive = balStatus === "ok" && balData && Array.isArray(balData.accounts) && balData.accounts.length > 0;
+  const accts = balLive ? balData.accounts : latest.accounts;
+  const totalCash = balLive ? balData.currentBalance : accts.reduce((s,a) => s + a.balance, 0);
 
   // Group totals
   const groups = {};
@@ -8353,6 +8368,15 @@ function CashFlowDashboard() {
   const cashAfter = totalCash - totalDue;
   const cashIsRed = cashAfter < 10000;
 
+  // Week-end cash projection (floor): start from the Monday-anchor bank balance
+  // and subtract ALL of this week's scheduled outflows (paid + due — the anchor
+  // predates them). No inflows modeled, so this is the conservative low point.
+  // If no week-start snapshot exists yet, fall back to today's live balance − due.
+  const weekStartBal = balLive && balData.weekStartBalance != null ? balData.weekStartBalance : null;
+  const projFromStart = weekStartBal != null;
+  const projWeekEnd = projFromStart ? (weekStartBal - totalPayments) : (totalCash - totalDue);
+  const projIsRed = projWeekEnd < 10000;
+
   // Group payments by day
   const payDays = {};
   payments.forEach(p => {
@@ -8368,10 +8392,12 @@ function CashFlowDashboard() {
     <div>
       <div className="ptitle">Cash Flow</div>
       <div className="psub">
-        Weekly bank snapshot · Monday morning balances · {latest.date || latest.weekLabel}
-        {fetchStatus === "ok" && <span style={{ color:"#4ade80",marginLeft:8,fontSize:10 }}>● Live from budget calendar (Supabase)</span>}
-        {fetchStatus === "error" && <span style={{ color:"#fbbf24",marginLeft:8,fontSize:10 }}>● Using built-in data (Supabase fetch failed)</span>}
-        {fetchStatus === "loading" && <span style={{ color:"var(--mu)",marginLeft:8,fontSize:10 }}>● Loading...</span>}
+        {balLive ? `Live bank balances (Plaid) · as of ${balData.currentDate}` : `Weekly bank snapshot · Monday morning balances · ${latest.date || latest.weekLabel}`}
+        {balLive && <span style={{ color:"#4ade80",marginLeft:8,fontSize:10 }}>● {accts.length} Chase accounts live</span>}
+        {!balLive && balStatus === "loading" && <span style={{ color:"var(--mu)",marginLeft:8,fontSize:10 }}>● Loading balances…</span>}
+        {!balLive && balStatus === "error" && <span style={{ color:"#fbbf24",marginLeft:8,fontSize:10 }}>● Balances feed failed — showing built-in snapshot</span>}
+        {fetchStatus === "ok" && <span style={{ color:"#4ade80",marginLeft:8,fontSize:10 }}>● Payments live (budget calendar)</span>}
+        {fetchStatus === "error" && <span style={{ color:"#fbbf24",marginLeft:8,fontSize:10 }}>● Payments: built-in data</span>}
       </div>
 
       {/* Cash hero */}
@@ -8385,7 +8411,7 @@ function CashFlowDashboard() {
         <div style={{ fontSize:9,letterSpacing:4,textTransform:"uppercase",color:"#4ade80",marginBottom:8,position:"relative" }}>Total Available Cash</div>
         <div style={{ fontFamily:"var(--f2)",fontSize:64,fontWeight:900,color:"#4ade80",lineHeight:1,position:"relative" }}>{fd(totalCash,0)}</div>
         <div style={{ fontSize:12,color:"var(--mu)",marginTop:10,position:"relative" }}>
-          {accts.length} accounts · {latest.date || latest.weekLabel} · excludes personal
+          {accts.length} accounts · {balLive ? `as of ${balData.currentDate}` : (latest.date || latest.weekLabel)}
         </div>
       </div>
 
@@ -8407,9 +8433,18 @@ function CashFlowDashboard() {
           <div className="ksub">J&A + Payroll + misc</div>
         </div>
         <div className="kpi">
-          <div className="klbl">Savings (Amex)</div>
+          <div className="klbl">Savings</div>
           <div className="kval" style={{ color:"#a78bfa" }}>{fd(groups["Savings"]||0,0)}</div>
           <div className="ksub">Reserve · not in daily ops</div>
+        </div>
+        <div className="kpi" style={{ borderLeft:`3px solid ${projIsRed ? "#fb7185" : "#2dd4bf"}` }}>
+          <div className="klbl">Projected week-end</div>
+          <div className="kval" style={{ color: projIsRed ? "#fb7185" : "#2dd4bf" }}>{fd(projWeekEnd,0)}</div>
+          <div className="ksub">
+            {projFromStart
+              ? `${fd(weekStartBal,0)} start − ${fd(totalPayments,0)} bills (floor, no income)`
+              : `${fd(totalCash,0)} now − ${fd(totalDue,0)} due`}
+          </div>
         </div>
       </div>
 
