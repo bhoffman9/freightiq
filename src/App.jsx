@@ -5481,6 +5481,43 @@ const ASCEND = {
 };
 
 // ── ALVYS REVENUE DATA (Live TMS) ──────────────────────────────
+// TMS load history from export (1).csv - SF fleet, excl. cancelled, 2026+
+const TMS_HISTORY = {
+  weeks: [
+    {key:'2026-03-15',label:'3/15',loads:2,rev:2050,miles:238,ce:2050,atl:0,cee:0},
+    {key:'2026-03-22',label:'3/22',loads:73,rev:66150,miles:8055,ce:66150,atl:0,cee:0},
+    {key:'2026-03-29',label:'3/29',loads:100,rev:137299,miles:26258,ce:137299,atl:0,cee:0},
+    {key:'2026-04-05',label:'4/5',loads:96,rev:160300,miles:29326,ce:160300,atl:0,cee:0},
+    {key:'2026-04-12',label:'4/12',loads:141,rev:161150,miles:25557,ce:161150,atl:0,cee:0},
+    {key:'2026-04-19',label:'4/19',loads:133,rev:226800,miles:28343,ce:221050,atl:0,cee:5750},
+    {key:'2026-04-26',label:'4/26',loads:123,rev:178890,miles:24400,ce:169290,atl:3350,cee:6250},
+    {key:'2026-05-03',label:'5/3',loads:112,rev:175812,miles:20766,ce:159412,atl:14900,cee:1500},
+    {key:'2026-05-10',label:'5/10',loads:146,rev:208125,miles:25105,ce:193225,atl:13400,cee:1500},
+    {key:'2026-05-17',label:'5/17',loads:118,rev:178950,miles:20155,ce:136450,atl:33100,cee:9400},
+    {key:'2026-05-24',label:'5/24',loads:147,rev:195638,miles:22253,ce:163938,atl:26800,cee:4900},
+    {key:'2026-05-31',label:'5/31',loads:215,rev:260655,miles:31132,ce:217280,atl:35400,cee:7975},
+    {key:'2026-06-07',label:'6/7',loads:214,rev:254918,miles:28306,ce:217975,atl:28343,cee:8600},
+    {key:'2026-06-14',label:'6/14',loads:109,rev:201176,miles:25080,ce:162276,atl:33400,cee:0},
+    {key:'2026-06-21',label:'6/21',loads:91,rev:201280,miles:34143,ce:149410,atl:30500,cee:0},
+    {key:'2026-06-28',label:'6/28',loads:73,rev:129170,miles:24097,ce:89690,atl:30580,cee:8900},
+    {key:'2026-07-05',label:'7/5',loads:128,rev:253559,miles:42553,ce:175161,atl:75398,cee:3000},
+    {key:'2026-07-12',label:'7/12',loads:105,rev:220562,miles:37907,ce:135700,atl:84862,cee:0},
+    {key:'2026-07-19',label:'7/19',loads:61,rev:116475,miles:26124,ce:103700,atl:12775,cee:0},
+    {key:'2026-07-26',label:'7/26',loads:22,rev:92850,miles:24298,ce:92850,atl:0,cee:0},
+    {key:'2026-08-02',label:'8/2',loads:9,rev:9575,miles:950,ce:9575,atl:0,cee:0},
+    {key:'2026-08-16',label:'8/16',loads:15,rev:16800,miles:2632,ce:16800,atl:0,cee:0},
+    {key:'2026-08-23',label:'8/23',loads:11,rev:7150,miles:44,ce:7150,atl:0,cee:0}
+  ],
+  months: [
+    {key:'2026-03',label:'Mar 2026',loads:119,rev:118848,miles:18297,ce:118848,atl:0,cee:0},
+    {key:'2026-04',label:'Apr 2026',loads:510,rev:746617,miles:115210,ce:731267,atl:3350,cee:12000},
+    {key:'2026-05',label:'May 2026',loads:567,rev:838385,miles:101359,ce:732885,atl:88200,cee:17300},
+    {key:'2026-06',label:'Jun 2026',loads:659,rev:962464,miles:122761,ce:774656,atl:144363,cee:16575},
+    {key:'2026-07',label:'Jul 2026',loads:351,rev:750472,miles:145810,ce:551676,atl:186895,cee:11900},
+    {key:'2026-08',label:'Aug 2026',loads:38,rev:38550,miles:4285,ce:38550,atl:0,cee:0}
+  ],
+};
+
 const ALVYS = {
   period: "Current — Alvys TMS (live)",
   totalLoads: 407, totalRev: 613009.50,
@@ -5648,28 +5685,24 @@ function RevenueDashboard() {
             );
           })()}
 
-          {/* ── HISTORICAL BREAKDOWN (all loads by delivery week / month) ── */}
-          {alvysLive && alvysLive.histWeeks && (() => {
-            const rows = histGran === "month" ? alvysLive.histMonths : alvysLive.histWeeks;
+          {/* ── HISTORICAL SF REVENUE (TMS export · Show Freight carrier) ── */}
+          {(() => {
+            const rows = histGran === "month" ? TMS_HISTORY.months : TMS_HISTORY.weeks;
             if (!rows.length) return null;
-            const tot = rows.reduce((s,r) => s + r.rev, 0);
-            const totLoads = rows.reduce((s,r) => s + r.loads, 0);
-            const chartData = rows.map(r => ({ label: r.label, CE: Math.round(r.ce), SF: Math.round(r.sf) }));
-            const now = new Date();
-            const todayKey = histGran === "month"
-              ? `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`
-              : (() => { const x = new Date(); x.setHours(0,0,0,0); x.setDate(x.getDate()-x.getDay()); return x.toISOString().slice(0,10); })();
+            const tot = rows.reduce((s,r)=>s+r.rev,0), totLoads = rows.reduce((s,r)=>s+r.loads,0), totMiles = rows.reduce((s,r)=>s+r.miles,0);
+            const chartData = rows.map(r => ({ label:r.label, CE:Math.round(r.ce), ATL:Math.round(r.atl), CEE:Math.round(r.cee) }));
+            const tBtn = id => ({ padding:"4px 14px",borderRadius:3,cursor:"pointer",fontSize:11,fontWeight:700,fontFamily:"var(--f1)",background:histGran===id?"var(--orl)":"transparent",color:histGran===id?"var(--or)":"var(--mu)",border:`1px solid ${histGran===id?"var(--or)":"var(--bd)"}` });
             return (
               <div className="card" style={{ marginBottom:14, borderLeft:"3px solid #38bdf8" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", flexWrap:"wrap", gap:8, marginBottom:8 }}>
-                  <div className="ctit" style={{ margin:0 }}>Historical Revenue · by {histGran === "month" ? "month" : "week"}</div>
+                  <div className="ctit" style={{ margin:0 }}>Historical SF Revenue · by {histGran==="month"?"month":"week"} <span style={{ fontSize:10, color:"var(--mu)", fontWeight:400 }}>· Show Freight carrier · TMS export</span></div>
                   <div style={{ display:"flex", gap:6 }}>
                     {[["week","Week"],["month","Month"]].map(([id,lbl]) => (
-                      <button key={id} onClick={()=>setHistGran(id)} style={{ padding:"4px 14px",borderRadius:3,cursor:"pointer",fontSize:11,fontWeight:700,fontFamily:"var(--f1)",background:histGran===id?"var(--orl)":"transparent",color:histGran===id?"var(--or)":"var(--mu)",border:`1px solid ${histGran===id?"var(--or)":"var(--bd)"}` }}>{lbl}</button>
+                      <button key={id} onClick={()=>setHistGran(id)} style={tBtn(id)}>{lbl}</button>
                     ))}
                   </div>
                 </div>
-                <div style={{ fontFamily:"var(--f3)", fontSize:26, fontWeight:600, color:"#38bdf8", margin:"2px 0 12px" }}>{fd(tot,0)}<span style={{ fontSize:12, color:"var(--mu)", fontWeight:400, marginLeft:8 }}>{fn(totLoads,0)} loads · {rows.length} {histGran==="month"?"months":"weeks"}</span></div>
+                <div style={{ fontFamily:"var(--f3)", fontSize:26, fontWeight:600, color:"#38bdf8", margin:"2px 0 12px" }}>{fd(tot,0)}<span style={{ fontSize:12, color:"var(--mu)", fontWeight:400, marginLeft:8 }}>{fn(totLoads,0)} loads · {fn(totMiles,0)} mi · {rows.length} {histGran==="month"?"months":"weeks"}</span></div>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={chartData} margin={{ top:6, right:8, left:0, bottom:0 }}>
                     <CartesianGrid stroke="#1f2535" vertical={false} />
@@ -5677,76 +5710,95 @@ function RevenueDashboard() {
                     <YAxis tick={{ fill:"#8791a3", fontSize:10 }} axisLine={false} tickLine={false} tickFormatter={v => `$${Math.round(v/1000)}k`} />
                     <Tooltip contentStyle={{ background:"#181c26", border:"1px solid #1f2535", borderRadius:4, fontFamily:"var(--f3)" }} formatter={(v,n) => [fd(v,0), n]} />
                     <Bar dataKey="CE" stackId="a" fill="#38bdf8" />
-                    <Bar dataKey="SF" stackId="a" fill="#2dd4bf" radius={[2,2,0,0]} />
+                    <Bar dataKey="ATL" stackId="a" fill="#fb7185" />
+                    <Bar dataKey="CEE" stackId="a" fill="#4ade80" radius={[2,2,0,0]} />
                   </BarChart>
                 </ResponsiveContainer>
-                <div style={{ overflowX:"auto", maxHeight:340, marginTop:10 }}>
-                  <table className="tbl"><thead><tr><th>{histGran==="month"?"Month":"Week of"}</th><th>Loads</th><th>CE</th><th>SF</th><th>Revenue</th></tr></thead>
+                <div style={{ overflowX:"auto", maxHeight:360, marginTop:10 }}>
+                  <table className="tbl"><thead><tr><th>{histGran==="month"?"Month":"Week of"}</th><th>Loads</th><th>Miles</th><th>CE</th><th>ATL</th><th>CE-East</th><th>Revenue</th><th>$/Load</th></tr></thead>
                     <tbody>{[...rows].reverse().map((r,i) => (
-                      <tr key={r.key} style={{ background: r.key===todayKey ? "rgba(45,212,191,.08)" : (i%2===0?"var(--s2)":"transparent") }}>
-                        <td>{r.label}{r.key===todayKey && <span style={{ color:"#2dd4bf", fontSize:10, marginLeft:6 }}>current</span>}</td>
-                        <td>{r.loads}</td>
+                      <tr key={r.key} style={{ background:i%2===0?"var(--s2)":"transparent" }}>
+                        <td>{r.label}</td><td>{r.loads}</td><td style={{ color:"var(--mu)" }}>{fn(r.miles,0)}</td>
                         <td style={{ color:"#38bdf8" }}>{fd(r.ce,0)}</td>
-                        <td style={{ color:"#2dd4bf" }}>{fd(r.sf,0)}</td>
+                        <td style={{ color:"#fb7185" }}>{r.atl?fd(r.atl,0):"—"}</td>
+                        <td style={{ color:"#4ade80" }}>{r.cee?fd(r.cee,0):"—"}</td>
                         <td style={{ color:"#4ade80", fontWeight:700 }}>{fd(r.rev,0)}</td>
+                        <td style={{ color:"var(--mu)" }}>{r.loads?fd(r.rev/r.loads,0):"—"}</td>
                       </tr>
                     ))}</tbody>
-                    <tfoot><tr><td>Total</td><td>{totLoads}</td><td>{fd(rows.reduce((s,r)=>s+r.ce,0),0)}</td><td>{fd(rows.reduce((s,r)=>s+r.sf,0),0)}</td><td>{fd(tot,0)}</td></tr></tfoot>
+                    <tfoot><tr><td>Total</td><td>{totLoads}</td><td>{fn(totMiles,0)}</td><td>{fd(rows.reduce((s,r)=>s+r.ce,0),0)}</td><td>{fd(rows.reduce((s,r)=>s+r.atl,0),0)}</td><td>{fd(rows.reduce((s,r)=>s+r.cee,0),0)}</td><td>{fd(tot,0)}</td><td>{totLoads?fd(tot/totLoads,0):"—"}</td></tr></tfoot>
                   </table>
                 </div>
-                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>All Alvys loads by delivery date (CE/SF via invoiceAs). Past weeks = realized/booked, future = pipeline. Alvys holds ~April onward; Jan–Mar in the Ascend view; accounting-truth monthly in the Income tab (QBO).</div>
+                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>All Show-Freight-carrier loads by scheduled delivery (cancelled excluded), split by booking office (CE / Atlanta / CE-East). Source: TMS export · {TMS_HISTORY.months[0]?.label}–{TMS_HISTORY.months[TMS_HISTORY.months.length-1]?.label}.</div>
               </div>
             );
           })()}
 
-          {/* ── FLEET UTILIZATION (Alvys revenue vs drivers / trucks / payroll) ── */}
-          {alvysLive && alvysLive.histWeeks && (() => {
-            const nowSun = (() => { const x=new Date(); x.setHours(0,0,0,0); x.setDate(x.getDate()-x.getDay()); return x; })();
-            const complete = alvysLive.histWeeks.filter(w => new Date(w.key+"T00:00:00") < nowSun && w.rev > 0);
-            if (!complete.length) return null;
-            const recent = complete.slice(-8);
-            // Alvys ages invoiced loads out, so old weeks hold only a few residual
-            // loads — average only real operating weeks (≥10 loads) so the KPIs
-            // reflect actual utilization, not the sparse tail.
-            const meaningful = complete.filter(w => w.loads >= 10);
-            const avg4 = (meaningful.length ? meaningful : complete).slice(-4);
-            const avgRev = avg4.reduce((s,w)=>s+w.rev,0)/(avg4.length||1);
-            const avgLoads = avg4.reduce((s,w)=>s+w.loads,0)/(avg4.length||1);
+          {/* ── FLEET UTILIZATION — SF-carrier revenue vs fleet (numbers behind the number) ── */}
+          {(() => {
+            const weeks = TMS_HISTORY.weeks.filter(w => w.loads >= 40); // real full operating weeks (excl. export-horizon tail)
+            if (!weeks.length) return null;
+            const recent = weeks.slice(-4), n = recent.length;
+            const sumRev = recent.reduce((s,w)=>s+w.rev,0), sumLoads = recent.reduce((s,w)=>s+w.loads,0), sumMiles = recent.reduce((s,w)=>s+w.miles,0);
+            const avgRev = sumRev/n, avgLoads = sumLoads/n, avgMiles = sumMiles/n;
             const pw = DRIVER_WEEKLY.weeks || []; const lw = pw[pw.length-1];
             const weeklyPayroll = (DRIVER_WEEKLY.fleet?.[lw] || 0) + (DRIVER_WEEKLY.otr?.[lw] || 0);
             const drivers = ACTIVE_DRIVERS_COUNT, trucks = TRUCK_COUNT;
             const kpis = [
-              { l:"Revenue ÷ Payroll", v: weeklyPayroll>0 ? `${(avgRev/weeklyPayroll).toFixed(2)}×` : "—", s:`per $1 driver payroll · ${fd(weeklyPayroll,0)}/wk`, c:"#4ade80" },
-              { l:"Revenue / Driver", v: fd(drivers>0?avgRev/drivers:0,0), s:`${drivers} active drivers · /wk`, c:"#38bdf8" },
-              { l:"Loads / Driver", v: (drivers>0?avgLoads/drivers:0).toFixed(1), s:`${drivers} drivers · /wk`, c:"#a78bfa" },
-              { l:"Revenue / Truck", v: fd(trucks>0?avgRev/trucks:0,0), s:`${trucks} active trucks · /wk`, c:"#fbbf24" },
+              { l:"Revenue ÷ Payroll", v: weeklyPayroll>0?`${(avgRev/weeklyPayroll).toFixed(2)}×`:"—", work:`${fd(avgRev,0)} rev ÷ ${fd(weeklyPayroll,0)} payroll`, c:"#4ade80" },
+              { l:"Revenue / Driver", v: fd(avgRev/drivers,0), work:`${fd(avgRev,0)} ÷ ${drivers} drivers`, c:"#38bdf8" },
+              { l:"Revenue / Truck", v: fd(avgRev/trucks,0), work:`${fd(avgRev,0)} ÷ ${trucks} trucks`, c:"#fbbf24" },
+              { l:"Loads / Driver", v: (avgLoads/drivers).toFixed(1), work:`${fn(avgLoads,0)} loads ÷ ${drivers} drivers`, c:"#a78bfa" },
+            ];
+            const inputs = [
+              ["Avg weekly revenue", fd(avgRev,0), `${n}-wk avg · ${fd(sumRev,0)} ÷ ${n}`],
+              ["Avg weekly loads", fn(avgLoads,0), `${fn(sumLoads,0)} ÷ ${n}`],
+              ["Avg loaded miles/wk", fn(avgMiles,0), `${fn(sumMiles,0)} ÷ ${n}`],
+              ["Driver payroll/wk", fd(weeklyPayroll,0), `pay wk ${lw||"—"}`],
+              ["Active drivers", drivers, "PAYROLL active"],
+              ["Active trucks", trucks, "in-service fleet"],
+              ["Revenue / mile", avgMiles?fd(avgRev/avgMiles,2):"—", `${fd(avgRev,0)} ÷ ${fn(avgMiles,0)} mi`],
+              ["Revenue / load", fd(avgRev/avgLoads,0), `${fd(avgRev,0)} ÷ ${fn(avgLoads,0)} loads`],
             ];
             return (
               <div className="card" style={{ marginBottom:14, borderLeft:"3px solid var(--or)" }}>
-                <div className="ctit">Fleet Utilization <span style={{ fontSize:10, color:"var(--mu)", fontWeight:400 }}>· avg of last {avg4.length} full operating wk{avg4.length!==1?"s":""} (≥10 loads) · Alvys revenue ÷ SF fleet</span></div>
+                <div className="ctit">Fleet Utilization <span style={{ fontSize:10, color:"var(--mu)", fontWeight:400 }}>· {n}-wk avg of full operating weeks · Show-Freight-carrier revenue ÷ fleet</span></div>
                 <div className="g4" style={{ margin:"10px 0 14px" }}>
                   {kpis.map((k,i)=>(
                     <div className="kpi" key={i} style={{ borderLeft:`3px solid ${k.c}` }}>
                       <div className="klbl">{k.l}</div>
                       <div className="kval" style={{ color:k.c }}>{k.v}</div>
-                      <div className="ksub">{k.s}</div>
+                      <div className="ksub" style={{ fontFamily:"var(--f3)", fontSize:9 }}>{k.work}</div>
                     </div>
                   ))}
                 </div>
+                <div className="card" style={{ background:"var(--s2)", marginBottom:12, padding:"14px 16px" }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:"var(--mu)", textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Behind the numbers · inputs</div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
+                    {inputs.map((x,i)=>(
+                      <div key={i}>
+                        <div style={{ fontSize:9, color:"var(--mu)", textTransform:"uppercase", letterSpacing:0.5 }}>{x[0]}</div>
+                        <div style={{ fontFamily:"var(--f3)", fontSize:17, fontWeight:600, color:"var(--tx)" }}>{x[1]}</div>
+                        <div style={{ fontSize:9, color:"var(--mu)" }}>{x[2]}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 <div style={{ overflowX:"auto" }}>
-                  <table className="tbl"><thead><tr><th>Week of</th><th>Loads</th><th>Revenue</th><th>Rev/Driver</th><th>Rev/Truck</th><th>Loads/Driver</th></tr></thead>
-                    <tbody>{[...recent].reverse().map(w => (
+                  <table className="tbl"><thead><tr><th>Week of</th><th>Loads</th><th>Miles</th><th>Revenue</th><th>Rev/Driver</th><th>Rev/Truck</th><th>Rev/Mile</th><th>Loads/Driver</th></tr></thead>
+                    <tbody>{[...weeks].reverse().slice(0,12).map(w => (
                       <tr key={w.key}>
-                        <td>{w.label}</td><td>{w.loads}</td>
+                        <td>{w.label}</td><td>{w.loads}</td><td style={{ color:"var(--mu)" }}>{fn(w.miles,0)}</td>
                         <td style={{ color:"#4ade80", fontWeight:700 }}>{fd(w.rev,0)}</td>
-                        <td style={{ color:"#38bdf8" }}>{fd(drivers>0?w.rev/drivers:0,0)}</td>
-                        <td style={{ color:"#fbbf24" }}>{fd(trucks>0?w.rev/trucks:0,0)}</td>
-                        <td style={{ color:"#a78bfa" }}>{(drivers>0?w.loads/drivers:0).toFixed(1)}</td>
+                        <td style={{ color:"#38bdf8" }}>{fd(w.rev/drivers,0)}</td>
+                        <td style={{ color:"#fbbf24" }}>{fd(w.rev/trucks,0)}</td>
+                        <td style={{ color:"#a78bfa" }}>{w.miles?fd(w.rev/w.miles,2):"—"}</td>
+                        <td style={{ color:"var(--mu)" }}>{(w.loads/drivers).toFixed(1)}</td>
                       </tr>
                     ))}</tbody>
                   </table>
                 </div>
-                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>Weekly Alvys revenue (all loads the SF fleet hauls, CE+SF invoiced) vs {drivers} active drivers / {trucks} trucks · ~{fd(weeklyPayroll,0)}/wk driver payroll. Per-asset miles-last-month + $/mile will populate from the monthly Samsara drop.</div>
+                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>Show-Freight-carrier revenue (the fleet's own hauled loads) ÷ {drivers} active drivers / {trucks} trucks · {fd(weeklyPayroll,0)}/wk driver payroll. Full operating weeks only (≥40 loads); export-horizon tail excluded. Per-truck Samsara miles → $/truck-mile once the monthly xlsx lands.</div>
               </div>
             );
           })()}
