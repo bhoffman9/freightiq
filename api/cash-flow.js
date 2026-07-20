@@ -102,8 +102,12 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
     const now = req.query.date ? new Date(req.query.date) : new Date();
     const { start, end } = weekRange(now);
-    const startMonth = start.getMonth() + 1; // 1-indexed
+    const startMonth = start.getMonth() + 1; // 1-indexed (for recurring monthly-date Date math below)
     const endMonth   = end.getMonth() + 1;
+    // The calendar stores w_* month values 0-INDEXED (0=Jan..11=Dec) — see
+    // BudgetCalendar.jsx (oneTimeMonth: currentMonth). Use these for DB matches.
+    const startMonth0 = start.getMonth();
+    const endMonth0   = end.getMonth();
     const startYear  = start.getFullYear();
     const endYear    = end.getFullYear();
 
@@ -126,8 +130,8 @@ export default async function handler(req, res) {
     // Set of "paid" item_keys for any month/year overlapping this week
     const paidKeys = new Set();
     for (const c of (checked.data || [])) {
-      const matchesStart = c.year === startYear && c.month === startMonth;
-      const matchesEnd   = c.year === endYear   && c.month === endMonth;
+      const matchesStart = c.year === startYear && c.month === startMonth0;
+      const matchesEnd   = c.year === endYear   && c.month === endMonth0;
       if (matchesStart || matchesEnd) paidKeys.add(c.item_key);
     }
 
@@ -179,8 +183,9 @@ export default async function handler(req, res) {
 
     // One-time items
     for (const o of (oneTime.data || [])) {
-      // Filter to this week's day range. The table stores year/month/day separately.
-      const candidate = new Date(o.year, o.month - 1, o.day);
+      // Filter to this week's day range. The table stores year/month/day
+      // separately, with month 0-INDEXED (0=Jan) — pass o.month straight to Date.
+      const candidate = new Date(o.year, o.month, o.day);
       if (candidate < start || candidate > end) continue;
 
       const slug = slugify(o.name);
