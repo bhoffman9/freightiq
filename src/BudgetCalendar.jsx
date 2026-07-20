@@ -145,6 +145,28 @@ export default function BudgetCalendar() {
     } catch { setSuggApplying(p => ({ ...p, [key]: 'error' })); }
   };
   const dismissSugg = (key) => setSuggDismissed(p => new Set(p).add(key));
+
+  // Stash the authoritative week projection (this calendar is the source of
+  // truth for bills — it applies deletions/overrides). The Cash Flow tab reads
+  // this so both tabs show the same number. Recomputes when bill data changes.
+  React.useEffect(() => {
+    if (!weekCash || weekCash.weekStartBalance == null || !weekCash.monday) return;
+    try {
+      const monday = new Date(weekCash.monday + 'T00:00:00');
+      const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+      const anchor = weekCash.weekStartDate ? new Date(weekCash.weekStartDate + 'T00:00:00') : monday;
+      const from = anchor > monday ? anchor : monday;
+      let out = 0;
+      for (let d = new Date(from); d <= sunday; d.setDate(d.getDate() + 1)) {
+        out += getExpensesForDay(d.getDate(), d.getMonth(), d.getFullYear()).reduce((s, e) => s + (Number(e.amount) || 0), 0);
+      }
+      out = Math.round(out * 100) / 100;
+      localStorage.setItem('fiq_week_proj', JSON.stringify({
+        monday: weekCash.monday, start: weekCash.weekStartBalance,
+        bills: out, end: Math.round((weekCash.weekStartBalance - out) * 100) / 100,
+      }));
+    } catch {}
+  }, [weekCash, expenses, customRecurring, recurringOverrides, deletedItems]);
   const [expenses, setExpenses] = useState(initialExpenses);
   const [checkedItems, setCheckedItems] = useState({});
   const [deletedItems, setDeletedItems] = useState({});
