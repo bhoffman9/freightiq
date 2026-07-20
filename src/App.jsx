@@ -8391,15 +8391,13 @@ function CashFlowDashboard() {
   // Prefer the Budget Calendar's AUTHORITATIVE week bills (it applies
   // deletions/overrides that /api/cash-flow can't). Stashed in localStorage for
   // the current week; fall back to the /api/cash-flow estimate otherwise.
-  let calProj = null;
-  try {
-    const j = JSON.parse(localStorage.getItem("fiq_week_proj") || "null");
-    if (j && balData && j.monday === balData.monday) calProj = j;
-  } catch {}
-  const estBills = liveData && liveData.scheduledOutflows != null ? liveData.scheduledOutflows : totalPayments;
-  const weekBills = calProj ? calProj.bills : estBills;
-  const projFromCal = !!calProj;
-  const projWeekEnd = calProj ? calProj.end : (projFromStart ? (weekStartBal - weekBills) : (totalCash - weekBills));
+  // Full week bills from /api/cash-flow — server-side replica of the calendar's
+  // getExpensesForDay (hardcoded recurring + initialExpenses + w_custom_recurring
+  // + w_one_time, net of overrides/deletions). Matches the Budget Calendar banner
+  // to the cent, cross-device (no per-device stash). Falls back to the visible
+  // DB payments total only if the endpoint is unavailable.
+  const weekBills = liveData && liveData.scheduledOutflows != null ? liveData.scheduledOutflows : totalPayments;
+  const projWeekEnd = projFromStart ? (weekStartBal - weekBills) : (totalCash - weekBills);
   const projIsRed = projWeekEnd < 10000;
 
   // Group payments by day
@@ -8468,7 +8466,7 @@ function CashFlowDashboard() {
           <div className="kval" style={{ color: projIsRed ? "#fb7185" : "#2dd4bf" }}>{fd(projWeekEnd,0)}</div>
           <div className="ksub">
             {projFromStart
-              ? `${fd(weekStartBal,0)} start − ${fd(weekBills,0)} bills${projFromCal ? " (calendar)" : ""} · floor, no income`
+              ? `${fd(weekStartBal,0)} start − ${fd(weekBills,0)} bills · floor, no income`
               : `${fd(totalCash,0)} now − ${fd(weekBills,0)} bills`}
           </div>
         </div>

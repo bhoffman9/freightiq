@@ -1588,29 +1588,6 @@ export default function BudgetCalendar() {
     { value: 'unchecked-first', label: 'Unpaid First' },
   ];
 
-  // Stash the authoritative week projection (this calendar applies deletions/
-  // overrides, so its bill total is source-of-truth). The Cash Flow tab reads
-  // this so both tabs agree. Placed here — after all state + getExpensesForDay —
-  // to avoid a temporal-dead-zone on the dependency array. Still above the early
-  // return below, so Rules-of-Hooks safe.
-  React.useEffect(() => {
-    if (!weekCash || weekCash.weekStartBalance == null || !weekCash.monday) return;
-    try {
-      const monday = new Date(weekCash.monday + 'T00:00:00');
-      const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
-      const anchor = weekCash.weekStartDate ? new Date(weekCash.weekStartDate + 'T00:00:00') : monday;
-      const from = anchor > monday ? anchor : monday;
-      let out = 0;
-      for (let d = new Date(from); d <= sunday; d.setDate(d.getDate() + 1)) {
-        out += getExpensesForDay(d.getDate(), d.getMonth(), d.getFullYear()).reduce((s, e) => s + (Number(e.amount) || 0), 0);
-      }
-      out = Math.round(out * 100) / 100;
-      localStorage.setItem('fiq_week_proj', JSON.stringify({
-        monday: weekCash.monday, start: weekCash.weekStartBalance,
-        bills: out, end: Math.round((weekCash.weekStartBalance - out) * 100) / 100,
-      }));
-    } catch {}
-  }, [weekCash, expenses, customRecurring, recurringOverrides, deletedItems]);
 
   // Safety net: if the Supabase client couldn't be created (env vars unset),
   // don't render the interactive calendar — edits would appear on screen and
