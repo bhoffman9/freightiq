@@ -159,16 +159,22 @@ export default async function handler(req, res) {
     }
 
     // 3. w_one_time_expenses (netted) — listed + summed. month is 0-indexed.
+    // A w_recurring_overrides row can MOVE a one-time to a different day and/or
+    // change its amount (the calendar renders it at the override day). So the
+    // effective day/amount — not the stored ones — decide week membership.
     for (const o of (oneTime.data || [])) {
-      const candidate = new Date(o.year, o.month, o.day);
+      const ov = overrideMap[o.id];
+      if (ov && ov.deleted) continue;
+      const effDay = (ov && ov.day != null) ? ov.day : o.day;
+      const effAmt = (ov && ov.amount != null) ? parseFloat(ov.amount) : Number(o.amount);
+      const candidate = new Date(o.year, o.month, effDay);
       if (candidate < start || candidate > end) continue;
-      const amt = netAmount(o.id, Number(o.amount), o.year, o.month, o.day);
-      if (amt == null) continue;
+      if (deletedSet.has(`${o.year}-${o.month}-${effDay}-${o.id}`)) continue;
 
       const slug = slugify(o.name);
       const rawCat = catByVendor.get(slug) || null;
       const cat = rawCat ? (CAT_MAP[rawCat] || rawCat) : inferCatFromAccount(o.account);
-      payments.push({ day: `${DAY_LABELS[candidate.getDay()]} ${o.day}`, vendor: o.name, amount: amt, status: paidKeys.has(o.id) ? 'paid' : 'due', cat, _sort: candidate.getTime() });
+      payments.push({ day: `${DAY_LABELS[candidate.getDay()]} ${effDay}`, vendor: o.name, amount: effAmt, status: paidKeys.has(o.id) ? 'paid' : 'due', cat, _sort: candidate.getTime() });
     }
 
     payments.sort((a, b) => a._sort - b._sort);
