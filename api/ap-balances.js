@@ -92,6 +92,9 @@ export default async function handler(req, res) {
       };
     }).sort((x, y) => y.balance - x.balance);
 
+    // Short shared cache so cross-device loads are fast (balances refresh daily
+    // via the plaid-sync cron). Same key/data for everyone, so CDN-cacheable.
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     return res.status(200).json({
       monday,
       real: isReal,

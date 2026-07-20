@@ -101,12 +101,23 @@ export default function BudgetCalendar() {
   // Live bank balances (Plaid daily snapshots) for the week-end cash projection.
   // Read-only — does NOT touch the calendar's persistence model.
   const [weekCash, setWeekCash] = useState(null);
+  const [weekCashLoading, setWeekCashLoading] = useState(true);
   React.useEffect(() => {
     let alive = true;
-    fetch('/api/ap-balances')
-      .then(r => (r.ok ? r.json() : null))
-      .then(d => { if (alive && d && !d.error) setWeekCash(d); })
-      .catch(() => {});
+    // Retry with backoff — /api/ap-balances can cold-start on a fresh device;
+    // a transient miss must not silently leave the banner blank.
+    const attempt = async (n) => {
+      try {
+        const r = await fetch('/api/ap-balances');
+        if (r.ok) { const d = await r.json(); if (alive && d && !d.error) { setWeekCash(d); setWeekCashLoading(false); return; } }
+        throw new Error('retry');
+      } catch {
+        if (!alive) return;
+        if (n < 4) setTimeout(() => attempt(n + 1), 1000 * (n + 1));
+        else setWeekCashLoading(false);
+      }
+    };
+    attempt(0);
     return () => { alive = false; };
   }, []);
 
@@ -1669,6 +1680,20 @@ export default function BudgetCalendar() {
             <AlertTriangle className="w-6 h-6 flex-shrink-0" />
             <div className="flex-1 text-sm font-semibold">A change didn't save — your last edit may not be stored. Check your connection, then reload to see the true state.</div>
             <button onClick={() => window.location.reload()} className="px-3 py-1.5 bg-white text-red-700 rounded text-sm font-bold">Reload</button>
+          </div>
+        )}
+
+        {/* Loading state — balances still fetching (cold start / fresh device) */}
+        {!weekProj && _viewingCurrentMonth && weekCashLoading && (
+          <div style={{ marginBottom: 12, padding: "12px 14px", background: "#0f172a", borderRadius: 10, color: "#94a3b8", fontSize: 13 }}>
+            <span style={{ fontWeight: 700, color: "#e2e8f0" }}>This week</span> · loading live bank balances…
+          </div>
+        )}
+        {!weekProj && _viewingCurrentMonth && !weekCashLoading && (
+          <div style={{ marginBottom: 12, padding: "12px 14px", background: "#0f172a", borderRadius: 10, color: "#fca5a5", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+            <span><span style={{ fontWeight: 700 }}>This week</span> · bank balances unavailable right now.</span>
+            <button onClick={() => { setWeekCashLoading(true); fetch('/api/ap-balances').then(r => r.ok ? r.json() : null).then(d => { if (d && !d.error) setWeekCash(d); setWeekCashLoading(false); }).catch(() => setWeekCashLoading(false)); }}
+              style={{ background: "#1e293b", color: "#e2e8f0", border: "1px solid #334155", borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Retry</button>
           </div>
         )}
 
