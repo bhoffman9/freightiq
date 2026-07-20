@@ -66,6 +66,10 @@ function nameMatch(trackedName, bankMerchant) {
   const tn = norm(trackedName), bm = norm(bankMerchant);
   if (!tn || !bm) return false;
   if (bm.includes(tn) || tn.includes(bm)) return true;
+  // space-insensitive containment — banks concatenate names ("CENTRALDISPATCH"
+  // vs "CENTRAL DISPATCH", "AUTOMATICSALES" vs "AUTOMATIC SALES")
+  const tnc = tn.replace(/ /g, ''), bmc = bm.replace(/ /g, '');
+  if (tnc.length >= 6 && (bmc.includes(tnc) || tnc.includes(bmc))) return true;
   const tt = tokens(trackedName), bt = new Set(tokens(bankMerchant));
   return tt.some((t) => bt.has(t));
 }
