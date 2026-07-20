@@ -99,6 +99,25 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, action: 'remove-recurring', id: b.id });
     }
 
+    // Delete a one-time expense (undo a "Log one-time") — by id, or by
+    // (name, month, year) where month is 1-indexed on input (stored 0-indexed).
+    if (b.action === 'delete-onetime') {
+      let q = sb.from('w_one_time_expenses').delete();
+      if (b.id) {
+        q = q.eq('id', b.id);
+      } else {
+        const name = String(b.name || '').trim();
+        const month = parseInt(b.month, 10), year = parseInt(b.year, 10);
+        if (!name || !(month >= 1 && month <= 12 && year >= 2020)) {
+          return res.status(400).json({ error: 'id, or name+month+year, required' });
+        }
+        q = q.ilike('name', name).eq('month', month - 1).eq('year', year);
+      }
+      const { error } = await q;
+      if (error) throw new Error(error.message);
+      return res.status(200).json({ ok: true, action: 'delete-onetime' });
+    }
+
     return res.status(400).json({ error: "action must be 'add', 'update', 'onetime', or 'remove-recurring'" });
   } catch (e) {
     return res.status(500).json({ error: String(e.message || e) });
