@@ -4,6 +4,7 @@ import * as Papa from "papaparse";
 import * as XLSX from "xlsx";
 import ApAging from "./ApAging.jsx";
 import BudgetCalendar from "./BudgetCalendar.jsx";
+import AtlantaCpm from "./AtlantaCpm.jsx";
 
 // ── Data Context (for Upload tab communication) ──────────────
 const DataContext = createContext(null);
@@ -10213,7 +10214,7 @@ export default function App() {
     if (tab === "ceeast")   return <CEEast />;
     if (tab === "cashflow") return <CashFlowDashboard />;
     if (tab === "atl")      return <AtlOperations />;
-    if (tab === "atlcpm")   return <AtlCpm />;
+    if (tab === "atlcpm")   return <AtlantaCpm ytd={{ labor: ATL_LABOR, hrs: ATL_HRS, fuel: ATL_FUEL, gallons: ATL_GALLONS, miles: ATL_MILES, trucks: ATL_TRUCKS.length, revenue: ATL_BILLING.revenue }} />;
     if (tab === "ar")       return <ArDashboard />;
     if (tab === "budget")   return <Budgeting />;
     if (tab === "office")   return <OfficeStaff />;
