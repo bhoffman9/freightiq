@@ -2917,6 +2917,30 @@ function AssetsTab() {
         </div>
       </div>
 
+      {/* SAFEGUARD: vendors with invoices but no matching asset units */}
+      {equipment.vendorInvoices && Object.keys(equipment.vendorInvoices).length > 0 && (() => {
+        const vs = Object.entries(equipment.vendorInvoices).map(([v,x]) => ({ vendor:v, ...x })).sort((a,b) => b.totalBilled - a.totalBilled);
+        const missing = vs.filter(v => !v.inRoster);
+        return (
+          <div className="card" style={{ marginBottom:14, border:"1px solid rgba(251,191,36,.4)", background:"rgba(251,191,36,.05)" }}>
+            <div className="ctit" style={{ color:"#fbbf24" }}>⚠ Invoices not tied to any asset · {vs.length} vendor{vs.length!==1?"s":""}</div>
+            <div style={{ fontSize:11, color:"var(--mu)", marginBottom:8 }}>
+              These lessors have invoices flowing but no matching units in the roster.{missing.length>0 && <> <b style={{ color:"#fb7185" }}>{missing.length} not in the roster at all — add their units so their cost shows.</b></>}
+            </div>
+            <table className="tbl" style={{ fontSize:11 }}><thead><tr><th>Vendor</th><th>Invoices</th><th>Billed</th><th>Status</th></tr></thead>
+              <tbody>{vs.map(v => (
+                <tr key={v.vendor}>
+                  <td style={{ fontWeight:700 }}>{v.vendor}</td>
+                  <td>{v.count}</td>
+                  <td style={{ color:"#fb7185" }}>{fd(v.totalBilled,0)}</td>
+                  <td>{!v.inRoster ? <span style={{ color:"#fb7185", fontSize:10, fontWeight:700 }}>⚠ NO ROSTER UNITS</span> : !v.recognized ? <span style={{ color:"#fbbf24", fontSize:10 }}>unrecognized vendor</span> : <span style={{ color:"var(--mu)", fontSize:10 }}>invoices unmatched to units</span>}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        );
+      })()}
+
       <div style={{ display:"flex",gap:8,marginBottom:12 }}>
         {[["all","All Assets"],["truck","Trucks"],["trailer","Trailers"]].map(([id,lbl]) => (
           <button key={id} onClick={()=>setCat(id)} style={{ padding:"6px 16px",borderRadius:4,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"var(--f1)",background:cat===id?"var(--orl)":"transparent",color:cat===id?"var(--or)":"var(--mu)",border:`1px solid ${cat===id?"var(--or)":"var(--bd)"}` }}>{lbl}</button>

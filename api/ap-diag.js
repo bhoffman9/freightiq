@@ -3,10 +3,27 @@
 import { getSupabase } from './_qbo-helpers.js';
 import { requireApAuth } from './_ap-auth.js';
 
+const NEW_UNITS = [
+  ...['685','674','669','686','673','675','488'].map((f) => ({ fleet_number: f, vendor: 'Idealease', vendor_unit: f, category: 'truck', type: 'Tractor', monthly_cost: 3500, mileage_rate: 0.08, status: 'Active', make: 'International', model: '', year: '' })),
+  { fleet_number: '869', vendor: 'Ryder', vendor_unit: '438869', category: 'truck', type: 'Sleeper', monthly_cost: 2500, mileage_rate: 0, status: 'Active', make: 'Freightliner', model: '', year: '' },
+  { fleet_number: '870', vendor: 'Ryder', vendor_unit: '438870', category: 'truck', type: 'Sleeper', monthly_cost: 2500, mileage_rate: 0, status: 'Active', make: 'Freightliner', model: '', year: '' },
+];
+
 export default async function handler(req, res) {
   if (!requireApAuth(req, res)) return;
   try {
     const sb = getSupabase();
+
+    // POST → add the missing Idealease + Ryder roster units (idempotent).
+    if (req.method === 'POST') {
+      const { data: existing } = await sb.from('equipment').select('vendor,vendor_unit').in('vendor', ['Idealease', 'Ryder']);
+      const have = new Set((existing || []).map((e) => `${e.vendor}|${e.vendor_unit}`));
+      const toAdd = NEW_UNITS.filter((u) => !have.has(`${u.vendor}|${u.vendor_unit}`));
+      if (!toAdd.length) return res.json({ ok: true, added: 0, note: 'all present' });
+      const { data, error } = await sb.from('equipment').insert(toAdd).select('id,fleet_number,vendor,vendor_unit');
+      if (error) throw new Error(error.message);
+      return res.json({ ok: true, added: data.length, rows: data });
+    }
     const [ot, ci, di, cr] = await Promise.all([
       sb.from('w_one_time_expenses').select('name,month,year,amount'),
       sb.from('w_checked_items').select('item_key,month,year'),

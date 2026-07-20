@@ -20,9 +20,13 @@ const VENDOR_ALIASES = {
   'mountain west utility trailer': 'Mountain West', 'mountain west utility trailer, inc': 'Mountain West', 'utility trailer': 'Mountain West',
   'ten trailer leasing': 'Ten Trailer Leasing', 'ten trailer': 'Ten Trailer Leasing',
   'premier trailer leasing': 'Premier Trailer', 'premier trailer': 'Premier Trailer', 'premier trailers': 'Premier Trailer',
-  'ryder truck rentals': 'Ryder',
+  'ryder truck rentals': 'Ryder', 'ryder truck rental': 'Ryder', 'ryder': 'Ryder',
+  'idealease of atlanta': 'Idealease', 'idealease': 'Idealease',
   'bermuda rent': 'Bermuda Rent',
 };
+// Vendors that are NOT equipment lessors — excluded from the "unrostered
+// equipment invoices" safeguard so it doesn't flag insurance/software/etc.
+const NON_EQUIPMENT = /insur|bermuda|risk|triumph|brown|clone|nahai|warehouse|talg|toyota|heffernan|law office|attorney/i;
 const normalizeVendor = (name) => VENDOR_ALIASES[(name || '').trim().toLowerCase()] || null;
 
 // Warm-instance cache — this endpoint refetches all equipment+invoices and
@@ -110,11 +114,21 @@ export default async function handler(req, res) {
     const matchedInvoiceIds = new Set();
     Object.values(invoicesByUnit).forEach((arr) => arr.forEach((inv) => matchedInvoiceIds.add(inv.id)));
 
+    // Safeguard: capture EVERY unmatched equipment invoice by vendor — recognized
+    // (known alias) OR raw (a brand-new vendor with no alias, like Idealease was).
+    // Excludes non-equipment vendors. This is how a dropped vendor can never hide.
+    const rosterVendors = new Set((fleet || []).map((eq) => eq.vendor));
     const vendorUnmatched = {};
+    const vendorMeta = {};
     (invoices || []).forEach((inv) => {
       if (matchedInvoiceIds.has(inv.id)) return;
-      const equipVendor = normalizeVendor(inv.vendor_name);
-      if (equipVendor) { if (!vendorUnmatched[equipVendor]) vendorUnmatched[equipVendor] = []; vendorUnmatched[equipVendor].push(inv); }
+      const raw = (inv.vendor_name || 'Unknown').trim();
+      if (NON_EQUIPMENT.test(raw)) return;
+      const known = normalizeVendor(inv.vendor_name);
+      const key = known || raw;
+      if (!vendorUnmatched[key]) vendorUnmatched[key] = [];
+      vendorUnmatched[key].push(inv);
+      vendorMeta[key] = { recognized: !!known, inRoster: rosterVendors.has(key) };
     });
 
     const invRow = (i) => ({
@@ -149,6 +163,8 @@ export default async function handler(req, res) {
     Object.entries(vendorUnmatched).forEach(([vendor, invs]) => {
       vendorInvoices[vendor] = {
         count: invs.length,
+        recognized: vendorMeta[vendor]?.recognized ?? false,
+        inRoster: vendorMeta[vendor]?.inRoster ?? false, // false = vendor has invoices but NO roster units (the real gap)
         totalBilled: Math.round(invs.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0) * 100) / 100,
         totalPaid: Math.round(invs.reduce((s, i) => s + (parseFloat(i.amount_paid) || 0), 0) * 100) / 100,
         invoices: invs.map(invRow),
