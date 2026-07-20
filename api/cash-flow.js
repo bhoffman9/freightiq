@@ -179,6 +179,22 @@ export default async function handler(req, res) {
     const dbTotal = payments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
     const scheduledOutflows = Math.round((dbTotal + hardcodedTotal) * 100) / 100;
 
+    if (req.query.debug) {
+      const hc = [];
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const y = d.getFullYear(), m0 = d.getMonth(), day = d.getDate();
+        for (const it of hardcodedItemsForDate(d)) {
+          const amt = netAmount(it.id, it.amount, y, m0, day);
+          hc.push({ id: it.id, base: it.amount, netted: amt, removed: amt == null });
+        }
+      }
+      return res.json({
+        scheduledOutflows, recurringBillsTotal, dbTotal: Math.round(dbTotal * 100) / 100,
+        overrides: overrides.data, deletedThisWeekIsh: [...deletedSet].filter(k => k.includes(`-${startMonth0}-`)),
+        hardcoded: hc, payments,
+      });
+    }
+
     res.setHeader('Cache-Control', 'public, max-age=120');
     res.json({
       week: weekLabel,
