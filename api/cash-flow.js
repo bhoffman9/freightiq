@@ -194,10 +194,14 @@ export default async function handler(req, res) {
           hc.push({ id: it.id, base: it.amount, netted: amt, removed: amt == null });
         }
       }
+      const julyOne = (oneTime.data || []).filter(o => o.year === startYear && (o.month === startMonth0 || o.month === endMonth0))
+        .map(o => ({ id: o.id, name: o.name, amount: o.amount, day: o.day, month: o.month }));
       return res.json({
         scheduledOutflows, recurringBillsTotal, dbTotal: Math.round(dbTotal * 100) / 100,
-        overrides: overrides.data, deletedThisWeekIsh: [...deletedSet].filter(k => k.includes(`-${startMonth0}-`)),
-        hardcoded: hc, payments,
+        overrides: overrides.data,
+        deletedKeys: [...deletedSet].filter(k => k.startsWith(`${startYear}-${startMonth0}-`)),
+        hardcoded: hc, payments, julyOneTime: julyOne,
+        customRecurring: (recurring.data || []).map(r => ({ id: r.id, name: r.name, amount: r.amount, recur_type: r.recur_type, recur_day: r.recur_day })),
       });
     }
 
