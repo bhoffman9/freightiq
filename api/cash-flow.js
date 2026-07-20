@@ -67,6 +67,55 @@ function hardcodedItemsForDate(d) {
   return items;
 }
 
+// The calendar seeds `expenses` with a hardcoded set of default monthly-by-date
+// bills (BudgetCalendar.jsx initialExpenses) that are NOT in w_one_time_expenses.
+// They show every month on their `day` and are subject to w_recurring_overrides
+// (move/amount/delete) + w_deleted_items, exactly like DB one-time rows.
+// KEEP IN SYNC with BudgetCalendar.jsx initialExpenses.
+const INITIAL_EXPENSES = [
+  { id: 'exp-1', name: 'PARKING LOT', amount: 3100.00, day: 10 },
+  { id: 'exp-2', name: 'TCI', amount: 4000.00, day: 10 },
+  { id: 'exp-3', name: 'ASCEND', amount: 1902.63, day: 12 },
+  { id: 'exp-5', name: 'LVWD', amount: 375.00, day: 14 },
+  { id: 'exp-7', name: 'STORAGE ON WHEELS', amount: 271.00, day: 14 },
+  { id: 'exp-8', name: 'PENSKE', amount: 7500.00, day: 10 },
+  { id: 'exp-9', name: 'SYLECTUS', amount: 450.00, day: 15 },
+  { id: 'exp-10', name: 'TEC', amount: 37000.00, day: 15 },
+  { id: 'exp-11', name: 'WELLS FARGO FORKLIFT', amount: 1228.83, day: 15 },
+  { id: 'exp-12', name: '2025 CADILLAC', amount: 2100.00, day: 18 },
+  { id: 'exp-13', name: 'COX', amount: 844.69, day: 18 },
+  { id: 'exp-14', name: 'DAT', amount: 1480.00, day: 18 },
+  { id: 'exp-15', name: 'MANHATTAN LIFE', amount: 1400.00, day: 18 },
+  { id: 'exp-16', name: 'VERIZON', amount: 508.30, day: 18 },
+  { id: 'exp-17', name: 'NV ENERGY', amount: 1000.00, day: 22 },
+  { id: 'exp-19', name: 'GOOGLE ADS', amount: 220.00, day: 1 },
+  { id: 'exp-20', name: 'GOOGLE GSUITE', amount: 230.42, day: 1 },
+  { id: 'exp-21', name: 'GREEN VALLEY STORAGE', amount: 290.00, day: 1 },
+  { id: 'exp-22', name: 'SAMSARA', amount: 1533.88, day: 1 },
+  { id: 'exp-23', name: 'UNIFIRST', amount: 900.00, day: 1 },
+  { id: 'exp-24', name: 'XTRA', amount: 3000.00, day: 20 },
+  { id: 'exp-25', name: 'IFAX', amount: 19.99, day: 21 },
+  { id: 'exp-26', name: 'SWGAS - RUBY SKY', amount: 100.00, day: 28 },
+  { id: 'exp-27', name: 'SWGAS - MANDALAY', amount: 1200.00, day: 28 },
+  { id: 'exp-28', name: 'ASCEND', amount: 1085.00, day: 23 },
+  { id: 'exp-29', name: 'NV ENERGY - RUBY SKY', amount: 800.00, day: 20 },
+  { id: 'exp-30', name: 'NV ENERGY - MANDALAY', amount: 800.00, day: 20 },
+  { id: 'exp-31', name: 'STARLINK', amount: 232.00, day: 23 },
+  { id: 'exp-32', name: 'DESCARTES', amount: 570.00, day: 25 },
+  { id: 'exp-33', name: 'TEC', amount: 4000.00, day: 25 },
+  { id: 'exp-34', name: 'WORKERS COMP - SF', amount: 5000.00, day: 25 },
+  { id: 'exp-46', name: 'RYDER TRUCKS', amount: 2500.00, day: 25 },
+  { id: 'exp-35', name: 'NIS GENERAL LIABILITY', amount: 427.00, day: 28 },
+  { id: 'exp-36', name: 'CARRIER RISK SOLUTIONS', amount: 1000.00, day: 28 },
+  { id: 'exp-37', name: 'MOTOROLA', amount: 2199.50, day: 28 },
+  { id: 'exp-38', name: 'MCKINNEY', amount: 6000.00, day: 31 },
+  { id: 'exp-39', name: 'MYCARRIER PORTAL', amount: 655.00, day: 3 },
+  { id: 'exp-40', name: 'PROGRESSIVE', amount: 599.46, day: 4 },
+  { id: 'exp-41', name: 'ANTHEM', amount: 4494.97, day: 9 },
+  { id: 'exp-42', name: 'CAPITAL GROUP BENEFITS', amount: 1300.00, day: 9 },
+  { id: 'exp-44', name: 'SETTLEMENT', amount: 6500.00, day: 1 },
+];
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -174,7 +223,28 @@ export default async function handler(req, res) {
       const slug = slugify(o.name);
       const rawCat = catByVendor.get(slug) || null;
       const cat = rawCat ? (CAT_MAP[rawCat] || rawCat) : inferCatFromAccount(o.account);
-      payments.push({ day: `${DAY_LABELS[candidate.getDay()]} ${effDay}`, vendor: o.name, amount: effAmt, status: paidKeys.has(o.id) ? 'paid' : 'due', cat, _sort: candidate.getTime() });
+      const ik = `${o.year}-${o.month}-${effDay}-${o.id}`;
+      payments.push({ day: `${DAY_LABELS[candidate.getDay()]} ${effDay}`, vendor: o.name, amount: effAmt, status: paidKeys.has(ik) ? 'paid' : 'due', cat, _sort: candidate.getTime() });
+    }
+
+    // 4. initialExpenses — hardcoded monthly-by-date defaults (ids exp-N), netted.
+    // Shown every month on their `day`; subject to overrides + deletions.
+    for (const ie of INITIAL_EXPENSES) {
+      const ov = overrideMap[ie.id];
+      if (ov && ov.deleted) continue;
+      const effDay = (ov && ov.day != null) ? ov.day : ie.day;
+      const effAmt = (ov && ov.amount != null) ? parseFloat(ov.amount) : ie.amount;
+      let hit = null;
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        if (d.getDate() === effDay) { hit = new Date(d); break; }
+      }
+      if (!hit) continue;
+      const y = hit.getFullYear(), m0 = hit.getMonth();
+      if (deletedSet.has(`${y}-${m0}-${effDay}-${ie.id}`)) continue;
+      const slug = slugify(ie.name);
+      const rawCat = catByVendor.get(slug) || null;
+      const cat = rawCat ? (CAT_MAP[rawCat] || rawCat) : 'Other';
+      payments.push({ day: `${DAY_LABELS[hit.getDay()]} ${effDay}`, vendor: ie.name, amount: effAmt, status: paidKeys.has(`${y}-${m0}-${effDay}-${ie.id}`) ? 'paid' : 'due', cat, _sort: hit.getTime() });
     }
 
     payments.sort((a, b) => a._sort - b._sort);
