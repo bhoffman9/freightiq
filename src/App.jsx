@@ -4277,13 +4277,13 @@ function TrailerFleet() {
 
 // ── INCOME DATA ───────────────────────────────────────────────
 const INCOME_2026 = {
-  period: "Jan 1 – Jul 5, 2026",
-  ce: 9014051.04, sf: 3447994.18, di: 63228.50, ceEast: 475246.67,
-  total: 13000520.39,
-  cogs: 6745960.07, grossProfit: 6254560.32,
-  totalExp: 5498143.43, netOpIncome: 756416.89,
-  netIncome: 833088.75,
-  carrierPay: 6658397.09, merchantFees: 55079.60, flexentFees: 32483.38,
+  period: "Jan 1 – Jul 19, 2026",
+  ce: 9733931.62, sf: 3747652.92, di: 72078.50, ceEast: 501199.33,
+  total: 14054862.37,
+  cogs: 7370569.64, grossProfit: 6684292.73,
+  totalExp: 5480947.50, netOpIncome: 1203345.23,
+  netIncome: 753265.80,
+  carrierPay: 7199453.69, merchantFees: 55079.60, flexentFees: 116036.35,
   weeks: [
     { label:"Jan 1-4",    rev:86886.02,  gp:52052.64,  ce:71474.65,  sf:14362.37,  di:1049.00,  carrier:34100.00,  netInc:25492.50 },
     { label:"Jan 5-11",   rev:167335.63, gp:76449.43,  ce:103721.70, sf:63463.93,  di:150.00,   carrier:88060.25,  netInc:-73568.84 },
@@ -4311,16 +4311,18 @@ const INCOME_2026 = {
     { label:"Jun 8-14",   rev:498582.95, gp:266256.73, ce:269034.50, sf:187119.50, di:241.45,   carrier:229810.00, netInc:-5865.56 },  // full week — CE East $42,187.50 not in ce/sf/di (netInc swung negative as Jun expenses accrued)
     { label:"Jun 15-21",  rev:418836.45, gp:159067.50, ce:307631.62, sf:109161.45, di:366.00,   carrier:258198.75, netInc:-18679.55 },  // full week — CE East $1,677.38 not in ce/sf/di
     { label:"Jun 22-28",  rev:1338712.94,gp:557692.20, ce:1003807.00,sf:287846.81, di:250.00,   carrier:777342.25, netInc:247747.51 },  // big close-of-June week — CE East $46,809.13 not in ce/sf/di
-    { label:"Jun 29-J5",  rev:659483.73, gp:322414.64, ce:425411.75, sf:208623.73, di:400.00,   carrier:333738.75, netInc:-31114.73 },  // CE East $25,048.25 not in ce/sf/di
+    { label:"Jun 29-J5",  rev:659483.73, gp:301448.97, ce:425411.75, sf:208623.73, di:400.00,   carrier:333738.75, netInc:-59342.27 },
+    { label:"Jul 6-12",   rev:569252.39, gp:253927.15, ce:405364.62, sf:149756.39, di:750.00,   carrier:313204.11, netInc:-15741.19 },
+    { label:"Jul 13-19",  rev:485089.59, gp:255225.82, ce:314515.96, sf:149902.35, di:8100.00,  carrier:227852.49, netInc:32759.73 },
   ],
   months: [
-    { m: "Jan", rev: 993161.79,  gp: 480933.50,  ce:663460.14,  sf:314754.40, di:14947.25, carrier:497223.26,  exp:598682.35,  netInc:-92214.12 },
-    { m: "Feb", rev: 1607833.74, gp: 683117.82,  ce:1264154.09, sf:337043.15, di:6636.50,  carrier:894241.00,  exp:647766.79,  netInc:60883.96 },
-    { m: "Mar", rev: 2290040.48, gp: 1113857.96, ce:1734333.27, sf:522550.51, di:18161.70, carrier:1162575.47, exp:789424.77,  netInc:349980.48 },
-    { m: "Apr", rev: 2160721.16, gp: 1107479.39, ce:1325895.61, sf:643584.16, di:1781.88,  carrier:1045803.96, exp:888173.85,  netInc:219330.30 },
-    { m: "May", rev: 2725473.59, gp: 1375580.28, ce:1869803.06, sf:714397.91, di:17407.72, carrier:1341666.15, exp:1221441.87, netInc:154158.71 },
-    { m: "Jun", rev: 2940492.16, gp: 1371139.43, ce:1958288.12, sf:836401.58, di:4293.45,  carrier:1557929.75, exp:1149138.78, netInc:222012.50 },  // full June
-    { m: "Jul", rev: 282797.47,  gp: 122451.94,  ce:198116.75,  sf:79262.47,  di:0,        carrier:158957.50,  exp:203515.02,  netInc:-81063.08 },  // partial — Jul 1-5 only
+    { m: "Jan", rev: 993161.79,  gp: 480933.50,  ce:663460.14,  sf:314754.40, di:14947.25, carrier:497223.26,  exp:564035.45,  netInc:-92214.12 },
+    { m: "Feb", rev: 1607833.74, gp: 683117.82,  ce:1264154.09, sf:337043.15, di:6636.50,  carrier:894241.00,  exp:599647.57,  netInc:60883.96 },
+    { m: "Mar", rev: 2290040.48, gp: 1090721.26, ce:1734333.27, sf:522550.51, di:18161.70, carrier:1162575.47, exp:721067.58,  netInc:326843.78 },
+    { m: "Apr", rev: 2160721.16, gp: 1076265.53, ce:1325895.61, sf:643584.16, di:1781.88,  carrier:1045803.96, exp:828805.58,  netInc:184069.32 },
+    { m: "May", rev: 2725473.59, gp: 1371475.95, ce:1869803.06, sf:714397.91, di:17407.72, carrier:1341666.15, exp:1127605.28, netInc:145324.85 },
+    { m: "Jun", rev: 2940492.16, gp: 1350173.76, ce:1958288.12, sf:836401.58, di:4293.45,  carrier:1557929.75, exp:1011979.05, netInc:196727.70 },  // full June
+    { m: "Jul", rev: 1337139.45, gp: 631604.91,  ce:917997.33,  sf:378921.21, di:8850.00,  carrier:700014.10,  exp:627806.99,  netInc:-68369.69 },  // partial — Jul 1-19
   ],
 };
 
@@ -7558,12 +7560,12 @@ function atlSum() {
 // Michael→Wainwright Michael W, CJ→Johnson Christopher, Manar→Alshamaa Manar,
 // Robert→Tucker Robert.
 const ATL_BILLING = {
-  asOf: "Jul 3, 2026",
-  loads: 120,
-  revenue: 289297.64,      // sum of Invoice Amount ("ATLANTA 2026 ALL LOADS THRU 7.3"). Driver-less format, so per-driver breakdown below is HISTORICAL (May 4-29) and stale until format restores Driver column
-  carrierPay: 88871.25,    // sum of Carrier Amount = EXTERNAL carrier pay only. 84 of 120 loads have blank Carrier Amount because SF hauled them itself (SF IS the carrier) — those are full income with no external carrier cost (SF's cost is in LABOR/FUEL fleet buckets, not here). Blank ≠ pending.
-  grossProfit: 200426.39,  // revenue − external carrier pay. Correct — the SF-self-haul loads legitimately have no carrier deduction.
-  grossMargin: 69.3,       // % — real brokerage margin (high because most loads ran on SF's own trucks, not outside carriers)
+  asOf: "Jul 17, 2026",
+  loads: 153,
+  revenue: 415140.14,      // sum of Invoice Amount ("ATLANTA 2026 ALL LOADS THRU 7.17", subtotal rows excluded). Driver-less format, so per-driver breakdown below is HISTORICAL (May 4-29) and stale until format restores Driver column
+  carrierPay: 138370.62,   // sum of Carrier Amount = EXTERNAL carrier pay only. 106 of 153 loads have blank Carrier Amount because SF hauled them itself (SF IS the carrier) — full income, no external carrier cost (SF's cost is in LABOR/FUEL fleet buckets). Blank ≠ pending.
+  grossProfit: 276769.52,  // revenue − external carrier pay. SF-self-haul loads legitimately have no carrier deduction.
+  grossMargin: 66.7,       // % — real brokerage margin (high because most loads ran on SF's own trucks, not outside carriers)
   byDriver: [
     // HISTORICAL — these are the May 4-29 per-driver figures. The new ATL sheet
     // (Jun 9 drop) has no Driver column; can't refresh until format restores it.
