@@ -116,7 +116,7 @@ addw2(sf, True, 'SF'); addw2(ja, False, 'J&A')
 # drivers. Convert gross → loaded by a factor calibrated so the YTD sum matches
 # LABOR (fleet) + the carve-out total from App.jsx. NOTE: the emitted DRIVER_WEEKLY
 # key is still named 'otr' (internal only) — it's the ex-OTR/ATL driver bucket.
-OTR_LN = {'baker', 'dawson', 'pacitti'}   # ex-OTR, now ATL; kept separate from fleet LABOR
+OTR_LN = {'baker', 'dawson', 'pacitti', 'griffin', 'johnson', 'logan', 'phillips', 'tucker', 'wainwright'}   # 9 ATL drivers (week of 7/19); kept separate from fleet LABOR
 _drv_g, _otr_g = {}, {}
 for d, n, tp, nt in sf:
     k = key(n)
@@ -125,7 +125,7 @@ for d, n, tp, nt in sf:
     if k[0] in OTR_LN: _otr_g[wl] = _otr_g.get(wl, 0) + tp
     else:              _drv_g[wl] = _drv_g.get(wl, 0) + tp
 _LABOR = float(re.search(r'let LABOR\s*=\s*([\d.]+)', app).group(1))
-_m = re.search(r'Baker/Dawson/Pacitti \$([\d,]+\.?\d*)', app)
+_m = re.search(r'ATL drivers \([^)]*\) \$([\d,]+\.?\d*)', app)
 _OTR_TOT = float(_m.group(1).replace(',', '')) if _m else 0.0
 _Fd = _LABOR / sum(_drv_g.values()) if _drv_g else 1.0
 _Fo = _OTR_TOT / sum(_otr_g.values()) if _otr_g else 1.0
