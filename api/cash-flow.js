@@ -255,7 +255,7 @@ export default async function handler(req, res) {
     const dbTotal = payments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
     const scheduledOutflows = Math.round((dbTotal + hardcodedTotal) * 100) / 100;
 
-    res.setHeader('Cache-Control', 'public, max-age=120');
+    res.setHeader('Cache-Control', 'public, max-age=30');
     res.json({
       week: weekLabel,
       windowStart: start.toISOString().slice(0, 10),
