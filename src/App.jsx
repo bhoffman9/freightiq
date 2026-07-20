@@ -5699,6 +5699,54 @@ function RevenueDashboard() {
             );
           })()}
 
+          {/* ── FLEET UTILIZATION (Alvys revenue vs drivers / trucks / payroll) ── */}
+          {alvysLive && alvysLive.histWeeks && (() => {
+            const nowSun = (() => { const x=new Date(); x.setHours(0,0,0,0); x.setDate(x.getDate()-x.getDay()); return x; })();
+            const complete = alvysLive.histWeeks.filter(w => new Date(w.key+"T00:00:00") < nowSun && w.rev > 0);
+            if (!complete.length) return null;
+            const recent = complete.slice(-8);
+            const avg4 = recent.slice(-4);
+            const avgRev = avg4.reduce((s,w)=>s+w.rev,0)/(avg4.length||1);
+            const avgLoads = avg4.reduce((s,w)=>s+w.loads,0)/(avg4.length||1);
+            const pw = DRIVER_WEEKLY.weeks || []; const lw = pw[pw.length-1];
+            const weeklyPayroll = (DRIVER_WEEKLY.fleet?.[lw] || 0) + (DRIVER_WEEKLY.otr?.[lw] || 0);
+            const drivers = ACTIVE_DRIVERS_COUNT, trucks = TRUCK_COUNT;
+            const kpis = [
+              { l:"Revenue ÷ Payroll", v: weeklyPayroll>0 ? `${(avgRev/weeklyPayroll).toFixed(2)}×` : "—", s:`per $1 driver payroll · ${fd(weeklyPayroll,0)}/wk`, c:"#4ade80" },
+              { l:"Revenue / Driver", v: fd(drivers>0?avgRev/drivers:0,0), s:`${drivers} active drivers · /wk`, c:"#38bdf8" },
+              { l:"Loads / Driver", v: (drivers>0?avgLoads/drivers:0).toFixed(1), s:`${drivers} drivers · /wk`, c:"#a78bfa" },
+              { l:"Revenue / Truck", v: fd(trucks>0?avgRev/trucks:0,0), s:`${trucks} active trucks · /wk`, c:"#fbbf24" },
+            ];
+            return (
+              <div className="card" style={{ marginBottom:14, borderLeft:"3px solid var(--or)" }}>
+                <div className="ctit">Fleet Utilization <span style={{ fontSize:10, color:"var(--mu)", fontWeight:400 }}>· avg of last {avg4.length} complete wks · Alvys revenue ÷ SF fleet</span></div>
+                <div className="g4" style={{ margin:"10px 0 14px" }}>
+                  {kpis.map((k,i)=>(
+                    <div className="kpi" key={i} style={{ borderLeft:`3px solid ${k.c}` }}>
+                      <div className="klbl">{k.l}</div>
+                      <div className="kval" style={{ color:k.c }}>{k.v}</div>
+                      <div className="ksub">{k.s}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ overflowX:"auto" }}>
+                  <table className="tbl"><thead><tr><th>Week of</th><th>Loads</th><th>Revenue</th><th>Rev/Driver</th><th>Rev/Truck</th><th>Loads/Driver</th></tr></thead>
+                    <tbody>{[...recent].reverse().map(w => (
+                      <tr key={w.key}>
+                        <td>{w.label}</td><td>{w.loads}</td>
+                        <td style={{ color:"#4ade80", fontWeight:700 }}>{fd(w.rev,0)}</td>
+                        <td style={{ color:"#38bdf8" }}>{fd(drivers>0?w.rev/drivers:0,0)}</td>
+                        <td style={{ color:"#fbbf24" }}>{fd(trucks>0?w.rev/trucks:0,0)}</td>
+                        <td style={{ color:"#a78bfa" }}>{(drivers>0?w.loads/drivers:0).toFixed(1)}</td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </div>
+                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>Weekly Alvys revenue (all loads the SF fleet hauls, CE+SF invoiced) vs {drivers} active drivers / {trucks} trucks · ~{fd(weeklyPayroll,0)}/wk driver payroll. Per-asset miles-last-month + $/mile will populate from the monthly Samsara drop.</div>
+              </div>
+            );
+          })()}
+
           <div className="g4" style={{ marginBottom:14 }}>
             {[
               { label:"Total Pipeline", val:fd(AV.totalRev,0), color:"#4ade80", sub:`${fn(AV.totalLoads,0)} loads across all statuses` },
