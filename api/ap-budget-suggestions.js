@@ -70,6 +70,17 @@ function nameMatch(trackedName, bankMerchant) {
   return tt.some((t) => bt.has(t));
 }
 
+// Turn an ugly ACH description into a readable vendor label.
+function cleanName(s) {
+  let x = String(s || '');
+  x = x.replace(/ORIG CO NAME:/ig, ' ').replace(/ORIG ID:\S*/ig, ' ')
+       .replace(/\bDES:\S*/ig, ' ').replace(/\bID:\S*/ig, ' ')
+       .replace(/\bonline (ach |realtime )?(vendor )?payment\b/ig, ' ')
+       .replace(/\b\d{6,}\b/g, ' ')
+       .replace(/\s+/g, ' ').trim();
+  return (x || String(s || '')).slice(0, 40).toUpperCase();
+}
+
 function cadence(gap) {
   if (gap == null || !isFinite(gap)) return 'monthly';
   if (gap <= 9) return 'weekly';
@@ -132,6 +143,8 @@ export default async function handler(req, res) {
       const entity = ACCT_ENTITY[r.acct_last4] || 'SF';
       const recurType = cad === 'monthly' ? 'monthly-date' : 'weekly-day';
       const recurDay = recurType === 'weekly-day' ? (Number.isFinite(r.dow) ? (r.dow === 0 ? 7 : r.dow) : 1) : (Number(r.dom) || 1);
+      // skip generic ACH descriptors with no real vendor name (norm strips them to empty)
+      if (tokens(merchant).length === 0) continue;
       const m = trackedMatch(merchant);
       if (!m) {
         untrackedRaw.push({ merchant, amount: amt, cadence: cad, count: r.n, lastSeen: r.last_seen, acctLast4: r.acct_last4, entity, recurType, recurDay });
@@ -156,7 +169,7 @@ export default async function handler(req, res) {
         key: `ur:${u.acctLast4}:${norm(u.merchant)}`,
         merchant: u.merchant, amount: u.amount, cadence: u.cadence, count: u.count,
         lastSeen: u.lastSeen, acctLast4: u.acctLast4,
-        suggestName: u.merchant.replace(/\s+/g, ' ').slice(0, 40).toUpperCase(),
+        suggestName: cleanName(u.merchant),
         suggestAccount: u.entity, recurType: u.recurType, recurDay: u.recurDay,
       }));
 
@@ -201,7 +214,7 @@ export default async function handler(req, res) {
       largeOneOff.push({
         key: `oo:${t.id}`,
         txnId: t.id, date: t.posted_date, amount: amt, desc: t.raw_desc, acctLast4: t.account_last4,
-        suggestName: String(t.raw_desc || '').replace(/\s+/g, ' ').slice(0, 40).toUpperCase(),
+        suggestName: cleanName(t.raw_desc),
         suggestAccount: ACCT_ENTITY[t.account_last4] || 'SF',
         day: d.getDate(), month: d.getMonth() + 1, year: d.getFullYear(), // 1-indexed month for /api/ap-recurring-save
       });
