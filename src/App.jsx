@@ -8374,7 +8374,10 @@ function CashFlowDashboard() {
   // If no week-start snapshot exists yet, fall back to today's live balance − due.
   const weekStartBal = balLive && balData.weekStartBalance != null ? balData.weekStartBalance : null;
   const projFromStart = weekStartBal != null;
-  const projWeekEnd = projFromStart ? (weekStartBal - totalPayments) : (totalCash - totalDue);
+  // Full week bills = DB payments + hardcoded recurring (payroll/leases/etc.),
+  // provided by /api/cash-flow. Falls back to the visible DB payments total.
+  const weekBills = liveData && liveData.scheduledOutflows != null ? liveData.scheduledOutflows : totalPayments;
+  const projWeekEnd = projFromStart ? (weekStartBal - weekBills) : (totalCash - weekBills);
   const projIsRed = projWeekEnd < 10000;
 
   // Group payments by day
@@ -8443,8 +8446,8 @@ function CashFlowDashboard() {
           <div className="kval" style={{ color: projIsRed ? "#fb7185" : "#2dd4bf" }}>{fd(projWeekEnd,0)}</div>
           <div className="ksub">
             {projFromStart
-              ? `${fd(weekStartBal,0)} start − ${fd(totalPayments,0)} bills (floor, no income)`
-              : `${fd(totalCash,0)} now − ${fd(totalDue,0)} due`}
+              ? `${fd(weekStartBal,0)} start − ${fd(weekBills,0)} bills (floor, no income)`
+              : `${fd(totalCash,0)} now − ${fd(weekBills,0)} bills`}
           </div>
         </div>
       </div>

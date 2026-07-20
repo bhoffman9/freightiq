@@ -55,6 +55,44 @@ function recurDayToJsDay(recurDay) {
   return recurDay === 7 ? 0 : recurDay;
 }
 
+// The Budget Calendar (BudgetCalendar.jsx getExpensesForDay) adds a block of
+// HARDCODED recurring bills that do NOT live in the w_* tables (legacy defaults:
+// payroll submissions, WEX, rent, leases, mortgage, etc.). They're treated as a
+// separate additive set from w_custom_recurring (no overlap), so we can sum them
+// here for the week-end cash projection without double-counting the DB rows.
+// KEEP IN SYNC with getExpensesForDay's hardcoded block. Overrides/deletions of
+// these items are NOT applied server-side (the calendar banner is authoritative
+// for exactness) — any over-count only makes the projection floor more conservative.
+function hardcodedRecurringForDate(d) {
+  const day = d.getDate();
+  const m = d.getMonth();      // 0-indexed
+  const dow = d.getDay();      // 0=Sun..6=Sat
+  let sum = 0;
+  // day-of-month items
+  if (day === 4) sum += 100.00;        // SWGAS - OFFICE
+  if (day === 3) sum += 199.95;        // CENTRAL DISPATCH
+  if (day === 12) sum += 2025.49;      // BOA RANGE ROVER
+  if (day === 14) sum += 1287.92;      // MBFS
+  if (day === 15) sum += 1000.00 + 503.05; // NELLY'S PAYROLL + VINIX
+  if (day === 17) sum += 375.00 + 335.86;  // LVVWD + ADOBE
+  if (day === 19) sum += 3861.45 + 3000.00; // IPFS + ATLUS TOYOTA
+  if (day === 20) { sum += 1397.00; if (m === 0 || m === 3 || m === 6 || m === 9) sum += 1667.10; } // GLG (+ REPUBLIC quarterly)
+  if (day === 21) sum += 435.00;       // SAS
+  if (day === 25) sum += 2280.00;      // DAT SOLUTIONS
+  if (day === 27) sum += 500.00;       // CLONEOPS
+  if (day === 29) sum += 833.33;       // ZOOMINFO
+  // day-of-week items
+  if (dow === 2) sum += 4000.00 + 5000.00 + 500.00; // WEX + RENT + ALEX NAHAI
+  if (dow === 3) sum += 2520.00 + 2000.00 + 1850.00 + 2500.00 + 2658.73; // UTILITY TRAILER + MUDFLAP + COLOMBIA + MCKINNEY + LENDR
+  if (dow === 4) { // CHRIS MORTGAGE — biweekly from 2026-02-12
+    const start = new Date(2026, 1, 12);
+    const diff = Math.floor((d - start) / 86400000);
+    if (diff >= 0 && diff % 14 === 0) sum += 8150.37;
+  }
+  if (dow === 5) sum += 40000.00 + 30000.00 + 4000.00; // DRIVER PAYROLL + OFFICE PAYROLL + WEX
+  return sum;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -165,12 +203,27 @@ export default async function handler(req, res) {
 
     const weekLabel = `Week of ${MONTH_LABELS[start.getMonth()]} ${start.getDate()}, ${startYear}`;
 
+    // Hardcoded recurring bills for this week (payroll/WEX/rent/leases/mortgage,
+    // not in w_*). Summed for the cash projection; NOT added to `payments` so the
+    // list stays DB-sourced with correct paid status.
+    let recurringBillsTotal = 0;
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      recurringBillsTotal += hardcodedRecurringForDate(d);
+    }
+    recurringBillsTotal = Math.round(recurringBillsTotal * 100) / 100;
+
+    // Total scheduled outflows this week = DB items + hardcoded recurring.
+    const dbTotal = payments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+    const scheduledOutflows = Math.round((dbTotal + recurringBillsTotal) * 100) / 100;
+
     res.setHeader('Cache-Control', 'public, max-age=120');
     res.json({
       week: weekLabel,
       windowStart: start.toISOString().slice(0, 10),
       windowEnd:   end.toISOString().slice(0, 10),
       payments,
+      recurringBillsTotal,   // hardcoded legacy recurring (not in payments list)
+      scheduledOutflows,     // DB payments + hardcoded recurring = full week bills
     });
   } catch (e) {
     console.error('cash-flow error:', e);
