@@ -1566,10 +1566,11 @@ export default function BudgetCalendar() {
   // No income modeled — conservative low point. Only shown on the current month.
   const _viewingCurrentMonth = currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear();
   const weekProj = (() => {
-    if (!weekCash || weekCash.weekStartBalance == null || !_viewingCurrentMonth) return null;
-    const t = new Date(); t.setHours(0, 0, 0, 0);
-    const dow = t.getDay();
-    const monday = new Date(t); monday.setDate(t.getDate() + (dow === 0 ? -6 : 1 - dow));
+    if (!weekCash || weekCash.weekStartBalance == null || !weekCash.monday || !_viewingCurrentMonth) return null;
+    // Anchor the week to the SERVER's Monday (weekCash.monday) so the balance
+    // snapshot and the bill window always describe the same week — a client-vs-UTC
+    // date split at a week boundary would otherwise empty the loop.
+    const monday = new Date(weekCash.monday + 'T00:00:00');
     const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
     const anchor = weekCash.weekStartDate ? new Date(weekCash.weekStartDate + 'T00:00:00') : monday;
     const from = anchor > monday ? anchor : monday;
