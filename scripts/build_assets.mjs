@@ -55,8 +55,10 @@ function tokenize(str) {
 const run = async () => {
   await c.connect();
   // ---- roster ----
+  // roster stores "—" as a VIN placeholder — only accept a real 17-char VIN
+  const cleanVin = (v) => { const x = (v||'').toUpperCase().trim(); return /^[A-HJ-NPR-Z0-9]{17}$/.test(x) ? x : ''; };
   const roster = (await c.query(`select id, vendor, vendor_unit, fleet_number, vin, category, monthly_cost, status, make, model, year from equipment`)).rows
-    .map(r => ({ ...r, canon: rosterCanon(r.vendor), vin: (r.vin||'').toUpperCase().trim() }));
+    .map(r => ({ ...r, canon: rosterCanon(r.vendor), vin: cleanVin(r.vin) }));
   const byVin = {}, byUnit = {};
   for (const r of roster) { if (r.vin) byVin[r.vin] = r; if (r.vendor_unit) byUnit[`${r.canon}|${String(r.vendor_unit).toUpperCase()}`] = r; }
 
