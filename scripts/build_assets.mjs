@@ -137,13 +137,19 @@ const run = async () => {
       on_invoice int, monthly_cost numeric, total_billed numeric,
       by_vendor jsonb, coverage jsonb, created_at timestamptz not null default now());`);
     // upsert registry
+    const curIds = [];
     for (const a of list) {
       const id = a.in_roster ? `${a.vendor}|${a.unit}|R` : `${a.vendor}|${a.unit}|I`;
+      curIds.push(id);
       await c.query(`insert into fdw_asset (id,vendor,category,unit,fleet,vin,monthly_cost,status,make,model,year,in_roster,on_invoice,billed,invoices,last_seen,match_confidence,aliases,updated_at)
         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,now())
         on conflict (id) do update set vendor=$2,category=$3,unit=$4,fleet=$5,vin=$6,monthly_cost=$7,status=$8,make=$9,model=$10,year=$11,in_roster=$12,on_invoice=$13,billed=$14,invoices=$15,last_seen=$16,match_confidence=$17,aliases=$18,updated_at=now()`,
         [id, a.vendor, a.category, String(a.unit), a.fleet, a.vin, a.monthly_cost, a.status, a.make, a.model, a.year, a.in_roster, a.on_invoice, Math.round(a.billed), a.invs, a.last_seen, a.match, [...new Set(a.aliases)].join(',')]);
     }
+    // prune stale rows dropped by this rebuild (a parser fix removing a phantom
+    // unit must actually delete it, not leave it lingering — exact count matters)
+    const del = await c.query(`delete from fdw_asset where not (id = any($1))`, [curIds]);
+    if (del.rowCount) console.log(`  pruned ${del.rowCount} stale asset row(s)`);
     const snap = { trucks: cnt('truck'), trailers: cnt('trailer'), total_units: list.length, on_invoice: list.filter(a=>a.on_invoice).length,
       monthly_cost: Math.round(list.filter(a=>a.status!=='invoice-only').reduce((s,a)=>s+a.monthly_cost,0)),
       total_billed: Math.round(list.reduce((s,a)=>s+a.billed,0)),
