@@ -5771,35 +5771,39 @@ function RevenueDashboard() {
               const hit = pdDates.find(p => p.t >= start && p.t <= end);
               return hit ? (DRIVER_WEEKLY.fleet?.[hit.label]||0) + (DRIVER_WEEKLY.otr?.[hit.label]||0) : null;
             };
-            const recent = weeks.slice(-4), n = recent.length;
+            const recent = weeks.slice(-12), n = recent.length; // 12-week baseline (Ben, 2026-07-20)
             const sumRev = recent.reduce((s,w)=>s+w.rev,0), sumLoads = recent.reduce((s,w)=>s+w.loads,0), sumMiles = recent.reduce((s,w)=>s+w.miles,0);
             const avgRev = sumRev/n, avgLoads = sumLoads/n, avgMiles = sumMiles/n;
-            const recentPay = recent.map(w => payrollFor(w.key)).filter(p => p != null);
-            const avgPay = recentPay.length ? recentPay.reduce((a,b)=>a+b,0)/recentPay.length : 0;
-            // Revenue ÷ Payroll = average of each week's own ratio (not avgRev/avgPay) so
-            // one lopsided week can't skew it. Only weeks with a matched payroll count.
-            const ratios = recent.map(w => { const p = payrollFor(w.key); return p ? w.rev/p : null; }).filter(x => x != null);
-            const revPerPay = ratios.length ? ratios.reduce((a,b)=>a+b,0)/ratios.length : null;
             const drivers = ACTIVE_DRIVERS_COUNT, trucks = TRUCK_COUNT;
+            // Payroll ratio over the SAME weeks that have matched payroll — period total
+            // rev ÷ period total pay (the real economic question), NOT avg-of-weekly-ratios
+            // (which lets a low-volume week distort it). Per Codex + own review 2026-07-20.
+            const payWeeks = recent.map(w => ({ w, p: payrollFor(w.key) })).filter(x => x.p != null);
+            const sumPay = payWeeks.reduce((s,x)=>s+x.p,0), sumRevPay = payWeeks.reduce((s,x)=>s+x.w.rev,0);
+            const avgPay = payWeeks.length ? sumPay/payWeeks.length : 0;
+            const revPerPay = sumPay > 0 ? sumRevPay/sumPay : null;
+            // TRUCK-forward: truck count (30) is a cleaner denominator than driver count
+            // (53 active on 30 trucks = teams/rotation/ATL). Loaded-miles/truck is the best
+            // real utilization proxy available until per-truck Samsara odometer miles land.
             const kpis = [
-              { l:"Revenue ÷ Payroll", v: revPerPay!=null?`${revPerPay.toFixed(2)}×`:"—", work:`avg of ${ratios.length} wks · ${fd(avgRev,0)} ÷ ${fd(avgPay,0)}/wk`, c:"#4ade80" },
-              { l:"Revenue / Driver", v: fd(avgRev/drivers,0), work:`${fd(avgRev,0)} ÷ ${drivers} drivers`, c:"#38bdf8" },
-              { l:"Revenue / Truck", v: fd(avgRev/trucks,0), work:`${fd(avgRev,0)} ÷ ${trucks} trucks`, c:"#fbbf24" },
-              { l:"Loads / Driver", v: (avgLoads/drivers).toFixed(1), work:`${fn(avgLoads,0)} loads ÷ ${drivers} drivers`, c:"#a78bfa" },
+              { l:"Revenue / Truck · wk", v: fd(avgRev/trucks,0), work:`${fd(avgRev,0)} ÷ ${trucks} trucks`, c:"#4ade80" },
+              { l:"Loaded Miles / Truck · wk", v: fn(avgMiles/trucks,0), work:`${fn(avgMiles,0)} mi ÷ ${trucks} trucks`, c:"#2dd4bf" },
+              { l:"Loads / Truck · wk", v: (avgLoads/trucks).toFixed(1), work:`${fn(avgLoads,0)} ÷ ${trucks} trucks`, c:"#38bdf8" },
+              { l:"Revenue per Payroll $", v: revPerPay!=null?`${revPerPay.toFixed(2)}×`:"—", work:`${fd(sumRevPay,0)} rev ÷ ${fd(sumPay,0)} pay · ${payWeeks.length} wks · labor efficiency`, c:"#fbbf24" },
             ];
             const inputs = [
               ["Avg weekly revenue", fd(avgRev,0), `${n}-wk avg · ${fd(sumRev,0)} ÷ ${n}`],
-              ["Avg weekly loads", fn(avgLoads,0), `${fn(sumLoads,0)} ÷ ${n}`],
-              ["Avg loaded miles/wk", fn(avgMiles,0), `${fn(sumMiles,0)} ÷ ${n}`],
-              ["Driver payroll/wk", fd(avgPay,0), `per-wk matched · ${recentPay.length} wks`],
-              ["Active drivers", drivers, "PAYROLL active"],
+              ["Revenue / Driver · wk", fd(avgRev/drivers,0), `${fd(avgRev,0)} ÷ ${drivers} drivers`],
+              ["Loads / Driver · wk", (avgLoads/drivers).toFixed(1), `${fn(avgLoads,0)} ÷ ${drivers} drivers`],
+              ["Driver payroll / wk", fd(avgPay,0), `per-wk matched · ${payWeeks.length}/${n} wks`],
+              ["Revenue / loaded mile", sumMiles?fd(sumRev/sumMiles,2):"—", `${fd(sumRev,0)} ÷ ${fn(sumMiles,0)} mi (period)`],
+              ["Revenue / load", fd(sumRev/sumLoads,0), `${fd(sumRev,0)} ÷ ${fn(sumLoads,0)} loads`],
               ["Active trucks", trucks, "in-service fleet"],
-              ["Revenue / mile", avgMiles?fd(avgRev/avgMiles,2):"—", `${fd(avgRev,0)} ÷ ${fn(avgMiles,0)} mi`],
-              ["Revenue / load", fd(avgRev/avgLoads,0), `${fd(avgRev,0)} ÷ ${fn(avgLoads,0)} loads`],
+              ["Active drivers", drivers, "PAYROLL active"],
             ];
             return (
               <div className="card" style={{ marginBottom:14, borderLeft:"3px solid var(--or)" }}>
-                <div className="ctit">Fleet Utilization <span style={{ fontSize:10, color:"var(--mu)", fontWeight:400 }}>· {n}-wk avg of full operating weeks · Show-Freight-carrier revenue ÷ fleet</span></div>
+                <div className="ctit">Fleet Utilization &amp; Productivity <span style={{ fontSize:10, color:"var(--mu)", fontWeight:400 }}>· {n}-wk avg · Show-Freight-carrier hauled revenue ÷ active fleet · loaded miles (deadhead/odometer pending Samsara)</span></div>
                 <div className="g4" style={{ margin:"10px 0 14px" }}>
                   {kpis.map((k,i)=>(
                     <div className="kpi" key={i} style={{ borderLeft:`3px solid ${k.c}` }}>
@@ -5822,22 +5826,26 @@ function RevenueDashboard() {
                   </div>
                 </div>
                 <div style={{ overflowX:"auto" }}>
-                  <table className="tbl"><thead><tr><th>Week of</th><th>Loads</th><th>Miles</th><th>Revenue</th><th>Driver Pay</th><th>Rev÷Pay</th><th>Rev/Driver</th><th>Rev/Truck</th><th>Rev/Mile</th><th>Loads/Driver</th></tr></thead>
+                  <table className="tbl"><thead><tr><th>Week of</th><th>Loads</th><th>Miles</th><th>Revenue</th><th>Rev/Truck</th><th>Mi/Truck</th><th>Loads/Truck</th><th>Driver Pay</th><th>Rev÷Pay</th></tr></thead>
                     <tbody>{[...weeks].reverse().slice(0,12).map(w => { const pay = payrollFor(w.key); return (
                       <tr key={w.key}>
                         <td>{w.label}</td><td>{w.loads}</td><td style={{ color:"var(--mu)" }}>{fn(w.miles,0)}</td>
                         <td style={{ color:"#4ade80", fontWeight:700 }}>{fd(w.rev,0)}</td>
+                        <td style={{ color:"#4ade80" }}>{fd(w.rev/trucks,0)}</td>
+                        <td style={{ color:"#2dd4bf" }}>{fn(w.miles/trucks,0)}</td>
+                        <td style={{ color:"#38bdf8" }}>{(w.loads/trucks).toFixed(1)}</td>
                         <td style={{ color:"#fb7185" }}>{pay!=null?fd(pay,0):"—"}</td>
-                        <td style={{ color:"#4ade80", fontWeight:700 }}>{pay?`${(w.rev/pay).toFixed(2)}×`:"—"}</td>
-                        <td style={{ color:"#38bdf8" }}>{fd(w.rev/drivers,0)}</td>
-                        <td style={{ color:"#fbbf24" }}>{fd(w.rev/trucks,0)}</td>
-                        <td style={{ color:"#a78bfa" }}>{w.miles?fd(w.rev/w.miles,2):"—"}</td>
-                        <td style={{ color:"var(--mu)" }}>{(w.loads/drivers).toFixed(1)}</td>
+                        <td style={{ color:"#fbbf24", fontWeight:700 }}>{pay?`${(w.rev/pay).toFixed(2)}×`:"—"}</td>
                       </tr>
                     ); })}</tbody>
                   </table>
                 </div>
-                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>Show-Freight-carrier revenue (the fleet's own hauled loads) ÷ {drivers} active drivers / {trucks} trucks. <b>Rev÷Pay uses each week's actual driver payroll</b> (fleet + ex-OTR loaded cost from that week's paychecks, matched by pay date), averaged {fd(avgPay,0)}/wk. Full operating weeks only (≥40 loads); export-horizon tail excluded. Per-truck Samsara miles → $/truck-mile once the monthly xlsx lands.</div>
+                <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>
+                  <b>Scope:</b> numerator = Show-Freight-<b>carrier</b> hauled revenue (fleet's own loads, incl. ATL — excludes brokered freight); denominators = {trucks} active in-service trucks / {drivers} active drivers (fleet-wide). Per-truck/driver figures are diluted to the extent fleet assets also run non-SF-carrier work.
+                  &nbsp;<b>Rev÷Pay</b> = period total revenue ÷ period total driver payroll over the {payWeeks.length} weeks with matched paychecks (fleet + ATL loaded cost, matched by pay date) — a <b>labor-efficiency</b> ratio, not physical utilization.
+                  &nbsp;Full operating weeks only (≥40 loads; partial/export-horizon weeks excluded — this biases the average slightly upward).
+                  &nbsp;<b>True utilization</b> (miles/truck vs capacity, loaded-mile %, deadhead %, seated-truck %) lands when the monthly per-truck Samsara xlsx arrives.
+                </div>
               </div>
             );
           })()}

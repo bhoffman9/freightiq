@@ -65,6 +65,49 @@ if (dateMatch) {
   metrics.days_in_period = Math.round((end - start) / 86400000) + 1;
 }
 
+// ── Fleet utilization weekly series (mirror of App.jsx Fleet Utilization card) ──
+// Parses TMS_HISTORY.weeks (SF-carrier weekly loads/rev/miles) + DRIVER_WEEKLY
+// (per-pay-week driver loaded cost), matches each Sun–Sat revenue week to that
+// week's payroll by pay date, and emits a per-week series + 12-wk summary so the
+// numbers are logged point-in-time (fdw_utilization_weekly) and never lost.
+try {
+  const tmsBlock = src.match(/const TMS_HISTORY\s*=\s*\{[\s\S]*?weeks:\s*\[([\s\S]*?)\n\s*\],/);
+  const dwMatch = src.match(/const DRIVER_WEEKLY\s*=\s*(\{[\s\S]*?\});/);
+  const truckCount = num(/let TRUCK_COUNT\s*=\s*(\d+)/) || 0;
+  const driverCount = metrics.drivers || 0;
+  if (tmsBlock && dwMatch) {
+    const wk = [...tmsBlock[1].matchAll(/\{key:'(\d{4}-\d\d-\d\d)',label:'([^']+)',loads:(\d+),rev:(\d+),miles:(\d+)/g)]
+      .map(m => ({ key: m[1], label: m[2], loads: +m[3], rev: +m[4], miles: +m[5] }));
+    const dw = JSON.parse(dwMatch[1]);
+    const pdDates = (dw.weeks || []).map(l => { const [mo, d] = l.split('/').map(Number); return { label: l, t: Date.UTC(2026, mo - 1, d) }; });
+    const payrollFor = (key) => { const [Y, M, D] = key.split('-').map(Number); const s = Date.UTC(Y, M - 1, D), e = s + 6 * 864e5; const h = pdDates.find(p => p.t >= s && p.t <= e); return h ? (dw.fleet?.[h.label] || 0) + (dw.otr?.[h.label] || 0) : null; };
+    const series = wk.filter(w => w.loads >= 40).map(w => {
+      const pay = payrollFor(w.key);
+      return { week: w.key, label: w.label, loads: w.loads, rev: w.rev, miles: w.miles,
+        driver_payroll: pay != null ? Math.round(pay) : null,
+        rev_per_truck: truckCount ? Math.round(w.rev / truckCount) : null,
+        mi_per_truck: truckCount ? Math.round(w.miles / truckCount) : null,
+        loads_per_truck: truckCount ? +(w.loads / truckCount).toFixed(2) : null,
+        rev_per_pay: pay ? +(w.rev / pay).toFixed(3) : null, trucks: truckCount, drivers: driverCount };
+    });
+    metrics.utilization_weekly = series;
+    const recent = series.slice(-12), sum = (a, f) => a.reduce((s, x) => s + f(x), 0);
+    const payWk = recent.filter(x => x.driver_payroll);
+    metrics.utilization = {
+      weeks: recent.length, trucks: truckCount, drivers: driverCount,
+      avg_rev: recent.length ? Math.round(sum(recent, x => x.rev) / recent.length) : 0,
+      avg_loads: recent.length ? Math.round(sum(recent, x => x.loads) / recent.length) : 0,
+      avg_miles: recent.length ? Math.round(sum(recent, x => x.miles) / recent.length) : 0,
+      rev_per_truck: recent.length && truckCount ? Math.round(sum(recent, x => x.rev) / recent.length / truckCount) : 0,
+      mi_per_truck: recent.length && truckCount ? Math.round(sum(recent, x => x.miles) / recent.length / truckCount) : 0,
+      loads_per_truck: recent.length && truckCount ? +((sum(recent, x => x.loads) / recent.length) / truckCount).toFixed(2) : 0,
+      rev_per_pay: sum(payWk, x => x.driver_payroll) > 0 ? +(sum(payWk, x => x.rev) / sum(payWk, x => x.driver_payroll)).toFixed(3) : null,
+      driver_payroll_wk: payWk.length ? Math.round(sum(payWk, x => x.driver_payroll) / payWk.length) : 0,
+    };
+    metrics.driver_payroll_latest = payWk.length ? payWk[payWk.length - 1].driver_payroll : null;
+  }
+} catch (e) { console.warn('utilization extract skipped:', e.message); }
+
 metrics.extracted_at = new Date().toISOString();
 
 writeFileSync('public/metrics.json', JSON.stringify(metrics, null, 2));

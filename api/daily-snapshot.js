@@ -70,6 +70,11 @@ export default async function handler(req, res) {
       if (error) { if (isMissingTable(error.message)) return res.status(503).json({ error: 'table-not-found', migration: 'supabase/migrations/fdw_daily_snapshot.sql' }); throw new Error(error.message); }
       return res.status(200).json({ rows: data || [] });
     }
+    if (req.query.utilization) {
+      const { data, error } = await sb.from('fdw_utilization_weekly').select('*').order('week_of', { ascending: true });
+      if (error) { if (/does not exist|could not find the table/i.test(error.message)) return res.status(503).json({ error: 'table-not-found', migration: 'fdw_utilization_weekly' }); throw new Error(error.message); }
+      return res.status(200).json({ rows: data || [] });
+    }
     if (req.query.date) {
       const { data, error } = await sb.from('fdw_daily_snapshot').select('*').lte('snapshot_date', req.query.date).order('snapshot_date', { ascending: false }).limit(1);
       if (error) { if (isMissingTable(error.message)) return res.status(503).json({ error: 'table-not-found' }); throw new Error(error.message); }
@@ -133,6 +138,22 @@ export default async function handler(req, res) {
       cashRow = data && data[0]; if (cashRow) sources.cash = true;
     } catch { /* */ }
 
+    // Utilization + driver payroll from metrics.json (built from App.jsx). Accumulate
+    // the weekly series into fdw_utilization_weekly (never lose a week) + log the
+    // current 12-wk summary and latest driver payroll into today's snapshot.
+    let metricsJson = null; try {
+      metricsJson = await fetch(`${BASE}/metrics.json`).then(r => r.json());
+      if (metricsJson && metricsJson.utilization) sources.utilization = true;
+      if (metricsJson && Array.isArray(metricsJson.utilization_weekly) && metricsJson.utilization_weekly.length) {
+        const uw = metricsJson.utilization_weekly.map(w => ({
+          week_of: w.week, label: w.label, loads: w.loads, revenue: w.rev, miles: w.miles,
+          driver_payroll: w.driver_payroll, rev_per_truck: w.rev_per_truck, mi_per_truck: w.mi_per_truck,
+          loads_per_truck: w.loads_per_truck, rev_per_pay: w.rev_per_pay, trucks: w.trucks, drivers: w.drivers,
+        }));
+        await sb.from('fdw_utilization_weekly').upsert(uw, { onConflict: 'week_of' });
+      }
+    } catch { /* forward-only */ }
+
     const arAging = ar?.aging || {};
     const ar_past_due = +((arAging['15-30'] || 0) + (arAging['31+'] || 0)).toFixed(2);
     const pipeLoads = pipe?.loads || [];
@@ -146,11 +167,13 @@ export default async function handler(req, res) {
       ar_total: ar ? ar.totalAR : null, ar_past_due: ar ? ar_past_due : null,
       pipeline_total, pipeline_loads: pipe ? pipeLoads.length : null,
       cash_total,
+      driver_payroll: metricsJson?.driver_payroll_latest ?? null,
       payload: {
         ap: { aging: ap.aging, byVendor: ap.byVendor, count: ap.count },
         ar: ar ? { aging: ar.aging, byStatus: ar.byStatus, count: ar.count } : null,
         pipeline: pipe ? { byStatus: pipe.byStatus } : null,
         cash: cash_total != null ? { accounts: realAccts.map(a => ({ last4: a.last4, name: a.name, balance: a.balance })) } : null,
+        utilization: metricsJson?.utilization || null,
       },
       sources,
     };
