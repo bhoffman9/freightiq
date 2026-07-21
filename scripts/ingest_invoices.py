@@ -44,15 +44,22 @@ def date_near(t, labels):
 # digits. Bare 4-digit numbers are EXCLUDED — they're street numbers ("7582 S Las
 # Vegas Blvd"), suite/zip fragments, years, etc., not fleet units.
 UNIT_TOK = r'(?:[A-Z]{1,2}\d{4,7}|\d{5,7})'
+DESC_KW = re.compile(r'\bft\.?\b|\bvan\b|swing|reefer|sleeper|tractor|road ?van|air ?ride|plate|dry ?van', re.I)
 def units_of(text):
     units = set()
-    for line in text.split('\n'):
+    lines = text.split('\n')
+    for i, line in enumerate(lines):
         lv = [v.upper() for v in VIN_RE.findall(line) if is_vin(v)]
+        nxt = lines[i + 1] if i + 1 < len(lines) else ''
+        nxtvin = any(is_vin(v) for v in VIN_RE.findall(nxt))
         lead = re.match(r'\s*(' + UNIT_TOK + r')\b', line)
         if lead:
             u = lead.group(1).upper()
             rest = line[lead.end():]
-            if not is_vin(u) and (lv or re.search(r'\d{6,}', rest)): units.add(u)
+            # equipment-row context: VIN here or on the next line (McKinney puts VIN
+            # under the unit), a 6+ digit serial, or an equipment description.
+            if not is_vin(u) and (lv or nxtvin or re.search(r'\d{6,}', rest) or DESC_KW.search(rest)):
+                units.add(u)
     for m in re.finditer(r'(?:unit|tractor|truck|vehicle|trailer|equip(?:ment)?)\s*#?\s*(' + UNIT_TOK + r')\b', text, re.I):
         if not is_vin(m.group(1)): units.add(m.group(1).upper())
     return sorted(units)
