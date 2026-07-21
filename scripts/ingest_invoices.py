@@ -25,26 +25,34 @@ def vendor_of(t):
         if re.search(pat, low): return name, cat
     return None, None
 
+MONTHS = {m: i + 1 for i, m in enumerate(['january','february','march','april','may','june','july','august','september','october','november','december'])}
 def money(t, labels):
     for lab in labels:
-        m = re.search(lab + r'\s*:?\s*\$?\s*(-?[\d,]+\.\d{2})', t, re.I)
+        # label ... $ amount  (allow words/dates between label and the $, e.g. Penske "Total due by 7/25/2026 $ 4,835.92")
+        m = re.search(lab + r'[^\n$]{0,30}?\$\s*(-?[\d,]+\.\d{2})', t, re.I) or re.search(lab + r'\s*:?\s*(-?[\d,]+\.\d{2})', t, re.I)
         if m: return float(m.group(1).replace(',', ''))
     return None
 
 def date_near(t, labels):
     for lab in labels:
-        m = re.search(lab + r'\s*:?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})', t, re.I)
+        seg = re.search(lab + r'\s*:?\s*([^\n]{0,24})', t, re.I)
+        hay = seg.group(1) if seg else ''
+        m = re.search(r'(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})', hay)
         if m:
-            mo, d, y = re.split(r'[/-]', m.group(1))
-            y = ('20' + y) if len(y) == 2 else y
-            return f'{y}-{int(mo):02d}-{int(d):02d}'
+            mo, d, y = m.groups(); y = ('20' + y) if len(y) == 2 else y
+            return f'{int(y):04d}-{int(mo):02d}-{int(d):02d}'
+        mn = re.search(r'([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{4})', hay)  # "July 15, 2026"
+        if mn and mn.group(1).lower() in MONTHS:
+            return f'{int(mn.group(3)):04d}-{MONTHS[mn.group(1).lower()]:02d}-{int(mn.group(2)):02d}'
     return None
 
 # Unit id = letter-prefixed 4-7 digits (F10777, P5181425, U98136) OR bare 5-7
 # digits. Bare 4-digit numbers are EXCLUDED — they're street numbers ("7582 S Las
 # Vegas Blvd"), suite/zip fragments, years, etc., not fleet units.
 UNIT_TOK = r'(?:[A-Z]{1,2}\d{4,7}|\d{5,7})'
-DESC_KW = re.compile(r'\bft\.?\b|\bvan\b|swing|reefer|sleeper|tractor|road ?van|air ?ride|plate|dry ?van', re.I)
+# Equipment-row keywords: trailer/tractor descriptions AND unit-type words that
+# sit next to a unit id (Penske lease detail: "481292 Power ... / TADC TRACTOR SLEEPER").
+DESC_KW = re.compile(r'\bft\.?\b|\bvan\b|swing|reefer|sleeper|tractor|road ?van|air ?ride|plate|dry ?van|\bpower\b|\bpowr\b|tandem|day ?cab|straight|flatbed|\bbox\b|cargo', re.I)
 def units_of(text):
     units = set()
     lines = text.split('\n')
@@ -56,9 +64,10 @@ def units_of(text):
         if lead:
             u = lead.group(1).upper()
             rest = line[lead.end():]
-            # equipment-row context: VIN here or on the next line (McKinney puts VIN
-            # under the unit), a 6+ digit serial, or an equipment description.
-            if not is_vin(u) and (lv or nxtvin or re.search(r'\d{6,}', rest) or DESC_KW.search(rest)):
+            # equipment-row context: VIN here or on the next line (McKinney), a 6+ digit
+            # serial, or an equipment/unit-type description on THIS or the NEXT line
+            # (Penske "481292 Power" + next-line "TRACTOR SLEEPER").
+            if not is_vin(u) and (lv or nxtvin or re.search(r'\d{6,}', rest) or DESC_KW.search(rest) or DESC_KW.search(nxt)):
                 units.add(u)
     for m in re.finditer(r'(?:unit|tractor|truck|vehicle|trailer|equip(?:ment)?)\s*#?\s*(' + UNIT_TOK + r')\b', text, re.I):
         if not is_vin(m.group(1)): units.add(m.group(1).upper())
@@ -69,15 +78,17 @@ def parse(path):
     with pdfplumber.open(path) as p:
         for pg in p.pages: t += (pg.extract_text() or '') + '\n'
     vend, cat = vendor_of(t)
-    inv = re.search(r'(?:Invoice\s*(?:No\.?|Number|#)|Inv\.?\s*#)\s*:?\s*([A-Z0-9][A-Z0-9-]{3,20})', t, re.I)
-    amt = money(t, [r'Total\s*Due', r'Invoice\s*Amount', r'Amount\s*Due', r'Balance\s*Due', r'Total\s*Amount', r'\bTotal\b'])
+    inv = re.search(r'(?:Invoice\s*(?:No\.?|Number|#)|Inv\.?\s*#)\s*:?\s*([A-Z0-9][A-Z0-9-]{3,20})', t, re.I) \
+        or re.search(r'\bInvoice\b\s*:?\s*([A-Z0-9-]{5,20})', t)  # Penske "Invoice 0033599019"
+    inv_no = inv.group(1) if inv else re.sub(r'\.[Pp][Dd][Ff]$', '', os.path.basename(path))  # fallback: filename
+    amt = money(t, [r'Total\s*Due', r'Invoice\s*Amount', r'Amount\s*Due', r'Balance\s*Due', r'Total\s*due\s*by', r'Total\s*Amount', r'\bTotal\b'])
     idate = date_near(t, [r'Invoice\s*Date', r'Inv\.?\s*Date', r'Date'])
-    ddate = date_near(t, [r'Due\s*Date', r'Payment\s*Due', r'Invoice\s*Due\s*Date'])
+    ddate = date_near(t, [r'Due\s*Date', r'Total\s*due\s*by', r'Payment\s*Due', r'Invoice\s*Due\s*Date'])
     units = units_of(t)
     vins = sorted({v.upper() for v in VIN_RE.findall(t) if is_vin(v)})
     return {
         'file': os.path.basename(path), 'vendor': vend, 'category': cat,
-        'invoice_number': inv.group(1) if inv else None,
+        'invoice_number': inv_no,
         'invoice_date': idate, 'due_date': ddate, 'amount': amt,
         'units': units, 'unit_count': len(units), 'vins': vins, 'chars': len(t),
     }
