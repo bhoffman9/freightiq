@@ -208,7 +208,12 @@ export default async function handler(req, res) {
       if (row.source === 'efs_fuel') {
         outcome = await handleEfs(row);
       } else if (row.source.startsWith('truck_') || row.source.startsWith('trailer_')) {
-        outcome = await handleVendor(row);
+        // Equipment EMAIL ingest DISABLED (Ben, 2026-07-20 — AI extraction was
+        // untrustworthy: TEC amount=null quarantines, dropped units). Equipment
+        // invoices are now entered MANUALLY via the AP tab. Skip without parsing
+        // or quarantining so it burns no AI tokens and adds no quarantine noise.
+        // (EFS fuel above stays on — it's reliable.)
+        outcome = 'skipped';
       } else {
         // Unknown source with no parser — quarantine honestly.
         await quarantine(row, `needs parser: ${row.source}`, row.extracted || {});
