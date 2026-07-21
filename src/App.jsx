@@ -2861,6 +2861,114 @@ const TEC_EQUIPMENT = {
 // Unified Assets tab — trucks + trailers from the AP Aging equipment feed
 // (/api/ap-equipment → fdw_equipment_invoice). Master tracker + monthly-cost
 // totals (trucks / trailers / combined). No mileage/CPM (that's the Samsara tab).
+// Point-in-time fleet tracker + COMPLETE asset registry ingested from invoices
+// (fdw_asset / fdw_asset_snapshot, built by scripts/build_assets.mjs). Every unit
+// that appears on an equipment invoice is here, deduped by VIN + unit#, with a
+// source/confidence badge. Lump-sum vendors (no unit ids) are flagged, not faked.
+function FleetPointInTime() {
+  const [assets, setAssets] = useState(null);
+  const [hist, setHist] = useState([]);
+  const [state, setState] = useState("load"); // load | ok | setup | err
+  const [cat, setCat] = useState("all");   // all | truck | trailer
+  const [src, setSrc] = useState("all");   // all | roster | invoice | invoice-only
+  useEffect(() => {
+    let dead = false;
+    Promise.all([
+      fetch("/api/daily-snapshot?assets=1").then(r => r.json().then(j => ({ s: r.status, j }))),
+      fetch("/api/daily-snapshot?asset_history=1").then(r => r.json()).catch(() => ({ rows: [] })),
+    ]).then(([a, h]) => {
+      if (dead) return;
+      if (a.s === 503 || a.j.error === "table-not-found") { setState("setup"); return; }
+      if (a.j.error) { setState("err"); return; }
+      setAssets(a.j.rows || []); setHist(h.rows || []); setState("ok");
+    }).catch(() => { if (!dead) setState("err"); });
+    return () => { dead = true; };
+  }, []);
+
+  if (state === "load") return <div className="card" style={{ padding:16, marginBottom:14, color:"var(--mu)", fontSize:12 }}>Loading fleet registry…</div>;
+  if (state === "err") return null;
+  if (state === "setup") return (
+    <div className="card" style={{ marginBottom:14, borderLeft:"3px solid #fbbf24" }}>
+      <div className="ctit">Point-in-Time Fleet</div>
+      <div style={{ fontSize:11, color:"#fbbf24", padding:"8px 0" }}>One-time build: run <code>node scripts/build_assets.mjs --write</code> to ingest every truck/trailer from invoices into <code>fdw_asset</code>.</div>
+    </div>
+  );
+
+  const A = assets || [];
+  const trucks = A.filter(a => a.category === "truck"), trailers = A.filter(a => a.category === "trailer");
+  const monthly = A.filter(a => a.status !== "invoice-only").reduce((s,a) => s + (+a.monthly_cost||0), 0);
+  const billed = A.reduce((s,a) => s + (+a.billed||0), 0);
+  const invOnly = A.filter(a => !a.in_roster);
+  const vinOrExact = A.filter(a => ["vin","exact"].includes(a.match_confidence)).length;
+  const kpis = [
+    { l:"Trucks", v: trucks.length, c:"#38bdf8", sub:`${trucks.filter(a=>a.on_invoice).length} on invoice` },
+    { l:"Trailers", v: trailers.length, c:"#4ade80", sub:`${trailers.filter(a=>a.on_invoice).length} on invoice` },
+    { l:"Monthly Cost", v: fd(monthly,0), c:"var(--or)", sub:`${fd(monthly*12,0)}/yr · roster units` },
+    { l:"Total Billed", v: fd(billed,0), c:"#fbbf24", sub:`${A.length} units · ${vinOrExact} VIN/exact-matched` },
+  ];
+  const filt = A.filter(a => (cat === "all" || a.category === cat) && (src === "all" || (src === "roster" && a.in_roster) || (src === "invoice" && a.on_invoice) || (src === "invoice-only" && !a.in_roster)))
+    .sort((a,b) => (a.vendor||"").localeCompare(b.vendor||"") || (a.category||"").localeCompare(b.category||"") || String(a.unit).localeCompare(String(b.unit), undefined, { numeric:true }));
+  const srcBadge = (a) => {
+    const [txt,col] = !a.in_roster ? ["invoice-only","#fbbf24"] : a.on_invoice ? ["roster + invoice","#4ade80"] : ["roster only","#5a6370"];
+    return <span style={{ fontSize:9, fontWeight:700, color:col, border:`1px solid ${col}55`, borderRadius:2, padding:"1px 5px" }}>{txt}</span>;
+  };
+  const chip = (id,label,cur,set) => <button onClick={()=>set(id)} style={{ padding:"3px 10px", borderRadius:3, cursor:"pointer", fontSize:10, fontWeight:700, fontFamily:"var(--f1)", background:cur===id?"var(--orl)":"transparent", color:cur===id?"var(--or)":"var(--mu)", border:`1px solid ${cur===id?"var(--or)":"var(--bd)"}` }}>{label}</button>;
+  const histData = hist.map(h => ({ d:(h.snapshot_date||"").slice(5), trucks:h.trucks, trailers:h.trailers, cost:Math.round((+h.monthly_cost||0)/1000) }));
+
+  return (
+    <div className="card" style={{ marginBottom:14, borderLeft:"3px solid #2dd4bf" }}>
+      <div className="ctit">Point-in-Time Fleet <span style={{ fontSize:10, color:"var(--mu)", fontWeight:400 }}>· every truck &amp; trailer ingested from invoices · deduped by VIN + unit# · {hist.length} day{hist.length===1?"":"s"} logged</span></div>
+      <div className="g4" style={{ margin:"10px 0 12px" }}>
+        {kpis.map((k,i) => (
+          <div className="kpi" key={i} style={{ borderLeft:`3px solid ${k.c}` }}>
+            <div className="klbl">{k.l}</div><div className="kval" style={{ color:k.c }}>{k.v}</div><div className="ksub">{k.sub}</div>
+          </div>
+        ))}
+      </div>
+      {histData.length > 1 && (
+        <ResponsiveContainer width="100%" height={160}>
+          <LineChart data={histData} margin={{ top:4, right:12, left:4, bottom:2 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--bd)" />
+            <XAxis dataKey="d" tick={{ fontSize:9, fill:"var(--mu)" }} minTickGap={20} />
+            <YAxis tick={{ fontSize:9, fill:"var(--mu)" }} width={32} />
+            <Tooltip contentStyle={{ background:"var(--s1)", border:"1px solid var(--bd)", fontSize:11 }} />
+            <Line type="monotone" dataKey="trucks" name="Trucks" stroke="#38bdf8" dot={false} strokeWidth={2} />
+            <Line type="monotone" dataKey="trailers" name="Trailers" stroke="#4ade80" dot={false} strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+      )}
+      {invOnly.length > 0 && (
+        <div style={{ fontSize:10, color:"var(--mu)", margin:"6px 0 10px", padding:"6px 10px", background:"rgba(251,191,36,.06)", border:"1px solid rgba(251,191,36,.25)", borderRadius:4 }}>
+          <b style={{ color:"#fbbf24" }}>{invOnly.length} units found on invoices but not in the manual roster</b> — auto-ingested (marked "invoice-only", lower confidence: matched by unit# only, no VIN). Review + confirm. Lump-sum vendors (XTRA/Premier) bill without unit ids, so their individual units can't be itemized from invoices — shown from roster.
+        </div>
+      )}
+      <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:8 }}>
+        {chip("all","All",cat,setCat)}{chip("truck","Trucks",cat,setCat)}{chip("trailer","Trailers",cat,setCat)}
+        <span style={{ width:10 }} />
+        {chip("all","Any source",src,setSrc)}{chip("roster","In roster",src,setSrc)}{chip("invoice","On invoice",src,setSrc)}{chip("invoice-only","Invoice-only",src,setSrc)}
+        <span style={{ marginLeft:"auto", fontSize:10, color:"var(--mu)", alignSelf:"center" }}>{filt.length} units</span>
+      </div>
+      <div style={{ overflowX:"auto", maxHeight:420, overflowY:"auto" }}>
+        <table className="tbl" style={{ fontSize:11 }}>
+          <thead><tr><th>Vendor</th><th>Cat</th><th>Unit</th><th>VIN</th><th>$/mo</th><th>Billed</th><th>Last inv</th><th>Source</th></tr></thead>
+          <tbody>{filt.map((a,i) => (
+            <tr key={a.id||i}>
+              <td style={{ fontWeight:700 }}>{a.vendor}</td>
+              <td style={{ color:a.category==="truck"?"#38bdf8":"#4ade80" }}>{a.category}</td>
+              <td style={{ fontFamily:"var(--f3)" }}>{a.unit}{a.fleet && String(a.fleet)!==String(a.unit) ? <span style={{ color:"var(--mu)" }}> ·{a.fleet}</span> : null}</td>
+              <td style={{ color:"var(--mu)", fontSize:9 }}>{a.vin || "—"}</td>
+              <td style={{ fontFamily:"var(--f3)" }}>{a.monthly_cost>0?fd(+a.monthly_cost,0):"—"}</td>
+              <td style={{ fontFamily:"var(--f3)", color:"#fbbf24" }}>{a.billed>0?fd(+a.billed,0):"—"}</td>
+              <td style={{ color:"var(--mu)" }}>{a.last_seen ? String(a.last_seen).slice(0,10) : "—"}</td>
+              <td>{srcBadge(a)}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function AssetsTab() {
   const equipment = useEquipment();
   const [cat, setCat] = useState("all"); // all | truck | trailer
@@ -2892,7 +3000,9 @@ function AssetsTab() {
   return (
     <div>
       <div className="ptitle">🚚 Assets</div>
-      <div className="psub">Master equipment tracker · trucks + trailers · live from AP Aging invoices · {PERIOD}</div>
+      <div className="psub">Master equipment tracker · trucks + trailers · every unit ingested from invoices · {PERIOD}</div>
+
+      <FleetPointInTime />
 
       <div className="g4" style={{ marginBottom:14 }}>
         <div className="kpi" style={{ borderLeft:"3px solid var(--or)" }}>

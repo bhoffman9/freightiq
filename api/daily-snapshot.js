@@ -75,6 +75,16 @@ export default async function handler(req, res) {
       if (error) { if (/does not exist|could not find the table/i.test(error.message)) return res.status(503).json({ error: 'table-not-found', migration: 'fdw_utilization_weekly' }); throw new Error(error.message); }
       return res.status(200).json({ rows: data || [] });
     }
+    if (req.query.assets) {
+      const { data, error } = await sb.from('fdw_asset').select('*').order('vendor').order('category').order('unit');
+      if (error) { if (/does not exist|could not find the table/i.test(error.message)) return res.status(503).json({ error: 'table-not-found', migration: 'fdw_asset' }); throw new Error(error.message); }
+      return res.status(200).json({ rows: data || [] });
+    }
+    if (req.query.asset_history) {
+      const { data, error } = await sb.from('fdw_asset_snapshot').select('*').order('snapshot_date', { ascending: true });
+      if (error) { if (/does not exist|could not find the table/i.test(error.message)) return res.status(503).json({ error: 'table-not-found', migration: 'fdw_asset_snapshot' }); throw new Error(error.message); }
+      return res.status(200).json({ rows: data || [] });
+    }
     if (req.query.date) {
       const { data, error } = await sb.from('fdw_daily_snapshot').select('*').lte('snapshot_date', req.query.date).order('snapshot_date', { ascending: false }).limit(1);
       if (error) { if (isMissingTable(error.message)) return res.status(503).json({ error: 'table-not-found' }); throw new Error(error.message); }
@@ -179,6 +189,22 @@ export default async function handler(req, res) {
     };
     const { error } = await sb.from('fdw_daily_snapshot').upsert(row, { onConflict: 'snapshot_date' });
     if (error) { if (isMissingTable(error.message)) return res.status(503).json({ error: 'table-not-found', migration: 'supabase/migrations/fdw_daily_snapshot.sql' }); throw new Error(error.message); }
+
+    // Daily point-in-time fleet snapshot from the asset registry (fdw_asset is
+    // rebuilt weekly by scripts/build_assets.mjs; this logs counts + cost each day).
+    try {
+      const { data: fa } = await sb.from('fdw_asset').select('category,monthly_cost,on_invoice,status');
+      if (fa && fa.length) {
+        const trucks = fa.filter(a => a.category === 'truck').length, trailers = fa.filter(a => a.category === 'trailer').length;
+        const monthly = Math.round(fa.filter(a => a.status !== 'invoice-only').reduce((s, a) => s + (Number(a.monthly_cost) || 0), 0));
+        await sb.from('fdw_asset_snapshot').upsert({
+          snapshot_date, trucks, trailers, total_units: fa.length,
+          on_invoice: fa.filter(a => a.on_invoice).length, monthly_cost: monthly,
+        }, { onConflict: 'snapshot_date' });
+        sources.assets = true;
+      }
+    } catch { /* asset registry not built yet */ }
+
     return res.status(200).json({ ok: true, snapshot_date, ap_total: ap.total, ar_total: row.ar_total, pipeline_total, cash_total, sources });
   } catch (e) {
     return res.status(500).json({ error: String(e.message || e) });
