@@ -28,3 +28,4 @@ scripts/_*.js
 # Local DB creds for scripts/dbrun.mjs (session pooler) — NEVER commit
 .env.db
 scripts/_*.json
+scripts/_*.log

@@ -72,9 +72,20 @@ const run = async () => {
   };
   const fdw = (await c.query(`select vendor, category, unit_ids, amount, invoice_date from fdw_equipment_invoice where unit_ids is not null and unit_ids<>''`)).rows;
   for (const r of fdw) { const v = vmap(r.vendor); if (!v) continue; const { units, vins } = tokenize(r.unit_ids); const cat = (r.category==='truck'||r.category==='trailer')?r.category:v.cat; const per = units.length?Number(r.amount||0)/units.length:0; for (const u of units) addU(v.canon, cat, u, vins, per, r.invoice_date, 'fdw'); }
-  const invRows = (await c.query(`select vendor_name, description, amount, invoice_date from invoices where deleted_at is null`)).rows;
+  const invRows = (await c.query(`select vendor_name, description, unit_ids, vin_ids, amount, invoice_date from invoices where deleted_at is null`)).rows;
   const vendorBill = {}; // canon -> total billed (for lump-sum coverage)
-  for (const r of invRows) { const v = vmap(r.vendor_name); if (!v) continue; vendorBill[v.canon] = (vendorBill[v.canon]||0) + Number(r.amount||0); const { units, vins } = extractFromDesc(r.description); if (!units.length) continue; const per = Number(r.amount||0)/units.length; for (const u of units) addU(v.canon, v.cat, u, vins, per, r.invoice_date, 'inv'); }
+  for (const r of invRows) {
+    const v = vmap(r.vendor_name); if (!v) continue;
+    vendorBill[v.canon] = (vendorBill[v.canon]||0) + Number(r.amount||0);
+    const fromDesc = extractFromDesc(r.description);                         // free-text (anchored)
+    const fromPdf = r.unit_ids ? tokenize(r.unit_ids) : { units: [], vins: [] }; // PDF table (trusted)
+    const pdfVins = r.vin_ids ? [...String(r.vin_ids).matchAll(VIN_RE)].map(x => x[1].toUpperCase()) : [];
+    const units = [...new Set([...fromDesc.units, ...fromPdf.units])];
+    const vins = [...new Set([...fromDesc.vins, ...fromPdf.vins, ...pdfVins])];
+    if (!units.length) continue;
+    const per = Number(r.amount||0)/units.length;
+    for (const u of units) addU(v.canon, v.cat, u, vins, per, r.invoice_date, 'inv');
+  }
 
   // VIN-merge invoice units (same VIN = one asset); keep aliases
   const vg = {}; for (const a of Object.values(inv)) for (const v of a.vins) (vg[`${a.vendor}|${v}`] ||= []).push(a);
