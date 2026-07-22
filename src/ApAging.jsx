@@ -74,7 +74,21 @@ async function extractTextFromPdf(file) {
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
     const content = await page.getTextContent();
-    pages.push(content.items.map((t) => t.str).join(" "));
+    // Reconstruct reading order + LINES from item positions. pdf.js emits items in
+    // internal order (which for tables is NOT visual order — e.g. the unit number
+    // before its "Unit#:" label), so sort by y (top→down) then x (left→right), then
+    // break lines on y-change. The unit/VIN parser is line-based, so this matters.
+    const items = content.items
+      .filter((t) => t.str !== undefined && t.transform)
+      .map((t) => ({ s: t.str, x: t.transform[4], y: t.transform[5] }));
+    items.sort((a, b) => (Math.abs(a.y - b.y) > 2 ? b.y - a.y : a.x - b.x));
+    let out = "", lastY = null;
+    for (const t of items) {
+      if (lastY !== null && Math.abs(t.y - lastY) > 2) out += "\n";
+      else if (out && !out.endsWith("\n")) out += " ";
+      out += t.s; lastY = t.y;
+    }
+    pages.push(out);
   }
   return pages.join("\n");
 }
@@ -154,6 +168,37 @@ function parseFilename(name) {
   }
   return result;
 }
+/* Unit# + VIN extraction (deterministic — mirrors scripts/ingest_invoices.py).
+   Unit = letter-prefixed 4-7 digits OR bare 5-7 digits (bare 4-digit excluded —
+   they're street numbers/zips). A unit id must sit in an equipment-row context:
+   a VIN on the same/next line, a 6+ digit serial, or an equipment/type keyword
+   on this or the next line (handles XTRA lists, McKinney VIN-under-unit, and
+   Penske "481292 Power / TRACTOR SLEEPER" lease-detail). */
+const _UNIT_TOK = "(?:[A-Z]{1,2}\\d{4,7}|\\d{5,7})";
+const _DESC_KW = /\bft\.?\b|\bvan\b|swing|reefer|sleeper|tractor|road ?van|air ?ride|plate|dry ?van|\bpower\b|tandem|day ?cab|straight|flatbed|\bbox\b|cargo/i;
+const _isVin = (t) => /^[A-HJ-NPR-Z0-9]{17}$/.test(t) && /[A-Z]/.test(t) && /\d/.test(t);
+const _vinsIn = (s) => [...String(s).matchAll(/\b([A-HJ-NPR-Z0-9]{17})\b/g)].map((m) => m[1].toUpperCase()).filter(_isVin);
+function extractUnitsVins(text) {
+  const units = new Set(), vins = new Set();
+  const lines = String(text).split(/\r?\n/);
+  const leadRe = new RegExp("^\\s*(" + _UNIT_TOK + ")\\b");
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i], nxt = lines[i + 1] || "";
+    const lv = _vinsIn(line); lv.forEach((v) => vins.add(v));
+    const nxtvin = _vinsIn(nxt).length > 0;
+    const m = line.match(leadRe);
+    if (m) {
+      const u = m[1].toUpperCase(), rest = line.slice(m[0].length);
+      if (!_isVin(u) && (lv.length || nxtvin || /\d{6,}/.test(rest) || _DESC_KW.test(rest) || _DESC_KW.test(nxt))) units.add(u);
+    }
+  }
+  const labRe = new RegExp("(?:unit|tractor|truck|vehicle|trailer|equip(?:ment)?)\\s*#?\\s*:?\\s*(" + _UNIT_TOK + ")\\b", "gi");
+  let mm;
+  while ((mm = labRe.exec(text))) { const u = mm[1].toUpperCase(); if (!_isVin(u)) units.add(u); }
+  _vinsIn(text).forEach((v) => vins.add(v));
+  return { units: [...units].sort(), vins: [...vins].sort() };
+}
+
 function extractFields(text, fileName = "") {
   const fileInfo = parseFilename(fileName);
 
@@ -286,10 +331,12 @@ function extractFields(text, fileName = "") {
     }
   }
 
+  const { units, vins } = extractUnitsVins(text);
   const required = [invoiceNumber, invoiceDate, amount, vendorName];
   const filled = required.filter(Boolean).length;
   const confidence = filled === 4 ? "high" : filled >= 2 ? "medium" : "low";
-  return { vendorName, invoiceNumber, invoiceDate, dueDate, amount, terms: terms || "", confidence };
+  return { vendorName, invoiceNumber, invoiceDate, dueDate, amount, terms: terms || "", confidence,
+    unitIds: units.join(", "), vinIds: vins.join(", ") };
 }
 async function extractInvoiceRegex(file) {
   const text = await extractTextFromPdf(file);
@@ -591,45 +638,20 @@ export default function ApAging() {
      only when the endpoint is unavailable (network/error) — in that degraded mode
      the PDF is NOT stored (browser can no longer upload directly), so pdfPath="". */
   const extractOne = async (file) => {
-    // Primary: server endpoint uploads the PDF + extracts fields
-    try {
-      const pdfBase64 = await fileToBase64(file);
-      const res = await fetch("/api/ap-extract", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pdfBase64, filename: file.name }),
-      });
-      if (res.ok) {
-        const ai = await res.json();
-        return {
-          vendorName: ai.vendorName || "",
-          invoiceNumber: ai.invoiceNumber || "",
-          invoiceDate: ai.invoiceDate || "",
-          dueDate: ai.dueDate || "",
-          amount: ai.amount || "",
-          terms: ai.terms || "",
-          description: ai.description || "",
-          pdfPath: ai.pdfPath || "",
-        };
-      }
-    } catch (e) {
-      console.warn("Server extract failed, falling back to client-side regex:", e);
-    }
-    // Fallback: zero-cost client-side regex (no PDF upload available → pdfPath="")
+    // DETERMINISTIC client-side parse (pdf.js text + regex) — NO AI. Includes unit
+    // numbers + VINs. You review/fix every field before saving, so a parse miss is
+    // just an edit, never a silent wrong number. (PDF is not stored without a
+    // service key → pdfPath="".)
     try {
       const r = await extractInvoiceRegex(file);
       return {
-        vendorName: r.vendorName || "",
-        invoiceNumber: r.invoiceNumber || "",
-        invoiceDate: r.invoiceDate || "",
-        dueDate: r.dueDate || "",
-        amount: r.amount || "",
-        terms: r.terms || "",
-        description: "",
-        pdfPath: "",
+        vendorName: r.vendorName || "", invoiceNumber: r.invoiceNumber || "",
+        invoiceDate: r.invoiceDate || "", dueDate: r.dueDate || "",
+        amount: r.amount || "", terms: r.terms || "", description: "",
+        unitIds: r.unitIds || "", vinIds: r.vinIds || "", pdfPath: "",
       };
     } catch (e) {
-      return { vendorName: "", invoiceNumber: "", invoiceDate: "", dueDate: "", amount: "", terms: "", description: "", pdfPath: "" };
+      return { vendorName: "", invoiceNumber: "", invoiceDate: "", dueDate: "", amount: "", terms: "", description: "", unitIds: "", vinIds: "", pdfPath: "" };
     }
   };
 
@@ -652,6 +674,8 @@ export default function ApAging() {
           amount: result.amount || "",
           terms: result.terms || "",
           description: result.description || "",
+          unitIds: result.unitIds || "",
+          vinIds: result.vinIds || "",
           pdfPath: result.pdfPath || "",
         });
         setPdfFile(pdfs[0]);
@@ -680,6 +704,8 @@ export default function ApAging() {
               amount: result.amount || "",
               terms: result.terms || "",
               description: result.description || "",
+              unitIds: result.unitIds || "",
+              vinIds: result.vinIds || "",
               pdfPath: result.pdfPath || "",
             },
             status: "pending",
@@ -2163,6 +2189,28 @@ export default function ApAging() {
                 </label>
               ))}
             </div>
+            {(() => {
+              const nUnits = (formData.unitIds || "").split(",").map((s) => s.trim()).filter(Boolean).length;
+              const nVins = (formData.vinIds || "").split(",").map((s) => s.trim()).filter(Boolean).length;
+              return (
+                <>
+                  <label style={{ ...S.formLabel, marginTop: 12 }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: nUnits ? "#94a3b8" : "#fbbf24" }}>
+                      Unit Numbers · <b style={{ color: nUnits ? "#4ade80" : "#fbbf24" }}>{nUnits} unit{nUnits === 1 ? "" : "s"}</b>{nUnits === 0 ? " — ⚠ none read, check the PDF" : ""}
+                    </span>
+                    <textarea style={{ ...S.input, minHeight: 46, resize: "vertical", fontFamily: "ui-monospace,Consolas,monospace" }}
+                      value={formData.unitIds || ""} onChange={(e) => setFormData((p) => ({ ...p, unitIds: e.target.value }))}
+                      placeholder="comma-separated, e.g. 527503, 533375, F10777" aria-label="Unit Numbers" />
+                  </label>
+                  <label style={{ ...S.formLabel, marginTop: 12 }}>
+                    <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>VINs · {nVins}</span>
+                    <textarea style={{ ...S.input, minHeight: 36, resize: "vertical", fontFamily: "ui-monospace,Consolas,monospace", fontSize: 11 }}
+                      value={formData.vinIds || ""} onChange={(e) => setFormData((p) => ({ ...p, vinIds: e.target.value }))}
+                      placeholder="comma-separated VINs (optional)" aria-label="VINs" />
+                  </label>
+                </>
+              );
+            })()}
             <label style={{ ...S.formLabel, marginTop: 12 }}>
               <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Description</span>
               <textarea style={{ ...S.input, minHeight: 60, resize: "vertical" }} value={formData.description || ""} onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))} aria-label="Description" />

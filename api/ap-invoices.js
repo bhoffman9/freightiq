@@ -68,7 +68,7 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       const body = req.body || {};
-      const { vendorName, invoiceNumber, invoiceDate, dueDate, amount, terms, description, pdfPath } = body;
+      const { vendorName, invoiceNumber, invoiceDate, dueDate, amount, terms, description, pdfPath, unitIds, vinIds } = body;
 
       if (!vendorName || !invoiceNumber) {
         return res.status(400).json({ error: 'vendorName and invoiceNumber are required' });
@@ -97,6 +97,8 @@ export default async function handler(req, res) {
           terms: terms || '',
           description: description || '',
           pdf_path: pdfPath || '',
+          unit_ids: (unitIds || '').trim() || null,
+          vin_ids: (vinIds || '').trim() || null,
         })
         .select()
         .single();
