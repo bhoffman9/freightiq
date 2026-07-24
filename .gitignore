@@ -29,3 +29,5 @@ scripts/_*.js
 .env.db
 scripts/_*.json
 scripts/_*.log
+scripts/__pycache__/
+__pycache__/
