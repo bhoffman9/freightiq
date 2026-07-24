@@ -234,6 +234,24 @@ MANUAL_CONTRACTORS = {
         ('J&A', ('adamson','d'),    1750.0,  'Debra Adamson'),
         ('J&A', ('con','ERI'),      1730.0,  'Erika Valencio - 1099'),   # NEW J&A contractor
     ],
+    '7/20': [  # pay week ending Jul 26 (W-2 checks dated Jul 24). Ben's chat amounts.
+        ('CE',  ('con','JON'),      2800.0,  'Jon Marcus - 1099'),
+        ('CE',  ('con','GAB'),      1500.0,  'Gabriel Colon - 1099 (50%)'),  # $3,000 split 50/50
+        ('SF',  ('con','GAB'),      1500.0,  'Gabriel Colon - 1099 (50%)'),
+        ('J&A', ('con','MEL'),      2250.0,  'Mellody Abrego - 1099'),
+        ('J&A', ('con','HIL'),      1730.0,  'Hilda Salman - 1099'),
+        ('J&A', ('fissehaye','b'),  1850.0,  'Biniyam Fissehaye'),        # ENM
+        ('J&A', ('delgado','e'),    900.0,   'Elizabeth Delgado'),
+        ('J&A', ('simpson','c'),    834.97,  'Christopher Simpson'),
+        ('J&A', ('adamson','d'),    1750.0,  'Debra Adamson'),
+        ('J&A', ('con','ERI'),      1730.0,  'Erika Valencio - 1099'),
+        ('J&A', ('con','KAC'),      500.0,   'Kacy Richardson - 1099'),
+        # Kevin Deveraux / Nixon Graye $500 = AGENT — separate bucket, excluded here.
+    ],
+}
+# MANUAL reimbursements (included in the all-in per Ben 2026-07-23), keyed by Monday.
+MANUAL_REIMB = {
+    '7/20': [ ('J&A', ('delgado','e'), 253.25) ],   # Elizabeth Delgado reimbursement
 }
 # MANUAL_CONTRACTORS is hand-keyed by Monday week ("6/22", "6/29"); map each
 # to its payday label so contractor payments land in the same column as that
@@ -244,6 +262,11 @@ for wl, items in MANUAL_CONTRACTORS.items():
         ex = rows.get((comp, rk)); nm = ex['name'] if ex else disp
         rr = getrow(comp, rk, nm, ex['former'] if ex else False)
         rr['camts'][wl_pd] = round(rr['camts'].get(wl_pd, 0) + amt, 2)
+for wl, items in MANUAL_REIMB.items():
+    wl_pd = PD_BY_MONLABEL.get(wl, wl)
+    for comp, rk, amt in items:
+        ex = rows.get((comp, rk)); rr = getrow(comp, rk, ex['name'] if ex else str(rk), ex['former'] if ex else False)
+        rr['reimb'][wl_pd] = round(rr['reimb'].get(wl_pd, 0) + amt, 2)
 
 # --- ALL-IN: fold contractor CAR allowances + company-paid HEALTH insurance
 # into the grid so every column is fully loaded (per Ben — "all in for all
@@ -276,37 +299,24 @@ for comp, rk, plan in CAR:
     for spec, amt in plan:
         _addc(comp, rk, _carlbl(spec), amt, 'car')
 
-# Commission — spread each contractor's YTD commission (totals from CONTRACTORS[]
-# in App.jsx) across the weeks they actually had cash, so it's a dropdown line for
-# EVERY earner (Mellody, Delgado, Simpson), not just a hardcoded few. Reconciles
-# to CONTRACTORS[].commission exactly. Runs after camts are fully populated.
-COMMISSION_TOTAL = [
-    ('J&A', ('con','MEL'),     5133.21),   # Mellody
-    ('J&A', ('delgado','e'),   3597.62),   # Elizabeth Delgado
-    ('J&A', ('simpson','c'),   2551.20),   # Christopher Simpson
-]
-for _comp, _rk, _tot in COMMISSION_TOTAL:
-    _r = rows.get((_comp, _rk))
-    if not _r:
-        continue
-    _act = [w for w in wlabel if _r['camts'].get(w)] or list(wlabel)
-    _per = round(_tot / len(_act), 2)
-    for w in _act:
-        _r['commission'][w] = _per
-    _d = round(_tot - _per * len(_act), 2)   # push rounding remainder into the last week
-    if _d:
-        _r['commission'][_act[-1]] = round(_r['commission'][_act[-1]] + _d, 2)
+# Commission is NO LONGER spread (per Ben 2026-07-23 — spreading a YTD total across
+# weeks "doesn't make sense"). If a contractor is actually paid commission in a
+# given week, include it in that week's cash (camts) via MANUAL_CONTRACTORS. The
+# `commission` per-row dict stays (holds any historical values) but does NOT feed
+# the all-in total anymore.
 
 SECT = ['CE','SF','CE East','J&A']; out = []
 for s in SECT:
     rs = [v for (c,k),v in rows.items() if c == s]
     if not rs: continue
-    for r in rs: r['total'] = round(sum(r['amts'].values()) + sum(r['camts'].values()) + sum(r['car'].values()) + sum(r['health'].values()) + sum(r['commission'].values()), 2)
+    for r in rs: r['total'] = round(sum(r['amts'].values()) + sum(r['camts'].values()) + sum(r['car'].values()) + sum(r['health'].values()) + sum(r['reimb'].values()), 2)
     rs = sorted(rs, key=lambda r: (r['former'], '1099' in r['name'], r['name']))
     tot = {}; ct = {}; lt = {}; rt = {}
     for wl in wlabel:
         a = round(sum(r['amts'].get(wl,0) for r in rs), 2); cc = round(sum(r['camts'].get(wl,0) for r in rs), 2)
-        ll = round(sum(r['camts'].get(wl,0)+r['car'].get(wl,0)+r['health'].get(wl,0)+r['commission'].get(wl,0) for r in rs), 2)
+        # all-in (ltotals) = cash + car + health + REIMBURSEMENTS (per Ben 2026-07-23:
+        # all-in payroll INCLUDES reimbursements; commission is NOT spread anymore).
+        ll = round(sum(r['camts'].get(wl,0)+r['car'].get(wl,0)+r['health'].get(wl,0)+r['reimb'].get(wl,0) for r in rs), 2)
         rr = round(sum(r['reimb'].get(wl,0) for r in rs), 2)
         if a: tot[wl] = a
         if cc: ct[wl] = cc
@@ -352,7 +362,7 @@ if old:
         tot={};ct={};lt={};rt={}
         for wl in wlabel:
             a=round(sum(r['amts'].get(wl,0) for r in s['rows']),2); cc=round(sum(r['camts'].get(wl,0) for r in s['rows']),2)
-            ll=round(sum(r['camts'].get(wl,0)+r['car'].get(wl,0)+r['health'].get(wl,0)+r['commission'].get(wl,0) for r in s['rows']),2)
+            ll=round(sum(r['camts'].get(wl,0)+r['car'].get(wl,0)+r['health'].get(wl,0)+r['reimb'].get(wl,0) for r in s['rows']),2)
             rr=round(sum(r['reimb'].get(wl,0) for r in s['rows']),2)
             if a:tot[wl]=a
             if cc:ct[wl]=cc

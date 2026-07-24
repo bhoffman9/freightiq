@@ -46,7 +46,7 @@ function parse(text, invoiceNo) {
     if (lineVins.length || /\d{6,}/.test(rest)) units.add(u);   // equipment-row context
   }
   // also label-anchored anywhere ("Unit # 104417" TEC, "Tractor 438869" Ryder)
-  for (const m of text.matchAll(/(?:unit|tractor|truck|vehicle|trailer|equip(?:ment)?)\s*#?\s*([A-Z]{0,2}\d{4,8})\b/gi)) {
+  for (const m of text.matchAll(/(?:unit|tractor|truck|vehicle|trailer|equip(?:ment)?)\s*#?\s*:?\s*([A-Z]{0,2}\d{4,8})\b/gi)) {
     const u = m[1].toUpperCase();
     if (!isVin(u) && u !== String(invoiceNo).toUpperCase()) units.add(u);
   }

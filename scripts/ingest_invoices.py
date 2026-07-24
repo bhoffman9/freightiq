@@ -69,7 +69,7 @@ def units_of(text):
             # (Penske "481292 Power" + next-line "TRACTOR SLEEPER").
             if not is_vin(u) and (lv or nxtvin or re.search(r'\d{6,}', rest) or DESC_KW.search(rest) or DESC_KW.search(nxt)):
                 units.add(u)
-    for m in re.finditer(r'(?:unit|tractor|truck|vehicle|trailer|equip(?:ment)?)\s*#?\s*(' + UNIT_TOK + r')\b', text, re.I):
+    for m in re.finditer(r'(?:unit|tractor|truck|vehicle|trailer|equip(?:ment)?)\s*#?\s*:?\s*(' + UNIT_TOK + r')\b', text, re.I):
         if not is_vin(m.group(1)): units.add(m.group(1).upper())
     return sorted(units)
 

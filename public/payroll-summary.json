@@ -140,12 +140,12 @@
     {
       "name": "Adrian Arias",
       "entity": "SF",
-      "totalCost": 55128.98
+      "totalCost": 56966.74
     },
     {
       "name": "Gabriel Gonzalez",
       "entity": "SF",
-      "totalCost": 36425.76
+      "totalCost": 37753.56
     },
     {
       "name": "Scot Grosser",
@@ -160,32 +160,32 @@
     {
       "name": "Cecilia Rivera",
       "entity": "SF",
-      "totalCost": 43843.17
+      "totalCost": 45562.92
     },
     {
       "name": "Nathan Youngblood",
       "entity": "SF",
-      "totalCost": 37220.4
+      "totalCost": 38548.2
     },
     {
       "name": "Tasha Mahan",
       "entity": "SF",
-      "totalCost": 10111.15
+      "totalCost": 11549.6
     },
     {
       "name": "Antionette Wilson",
       "entity": "SF",
-      "totalCost": 5279.93
+      "totalCost": 6537.05
     },
     {
       "name": "Valeria Abrego",
       "entity": "J&A",
-      "totalCost": 25586.12
+      "totalCost": 26470.92
     },
     {
       "name": "Christopher Adamson",
       "entity": "J&A",
-      "totalCost": 54923.15
+      "totalCost": 57156.15
     },
     {
       "name": "Debra Adamson",
@@ -210,12 +210,12 @@
     {
       "name": "Harold Galvis",
       "entity": "J&A",
-      "totalCost": 8880.47
+      "totalCost": 10130.24
     },
     {
       "name": "Kidist Gelaw",
       "entity": "J&A",
-      "totalCost": 7539.37
+      "totalCost": 8790.47
     },
     {
       "name": "Kirsten Hall",
@@ -225,12 +225,12 @@
     {
       "name": "Ben Hoffman",
       "entity": "J&A",
-      "totalCost": 42516.83
+      "totalCost": 44005.69
     },
     {
       "name": "Joshua Law",
       "entity": "J&A",
-      "totalCost": 8296.93
+      "totalCost": 10849.71
     },
     {
       "name": "Branden Parnell",
@@ -251,11 +251,11 @@
   "warehouse": [
     {
       "name": "Gentry Eagleton",
-      "totalCost": 26995.2
+      "totalCost": 27915.92
     },
     {
       "name": "Andres Figueroa",
-      "totalCost": 48182.38
+      "totalCost": 49982.39
     }
   ],
   "contractors": [
@@ -304,9 +304,9 @@
   "totals": {
     "driverLabor": 929191.93,
     "driverCount": 27,
-    "officeTotal": 459377.06,
-    "warehouseTotal": 75177.58,
+    "officeTotal": 477946.05,
+    "warehouseTotal": 77898.31,
     "contractorTotal": 363786.44,
-    "grandTotal": 1827533.01
+    "grandTotal": 1848822.73
   }
 }
