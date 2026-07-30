@@ -6,7 +6,21 @@ Real-time fleet cost-per-mile dashboard with AI-powered data uploads and live AP
 
 **https://freightiq-nine-two.vercel.app** — NEVER change this URL or create duplicate Vercel projects.
 
+## 📍 Canonical path — VERIFY THIS FIRST, before any edit
+
+**`c:\Users\hoffm\Desktop\Freight\freightiq`** (plain Desktop, **not** OneDrive). Ruled by Ben 2026-07-30.
+
 **This is the ONE canonical repo.** All work happens here. Never apply changes to any other local copy. Always commit and push data updates immediately.
+
+There is a **stale mirror** at `C:\Users\hoffm\OneDrive\Desktop\Freight\freightiq`. It is a real git clone with the same `origin`, so it looks legitimate — on 2026-07-30 it was **37 commits behind** and a session opened there by default and nearly ran a weekly against it. Cause: Windows' registered Desktop *is* the OneDrive one (`HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders\Desktop` = `C:\Users\hoffm\OneDrive\Desktop`); OneDrive Known Folder Move swept the Desktop on 2026-07-20 ~05:26 and froze a copy. Anything resolving "Desktop" through Windows lands in the mirror.
+
+```bash
+cd "c:/Users/hoffm/Desktop/Freight/freightiq"
+git rev-list --left-right --count HEAD...origin/main   # must print: 0  0
+```
+
+- **⛔ Do NOT delete the OneDrive Freight tree.** 16 of its 20 project folders exist ONLY there, and `cfo-dashboard`, `budget-calendar`, `showfreight-pitches`, `archive` have **no `.git` at all** (cfo-dashboard has no GitHub repo by design). The Flexent dashboard and the root `Freight\CLAUDE.md` are also OneDrive-only. Consolidating those 16 is an OPEN decision.
+- **File drops:** most weekly files are in `C:\Users\hoffm\Downloads\`; some land in `OneDrive\Desktop\Freight\freightiq\incoming-freightiq\`. **Copy them into the canonical repo — never work in the mirror.**
 
 ## ⚡ Critical invariants — read before touching anything
 
@@ -20,6 +34,9 @@ The rules below have each shipped wrong numbers when missed. They live in full d
 - **The office + contractor half is NOT optional.** `OFFICE_W2`/`WAREHOUSE` + `CONTRACTORS` refresh every week — drivers/fuel/income alone ≠ done. → checklist #10
 - **Never clear `incoming-freightiq/` until the weekly is built, pushed, and verified live** — the payroll XLS is untracked and unrecoverable. → checklist #11
 - **CPM source purity:** `FUEL_TOT` = EFS only (never QBO fuel line); `INS_TOT` = SF Truck Insurance only. → CPM Definitions
+- **Move a $ constant and its denominator together.** `LABOR`↔`TOTAL_HRS`, `ATL_LABOR`↔`ATL_HRS`, costs↔`MILES`. The 7/24 payroll commit moved `LABOR` but not `TOTAL_HRS`, so `HOURLY_RATE` (Per Load CPM quotes) ran 3.4% high for a week. → "Update App.jsx constants"
+- **EFS `Total Fuel` is ULSD only** — DEF (`DEFD`) and Fees are excluded. Re-deriving fuel from transaction lines without filtering DEFD overstates by ~4.7%. → "EFS fuel — per-week + parsing gotchas"
+- **ATL carve follows DRIVERS, not trucks** (Ben, 2026-07-30) — `ATL_LABOR`/`ATL_FUEL` do; `ATL_MILES` still carves by truck. Known open defect, see "ATL carve basis".
 - **Every weekly drop, report ATL charges to Ben unprompted** (driverPay+fuelAmt+contractorPay, agents excluded) + cumulative. → checklist #9
 
 ## Tech Stack
@@ -174,6 +191,7 @@ Two standalone apps were ported into FreightIQ as tabs. **They live in SEPARATE 
 - **AUTH:** every `/api/ap-*` route requires the app password via `x-ap-key` header (`api/_ap-auth.js` vs `process.env.VITE_APP_PASSWORD`, fails closed). The browser attaches it via a scoped `window.fetch` patch in App.jsx (rewrites only `/api/ap-*` URLs). Gate any new ap-route with `requireApAuth`. (This is abuse-prevention, not bank-grade — password ships in bundle; true fix = Supabase Auth / Vercel protection.)
 - **EquipmentContext** (Trucks/Trailers) now fetches internal `/api/ap-equipment` (was `ap-aging-v4`).
 - Invoices: **soft-delete** (`deleted_at`; `?trash=1`, PUT `{restore:true}`, `?hard=1` for permanent) + **review queue** (`needs_review`; auto-ingested anomalies held OUT of the payable list, `?review=1`, PUT `{approve:true}`). `ap-sync` auto-approves only high-confidence invoices within 1.5× the vendor's prior max; rejects $0/malformed.
+- **Invoice-number dedup is whitespace/case-insensitive** (fixed 2026-07-30). The Gmail parser emitted `"LSVN 10471"` while the PDF prints `"LSVN10471"`; both stored raw, so the unique index on `(vendor_name, invoice_number)` saw two different invoices. Three McKinney invoices duplicated — **$583.26 of phantom open payables** and a live double-pay risk (all `open`, nothing actually paid twice). `api/ap-sync.js` now uses `canonInvoiceNo()` for what it **stores** (whitespace stripped, matching how vendors print) and `dedupKey()` for what it **compares** (also upper-cased, punctuation-stripped). Same bug class as `c69f5c1` (vendor names), different field. **Any new invoice-matching code must normalize both sides** — raw string equality on invoice numbers is a known trap here.
 
 #### ⚠️ Equipment invoices are MANUAL now — Gmail auto-extract is DEAD (2026-07-20)
 Ben killed equipment email ingestion — the AI extraction was untrustworthy (TEC `amount=null` quarantines, dropped units, invoices not pulled/miscategorized). **DO NOT reintroduce Gmail auto-extraction.** `fdw-extract` skips `truck_*`/`trailer_*` staging rows; the **`ap-sync` cron was removed** from `vercel.json` (code kept, unscheduled). EFS fuel ingest stays on.
@@ -331,7 +349,7 @@ If you're adding a new live data source that needs to drive CPM or other derived
 - `ASCEND{}` — Historical Ascend TMS data (Jan-Mar 2026, no longer active)
 - `ALVYS{}` — Alvys TMS pipeline snapshot — now only a **fallback** for the Revenue tab (which is live via `/api/alvys-loads`); refresh only if you want an accurate offline fallback
 
-**Current period:** Jan 1 – Jun 14, 2026 (165 days)
+**Current period:** driven by `PERIOD` in `src/App.jsx` — as of the Jul-30 drop, `Jan 1 - Jul 26, 2026` (207 days). Don't hand-maintain a copy here; read the constant.
 
 ## CPM Definitions (CRITICAL)
 
@@ -579,6 +597,44 @@ Ben paying attention to dashboard details is the LAST line of defense, not the f
 
 ### Office vs Driver split (SF Payroll):
 **Office staff** (excluded from PAYROLL/CPM): Arias Adrian, Eagleton Gentry J (warehouse), Figueroa Andres (warehouse), Fissehaye Biniyam G, Gonzalez Gabriel, Grosser Scot E, Kennon Jessica S (ATL office, terminated May 2026), Mahan Tasha (office/warehouse, started Jun 2026), Naruszewicz Bartosz, Rivera Cecilia I, Wilson Antionette (ATL office support, reclassified from driver Jul 2026), Youngblood Nathan. **Ex-OTR (now ATL, carved out of fleet LABOR):** Baker Anthony, Dawson Brian, Pacitti Michael R — in `SF_OTR` (relabeled ATL), excluded from fleet LABOR, folded into `ATL_WEEKLY_LOG`. Everyone else = drivers. (Both sets encoded in `scripts/parse_weekly_drop.py` — keep in sync.)
+
+### EFS fuel — per-week + parsing gotchas (added 2026-07-30)
+
+`FUEL_TOT` / `ATL_FUEL` come from each card's **`Total Fuel`** line in the EFS Transaction Report, which is **ULSD only** — `DEFD` (diesel exhaust fluid) and per-transaction `Fees` are listed but excluded:
+
+```
+Group: 14 07454   Amount  Quantity  Avg PPU
+DEFD              61.43     12.29   4.999
+ULSD             477.56     91.86   5.199
+Fees               1.25     0.000
+Totals           540.24     0.000
+Total Fuel       477.56     91.86      <-- what we use
+```
+
+`scripts/parse_weekly_drop.py` already reads `Total Fuel` and is correct. **The trap is re-deriving from transaction lines** (needed for per-week splits): include `DEFD` and you overstate by ~4.7% — measured $131,260.81 vs the true $125,350.93 on the Jul-30 ATL cards. Filter `item in ('DEFD','DEF')` and it reconciles to the penny per card.
+
+**Per-week fuel** (Ben asks for this): transaction rows carry `Tran Date` — bucket Mon–Sun on it. Row shape:
+`<5-digit card> <YYYY-MM-DD> <invoice> <unit> <driver> <location> <CITY> <ST> <fee> <ITEM> <price> <qty> <amt> N USD/Gallons`
+DEF continuation lines have no card/date prefix — carry the previous card+date forward.
+
+- **Unit numbers are not clean truck numbers.** EFS writes truck 685 as `9512685`, 673 as `9512673`, 488 as `9513488`, sometimes `95128685`. **Normalize to the last 3 digits** before matching `ATL_TRUCKS` — un-normalized matching understated ATL-truck share as 40.4% vs the real 57.7%.
+- **EFS closes after the P&L** (Jul-30 drop: EFS thru Jul 29, P&L thru Jul 26). So `FUEL_TOT(new) − FUEL_TOT(old)` is NOT a clean week — use transaction dates for a true Mon–Sun figure.
+- DEF is a real cost (~$5,910 YTD ATL) that sits in **no** CPM bucket — it's inside the QBO fuel line, not EFS-only `FUEL_TOT`.
+
+### ATL carve basis — OPEN defects (2026-07-30)
+
+**Ben's rule: the ATL carve follows the DRIVERS on ATL payroll.** `ATL_LABOR` (by `SF_ATL` name) and `ATL_FUEL` (by EFS card) obey it. **`ATL_MILES` does not — it carves by truck (`ATL_TRUCKS`).**
+
+Two defects, both **unfixed on purpose**:
+
+1. **Whole-year roster on a part-year operation.** ATL launched **2026-05-04**; the carve applies today's roster to all of 2026. Wainwright was a fleet driver Jan–May 3, so **$30,489.12 labor + $24,792.97 fuel = $55,282.09 of pre-launch cost is booked to ATL**. He's the only one of the nine with pre-launch activity (other 8 are exactly $0.00).
+2. **`ATL_MILES` has the same contamination and can't be split** — the Samsara export is a YTD per-truck-per-state total with **no date column**.
+
+**⚠ Do NOT fix the numerator alone** — ATL CPM would fall $2.5053 → $2.0036, a ~20% "improvement" that is pure artifact. **Unblocker:** a Samsara Vehicle Mileage export for **2026-05-04 → 2026-07-26**, then it ships as one commit.
+
+**Undecided (Ben):** the Samsara export has no driver dimension, so strict driver-following for miles isn't possible with the current file. Options — (a) pull a driver-level Samsara report, (b) keep truck-based and document the mixed basis, (c) derive driver→truck weekly from EFS unit numbers (approximation).
+
+**Also worth knowing:** ATL is *not* geographically Atlanta. Week of 7/20: only 20.6% of fuel bought in GA, 3.8% NV, rest OH/NJ/CT/PA/NM/AZ/OK/NC/IL/LA/MO/KS. Long-haul run out of Atlanta. ATL fuel since inception (May 4) = **$100,557.96 / 19,658.04 gal over 13 weeks**, avg $7,735/wk.
 
 ### EFS card → driver mapping
 Cards are mapped to drivers via inline comments in `FUEL{}` (e.g. `// card 27406`). Several cards split between active and *inactive (frozen) drivers — when a card's total is unchanged WoW but the card has frozen contributors, the entire card is dormant. New activity on a split card goes to the active driver(s); frozen drivers' historical values stay locked. EFS cards that don't map to a `PAYROLL[]` driver (warehouse / office / unknown) are excluded from per-driver `FUEL{}` but **still counted in `FUEL_TOT`** so the fleet CPM math reconciles to the EFS report total.
