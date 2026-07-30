@@ -2,113 +2,113 @@
   "drivers": [
     {
       "name": "Alexander Christopher",
-      "hours": 1588.12,
-      "totalCost": 49354.35
+      "hours": 1657.27,
+      "totalCost": 51471.8
     },
     {
       "name": "Brown Willie M",
-      "hours": 28.63,
-      "totalCost": 828.12
+      "hours": 34.43,
+      "totalCost": 995.89
     },
     {
       "name": "Camacho Stephen B",
-      "hours": 229.21,
-      "totalCost": 6629.91
+      "hours": 271.63,
+      "totalCost": 7856.52
     },
     {
       "name": "Cowsky Andrew",
-      "hours": 809.91,
-      "totalCost": 24467.3
+      "hours": 867.5,
+      "totalCost": 26187.83
     },
     {
       "name": "Daniels Gerald W",
-      "hours": 897.79,
-      "totalCost": 26190.53
+      "hours": 984.21,
+      "totalCost": 28772.36
     },
     {
       "name": "Davis Anthoni D",
-      "hours": 2025.36,
-      "totalCost": 71018.49
+      "hours": 2095.74,
+      "totalCost": 73391.37
     },
     {
       "name": "Denman Samuel E",
-      "hours": 1590.22,
-      "totalCost": 52932.27
+      "hours": 1653.87,
+      "totalCost": 54859.85
     },
     {
       "name": "Gray Stephen D",
-      "hours": 388.26,
-      "totalCost": 11968.86
+      "hours": 428.65,
+      "totalCost": 13130.83
     },
     {
       "name": "Gutierrez Danny",
-      "hours": 1506.81,
-      "totalCost": 47728.22
+      "hours": 1562.15,
+      "totalCost": 49596.25
     },
     {
       "name": "Guzman Jose",
-      "hours": 1849.84,
-      "totalCost": 66955.6
+      "hours": 1891.4,
+      "totalCost": 68540.68
     },
     {
       "name": "Ibarra Jose Pablo",
-      "hours": 1835.26,
-      "totalCost": 65591.14
+      "hours": 1887.49,
+      "totalCost": 67518.6
     },
     {
       "name": "Lewis Steve",
-      "hours": 158.81,
-      "totalCost": 4593.57
+      "hours": 199.57,
+      "totalCost": 5772.56
     },
     {
       "name": "McDaniels James",
-      "hours": 383.6,
-      "totalCost": 11302.78
+      "hours": 429.02,
+      "totalCost": 12609.47
     },
     {
       "name": "McNamara John",
-      "hours": 1721.75,
-      "totalCost": 57728.53
+      "hours": 1774.92,
+      "totalCost": 59390.74
     },
     {
       "name": "Mcclam Michael A",
-      "hours": 1165.75,
-      "totalCost": 35704.47
+      "hours": 1207.69,
+      "totalCost": 36911.04
     },
     {
       "name": "Morris Roderick F",
-      "hours": 43.58,
-      "totalCost": 1260.55
+      "hours": 81.03,
+      "totalCost": 2343.79
     },
     {
       "name": "Ponce Carlos",
-      "hours": 1046.89,
-      "totalCost": 32305.49
+      "hours": 1118.79,
+      "totalCost": 34373.97
     },
     {
       "name": "Restrepo Julian E",
-      "hours": 1037.65,
-      "totalCost": 33103.88
+      "hours": 1118.9,
+      "totalCost": 35441.38
     },
     {
       "name": "Reyes Corey",
-      "hours": 861.61,
-      "totalCost": 24829.66
+      "hours": 908.48,
+      "totalCost": 26178.06
     },
     {
       "name": "Robinson Animashaun",
-      "hours": 1038.47,
-      "totalCost": 30417.74
+      "hours": 1078.92,
+      "totalCost": 31581.45
     },
     {
       "name": "Ronkov Martin P",
-      "hours": 1654.73,
-      "totalCost": 47886.04
+      "hours": 1702.22,
+      "totalCost": 49313.88
     },
     {
       "name": "Stevenson Timothy",
-      "hours": 389.47,
-      "totalCost": 11252.09
+      "hours": 434,
+      "totalCost": 12533.17
     },
     {
       "name": "Thomas John",
@@ -117,23 +117,23 @@
     },
     {
       "name": "Whipple Wallace",
-      "hours": 1742.38,
-      "totalCost": 56552.86
+      "hours": 1791.24,
+      "totalCost": 58066.64
     },
     {
       "name": "Williams Tadaryl C",
-      "hours": 1634.81,
-      "totalCost": 48568.76
+      "hours": 1676.74,
+      "totalCost": 49818.25
     },
     {
       "name": "Williams Will",
-      "hours": 1261.42,
-      "totalCost": 37831.8
+      "hours": 1326.33,
+      "totalCost": 39699.19
     },
     {
       "name": "Willis Wali A",
-      "hours": 1910.56,
-      "totalCost": 66164.09
+      "hours": 1958.26,
+      "totalCost": 67868.32
     }
   ],
   "office": [
@@ -300,13 +300,13 @@
       "total": 27598.24
     }
   ],
-  "period": "Jan 1 - Jul 19, 2026",
+  "period": "Jan 1 - Jul 26, 2026",
   "totals": {
-    "driverLabor": 929191.93,
+    "driverLabor": 970248.72,
     "driverCount": 27,
     "officeTotal": 477946.05,
     "warehouseTotal": 77898.31,
     "contractorTotal": 363786.44,
-    "grandTotal": 1848822.73
+    "grandTotal": 1889879.52
   }
 }

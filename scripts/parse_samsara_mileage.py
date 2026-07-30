@@ -10,7 +10,7 @@ Expected file: "Vehicle Mileage - <date range>.xlsx" with columns:
 
 Local vs Regional split: NV = local, everything else = regional.
 """
-import os, sys, glob
+import os, sys, glob, csv
 import openpyxl
 from collections import defaultdict
 
@@ -19,23 +19,40 @@ INCOMING = os.path.join(BASE, "incoming-freightiq")
 
 
 def find_file():
-    patterns = ["Vehicle Mileage*.xlsx", "*Vehicle Mileage*.xlsx", "*Samsara*.xlsx"]
+    # Samsara switched this export from .xlsx to .csv on the Jul 30 2026 drop.
+    # Same columns either way (Vehicle / Jurisdiction / Distance / Toll Distance),
+    # so accept both and let the newest file win.
+    stems = ["Vehicle Mileage*", "*Vehicle Mileage*", "*Samsara*"]
     matches = []
-    for pat in patterns:
-        matches += glob.glob(os.path.join(INCOMING, pat))
+    for stem in stems:
+        for ext in (".xlsx", ".csv"):
+            matches += glob.glob(os.path.join(INCOMING, stem + ext))
     matches = list(set(matches))
     if not matches:
-        print(f"No Samsara mileage XLSX in {INCOMING}/ (looked for 'Vehicle Mileage*.xlsx')")
+        print(f"No Samsara mileage export in {INCOMING}/ (looked for 'Vehicle Mileage*.xlsx' / '*.csv')")
         sys.exit(1)
     return max(matches, key=os.path.getmtime)
 
 
-def parse(path):
-    wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
-    ws = wb[wb.sheetnames[0]]
+def _read_rows(path):
+    """Yield data rows (header skipped) from either the .xlsx or .csv export."""
+    if path.lower().endswith(".csv"):
+        # utf-8-sig: the Samsara CSV ships with a BOM on the Vehicle header.
+        with open(path, newline="", encoding="utf-8-sig") as fh:
+            for i, row in enumerate(csv.reader(fh)):
+                if i == 0:
+                    continue
+                yield tuple(row)
+    else:
+        wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+        ws = wb[wb.sheetnames[0]]
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            yield row
 
+
+def parse(path):
     by_truck_state = defaultdict(lambda: defaultdict(float))
-    rows = ws.iter_rows(min_row=2, values_only=True)
+    rows = _read_rows(path)
     for r in rows:
         if not r or len(r) < 3:
             continue
