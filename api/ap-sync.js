@@ -17,6 +17,18 @@ const CRON_SECRET = process.env.CRON_SECRET;
 
 // fdw source -> the EXACT vendor_name spelling used in the AP `invoices` table
 // (so dedup on (vendor_name, invoice_number) actually matches existing rows).
+// Invoice numbers arrive formatted inconsistently across sources: the Gmail
+// parser emits "LSVN 10471" while the PDF prints "LSVN10471". Storing the raw
+// string let both land as separate rows — the unique index on
+// (vendor_name, invoice_number) sees them as different keys — which duplicated
+// three McKinney invoices ($583.26 of phantom open payables, Jul 2026).
+// canonInvoiceNo() is what we STORE (whitespace stripped, matching how vendors
+// actually print them); dedupKey() is what we COMPARE (also case- and
+// punctuation-insensitive, so "lsvn-10471" can't sneak in either).
+const canonInvoiceNo = (v) => String(v ?? '').trim().replace(/\s+/g, '');
+const dedupKey = (vendor, invoiceNo) =>
+  `${String(vendor ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '')}|${String(invoiceNo ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '')}`;
+
 const VENDOR_MAP = {
   truck_penske:     'PENSKE TRUCK LEASING',
   truck_ryder:      'Ryder',
@@ -62,7 +74,7 @@ export default async function handler(req, res) {
     const seen = new Set();
     const vendorMax = {};
     for (const r of existing || []) {
-      seen.add(`${r.vendor_name}|${r.invoice_number}`);
+      seen.add(dedupKey(r.vendor_name, r.invoice_number));
       const a = Number(r.amount) || 0;
       if (a > (vendorMax[r.vendor_name] || 0)) vendorMax[r.vendor_name] = a;
     }
@@ -78,7 +90,8 @@ export default async function handler(req, res) {
       if (String(r.confidence || '').toLowerCase() === 'low') { lowConf++; continue; }
       const vendorName = VENDOR_MAP[r.source];
       if (!vendorName) { unmapped++; continue; }               // source we don't map yet
-      const key = `${vendorName}|${r.invoice_no}`;
+      const invoiceNo = canonInvoiceNo(r.invoice_no);
+      const key = dedupKey(vendorName, invoiceNo);
       if (seen.has(key)) { skipped++; continue; }              // already in AP
       seen.add(key);
       // Auto-approve only high-confidence invoices whose amount looks normal for
@@ -93,7 +106,7 @@ export default async function handler(req, res) {
       const desc = `[auto] ${r.unit_ids ? 'Units ' + r.unit_ids : (r.category || 'equipment')} · Gmail-parsed (${r.confidence || 'med'} conf)${needsReview ? ' · NEEDS REVIEW' : ''}`;
       toInsert.push({
         vendor_name: vendorName,
-        invoice_number: String(r.invoice_no),
+        invoice_number: invoiceNo,
         invoice_date: r.invoice_date || null,
         due_date: r.due_date || null,
         amount: amt,
