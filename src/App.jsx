@@ -7984,13 +7984,13 @@ const ATL_WEEKLY_LOG = [
     drivers: ["Baker Anthony", "Dawson Brian", "Pacitti Michael R", "Johnson Christopher M", "Logan LaDyle", "Phillips Anthony P", "Tucker Robert", "Wainwright Michael W"],
     driverPay: 14788.87,       // ATL_LABOR delta 150,716.53 - 135,927.66 (pay week ending Jul 24)
     driverHours: 471.89,       // ATL_HRS delta 4,278.54 - 3,806.65
-    fuelAmt: 23110.97,         // ATL_FUEL delta 125,350.93 - 102,239.96 — NOTE: EFS report runs thru Jul 29, so this spans Jul 20-29, not just the Mon-Sun week
-    fuelGallons: 4260.78,      // ATL_GALLONS delta 24,869.20 - 20,608.42 (same Jul 20-29 span)
+    fuelAmt: 14823.44,         // exact Mon-Sun week, summed from EFS transaction dates for the 9 ATL cards (ULSD only, per the report's "Total Fuel" line — DEF + fees excluded)
+    fuelGallons: 2734.58,      // $5.421/gal — highest ATL fuel week of the year
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC (Biniyam Fissehaye 1099)", total: 1850 },
     ],
     contractorPay: 1850,
-    note: "Week of Jul 20-26. Roster 8 active — Griffin Corey TERMINATED (his YTD stays inside ATL_LABOR/ATL_FUEL so the carve still reconciles, same as frozen fleet drivers). ATL trucks unchanged (7). Agent Kevin $500 separate, not in ATL total. Fuel delta spans Jul 20-29 because the EFS export closes Jul 29 while the P&L closes Jul 26.",
+    note: "Week of Jul 20-26. Roster 8 active — Griffin Corey TERMINATED (his YTD stays inside ATL_LABOR/ATL_FUEL so the carve still reconciles, same as frozen fleet drivers). ATL trucks unchanged (7). Agent Kevin $500 separate, not in ATL total. Fuel is the exact Mon-Sun week from EFS transaction dates (not a YTD delta).",
   },
 ];
 
