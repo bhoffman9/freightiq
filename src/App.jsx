@@ -175,7 +175,7 @@ let GALLONS   = 106813.86;  // EFS 127,422.28 minus ATL 20,608.42
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
 let MILES     = 770130.4;     // Samsara Vehicle Mileage (Jan 1 – Jul 17, 2026): fleet total 863,455.7 minus the 7 ATL trucks (685/674/669/686/673/675/488) 93,325.3. Regenerate via scripts/parse_samsara_mileage.py.
 let TRUCK_COUNT = 30;       // ACTIVE fleet trucks per Ben's truck-count sheet (ATL trucks tracked separately). Confirm active count with Ben.
-let TOTAL_HRS  = 37899.12;  // Payroll hours — fleet drivers only (office + 9 ATL drivers + Wilson excluded), thru Jul 19
+let TOTAL_HRS  = 39238.68;  // Payroll hours — fleet drivers only (office + 9 ATL drivers + Wilson excluded), thru Jul 24 (matches LABOR's basis)
 let INS_WEEK  = 6375;
 let INS_TOT    = 182338.58;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru Jul 19
 let TRUCK_TOT  = 507278.59;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI + Ryder) thru Jul 19
@@ -188,7 +188,7 @@ let MAINT_TOT    = TRUCK_MAINT + TRAIL_MAINT + STORAGE;
 let UNIFORMS     = 12288.54;  // Unifirst + Safety Guard Shoe thru Jul 19
 // ── ATL operation (carved out of fleet CPM) — its own CPM tab ───
 let ATL_LABOR   = 150716.53;  // 9 ATL drivers YTD (gross+taxes+401k) thru Jul 24
-let ATL_HRS     = 3806.65;
+let ATL_HRS     = 4278.54;    // 9 ATL drivers YTD hours thru Jul 24 (matches ATL_LABOR's basis)
 let ATL_FUEL    = 102239.96;  // 9 ATL EFS cards YTD
 let ATL_GALLONS = 20608.42;
 let ATL_MILES   = 93325.3;    // Samsara: trucks 685/674/669/686/673/675/488
