@@ -459,9 +459,32 @@ If P&L files are present, parse them separately for `INCOME_2026` updates (the m
 ```bash
 python scripts/gen_office.py          # OFFICE_W2 + WAREHOUSE (run FIRST — grid uses its factors)
 python scripts/build_paycheck_grid.py # OFFICE_PAYCHECKS + DRIVER_WEEKLY
+python scripts/check_contractors.py   # ← MANDATORY GUARD. Must pass before commit.
 python scripts/gen_weekly_arrays.py   # writes _gen_payroll.txt + _gen_fuel.txt → splice into App.jsx
 python scripts/gen_truck_miles.py     # TRUCK_MILES (flags departed + 7 ATL trucks)
 ```
+
+**`check_contractors.py` is not optional.** It catches the two ways contractor
+data goes missing silently, both of which ran undetected for four months in 2026:
+
+1. **Payee went silent** — someone being paid drops to zero mid-range. Debra
+   Adamson, Elizabeth Delgado and Christopher Simpson came off W-2 in Feb/Mar
+   2026 and their Apr/May 1099 payments were never recorded. Nothing flagged it;
+   `CONTRACTORS[]` just quietly ran 16% under QBO until Aug 3.
+2. **Monthly drift vs QBO** — grid 1099 cash vs the `Contractor Payroll` P&L line
+   per month, 2% tolerance. A YTD total hides *which* month broke; per-month
+   points straight at it.
+
+It exits non-zero on a finding. Do NOT commit a weekly with it failing — either
+add the missing weeks to `MANUAL_CONTRACTORS` and re-run `build_paycheck_grid.py`,
+or, if the variance is genuinely explained, say so explicitly in the commit
+message. Never silence it by widening `DRIFT_PCT`.
+
+**Weekly drop files are archived to `Desktop/Freight/_freightiq-drop-archive/<week>/`
+before `incoming-freightiq/` is cleared.** The payroll XLS is untracked and
+otherwise unrecoverable. Keep the frozen historical base in `incoming-freightiq/`
+(ContractorPayments + Chase VendorEmployeePayments + latest PaycheckHistory) —
+the scripts re-read those every run.
 Then splice `_gen_payroll.txt`/`_gen_fuel.txt` in (regex-replace `let PAYROLL = [...]` / `let FUEL = {...}`). See `reference_weekly_generators` memory for the reconciliation checks (PAYROLL sum == LABOR; Fleet+ATL fuel == EFS total; Fleet+ATL miles == Samsara total). Still hand-updated each week: the fleet CONSTANTS (LABOR/FUEL_TOT/GALLONS/MILES/INS/TRUCK/TRAILER/etc. + ATL_* constants), `PERIOD`, `INCOME_2026`, `ATL_BILLING`, `ATL_WEEKLY_LOG` entry.
 
 ### Update App.jsx constants
