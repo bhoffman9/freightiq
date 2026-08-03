@@ -7832,7 +7832,7 @@ const OFFICE_PAYCHECKS = {"source":"W-2 paychecks (loaded) + contractors NET cas
 // paycheck grid — listing an agent in both places double-counts them in Budgeting.
 // Ethan's W-2 exclusion is enforced by W2_AGENTS in scripts/build_paycheck_grid.py.
 const AGENTS = [
-  { name:"Kevin Deveraux", dba:"Nixon Graye Associates", weekly:500, payments:5, weeklyTotal:2500, total:2500, note:"$500/wk · Agent · paid via Owner Draws in QBO · started May 11 2026 · ⚠ payments count UNVERIFIED — 5 payments implies last refresh ~Jun 8; May 11→Aug 2 is 12 wks ($6,000) if paid weekly. Confirm with Ben." },
+  { name:"Kevin Deveraux", dba:"Nixon Graye Associates", weekly:500, payments:12, weeklyTotal:6000, total:6000, note:"$500/wk · Agent · booked as a QB Contractor Payment · started May 11 2026 · $6,000 thru Aug 2 confirmed by Ben (was stale at 5 payments/$2,500)" },
   { name:"Ethan Smith", dba:"", weekly:1538.46, payments:1, weeklyTotal:1538.46, total:1710.76, note:"$1,538.46/wk gross ($80K/yr) · Agent on J&A W-2 payroll (not 1099) · first check Jul 31 2026 · total = loaded cost (gross + $172.30 employer taxes)" },
 ];
 
