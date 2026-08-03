@@ -1,25 +1,25 @@
 {
-  "period": "Jan 1 - Jul 26, 2026",
-  "drivers": 53,
-  "miles": 832474.4,
-  "labor": 1235133.26,
-  "fuel_tot": 628036.72,
+  "period": "Jan 1 - Aug 2, 2026",
+  "drivers": 28,
+  "miles": 849772.9,
+  "labor": 1285399.59,
+  "fuel_tot": 637655.89,
   "ins_tot": 201535.58,
-  "truck_tot": 529814.2,
-  "trailer_tot": 253810.9,
+  "truck_tot": 585955.24,
+  "trailer_tot": 257875.28,
   "truck_maint": 10094.44,
-  "trail_maint": 7924.64,
-  "storage": 58002.51,
+  "trail_maint": 8100.57,
+  "storage": 67122.74,
   "uniforms": 12558.68,
-  "total_revenue": 14429176.64,
-  "carrier_pay": 7199453.69,
-  "gross_profit": 6876328.04,
-  "net_income": 691014.22,
-  "revenue_ce": 9943392.62,
-  "revenue_sf": 3897601.49,
-  "revenue_di": 73833.2,
-  "net_op_income": 1151371.88,
-  "days_in_period": 207,
+  "total_revenue": 14930557.99,
+  "carrier_pay": 7614794.19,
+  "gross_profit": 7088208.99,
+  "net_income": 602153.16,
+  "revenue_ce": 10273556.21,
+  "revenue_sf": 4031400.25,
+  "revenue_di": 83877.2,
+  "net_op_income": 1074958.97,
+  "days_in_period": 214,
   "utilization_weekly": [
     {
       "week": "2026-03-22",
@@ -27,13 +27,13 @@
       "loads": 73,
       "rev": 66150,
       "miles": 8055,
-      "driver_payroll": 47511,
+      "driver_payroll": 47405,
       "rev_per_truck": 2205,
       "mi_per_truck": 269,
       "loads_per_truck": 2.43,
-      "rev_per_pay": 1.392,
+      "rev_per_pay": 1.395,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-03-29",
@@ -41,13 +41,13 @@
       "loads": 100,
       "rev": 137299,
       "miles": 26258,
-      "driver_payroll": 38761,
+      "driver_payroll": 38675,
       "rev_per_truck": 4577,
       "mi_per_truck": 875,
       "loads_per_truck": 3.33,
-      "rev_per_pay": 3.542,
+      "rev_per_pay": 3.55,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-04-05",
@@ -55,13 +55,13 @@
       "loads": 96,
       "rev": 160300,
       "miles": 29326,
-      "driver_payroll": 41502,
+      "driver_payroll": 41411,
       "rev_per_truck": 5343,
       "mi_per_truck": 978,
       "loads_per_truck": 3.2,
-      "rev_per_pay": 3.862,
+      "rev_per_pay": 3.871,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-04-12",
@@ -69,13 +69,13 @@
       "loads": 141,
       "rev": 161150,
       "miles": 25557,
-      "driver_payroll": 48321,
+      "driver_payroll": 48213,
       "rev_per_truck": 5372,
       "mi_per_truck": 852,
       "loads_per_truck": 4.7,
-      "rev_per_pay": 3.335,
+      "rev_per_pay": 3.342,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-04-19",
@@ -83,13 +83,13 @@
       "loads": 133,
       "rev": 226800,
       "miles": 28343,
-      "driver_payroll": 53620,
+      "driver_payroll": 53502,
       "rev_per_truck": 7560,
       "mi_per_truck": 945,
       "loads_per_truck": 4.43,
-      "rev_per_pay": 4.23,
+      "rev_per_pay": 4.239,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-04-26",
@@ -97,13 +97,13 @@
       "loads": 123,
       "rev": 178890,
       "miles": 24400,
-      "driver_payroll": 51548,
+      "driver_payroll": 51433,
       "rev_per_truck": 5963,
       "mi_per_truck": 813,
       "loads_per_truck": 4.1,
-      "rev_per_pay": 3.47,
+      "rev_per_pay": 3.478,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-05-03",
@@ -111,13 +111,13 @@
       "loads": 112,
       "rev": 175812,
       "miles": 20766,
-      "driver_payroll": 51655,
+      "driver_payroll": 51540,
       "rev_per_truck": 5860,
       "mi_per_truck": 692,
       "loads_per_truck": 3.73,
-      "rev_per_pay": 3.404,
+      "rev_per_pay": 3.411,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-05-10",
@@ -125,13 +125,13 @@
       "loads": 146,
       "rev": 208125,
       "miles": 25105,
-      "driver_payroll": 52730,
+      "driver_payroll": 52613,
       "rev_per_truck": 6938,
       "mi_per_truck": 837,
       "loads_per_truck": 4.87,
-      "rev_per_pay": 3.947,
+      "rev_per_pay": 3.956,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-05-17",
@@ -139,13 +139,13 @@
       "loads": 118,
       "rev": 178950,
       "miles": 20155,
-      "driver_payroll": 57975,
+      "driver_payroll": 57854,
       "rev_per_truck": 5965,
       "mi_per_truck": 672,
       "loads_per_truck": 3.93,
-      "rev_per_pay": 3.087,
+      "rev_per_pay": 3.093,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-05-24",
@@ -153,13 +153,13 @@
       "loads": 147,
       "rev": 195638,
       "miles": 22253,
-      "driver_payroll": 56211,
+      "driver_payroll": 56095,
       "rev_per_truck": 6521,
       "mi_per_truck": 742,
       "loads_per_truck": 4.9,
-      "rev_per_pay": 3.48,
+      "rev_per_pay": 3.488,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-05-31",
@@ -167,13 +167,13 @@
       "loads": 215,
       "rev": 260655,
       "miles": 31132,
-      "driver_payroll": 56625,
+      "driver_payroll": 56509,
       "rev_per_truck": 8689,
       "mi_per_truck": 1038,
       "loads_per_truck": 7.17,
-      "rev_per_pay": 4.603,
+      "rev_per_pay": 4.613,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-06-07",
@@ -181,13 +181,13 @@
       "loads": 214,
       "rev": 254918,
       "miles": 28306,
-      "driver_payroll": 67605,
+      "driver_payroll": 67467,
       "rev_per_truck": 8497,
       "mi_per_truck": 944,
       "loads_per_truck": 7.13,
-      "rev_per_pay": 3.771,
+      "rev_per_pay": 3.778,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-06-14",
@@ -195,13 +195,13 @@
       "loads": 109,
       "rev": 201176,
       "miles": 25080,
-      "driver_payroll": 54095,
+      "driver_payroll": 53991,
       "rev_per_truck": 6706,
       "mi_per_truck": 836,
       "loads_per_truck": 3.63,
-      "rev_per_pay": 3.719,
+      "rev_per_pay": 3.726,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-06-21",
@@ -209,13 +209,13 @@
       "loads": 91,
       "rev": 201280,
       "miles": 34143,
-      "driver_payroll": 67260,
+      "driver_payroll": 67138,
       "rev_per_truck": 6709,
       "mi_per_truck": 1138,
       "loads_per_truck": 3.03,
-      "rev_per_pay": 2.993,
+      "rev_per_pay": 2.998,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-06-28",
@@ -223,13 +223,13 @@
       "loads": 73,
       "rev": 129170,
       "miles": 24097,
-      "driver_payroll": 57272,
+      "driver_payroll": 57169,
       "rev_per_truck": 4306,
       "mi_per_truck": 803,
       "loads_per_truck": 2.43,
-      "rev_per_pay": 2.255,
+      "rev_per_pay": 2.259,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-07-05",
@@ -237,13 +237,13 @@
       "loads": 128,
       "rev": 253559,
       "miles": 42553,
-      "driver_payroll": 56306,
+      "driver_payroll": 56206,
       "rev_per_truck": 8452,
       "mi_per_truck": 1418,
       "loads_per_truck": 4.27,
-      "rev_per_pay": 4.503,
+      "rev_per_pay": 4.511,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-07-12",
@@ -251,13 +251,13 @@
       "loads": 105,
       "rev": 220562,
       "miles": 37907,
-      "driver_payroll": 61820,
+      "driver_payroll": 61708,
       "rev_per_truck": 7352,
       "mi_per_truck": 1264,
       "loads_per_truck": 3.5,
-      "rev_per_pay": 3.568,
+      "rev_per_pay": 3.574,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     },
     {
       "week": "2026-07-19",
@@ -265,28 +265,28 @@
       "loads": 61,
       "rev": 116475,
       "miles": 26124,
-      "driver_payroll": 56197,
+      "driver_payroll": 56096,
       "rev_per_truck": 3883,
       "mi_per_truck": 871,
       "loads_per_truck": 2.03,
-      "rev_per_pay": 2.073,
+      "rev_per_pay": 2.076,
       "trucks": 30,
-      "drivers": 53
+      "drivers": 28
     }
   ],
   "utilization": {
     "weeks": 12,
     "trucks": 30,
-    "drivers": 53,
+    "drivers": 28,
     "avg_rev": 199693,
     "avg_loads": 127,
     "avg_miles": 28135,
     "rev_per_truck": 6656,
     "mi_per_truck": 938,
     "loads_per_truck": 4.22,
-    "rev_per_pay": 3.444,
-    "driver_payroll_wk": 57979
+    "rev_per_pay": 3.451,
+    "driver_payroll_wk": 57866
   },
-  "driver_payroll_latest": 56197,
-  "extracted_at": "2026-07-30T19:59:43.141Z"
+  "driver_payroll_latest": 56096,
+  "extracted_at": "2026-08-03T21:21:27.370Z"
 }

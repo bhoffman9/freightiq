@@ -97,13 +97,36 @@ for name in sorted(new_fuel):
     f, g = new_fuel[name]
     com = cur[name]["comment"]
     fuel_lines.append(f'  "{name}": {{ fuel: {f}, gallons: {g} }},  {com}')
-# keep the header comment lines of FUEL block
-hdr = "\n".join(l for l in fuel_block.split("\n")[:6] if l.strip().startswith("//"))
-FUEL = "let FUEL = {\n" + hdr + "\n" + "\n".join(fuel_lines) + "\n};"
-
 # reconcile
 fuel_sum = sum(v[0] for v in new_fuel.values())
 FUEL_TOT = float(re.search(r"let FUEL_TOT\s*=\s*([\d.]+)", app).group(1))
+GALLONS = float(re.search(r"let GALLONS\s*=\s*([\d.]+)", app).group(1))
+PERIOD_S = re.search(r'let PERIOD\s*=\s*"([^"]+)"', app).group(1)
+
+# Header comment is DERIVED, never carried over. It used to be copied verbatim
+# from the previous block, which meant every weekly shipped a header quoting
+# last week's dollars above this week's rows (caught Aug 3 2026 — it still read
+# "Jan 1 - Jul 29 ... $628,036.72" over Aug-2 data).
+_atl_cards = {"27450","17451","87455","37459","57457","47458","67463","07454","87457"}
+_efs_amt = sum(a for a, _ in cards.values())
+_efs_gal = sum(g for _, g in cards.values())
+_atl_amt = sum(a for c, (a, _) in cards.items() if c in _atl_cards)
+_atl_gal = sum(g for c, (_, g) in cards.items() if c in _atl_cards)
+_mapped = {c for d in cur.values() for c in d["cards"]}
+_unmapped = sorted((c for c in cards if c not in _mapped and c not in _atl_cards),
+                   key=lambda c: -cards[c][0])
+_unmapped_s = ", ".join(f"card {c} (${cards[c][0]:,.2f})" for c in _unmapped) or "none"
+hdr = "\n".join([
+    f"  // EFS only, {PERIOD_S} - fleet ${FUEL_TOT:,.2f} ({GALLONS:,.2f} gal).",
+    f"  // EFS report total ${_efs_amt:,.2f} / {_efs_gal:,.2f} gal minus the "
+    f"{len(_atl_cards)} ATL cards ${_atl_amt:,.2f} / {_atl_gal:,.2f} gal.",
+    "  // Fuel = ULSD + BDSL + CDSL + UNPR + UNRG (all fuel products; excludes DEF, fees, parking, CADV)",
+    f"  // Excluded from per-driver mapping (still counted in FUEL_TOT): {_unmapped_s}",
+    f"  // Rows below sum to ${fuel_sum:,.2f} vs FUEL_TOT ${FUEL_TOT:,.2f} (gap ${FUEL_TOT - fuel_sum:,.2f}).",
+    f"  // Gap != the ${sum(cards[c][0] for c in _unmapped):,.2f} unmapped-card total because frozen drivers",
+    "  // carry fixed historical fuel values rather than re-deriving from their cards.",
+])
+FUEL = "let FUEL = {\n" + hdr + "\n" + "\n".join(fuel_lines) + "\n};"
 print(f"PAYROLL drivers: {len(drivers)}  (LABOR {sfp['driver_total_cost']:,.2f})")
 print(f"FUEL{{}} sum: {fuel_sum:,.2f}  vs FUEL_TOT {FUEL_TOT:,.2f}  diff {fuel_sum-FUEL_TOT:,.2f}")
 print(f"(diff = unmapped warehouse/office cards kept in FUEL_TOT but not FUEL{{}})")

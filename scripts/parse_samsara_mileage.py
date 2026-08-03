@@ -10,7 +10,7 @@ Expected file: "Vehicle Mileage - <date range>.xlsx" with columns:
 
 Local vs Regional split: NV = local, everything else = regional.
 """
-import os, sys, glob, csv
+import os, sys, glob, csv, re
 import openpyxl
 from collections import defaultdict
 
@@ -125,8 +125,51 @@ def emit(data):
     print("];")
 
 
+MONTH_DIR = os.path.join(INCOMING, "_monthly-samsara")
+_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+
+def emit_monthly():
+    """Emit MONTHLY_MILES[] rows from per-month exports in _monthly-samsara/.
+
+    Kept in a SUBFOLDER on purpose: find_file() picks the newest mtime match,
+    and the monthly files share a timestamp with the YTD export — left side by
+    side, a one-month file can win and silently write April-only data into MILES.
+
+    These rows include EVERY truck (ATL included), matching TRUCK_MILES[]. Only
+    the CPM constant MILES is ATL-carved.
+    """
+    if not os.path.isdir(MONTH_DIR):
+        return
+    found = []
+    for name in os.listdir(MONTH_DIR):
+        if not name.lower().endswith((".csv", ".xlsx")):
+            continue
+        m = re.search(r"Vehicle Mileage - (%s)\b" % "|".join(_MONTHS), name)
+        if m:
+            found.append((_MONTHS.index(m.group(1)), m.group(1),
+                          os.path.join(MONTH_DIR, name)))
+    if not found:
+        return
+    found.sort()
+    print()
+    print("-" * 70)
+    print("  MONTHLY_MILES rows — splice into the existing array in month order")
+    print("-" * 70)
+    for _, label, path in found:
+        d = parse(path)
+        trucks = ",".join(
+            '"%s":{l:%s,r:%s,t:%s}' % (t["truck"], t["local"], t["regional"], t["miles"])
+            for t in d["trucks"])
+        print('  { m:"%s", local:%s, regional:%s, total:%s,' %
+              (label, d["fleet_local"], d["fleet_regional"], d["fleet_total"]))
+        print('    trucks:{%s} },' % trucks)
+
+
 if __name__ == "__main__":
     f = find_file()
     print(f"Parsing: {os.path.basename(f)}")
     data = parse(f)
     emit(data)
+    emit_monthly()

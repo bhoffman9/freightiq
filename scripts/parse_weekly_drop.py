@@ -22,7 +22,7 @@ Output:
 The office-vs-driver split for SF payroll is hardcoded below — keep in sync with
 CLAUDE.md "Office vs Driver split" section.
 """
-import os, re, sys, collections
+import os, re, sys, collections, csv
 import xlrd, openpyxl, pdfplumber
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -43,7 +43,11 @@ SF_OFFICE = {
 # file, but their pay/hours must NOT land in fleet LABOR/TOTAL_HRS — separate bucket.
 # Update this set when Ben moves a driver in/out of the ATL driver set.
 SF_ATL = {
-    # Ben's ATL roster for the week of 2026-07-19 (per-week; update every drop).
+    # Ben's ATL roster for the week of 2026-07-27 (per-week; update every drop).
+    # NOTE: this is the CARVE set, not the active roster. 8 drivers are active;
+    # Griffin Corey is TERMINATED but MUST stay listed so his YTD keeps landing
+    # in the ATL bucket — drop him and his YTD falls back into fleet LABOR and
+    # the carve stops reconciling (Fleet+ATL must equal the payroll total).
     "Baker Anthony", "Dawson Brian", "Pacitti Michael R",
     "Griffin Corey", "Johnson Christopher M", "Logan LaDyle",
     "Phillips Anthony P", "Tucker Robert", "Wainwright Michael W",
@@ -79,23 +83,58 @@ def dump_xls(path, label, out):
     return wb
 
 
+def _csv_num(s):
+    """QB CSV exports ship numbers as strings: '1,234.56', '(89.10)', '$1,234'."""
+    t = str(s).strip()
+    if not t:
+        return s
+    neg = t.startswith('(') and t.endswith(')')
+    t2 = t.strip('()').replace('$', '').replace(',', '').strip()
+    try:
+        v = float(t2)
+    except ValueError:
+        return s
+    return -v if neg else v
+
+
+def _sheet_rows(path, first_sheet_only=False):
+    """Yield row tuples from a QB export — .xlsx (openpyxl) or .csv.
+
+    QuickBooks switched the CE&SF Transaction Report + P&L exports from .xlsx
+    to .csv on the Aug 3 2026 drop. Layout is identical (section header rows,
+    'Total for <category>' subtotal rows) but CSV cells arrive as strings, so
+    coerce numerics here — callers rely on isinstance(v, (int, float)) to spot
+    subtotal amounts, and would silently find none otherwise.
+    """
+    if path.lower().endswith('.csv'):
+        with open(path, newline='', encoding='utf-8-sig') as fh:
+            for row in csv.reader(fh):
+                yield tuple(_csv_num(c) for c in row)
+    else:
+        wb = openpyxl.load_workbook(path, data_only=True)
+        names = wb.sheetnames[:1] if first_sheet_only else wb.sheetnames
+        for sh_name in names:
+            for r in wb[sh_name].iter_rows(values_only=True):
+                yield r
+
+
 def dump_xlsx(path, label, out):
+    """Raw row dump of a QB .xlsx or .csv export into _parse_output.txt."""
     out.write(f"\n===== {label} :: {os.path.basename(path)} =====\n")
-    wb = openpyxl.load_workbook(path, data_only=True)
-    for sh_name in wb.sheetnames:
-        sh = wb[sh_name]
-        for r in sh.iter_rows(values_only=True):
-            row = list(r)
-            while row and (row[-1] is None or row[-1] == ''): row.pop()
-            if not row: continue
-            cells = []
-            for v in row:
-                if v is None: cells.append('')
-                elif isinstance(v, float) and v == int(v): cells.append(str(int(v)))
-                elif isinstance(v, float): cells.append(f"{v:.2f}")
-                else: cells.append(str(v).strip())
-            out.write(" | ".join(cells) + "\n")
-    return wb
+    n = 0
+    for r in _sheet_rows(path):
+        row = list(r)
+        while row and (row[-1] is None or row[-1] == ''): row.pop()
+        if not row: continue
+        cells = []
+        for v in row:
+            if v is None: cells.append('')
+            elif isinstance(v, float) and v == int(v): cells.append(str(int(v)))
+            elif isinstance(v, float): cells.append(f"{v:.2f}")
+            else: cells.append(str(v).strip())
+        out.write(" | ".join(cells) + "\n")
+        n += 1
+    return n
 
 
 def dump_pdf_text(path, label, out):
@@ -167,12 +206,10 @@ def summarize_sf_payroll(path):
 
 
 def summarize_cesf_transactions(path):
-    """Pull category subtotals from the QB transaction report."""
-    wb = openpyxl.load_workbook(path, data_only=True)
-    sh = wb[wb.sheetnames[0]]
+    """Pull category subtotals from the QB transaction report (.xlsx or .csv)."""
     current = None
     totals = {}
-    for row in sh.iter_rows(values_only=True):
+    for row in _sheet_rows(path, first_sheet_only=True):
         cells = [c for c in row if c is not None and c != '']
         if not cells: continue
         a = str(cells[0]).strip()
@@ -237,7 +274,10 @@ def main():
 
     sf_path = find_file(r"ShowFreight.*PayrollSummary.*\.xls$", r"SF.*Payroll.*\.xls")
     ja_path = find_file(r"J.A.*PayrollSummary.*\.xls", r"J.A.*Payroll.*\.xls")
-    cesf_path = find_file(r"CE.*SF.*Transaction.*\.xlsx", r"CE.*SF.*Combined.*\.xlsx")
+    # QB switched these exports .xlsx -> .csv on the Aug 3 2026 drop; accept both.
+    # Transaction Report patterns come first so a P&L .csv can't win the fallback.
+    cesf_path = find_file(r"CE.*SF.*Transaction.*\.xlsx", r"CE.*SF.*Transaction.*\.csv",
+                          r"CE.*SF.*Combined.*\.xlsx")
     efs_path = find_file(r"TransactionReport.*\.pdf", r"EFS.*\.pdf")
 
     if sf_path: dump_xls(sf_path, "SF_PAYROLL", out_raw)

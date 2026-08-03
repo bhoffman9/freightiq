@@ -96,9 +96,16 @@ def getrow(comp, k, name, former):
     if not r: r = rows[(comp, k)] = {'name':name,'former':former,'amts':{},'camts':{},'net':{},'gross':{},'car':{},'health':{},'commission':{},'reimb':{}}
     return r
 
+# Agents are a separate bucket (AGENTS[] + the Budgeting agent tile) and must NOT
+# appear in the office grid — listing them both places double-counts them. Kevin
+# is excluded on the 1099 side via canon(); Ethan Smith is an agent paid on J&A
+# W-2 payroll (first check 07/31/2026), so he needs excluding here too.
+W2_AGENTS = {('smith','e')}
+
 def addw2(checks, office_only, src):
     for d,n,tp,nt in checks:
         k = key(n)
+        if k in W2_AGENTS: continue
         if office_only and k[0] not in OFFICE: continue
         fac, fn = FACT.get(k, (1.11, None)); disp = fn or n.lstrip('*'); former = n.lstrip().startswith('*'); wl = wk_of(d)
         for comp, wt in (W2DIV.get(k) or {src:1.0}).items():
@@ -184,9 +191,14 @@ cutoff = datetime.date(2026,3,9); r = getrow('SF', ('con','MAR'), 'Maria Con · 
 for w in weeks[1:]:
     r['camts'][PD[w]] = 550.0 if w <= cutoff else 650.0
 
-# Mairena Tapias (Jon Marcus assistant), 100% CE, paid as expense — APPEND new payments weekly
+# Jon Marcus's assistant, 100% CE, paid as expense — APPEND new payments weekly.
+# Row holds BOTH assistants: entries thru 06/30 are Nelly (predecessor), 07/02
+# forward are Mairena Tapias Rodriguez (verified against Chase wire activity
+# 8/3/26 — the payee-filtered wire view shows Mairena only from 7/2, which is
+# why Nelly's June wires appear absent there. Don't "fix" them.)
 r = getrow('CE', ('con','MAI'), 'Mairena Tapias · 1099', False)
-for ds, amt in [('04/20/2026',193.04),('05/05/2026',900.0),('05/20/2026',882.0),('05/28/2026',695.0),('06/02/2026',140.0),('06/12/2026',950.0),('06/18/2026',475.0),('06/22/2026',475.0),('06/30/2026',475.0)]:
+for ds, amt in [('04/20/2026',193.04),('05/05/2026',900.0),('05/20/2026',882.0),('05/28/2026',695.0),('06/02/2026',140.0),('06/12/2026',950.0),('06/18/2026',475.0),('06/22/2026',475.0),('06/30/2026',475.0),
+                ('07/02/2026',481.0),('07/09/2026',478.0),('07/16/2026',478.0),('07/24/2026',478.0),('07/30/2026',478.0)]:
     wl = wk_of(mdate(ds)); r['camts'][wl] = round(r['camts'].get(wl,0) + amt, 2)
 
 # Logic Consultants: $500/wk entire year
@@ -248,6 +260,23 @@ MANUAL_CONTRACTORS = {
         ('J&A', ('con','KAC'),      500.0,   'Kacy Richardson - 1099'),
         # Kevin Deveraux / Nixon Graye $500 = AGENT — separate bucket, excluded here.
     ],
+    '7/27': [  # pay week ending Aug 2 (W-2 checks dated Jul 31). Ben's chat amounts.
+        ('CE',  ('con','JON'),      2800.0,  'Jon Marcus - 1099'),
+        ('CE',  ('con','GAB'),      1500.0,  'Gabriel Colon - 1099 (50%)'),  # $3,000 split 50/50
+        ('SF',  ('con','GAB'),      1500.0,  'Gabriel Colon - 1099 (50%)'),
+        ('J&A', ('con','MEL'),      2250.0,  'Mellody Abrego - 1099'),   # base only; Aug car pays AFTER 8/2
+        ('J&A', ('con','HIL'),      1730.0,  'Hilda Salman - 1099'),
+        ('J&A', ('fissehaye','b'),  1850.0,  'Biniyam Fissehaye'),        # ENM — the week's ATL contractor
+        ('J&A', ('delgado','e'),    900.0,   'Elizabeth Delgado'),
+        ('J&A', ('simpson','c'),    834.97,  'Christopher Simpson'),
+        ('J&A', ('simpson','c'),    270.00,  'Christopher Simpson (project)'),  # 2nd payment, project work — NOT a reimbursement
+        ('J&A', ('adamson','d'),    1750.0,  'Debra Adamson'),
+        ('J&A', ('con','ERI'),      1730.0,  'Erika Valencio - 1099'),
+        ('J&A', ('con','KAC'),      500.0,   'Kacy Richardson - 1099'),
+        # Maria ($650/wk), Logic ($500/wk), Mairena ($478 wired 7/30) come from
+        # the rule/dated-list blocks above — do NOT duplicate them here.
+        # Kevin (1099) + Ethan Smith (W-2) are AGENTS — separate bucket, excluded.
+    ],
 }
 # MANUAL reimbursements (included in the all-in per Ben 2026-07-23), keyed by Monday.
 MANUAL_REIMB = {
@@ -287,12 +316,31 @@ for comp, rk, rate in [('J&A',('con','MEL'),368.34), ('J&A',('con','HIL'),118.82
 # Car allowances — monthly. Spec is (month int → first pay-week of that month)
 # OR an explicit payday label for cars we know the exact pay week of (recent).
 def _carlbl(spec):
-    if isinstance(spec, str): return spec
+    """Resolve a car-allowance spec to a grid column (a PAYDAY label).
+
+    spec is either a month int (-> first pay-week of that month) or a string.
+    A string may already be a payday label ('7/2') OR the actual payment date
+    ('7/30'). Payment dates MUST go through wk_of() — returning one raw lands
+    the amount under a column key that doesn't exist and it silently vanishes
+    from the grid (this ate Jon Marcus's $350 July car on the Aug 3 drop).
+    Raises rather than dropping the amount if it can't be resolved.
+    """
+    if isinstance(spec, str):
+        labels = set(PD.values())
+        if spec in labels:
+            return spec
+        parts = spec.split('/')
+        if len(parts) >= 2:
+            wl = wk_of(datetime.date(2026, int(parts[0]), int(parts[1])))
+            if wl in labels:
+                return wl
+        raise ValueError("car spec %r is neither a payday label nor a resolvable "
+                         "2026 date — it would silently drop" % (spec,))
     for w in weeks:
         if w.month == spec: return PD[w]
     return PD[weeks[-1]]
 CAR = [
-    ('CE',  ('con','JON'), [(1,350.0),(2,350.0),(3,350.0),(4,350.0),(5,350.0),('7/2',350.0)]),          # Jan-May monthly + June paid this wk (7/2) = $2,100
+    ('CE',  ('con','JON'), [(1,350.0),(2,350.0),(3,350.0),(4,350.0),(5,350.0),('7/2',350.0),('7/30',350.0)]),  # Jan-May monthly + June (7/2) + July (7/30) = $2,450
     ('J&A', ('con','MEL'), [(1,334.86),(2,334.86),(3,334.86),(4,334.86),(5,334.86),(6,684.86),('7/2',334.86)]),  # +June bump + July paid 7/2 = $2,694.02
 ]
 for comp, rk, plan in CAR:
