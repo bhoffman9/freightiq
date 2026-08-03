@@ -18,7 +18,7 @@ First-name → PAYROLL name mapping (extend if new ATL drivers appear):
   Manar   → Alshamaa Manar
   Robert  → Tucker Robert
 """
-import os, sys, glob, re
+import os, sys, glob, re, csv
 import openpyxl
 from collections import defaultdict
 
@@ -38,17 +38,48 @@ NAME_MAP = {
 
 
 def find_billing_file():
-    # Accept either old name (2026-Atlanta Billing.xlsx), short name (ATL.xlsx),
-    # or new naming ("ATLANTA 2026 (N).xlsx"). Pick the most recent match.
-    patterns = ["*Atlanta Billing*.xlsx", "ATL.xlsx", "*ATL*.xlsx", "ATLANTA*.xlsx"]
+    # Accept old name (2026-Atlanta Billing.xlsx), short name (ATL.xlsx), or new
+    # naming ("ATLANTA 2026 (N).xlsx" / "ATLANTA 2026 - ALL LOADS THRU 7.31.csv").
+    # The export moved .xlsx -> .csv on the Aug 3 2026 drop. Pick the newest match.
+    stems = ["*Atlanta Billing*", "ATL", "*ATL*", "ATLANTA*"]
     matches = []
-    for pat in patterns:
-        matches += glob.glob(os.path.join(INCOMING, pat))
+    for stem in stems:
+        for ext in (".xlsx", ".csv"):
+            matches += glob.glob(os.path.join(INCOMING, stem + ext))
     matches = list(set(matches))
     if not matches:
-        print(f"No ATL billing XLSX in {INCOMING}/ (looked for 'Atlanta Billing', 'ATL.xlsx', or 'ATLANTA*.xlsx')")
+        print(f"No ATL billing file in {INCOMING}/ (looked for 'Atlanta Billing', "
+              f"'ATL', or 'ATLANTA*' as .xlsx or .csv)")
         sys.exit(1)
     return max(matches, key=os.path.getmtime)
+
+
+def _num(v):
+    """Coerce a cell to float. .xlsx gives numbers; .csv gives strings like
+    ' $ 6,800.00 ' or '(150.00)'. Returning 0 for a real amount would silently
+    understate revenue, so parse the string form properly."""
+    if isinstance(v, (int, float)):
+        return float(v)
+    if v is None:
+        return 0.0
+    t = str(v).replace("$", "").replace(",", "").strip()
+    if not t:
+        return 0.0
+    neg = t.startswith("(") and t.endswith(")")
+    try:
+        f = float(t.strip("()"))
+    except ValueError:
+        return 0.0
+    return -f if neg else f
+
+
+def load_rows(path):
+    """Return the sheet's rows as a list of tuples, from .xlsx or .csv."""
+    if path.lower().endswith(".csv"):
+        with open(path, newline="", encoding="utf-8-sig") as fh:
+            return [tuple(r) for r in csv.reader(fh)]
+    wb = openpyxl.load_workbook(path, data_only=True)
+    return list(pick_sheet(wb).iter_rows(values_only=True))
 
 
 def pick_sheet(wb):
@@ -73,6 +104,9 @@ def build_col_index(header_row):
         if s == "driver":                   idx["driver"]   = i
         elif s in ("invoice amount", "invoice"): idx["invoice"] = i
         elif s in ("carrier amount",):      idx["carrier"]  = i
+        elif s in ("delivery date", "date"): idx["date"]     = i
+        elif s in ("load", "load no", "load number"): idx["load"] = i
+        elif s == "customer":               idx["customer"] = i
         elif s == "carrier":
             # The "Carrier" column (just the name) sits BEFORE "Carrier Amount".
             # We want the amount, not the name — don't overwrite if already set.
@@ -83,11 +117,16 @@ def build_col_index(header_row):
 
 
 def parse(path):
-    wb = openpyxl.load_workbook(path, data_only=True)
-    sh = pick_sheet(wb)
+    rows = load_rows(path)
+    # Date source: the sheet name for .xlsx, the filename for .csv (a csv has no
+    # sheet, and "ALL LOADS THRU 7.31" lives in the filename either way).
+    if path.lower().endswith(".csv"):
+        title = os.path.basename(path)
+    else:
+        title = pick_sheet(openpyxl.load_workbook(path, data_only=True)).title
 
-    # Extract "as of <date>" from sheet name or fall back to file mtime
-    as_of_match = re.search(r"(?:as of|THRU)\s*(\d+)[-./](\d+)(?:[-./](\d+))?", sh.title, re.IGNORECASE)
+    # Extract "as of <date>" from that title or fall back to file mtime
+    as_of_match = re.search(r"(?:as of|THRU)\s*(\d+)[-./](\d+)(?:[-./](\d+))?", title, re.IGNORECASE)
     if as_of_match:
         m, d, y = as_of_match.groups()
         months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -98,23 +137,42 @@ def parse(path):
         mtime = datetime.datetime.fromtimestamp(os.path.getmtime(path))
         as_of = mtime.strftime("%b %-d, %Y") if os.name != "nt" else mtime.strftime("%b %#d, %Y")
 
-    rows = list(sh.iter_rows(values_only=True))
     cols = build_col_index(rows[0])
-    required = {"driver", "invoice", "carrier"}
+    # Driver is OPTIONAL — the sheet dropped that column in June 2026. Without it
+    # the totals still compute; only the per-driver breakdown is unavailable.
+    required = {"invoice", "carrier"}
     missing = required - cols.keys()
     if missing:
-        print(f"ERROR: required columns missing from sheet '{sh.title}': {missing}")
+        print(f"ERROR: required columns missing: {missing}")
         print(f"Headers found: {rows[0]}")
         sys.exit(1)
+    has_driver = "driver" in cols
+    if not has_driver:
+        print("NOTE: no Driver column — computing totals only, by_driver will be empty.")
+
+    def cell(r, key):
+        i = cols.get(key)
+        return r[i] if i is not None and i < len(r) and r[i] not in (None, "") else None
 
     atl_rows = []
     assigned_counts = defaultdict(int)
+    skipped_subtotals = 0
     for r in rows[1:]:
         if not r:
             continue
-        driver_val = r[cols["driver"]] if cols["driver"] < len(r) else None
-        if not driver_val:
-            continue
+        if has_driver:
+            driver_val = cell(r, "driver")
+            if not driver_val:
+                continue
+        else:
+            driver_val = None
+            # Subtotal rows carry an Invoice Amount but no Delivery Date / Load # /
+            # Customer. Two of them inflated ATL revenue by $450K on the Jun 16
+            # drop — skip anything missing all three identity columns.
+            if not (cell(r, "date") or cell(r, "load") or cell(r, "customer")):
+                if cell(r, "invoice") or cell(r, "carrier"):
+                    skipped_subtotals += 1
+                continue
         assigned_idx = cols.get("assigned")
         assigned = (str(r[assigned_idx]).strip().upper() if assigned_idx is not None and assigned_idx < len(r) and r[assigned_idx] else "")
         assigned_counts[assigned] += 1
@@ -129,16 +187,18 @@ def parse(path):
     total_rev = 0.0
     total_car = 0.0
     for r in atl_rows:
+        invoice = _num(r[5])
+        carrier = _num(r[7])
+        total_rev += invoice
+        total_car += carrier
+        if not has_driver:
+            continue        # no Driver column -> totals only, no per-driver rollup
         driver_short = (str(r[0]).strip() if r[0] else "")
         full_name = NAME_MAP.get(driver_short, f"<UNMAPPED: {driver_short}>")
-        invoice = float(r[5]) if isinstance(r[5], (int, float)) else 0
-        carrier = float(r[7]) if isinstance(r[7], (int, float)) else 0
         by_full[full_name]["count"] += 1
         by_full[full_name]["revenue"] += invoice
         by_full[full_name]["carrier"] += carrier
         by_full[full_name]["shorts"].add(driver_short)
-        total_rev += invoice
-        total_car += carrier
     # Map back to driver_short-keyed dict for emit (use first short variant as the short label)
     by_driver = {}
     for full_name, t in by_full.items():

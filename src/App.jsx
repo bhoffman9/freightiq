@@ -221,6 +221,15 @@ const PERIOD_END = (() => {
   const m = PERIOD.match(/-\s*(\w+\s+\d+),/);
   return m ? m[1] : "";
 })();
+// ISO form of the period end (YYYY-MM-DD), for comparing PERIOD against the
+// timestamps data sources report. Used by the /api/fdw-metrics staleness guard.
+const PERIOD_END_ISO = (() => {
+  const y = (PERIOD.match(/(\d{4})\s*$/) || [])[1];
+  if (!y || !PERIOD_END) return "";
+  const d = new Date(`${PERIOD_END}, ${y}`);
+  if (isNaN(d.getTime())) return "";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+})();
 
 // Build merged driver rows
 let DRIVERS = PAYROLL.map(p => {
@@ -4610,6 +4619,115 @@ const CustomTip = ({ active, payload, label }) => {
   );
 };
 
+// ── EBITDA / Adjusted EBITDA ──────────────────────────────────────────────
+// Live off /api/qbo-pnl so it self-updates — no weekly constant to maintain.
+//
+// EBITDA = Net Income + Interest Expense − Interest Income + D&A + Income Tax.
+//   D&A = $0: the fleet is 100% leased (Penske/TEC/TCI/Ryder + trailer lessors),
+//         so lease cost runs through Truck/Trailer Rentals as opex, not depreciation.
+//         Verified against the Aug 2026 P&L — no depreciation or amortization line exists.
+//   Income Tax = $0: pass-through entity, no corporate income tax line on the P&L.
+//         "Payroll Taxes" ($490,607.94) is an operating cost, NOT an income tax, and
+//         "Personal Tax Expense" sits inside Owners Draw. Neither is added back here.
+//
+// Adjusted EBITDA adds back owner-discretionary spend buried in expenses:
+//   + Total for Owners Draw        — derived, see ownersDraw below
+//   + Total for Asset Loan Payments — personal vehicles (BMW i7, Hummer, Escalade,
+//                                     Tesla, Sprinter, Range Rover) + a forklift
+// EDIT `ADDBACKS` to change what counts as discretionary; the tile lists each line
+// it added so the number is never a black box.
+const EBITDA_ADDBACKS = [
+  { key: "Total for Owners Draw",         label: "Owners Draw" },
+  { key: "Total for Asset Loan Payments", label: "Asset Loan Payments (personal vehicles)" },
+];
+
+function EbitdaTile({ qbData }) {
+  const parsed = (qbData && qbData.parsed) || {};
+  const exp = parsed.expenses || {};
+  const tot = parsed.totals || {};
+  const num = v => (typeof v === "number" && !Number.isNaN(v) ? v : 0);
+
+  const netIncome = num(tot.netIncome);
+  const interestExp = num(exp["Interest Expense"]);
+  // Owners Draw is an OTHER expense, so it never lands in parsed.expenses. It is
+  // exactly recoverable from the totals: netOther = otherIncome − otherExpense,
+  // and netIncome − netOpIncome == netOther. Verified Aug 2026: 76,685.43 +
+  // 1,074,958.97 − 602,153.16 = 549,491.24 == "Total for Owners Draw".
+  const ownersDraw = num(tot.totalOtherIncome) + num(tot.netOpIncome) - netIncome;
+  // Interest income isn't broken out by the parser (it sits inside Other Income,
+  // which is dominated by Triumph withholding refunds). It was $185.43 YTD in Aug
+  // 2026 — 0.03% of EBITDA — so treat as 0 rather than guess, and say so below.
+  const interestInc = num(exp["Interest Income"]);
+
+  const ebitda = netIncome + interestExp - interestInc;
+  const addbacks = EBITDA_ADDBACKS.map(a => ({
+    ...a,
+    val: a.key === "Total for Owners Draw" ? ownersDraw : num(exp[a.key]),
+  })).filter(a => a.val > 0);
+  const adjEbitda = ebitda + addbacks.reduce((s, a) => s + a.val, 0);
+
+  const rev = num(tot.totalIncome);
+  const pct = v => (rev ? (v / rev * 100) : 0);
+  const row = (lbl, val, opts = {}) => (
+    <div key={lbl} style={{ display:"flex", justifyContent:"space-between", gap:12,
+        padding:"5px 0", fontSize:12, color: opts.dim ? "var(--mu)" : "var(--tx)",
+        borderTop: opts.rule ? "1px solid var(--bd)" : "none",
+        fontWeight: opts.bold ? 800 : 400 }}>
+      <span>{lbl}</span>
+      <span style={{ fontFamily:"var(--f3)", color: opts.color || "inherit" }}>
+        {opts.sign && val > 0 ? "+" : ""}{fd(val, 0)}
+      </span>
+    </div>
+  );
+
+  return (
+    <div className="card" style={{ marginBottom:14 }}>
+      <div className="ctit" style={{ fontSize:13 }}>📐 EBITDA · live from QuickBooks</div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12 }}>
+        {[
+          { label:"EBITDA", val:ebitda, color:"#38bdf8",
+            sub:`${pct(ebitda).toFixed(1)}% of revenue` },
+          { label:"Adjusted EBITDA", val:adjEbitda, color:"#4ade80",
+            sub:`${pct(adjEbitda).toFixed(1)}% of revenue · ${addbacks.length} add-back${addbacks.length===1?"":"s"}` },
+        ].map(c => (
+          <div key={c.label} style={{ background:"var(--s1)", border:`1px solid ${c.color}50`,
+              borderRadius:6, padding:"20px", textAlign:"center" }}>
+            <div style={{ fontSize:9, letterSpacing:3, textTransform:"uppercase", color:c.color, marginBottom:6 }}>{c.label}</div>
+            <div style={{ fontFamily:"var(--f3)", fontSize:34, fontWeight:600, lineHeight:1,
+                letterSpacing:"-1px", color:c.color }}>{fd(c.val, 0)}</div>
+            <div style={{ fontSize:10, color:"var(--mu)", marginTop:6 }}>{c.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:22 }}>
+        <div>
+          <div style={{ fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:4 }}>Bridge to EBITDA</div>
+          {row("Net Income", netIncome)}
+          {row("+ Interest Expense", interestExp, { sign:true })}
+          {interestInc > 0 && row("− Interest Income", -interestInc)}
+          {row("+ Depreciation & Amortization", 0, { dim:true })}
+          {row("+ Income Tax", 0, { dim:true })}
+          {row("EBITDA", ebitda, { rule:true, bold:true, color:"#38bdf8" })}
+        </div>
+        <div>
+          <div style={{ fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"var(--mu)", marginBottom:4 }}>Owner-discretionary add-backs</div>
+          {addbacks.map(a => row(`+ ${a.label}`, a.val, { sign:true }))}
+          {!addbacks.length && <div style={{ fontSize:11, color:"var(--mu)", padding:"5px 0" }}>none found in this period</div>}
+          {row("Adjusted EBITDA", adjEbitda, { rule:true, bold:true, color:"#4ade80" })}
+        </div>
+      </div>
+
+      <div style={{ fontSize:10, color:"var(--mu)", marginTop:10, lineHeight:1.6 }}>
+        D&amp;A is $0 — the fleet is fully leased, so lease cost is opex (Truck/Trailer Rentals), not depreciation.
+        Income tax is $0 — pass-through entity; Payroll Taxes are an operating cost, not an income tax, and are NOT added back.
+        {interestInc === 0 && " Interest income isn't broken out separately by the P&L parser (it sits inside Other Income alongside Triumph withholding refunds); it was $185 YTD as of Aug 2026, so it's treated as $0 here."}
+        {" "}Edit <code>EBITDA_ADDBACKS</code> in App.jsx to change what counts as discretionary.
+      </div>
+    </div>
+  );
+}
+
 function IncomeDashboard() {
   const [view, setView]           = useState("live"); // live | overview | trend | yoy
   const [trendMode, setTrendMode] = useState("combined"); // combined | byco | monthly
@@ -4735,6 +4853,8 @@ function IncomeDashboard() {
               <div style={{ fontSize:10,color:"var(--mu)",marginBottom:12,letterSpacing:2,textTransform:"uppercase" }}>
                 QuickBooks Live — {p.start_date} to {p.end_date}
               </div>
+
+              <EbitdaTile qbData={qbData} />
 
               {/* Revenue hero */}
               <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14 }}>
@@ -8064,16 +8184,12 @@ const ATL_BILLING = {
   // understates by $10,075. Figures above are computed from the load rows, NOT
   // the sheet totals. The $616,134.01 row is revenue+carrier added together (a
   // spreadsheet artifact), not revenue. SUM ranges need fixing in Google Sheets.
-  byDriver: [
-    // HISTORICAL — these are the May 4-29 per-driver figures. The new ATL sheet
-    // (Jun 9 drop) has no Driver column; can't refresh until format restores it.
-    { name: "Davis Anthoni D",     short: "Anthoni", loads: 9, revenue: 28200.00, carrier: 16460.00, gross: 11740.00 },
-    { name: "Wainwright Michael W",short: "Michael", loads: 9, revenue: 21500.00, carrier:  7372.50, gross: 14127.50 },
-    { name: "Tucker Robert",       short: "Robert",  loads: 8, revenue: 18675.00, carrier:  3461.25, gross: 15213.75 },
-    { name: "Alshamaa Manar",      short: "Manar",   loads: 5, revenue: 18350.00, carrier:  8180.00, gross: 10170.00 },
-    { name: "Johnson Christopher", short: "CJ",      loads: 8, revenue: 15100.00, carrier:  1300.00, gross: 13800.00 },
-    { name: "Denman Samuel E",     short: "Sam",     loads: 7, revenue: 13850.00, carrier:  5800.00, gross:  8050.00 },
-  ],
+  // EMPTY BY DESIGN. The ATL sheet dropped its Driver column in June 2026,
+  // so there is no per-driver source anymore. The May 4-29 figures that used
+  // to sit here were four months stale and read as current. parse_atl_billing.py
+  // now runs without a Driver column and emits [] — if the column ever comes
+  // back, re-running it repopulates this automatically.
+  byDriver: [],
 };
 
 // ── OFFICE STAFF COMPONENT ───────────────────────────────────
@@ -9786,9 +9902,19 @@ function AtlOperations() {
         </div>
       </div>
 
-      {/* ATL Loads & Billing — per-driver breakdown from the XLSX */}
+      {/* ATL Loads & Billing — per-driver breakdown from the billing sheet.
+          Renders only when the sheet actually carried a Driver column; showing
+          an empty table (or worse, months-old rows) reads as current data. */}
       <div className="card" style={{ marginBottom:14 }}>
         <div className="ctit" style={{ fontSize:13 }}>💰 ATL Loads & Billing · per-driver · as of {ATL_BILLING.asOf}</div>
+        {ATL_BILLING.byDriver.length === 0 ? (
+          <div style={{ padding:"14px 4px", fontSize:12, color:"var(--mut)", lineHeight:1.6 }}>
+            No per-driver breakdown — the Atlanta billing sheet dropped its <strong>Driver</strong> column
+            in June 2026, so there's no source for it. Totals above are unaffected
+            ({fn(ATL_BILLING.loads,0)} loads · {fd(ATL_BILLING.revenue,0)} · {ATL_BILLING.grossMargin}% margin).
+            <br />Add the Driver column back to the sheet and this table repopulates on the next drop.
+          </div>
+        ) : (
         <table className="tbl" style={{ fontSize:13 }}>
           <thead>
             <tr>
@@ -9829,8 +9955,9 @@ function AtlOperations() {
             </tr>
           </tfoot>
         </table>
+        )}
         <div style={{ fontSize:10, color:"var(--mu)", marginTop:8 }}>
-          Source: <span style={{ color:"#38bdf8" }}>2026-Atlanta Billing.xlsx</span> · all {ATL_BILLING.loads} loads count as ATL revenue (the <code>Assigned</code> column only reflects QBO booking routing — some loads invoiced under SF/Corp or CE East, but the load itself is ATL ops). Refresh weekly via <code>scripts/parse_atl_billing.py</code>.
+          Source: <span style={{ color:"#38bdf8" }}>ATLANTA 2026 · ALL LOADS THRU {ATL_BILLING.asOf}</span> · all {ATL_BILLING.loads} loads count as ATL revenue (the <code>Assigned</code> column only reflects QBO booking routing — some loads invoiced under SF/Corp or CE East, but the load itself is ATL ops). Refresh weekly via <code>scripts/parse_atl_billing.py</code>.
         </div>
       </div>
 
@@ -10687,6 +10814,9 @@ export default function App() {
   const [equipmentData, setEquipmentData] = useState(null);
   const [equipmentError, setEquipmentError] = useState(null);
   const [warehouseLive, setWarehouseLive] = useState(false);
+  // Non-empty when /api/fdw-metrics was fetched but DELIBERATELY not applied
+  // (stale or uncarved). Surfaced in the header so a refusal is never silent.
+  const [warehouseRefused, setWarehouseRefused] = useState("");
   const [health, setHealth] = useState(null); // Gmail collector liveness
 
   useEffect(() => {
@@ -10735,6 +10865,38 @@ export default function App() {
       .then(d => {
         if (!d || !d.ok || !d.fleet) throw new Error("no fleet data");
         const f = d.fleet;
+
+        // ── HYDRATION GUARD ────────────────────────────────────────────────
+        // Refuse warehouse data that would REGRESS the dashboard. Two ways it
+        // can, both observed live on 2026-08-03:
+        //
+        //  1. STALE — warehouse period ended 2026-07-12 while PERIOD said
+        //     Aug 2. The header renders PERIOD, so hydrating put an Aug-2
+        //     label over three-week-old numbers, and metrics.json (built from
+        //     the constants) silently disagreed with the UI.
+        //  2. UNCARVED — warehouse fuel 779,422.34 EXCEEDED the entire EFS
+        //     report (771,909.82) and its miles 974,844.04 exceeded all 54
+        //     Samsara trucks (965,151.70). That only happens if the ATL carve
+        //     wasn't applied upstream, which understated fleet CPM by
+        //     ~$0.30/mi basic and ~$0.36/mi all-in.
+        //
+        // Either way the hand-updated constants are the weekly source of
+        // truth, so we keep them and say so in the header. Fix the ingestion
+        // rather than loosening this.
+        const whEnd = d.period && d.period.end;
+        if (PERIOD_END_ISO && whEnd && whEnd < PERIOD_END_ISO) {
+          throw new Error(`stale: warehouse ends ${whEnd}, PERIOD ends ${PERIOD_END_ISO}`);
+        }
+        const FULL_MILES = MILES + ATL_MILES;   // fleet + ATL == the whole Samsara report
+        const FULL_FUEL  = FUEL_TOT + ATL_FUEL; // fleet + ATL == the whole EFS report
+        if (typeof f.miles === "number" && f.miles > FULL_MILES * 1.001) {
+          throw new Error(`uncarved: miles ${Math.round(f.miles)} > fleet+ATL ${Math.round(FULL_MILES)} (ATL carve missing upstream)`);
+        }
+        if (typeof f.fuel_tot === "number" && f.fuel_tot > FULL_FUEL * 1.001) {
+          throw new Error(`uncarved: fuel ${Math.round(f.fuel_tot)} > fleet+ATL ${Math.round(FULL_FUEL)} (ATL carve missing upstream)`);
+        }
+        // ───────────────────────────────────────────────────────────────────
+
         const pick = (v, cur) => (typeof v === "number" && !Number.isNaN(v)) ? v : cur;
         LABOR = pick(f.labor, LABOR);           FUEL_TOT = pick(f.fuel_tot, FUEL_TOT);
         GALLONS = pick(f.gallons, GALLONS);     MILES = pick(f.miles, MILES);
@@ -10766,7 +10928,11 @@ export default function App() {
         setWarehouseLive(true);
         setDataVersion(v => v + 1);
       })
-      .catch(e => console.warn("fdw-metrics fetch failed (hardcoded fallback):", e?.message || e));
+      .catch(e => {
+        const msg = e?.message || String(e);
+        setWarehouseRefused(msg);
+        console.warn("fdw-metrics NOT applied (using hand-updated constants):", msg);
+      });
   }, []);
 
   const trackedCPM = (LABOR + FUEL_TOT + INS_TOT + EQUIP_TOT + MAINT_TOT + UNIFORMS) / MILES;
@@ -10807,6 +10973,12 @@ export default function App() {
           <div className="hsub">Show Freight Inc · {PERIOD}</div>
           <div className="hbdg">
             {warehouseLive && <span className="bdg bdg-o" title="Fleet numbers live from the fdw_ Supabase data warehouse (no hardcoded constants)">⚡ warehouse</span>}
+            {!warehouseLive && warehouseRefused && (
+              <span className="bdg" style={{ background:"rgba(245,197,66,.12)", color:"#f5c542", border:"1px solid rgba(245,197,66,.45)" }}
+                    title={`Warehouse hydration refused — showing hand-updated constants for ${PERIOD}. Reason: ${warehouseRefused}`}>
+                ⚠ warehouse {warehouseRefused.startsWith("stale") ? "stale" : warehouseRefused.startsWith("uncarved") ? "uncarved" : "unavailable"} · using weekly constants
+              </span>
+            )}
             <span className="bdg bdg-o">Labor {fd(LABOR, 0)}</span>
             <span className="bdg bdg-o">Fuel {fd(FUEL_TOT, 0)}</span>
             <span className="bdg bdg-o">Ins {fd(INS_TOT, 0)}</span>
