@@ -2,12 +2,13 @@
 // Vercel serverless (single handler, branch on req.method). Same shared Supabase
 // project as the AP Aging app. Env: SUPABASE_URL, SUPABASE_SERVICE_KEY.
 //   GET                                  → list all (open/partial first, then due date)
-//   GET  ?vendor=&invoiceNumber=         → duplicate check { exists: bool }
+//   GET  ?vendor=&invoiceNumber=         → duplicate check { exists, id } (canonical)
 //   POST { vendorName, invoiceNumber, ...} → create (409 on dup)
 //   PUT  { id, ...fields }               → update
 //   DELETE ?id=UUID                      → remove (+ delete PDF from storage)
 import { createClient } from '@supabase/supabase-js';
 import { requireApAuth } from './_ap-auth.js';
+import { dedupKey } from './_ap-ingest.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -41,15 +42,21 @@ export default async function handler(req, res) {
       const vendor = req.query.vendor;
       const invNum = req.query.invoiceNumber;
 
-      // Duplicate check
+      // Duplicate check — CANONICAL, not exact-string.
+      // This used .eq() on both fields, which meant a casing or punctuation
+      // difference reported exists:false for an invoice that WAS on file:
+      // "McKinney Trailers" vs the stored "Mckinney Trailers" missed every
+      // time (caught 2026-08-03). Same class of bug as the $583.26 ap-sync
+      // double-count. dedupKey() strips case + punctuation on both sides.
       if (vendor && invNum) {
         const { data } = await supabase
           .from('invoices')
-          .select('id')
-          .eq('vendor_name', vendor)
-          .eq('invoice_number', invNum)
-          .limit(1);
-        return res.json({ exists: (data?.length || 0) > 0 });
+          .select('id, vendor_name, invoice_number, deleted_at');
+        const key = dedupKey(vendor, invNum);
+        const hit = (data || []).find(
+          r => !r.deleted_at && dedupKey(r.vendor_name, r.invoice_number) === key
+        );
+        return res.json({ exists: !!hit, id: hit ? hit.id : null });
       }
 
       // Default list = live + approved. ?trash=1 = soft-deleted; ?review=1 =

@@ -68,8 +68,11 @@ export default async function handler(req, res) {
     // .ics). Reject cheaply BEFORE spending storage or Anthropic tokens.
     assertPdf(buf);
 
-    // ---- 2. store + extract ----------------------------------------------
-    const pdfPath = await storePdf(buf, filename);
+    // ---- 2. extract (do NOT store yet) ------------------------------------
+    // Storage happens AFTER the dedup check. Uploading first orphaned a file in
+    // the bucket on every duplicate — and duplicates are the NORMAL case here,
+    // since Zapier retries and vendors resend. Extraction reads the buffer
+    // directly, so nothing needs the file to be stored first.
     const inv = await extractFields(buf);
 
     const vendorName  = String(inv.vendorName || '').trim();
@@ -78,7 +81,7 @@ export default async function handler(req, res) {
 
     if (!vendorName || !invoiceNumber) {
       return res.status(422).json({
-        ok: false, action: 'rejected', pdfPath, source: src,
+        ok: false, action: 'rejected', source: src,
         reason: `extraction produced no ${!vendorName ? 'vendor name' : 'invoice number'} — likely not an invoice`,
         extracted: inv,
       });
@@ -95,9 +98,10 @@ export default async function handler(req, res) {
     const key = dedupKey(vendorName, invoiceNumber);
     const dupe = live.find(r => dedupKey(r.vendor_name, r.invoice_number) === key);
     if (dupe) {
+      // Nothing stored, nothing inserted — the whole point of deferring storePdf.
       return res.json({
         ok: true, action: 'duplicate', invoiceId: dupe.id, vendor: vendorName,
-        invoiceNumber, amount, pdfPath, source: src,
+        invoiceNumber, amount, source: src,
         reason: `already on file as invoice ${dupe.id}`,
       });
     }
@@ -109,7 +113,10 @@ export default async function handler(req, res) {
       .map(r => Number(r.amount));
     const { approve, reason } = autoApproveDecision({ ...inv, vendorName, invoiceNumber }, priors);
 
-    // ---- 5. insert --------------------------------------------------------
+    // ---- 5. store the PDF, then insert ------------------------------------
+    // Only now that we know it's a genuinely new invoice worth keeping.
+    const pdfPath = await storePdf(buf, filename);
+
     // There is no `source` column — provenance goes in `description`, matching
     // the convention ap-sync used ("[auto] ... · Gmail-parsed (high conf)").
     const list = (v) => (Array.isArray(v) ? v.join(', ') : String(v || '')).trim() || null;
