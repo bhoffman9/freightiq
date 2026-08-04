@@ -1,3 +1,17 @@
+// ⚠ RETIRED 2026-08-03 — superseded by /api/ap-intake (Zapier email ingestion).
+//
+// The upstream Gmail auto-extract that populated fdw_equipment_invoice is dead,
+// so this route has had nothing new to read for months. It is NOT on a cron
+// (check vercel.json — it never was in the deployed config, despite older docs
+// claiming an 08:30 daily run), so it only runs if hit by hand.
+//
+// Kept, not deleted, because: the VENDOR_MAP below is the only written record of
+// how each Gmail source name maps to the canonical AP vendor_name spelling, and
+// the auto-approve rule it pioneered now lives in _ap-ingest.js and is shared
+// with ap-intake. Delete only after confirming fdw_equipment_invoice is empty
+// and the vendor mapping is captured somewhere else.
+//
+// ── original description ──────────────────────────────────────────────────
 // AP Aging — auto-ingest Gmail-parsed equipment invoices into the AP `invoices`
 // table. Reads fdw_equipment_invoice (populated by the Gmail pipeline +
 // fdw-extract), maps each vendor to the canonical AP vendor_name spelling, and

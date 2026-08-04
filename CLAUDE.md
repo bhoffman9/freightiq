@@ -187,7 +187,52 @@ freightiq/
 Two standalone apps were ported into FreightIQ as tabs. **They live in SEPARATE files** (`src/ApAging.jsx`, `src/BudgetCalendar.jsx`) imported into App.jsx — the one deliberate exception to "everything in App.jsx," because each is a self-contained ~2,000-line sub-app. Both read/write the **same shared Supabase project** as everything else, so their data (AP `invoices`/`payments`/`equipment`; budget `w_*`) needed NO migration. The standalone apps (`ap-aging-v4.vercel.app`, `budget-calendar-lemon.vercel.app`) are now redundant — **retirement deferred** (CFO dashboard still reads the Supabase tables directly; leave tables intact).
 
 ### 🧾 AP Aging (`ApAging()` in `src/ApAging.jsx`, tab id `apaging`)
-- New Vercel routes: `ap-invoices` (CRUD + soft-delete + review-queue), `ap-payments` (**atomic** via Postgres RPCs `ap_record_payment`/`ap_undo_payment` — row-locked, ±$0.05), `ap-extract` (base64 PDF → Claude **Haiku** + storage; validates `%PDF` magic), `ap-equipment` (fleet + invoice-match, **60s cache**, CORS), `ap-pdf` (signed URLs), `ap-sync` (Gmail-parsed `fdw_equipment_invoice` → `invoices`, daily 08:30 cron), `ap-payment-suggestions` (Plaid match — dormant until prod Plaid).
+- New Vercel routes: `ap-invoices` (CRUD + soft-delete + review-queue), `ap-payments` (**atomic** via Postgres RPCs `ap_record_payment`/`ap_undo_payment` — row-locked, ±$0.05), `ap-extract` (base64 PDF → Claude **Haiku** + storage; validates `%PDF` magic), `ap-intake` (**Zapier email ingestion — see below**), `ap-equipment` (fleet + invoice-match, **60s cache**, CORS), `ap-pdf` (signed URLs), ~~`ap-sync`~~ (**RETIRED 2026-08-03** — the Gmail auto-extract feeding `fdw_equipment_invoice` is dead and it was never actually on a cron; superseded by `ap-intake`), `ap-payment-suggestions` (Plaid match — dormant until prod Plaid).
+
+#### 📧 `ap-intake` — automated invoice email ingestion (Zapier)
+
+One POST does the whole chain, so the Zap is a single step that either works or
+doesn't: fetch/decode PDF → Claude Haiku extraction → dedup → auto-approve
+policy → insert.
+
+```
+POST https://freightiq-nine-two.vercel.app/api/ap-intake
+Header:  x-ap-key: <VITE_APP_PASSWORD>
+Body:    { "pdfUrl": "<attachment url>", "filename": "...", "from": "...", "subject": "..." }
+         (or "pdfBase64" instead of "pdfUrl")
+```
+
+**The Zap:** Gmail *New Attachment* (filter to your AP label / vendor senders) →
+*Webhooks by Zapier* → POST, Payload Type **JSON**, with the header above and
+`pdfUrl` mapped to the attachment. Optionally add a Filter on `action` to Slack/
+email yourself when something is `held` or `rejected`.
+
+**Response `action` is what you branch on:**
+
+| `action` | Meaning |
+|---|---|
+| `created` | Inserted. Check `needsReview` — `false` = live payable, `true` = held |
+| `duplicate` | Already on file; nothing inserted (safe to ignore — Zapier retries land here) |
+| `rejected` | Not an invoice / unreadable / not a PDF. `reason` says which |
+| `error` | Server-side failure — worth alerting on |
+
+**Auto-approve** reuses the exact rule from the old `ap-sync`, now shared in
+`api/_ap-ingest.js`: high model confidence **AND** vendor/invoice#/amount all
+present **AND** amount > 0 **AND** the vendor has prior history **AND** the
+amount is within 1.5× that vendor's largest prior invoice. Anything else is held
+in the review queue. Confidence alone is the model grading its own homework, so
+the completeness and amount-vs-history checks carry the real weight.
+
+**Gotchas:**
+- There is **no `source` column** on `invoices`. Provenance goes in `description`
+  as `[email] … · via Zapier from <sender> (high conf)`, matching ap-sync's
+  `[auto] …` convention. Don't add a column without a migration.
+- Dedup uses `dedupKey()` (case/punctuation-insensitive), not raw strings — the
+  DB's unique index on `(vendor_name, invoice_number)` is the backstop, and a
+  unique violation is returned as `duplicate`, not a 500, so Zapier won't retry forever.
+- The extraction prompt lives in `api/_ap-extract-core.js` and is shared with
+  `ap-extract`. Edit it there once; two copies would let the email path drift
+  from the browser upload path.
 - **AUTH:** every `/api/ap-*` route requires the app password via `x-ap-key` header (`api/_ap-auth.js` vs `process.env.VITE_APP_PASSWORD`, fails closed). The browser attaches it via a scoped `window.fetch` patch in App.jsx (rewrites only `/api/ap-*` URLs). Gate any new ap-route with `requireApAuth`. (This is abuse-prevention, not bank-grade — password ships in bundle; true fix = Supabase Auth / Vercel protection.)
 - **EquipmentContext** (Trucks/Trailers) now fetches internal `/api/ap-equipment` (was `ap-aging-v4`).
 - Invoices: **soft-delete** (`deleted_at`; `?trash=1`, PUT `{restore:true}`, `?hard=1` for permanent) + **review queue** (`needs_review`; auto-ingested anomalies held OUT of the payable list, `?review=1`, PUT `{approve:true}`). `ap-sync` auto-approves only high-confidence invoices within 1.5× the vendor's prior max; rejects $0/malformed.
