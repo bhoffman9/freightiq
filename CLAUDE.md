@@ -331,10 +331,23 @@ ATL Operations (Atlanta, launched May 4, 2026) is tracked via a **per-week roste
 3. Append a new entry to `ATL_WEEKLY_LOG[]` at the bottom.
 4. AtlOperations() picks it up automatically — cumulative KPIs and the per-week table.
 
-**Agent (Kevin Deveraux / Nixon Graye Associates)** — completely separate from ATL or any operating entity. Lives only in:
+**Agents** — completely separate from ATL or any operating entity. Live only in:
 - `AGENTS[]` top-level array (parallel to PAYROLL/CONTRACTORS, not nested)
 - Budgeting tab's standalone 🤝 agent bucket
 Agent payments are a separate draw category in QBO — **NOT inside `Total for Owners Draw`**. Do NOT subtract agent total from the owner bucket. See `reference_agent_draw_category` memory.
+
+**An agent can be 1099 OR W-2 — the payment method doesn't change the bucket.**
+As of Aug 2026 there are two:
+- **Kevin Deveraux** / Nixon Graye Associates — $500/wk, booked as a QB Contractor
+  Payment. **$6,000 / 12 payments thru Aug 2** (was stale at $2,500 / 5 for ~8 weeks).
+- **Ethan Smith** — $1,538.46/wk gross ($80K/yr) on **J&A W-2 payroll**, first check
+  07/31/2026. `total` carries loaded cost ($1,710.76 = gross + $172.30 employer tax).
+
+**A W-2 agent MUST be excluded from `OFFICE_W2`/the paycheck grid** or Budgeting
+counts them twice. Enforced by `W2_AGENTS` in `scripts/build_paycheck_grid.py`
+(keyed `('smith','e')` — add new W-2 agents there). Kevin is excluded on the 1099
+side via `canon()`. `gen_office.py` needs no change: it only updates people already
+in `OFFICE_W2[]` and never adds new ones.
 
 Card-47458 footnote: previously misattributed to Wright Robert (frozen) — reassigned to Tucker Robert in the May 16 update. Wright stays frozen at $2,170.77 (his card 37405 portion only).
 
@@ -380,7 +393,8 @@ If you're adding a new live data source that needs to drive CPM or other derived
 
 ## Key Data Constants (hardcoded in App.jsx)
 
-- `PAYROLL[]` — 54 drivers logged / 39 active with hours/cost (Memolo Dominick still 0; ~14 *inactive/frozen drivers keep YTDs so LABOR reconciles to QBO) thru Jun 12, 2026. **Don't write "39 active drivers" in the LABOR comment — extract-metrics.js regex `(\d+)\s*drivers` needs the digit adjacent to "drivers" or `metrics.json` falls back to 0 (regression fixed week 16).**
+- `PAYROLL[]` — 54 drivers logged / **28 active** as of Aug 2 2026 (Memolo Dominick still 0; ~26 *inactive/frozen drivers keep YTDs so LABOR reconciles to QBO). **The LABOR comment's "N drivers active" digit MUST equal `ACTIVE_DRIVERS_COUNT`** — `extract-metrics.js` publishes it as `metrics.json drivers:N`, which CFO Dashboard and Per Load CPM consume. It read **53 while the UI showed 27** until Aug 3 2026; verify they match every drop. Keep the digit adjacent to the word ("28 drivers active", not "28 active") or the regex `(\d+)\s*drivers` falls back to 0.
+  - **Check for stale `active:false` every week.** Diff each driver's `totalCost` against last week: any driver flagged inactive whose YTD *moved* was paid, so the flag is wrong (caught Dixon Deon A this way on Aug 3 — +$1,069.07 while flagged frozen). Conversely a flagged-active driver with no movement for several weeks is worth asking Ben about.
 - `FUEL{}` — per-driver fuel spend + gallons (EFS only, thru Jun 12)
 - `MONTHLY_MILES[]` — Samsara: per-month, per-truck local vs regional (currently Jan-Mar 2026 historical; no longer auto-refreshed — Samsara monthly XLS not provided in weekly drops)
 - `TRUCK_MILES[]` — per-truck per-state mileage from Samsara Vehicle Mileage xlsx. Run `python scripts/parse_samsara_mileage.py` after dropping a new xlsx to regenerate
@@ -394,7 +408,41 @@ If you're adding a new live data source that needs to drive CPM or other derived
 - `ASCEND{}` — Historical Ascend TMS data (Jan-Mar 2026, no longer active)
 - `ALVYS{}` — Alvys TMS pipeline snapshot — now only a **fallback** for the Revenue tab (which is live via `/api/alvys-loads`); refresh only if you want an accurate offline fallback
 
-**Current period:** driven by `PERIOD` in `src/App.jsx` — as of the Jul-30 drop, `Jan 1 - Jul 26, 2026` (207 days). Don't hand-maintain a copy here; read the constant.
+**Current period:** driven by `PERIOD` in `src/App.jsx` — as of the Aug-3 drop, `Jan 1 - Aug 2, 2026` (214 days). Don't hand-maintain a copy here; read the constant.
+
+### ⚠️ `/api/fdw-metrics` — the warehouse OVERRIDES your weekly constants
+
+**Read this before wondering why a weekly update didn't show up on the site.**
+
+On mount, App.jsx fetches `/api/fdw-metrics` and **mutates the module-level
+fleet constants** (`LABOR`, `FUEL_TOT`, `GALLONS`, `MILES`, `INS_TOT`,
+`TRUCK_TOT`, `TRAILER_TOT`, `TRUCK_MAINT`, `TRAIL_MAINT`, `STORAGE`,
+`UNIFORMS`, `TRUCK_COUNT`, `TOTAL_HRS`, plus `PAYROLL`/`FUEL`/`INCOME_2026`)
+from the `fdw_*` Supabase warehouse, then `recomputeDerived()` + remount. A green
+`⚡ warehouse` badge in the header means warehouse numbers are showing, NOT yours.
+
+**This bit hard on 2026-08-03.** The warehouse served `period: "Jan 1 - Jul 12"`
+while `PERIOD` said Aug 2, so the header rendered an Aug-2 label over three-week-old
+numbers — and `metrics.json` (built from the constants, consumed by CFO Dashboard
+and Per Load CPM) silently disagreed with what the dashboard displayed. Worse, the
+warehouse figures were **uncarved**: fuel $779,422.34 exceeded the entire EFS report
+($771,909.82) and miles 974,844.04 exceeded all 54 Samsara trucks (965,151.70) —
+only possible if the ATL carve never ran upstream. Fleet CPM read **$0.303/mi low
+on Basic and $0.357/mi low on All-In**, on the number Per Load CPM prices against.
+
+**The guard (in the `fetch("/api/fdw-metrics")` effect) refuses hydration when:**
+1. `d.period.end < PERIOD_END_ISO` — stale
+2. `f.miles > MILES + ATL_MILES` or `f.fuel_tot > FUEL_TOT + ATL_FUEL` — the ATL
+   carve is missing upstream (fleet+ATL is by definition the whole report)
+
+On refusal the hand-updated constants stand and the header shows an amber
+**`⚠ warehouse stale/uncarved · using weekly constants`** badge. **Fix the
+ingestion — never loosen the guard to make the badge go away.**
+
+**Open:** the warehouse ingestion still needs the ATL carve applied and its
+rollup period is pinned at Jul 12 (the collector heartbeat is fine — QBO and
+Samsara sync on cron; EFS/payroll reach it by some path that stopped). Until
+that's fixed the badge stays amber, which is correct — it's telling the truth.
 
 ## CPM Definitions (CRITICAL)
 
@@ -450,8 +498,25 @@ If you're adding a new live data source that needs to drive CPM or other derived
 
 > Before starting a weekly, re-read the **⚡ Critical invariants** block at the top — it's the condensed version of the traps in this workflow. End with the **"Before declaring weekly update DONE"** checklist below.
 
-### ⏳ Pending build (do this weekly cycle if not yet shipped)
-**Live EBITDA + Adjusted EBITDA tile** on the Income tab, fed from `/api/qbo-pnl?company=ce_sf_combined` so it self-updates. Unadjusted EBITDA ≈ net income + interest − interest income (D&A and income tax are both $0 — leased fleet, pass-through entity). Adjusted EBITDA adds back owner-discretionary spend buried in expenses (Owners Draw, personal-vehicle Asset Loan Payments, etc.). **Blocked on Ben:** (1) the exact add-back list, (2) whether to apply a normalized tax provision vs $0. Queued Jun 20 2026 — see the `project_freightiq_ebitda` memory for the YTD numbers and rationale. Remove this block once shipped.
+### ✅ EBITDA tile — SHIPPED 2026-08-03
+`EbitdaTile` in `src/App.jsx`, on the Income tab's Live QB view. Live off
+`/api/qbo-pnl` — no weekly constant. Aug-2 YTD: EBITDA $620,144 (4.2% of
+revenue), Adjusted $1,231,158 (8.2%).
+
+Decisions made (all stated on the tile itself, not buried):
+- **D&A = $0** — fleet is 100% leased, so cost runs through Truck/Trailer
+  Rentals as opex. Verified: no depreciation or amortization line exists on the P&L.
+- **Income tax = $0** — pass-through entity. `Payroll Taxes` ($490,607.94) is an
+  operating cost, NOT an income tax, and is **not** added back. `Personal Tax
+  Expense` sits inside Owners Draw.
+- **Add-backs** = `EBITDA_ADDBACKS` const: Owners Draw + Asset Loan Payments
+  (personal vehicles). Edit that array to change the list.
+
+**Gotcha:** Owners Draw is an *Other* expense so it never appears in
+`parsed.expenses`. It's derived as `totalOtherIncome + netOpIncome − netIncome`
+(= 549,491.24, ties to the P&L exactly). Interest income isn't broken out by the
+parser (it sits inside Other Income with the Triumph withholding refunds) — $185
+YTD, treated as $0 and disclosed on the tile.
 
 ### Step 0 — ASK Ben for the ATL + Agent rosters (do this FIRST, before any code changes)
 
@@ -477,13 +542,16 @@ For the per-week driver/fuel deltas in the new entry, subtract the PAYROLL/FUEL 
    **CRITICAL: Download the PDF directly from the EFS portal — never "Print to PDF" via Windows.** Print-to-PDF produces a raster/image-only file with no text layer; pdfplumber returns 0 chars across all pages and the parser silently outputs `$0.00`. Producer field will say "Microsoft: Print To PDF" — that's the giveaway. Real EFS exports are ~150 KB; print-to-PDF balloons to ~10 MB.
 2. **SF Payroll Summary** (QuickBooks XLS) — driver + office payroll.
 3. **J&A Management Payroll Summary** (QuickBooks XLS) — J&A office staff. **Always update each week — same cadence as SF.**
-4. **CE & SF Transaction Report** (QuickBooks XLSX) — line-item detail for category totals (Fuel, Insurance, Truck/Trailer Rentals, Storage, Maintenance, Uniforms).
+4. **CE & SF Transaction Report** (QuickBooks `.xlsx` **or `.csv`**) — line-item detail for category totals (Fuel, Insurance, Truck/Trailer Rentals, Storage, Maintenance, Uniforms).
+   - **QB switched these exports .xlsx → .csv on the Aug 3 2026 drop.** `parse_weekly_drop.py` now accepts both (`_sheet_rows()` + `_csv_num()`). Before the fix a `.csv` matched no pattern, `cesf_path` came back `None`, and **every category total silently vanished from `_summary.txt`** with no error.
+   - Three P&L files arrive with near-identical names. Identify by their header row, and rename on drop so future runs aren't ambiguous: single `Total` column = **YTD**, `Jan 1-4 / Jan 5-11 …` = **WEEKLY**, `Jan 2026 … Aug 1-3 2026` = **MONTHLY**.
 5. **CE & SF Profit and Loss — Weekly** (QuickBooks XLSX with column headers like `Apr 27 - May 3 2026`) — feeds `INCOME_2026.weeks[]`.
 6. **CE & SF Profit and Loss — Monthly** (QuickBooks XLSX with column headers like `Jan 2026`, `Feb 2026`, … `May 1-3 2026`) — feeds `INCOME_2026.months[]` and `MONTHLY_REVENUE`.
 7. **Samsara Vehicle Mileage** (XLSX, e.g. `Vehicle Mileage - Jan 1, 12 AM - May 30, 11_59 PM.xlsx`) — per-truck per-state mileage. Columns: `Vehicle | Jurisdiction | Distance (mi) | Toll Distance (mi)`. Run `python scripts/parse_samsara_mileage.py` to regenerate `MILES` + `TRUCK_COUNT` + `FLEET_LOCAL` + `FLEET_REGIONAL` + `TRUCK_MILES[]`. Samsara API retired June 2026 — this xlsx is now the only mileage source.
    - **The parser does NOT emit `active:false` flags — you must re-apply them.** `activeFleetCount` (displayed "N in service") = `TRUCK_MILES.filter(t => t.active !== false).length`, so blindly pasting the parser block inflates it. Preserve the prior inactive-truck set, and default any NEW truck numbers the report introduces to `active:false` (so the count stays at Ben's hardcoded `TRUCK_COUNT`) — then flag them for Ben to classify. Watch for malformed/garbage vehicle ids (e.g. `590114` on the Jun-18 drop, likely a typo'd Samsara vehicle name) — flag, don't silently fold into the fleet.
-8. **Atlanta Billing** (XLSX, e.g. `ATLANTA 2026 - ALL LOADS THRU <M.D>.xlsx`) — Atlanta load-level revenue. Run `python scripts/parse_atl_billing.py` to regenerate the `ATL_BILLING` constant block in `src/App.jsx`. Per Ben every load in the sheet counts as ATL revenue regardless of `Assigned` / `OFFICE` column values (which only reflect QBO booking routing).
-   - **The spreadsheet format has changed 3× in 5 weeks and `parse_atl_billing.py` is currently BROKEN against the latest (Jun 9) format**, which dropped the `Driver` column entirely (cols: `Delivery Date / Load # / REF # / PO # / Customer / Invoice Amount / Carrier / Carrier Amount`). The parser still requires `driver` and errors out. Until fixed, compute `loads / revenue / carrierPay / grossProfit / grossMargin` manually (sum Invoice Amount + Carrier Amount) and leave the `byDriver[]` array as a stale HISTORICAL block (flag it in comments). To restore per-driver: either patch the parser to make `driver` optional, or ask Ben to add the Driver column back.
+8. **Atlanta Billing** (`.csv` or `.xlsx`, e.g. `ATLANTA 2026 - ALL LOADS THRU <M.D>.csv`) — Atlanta load-level revenue. Run `python scripts/parse_atl_billing.py` to regenerate the `ATL_BILLING` constant block in `src/App.jsx`. Per Ben every load in the sheet counts as ATL revenue regardless of `Assigned` / `OFFICE` column values (which only reflect QBO booking routing).
+   - **FIXED 2026-08-03 — the parser now runs WITHOUT a Driver column** (per Ben: "doesn't matter, run without"). `driver` is optional; totals compute and `byDriver` comes back empty. It also accepts `.csv` (the export moved off `.xlsx` on the Aug 3 drop) and reads the as-of date from the filename when there's no sheet name. `ATL_BILLING.byDriver` is now `[]` — the May 4-29 rows that used to sit there were four months stale and read as current; the ATL Ops per-driver table renders an explanatory note instead of an empty grid. If the Driver column ever returns, re-running the parser repopulates it automatically.
+   - **`_num()` matters:** CSV money cells arrive as strings (`" $ 6,800.00 "`, `"(150.00)"`). The old `isinstance(v,(int,float))` checks scored those as **0** and would have silently understated revenue.
    - **EXCLUDE spreadsheet subtotal rows.** The "ALL LOADS THRU <date>" tab has SUM rows mixed into the data (no Delivery Date / Load # / Customer, just a big Invoice Amount). On the Jun 16 drop two such rows (110/112) inflated revenue by $450K — one of them ($198,867.64) was literally the loads total. When computing manually, skip any row where Delivery Date AND Load # AND Customer are all blank. Real Jun-16 figure: 87 loads, $198,868, 70.7% margin.
    - **Blank Carrier Amount = SF self-haul, NOT pending reconciliation.** Many loads land with a blank Carrier Amount (54 of 76 on the Jun 12 drop) because SF hauled them on its own trucks — SF is the carrier, so there's no external carrier cost to deduct. Those loads are full income; SF's cost for them lives in the fleet buckets (LABOR/FUEL), not ATL carrier pay. So the ~70% ATL margin is REAL, not inflated. (Per Ben, Jun 15 — do not describe blank-carrier loads as "carrier-pending".)
 9. **Contractor payment detail** — usually given in chat (e.g. "$2,800 Jon Marcus, $2,150 Mellody, …"). Mention any car payments, commission, or one-offs explicitly.
@@ -530,7 +598,24 @@ before `incoming-freightiq/` is cleared.** The payroll XLS is untracked and
 otherwise unrecoverable. Keep the frozen historical base in `incoming-freightiq/`
 (ContractorPayments + Chase VendorEmployeePayments + latest PaycheckHistory) —
 the scripts re-read those every run.
-Then splice `_gen_payroll.txt`/`_gen_fuel.txt` in (regex-replace `let PAYROLL = [...]` / `let FUEL = {...}`). See `reference_weekly_generators` memory for the reconciliation checks (PAYROLL sum == LABOR; Fleet+ATL fuel == EFS total; Fleet+ATL miles == Samsara total). Still hand-updated each week: the fleet CONSTANTS (LABOR/FUEL_TOT/GALLONS/MILES/INS/TRUCK/TRAILER/etc. + ATL_* constants), `PERIOD`, `INCOME_2026`, `ATL_BILLING`, `ATL_WEEKLY_LOG` entry.
+Then splice `_gen_payroll.txt`/`_gen_fuel.txt` in (regex-replace `let PAYROLL = [...]` / `let FUEL = {...}`).
+
+**Two generator traps fixed 2026-08-03 — don't reintroduce them:**
+- `build_paycheck_grid.py` `_carlbl()` returned a date string **raw**. Grid columns
+  are **PAY DAY** labels (`7/10, 7/17, 7/24, 7/31`), so a spec of `'7/30'` landed
+  under a column that doesn't exist and the amount **silently vanished** (this ate
+  Jon Marcus's $350 July car). It now maps dates through `wk_of()` and **raises**
+  rather than dropping. Car/reimb specs may be a payday label or a real date.
+- `gen_weekly_arrays.py` copied the `FUEL{}` **header comment verbatim** from the
+  previous block, so every weekly shipped a header quoting last week's dollars
+  above this week's rows. It's now derived from live values. Note the rows-sum vs
+  `FUEL_TOT` gap ≠ the unmapped-card total, because frozen drivers carry fixed
+  historical values — the emitted comment says so explicitly.
+- **The grid ACCUMULATES and never overwrites prior weeks** (`merge-guard: N -> M
+  cells`). A bad run therefore *persists*: my first `'7/30'` attempt left a phantom
+  `car` cell that inflated Jon's YTD to $2,800 even after fixing the spec. If a
+  wrong cell lands, strip it from `OFFICE_PAYCHECKS` in `src/App.jsx` and subtract
+  it from that row's `total` — re-running alone will not clear it. See `reference_weekly_generators` memory for the reconciliation checks (PAYROLL sum == LABOR; Fleet+ATL fuel == EFS total; Fleet+ATL miles == Samsara total). Still hand-updated each week: the fleet CONSTANTS (LABOR/FUEL_TOT/GALLONS/MILES/INS/TRUCK/TRAILER/etc. + ATL_* constants), `PERIOD`, `INCOME_2026`, `ATL_BILLING`, `ATL_WEEKLY_LOG` entry.
 
 ### Update App.jsx constants
 
@@ -545,7 +630,10 @@ Touch these (real data each week):
 - `PAYROLL[]` ← paste per-driver rows from `_summary.txt`
 - `FUEL{}` ← match EFS cards to drivers; handle splits for shared cards
 - **`OFFICE_W2[]` + `WAREHOUSE[]`** ← per-person gross/taxes/contrib/totalCost from the **SF + J&A payroll XLS** (xlrd rows: "Gross pay - total", "Employer taxes - total", "Company contributions - total", "Total payroll cost"; salary = gross − bonus − reimb − commission). Names are "Last First" in the XLS vs "First Last" in App.jsx — map them. *Former/frozen staff come back UNCHANGED — that's the tell they're inactive, not a parse miss. **This half is easy to forget — it's NOT optional.**
-- **`CONTRACTORS[]`** ← per-contractor weekly amounts given by Ben **in chat** (no file carries them). Each entry: payments+1, weeklyTotal += weekly, bump commission/health/car where applicable, recompute `total` (= weeklyTotal + carTotal + commission + healthInsTotal + other). Reconcile the array sum vs the QBO "Contractor Payroll" P&L line (within ~1.5%). Ask for these as part of Step 0, alongside the ATL/Agent roster.
+- **`CONTRACTORS[]`** ← per-contractor weekly amounts given by Ben **in chat** (no file carries them). Each entry: payments+1, weeklyTotal += weekly, bump commission/health/car where applicable, recompute `total` (= weeklyTotal + carTotal + commission + healthInsTotal + other). Ask for these as part of Step 0, alongside the ATL/Agent roster. **Run `scripts/check_contractors.py` after — it reconciles vs the QBO "Contractor Payroll" line per month and catches payees who go silent.**
+  - **KNOWN OPEN VARIANCE (as of Aug 2026): −$72,793.28 / −16.0% vs QBO.** Root-caused, not mysterious: **Debra Adamson, Elizabeth Delgado and Christopher Simpson show ZERO in both April and May** — no W-2 and no 1099. They came off W-2 in Feb/Mar and their Apr/May 1099 payments were never recorded. The Chase `VendorEmployeePayments` export only covers the **"Capacity Express 1" account (8 payees)**; these three were paid from another account. Monthly gaps: Jan 336 · Feb 335 · **Mar 8,943 · Apr 16,749 · May 22,968 · Jun 18,602** · Jul 4,860. Fissehaye is clean (W-2 thru May, 1099 from Jun).
+  - **To close it:** a Chase `VendorEmployeePayments` export for the **J&A account, Mar–Jun**, or a full-year QB `ContractorPayments` export. Do NOT back-fill at assumed weekly rates — at their known rates the three explain only ~$13.9K of April's $16.7K and ~$17.4K of May's $23.0K, so roughly $8K/month is something else, and guessing would write wrong per-week cells into the Office Staff grid.
+  - `CONTRACTORS[]` has **13 entries** since Aug 2026 — Erika Valencio, Kacy Richardson and Mairena Tapias were being paid but weren't tracked. Mairena's row holds **two people**: entries thru 06/30 are **Nelly** (predecessor), 07/02 forward are Mairena at $478/wk. Label kept merged per Ben. Her payments are a hand-maintained dated list in `build_paycheck_grid.py` — **append her wires every week** (five July wires were missing until Aug 3).
 - **`OFFICE_PAYCHECKS`** (Office Staff → Weekly Checks grid + the Weekly Cost Trend chart, which now derives from this same data) ← regenerated each week by `scripts/build_paycheck_grid.py`. See the "Office Staff Weekly Checks grid" section below for the full procedure.
 - `INCOME_2026` top-level totals + `weeks[]` (append new week) + `months[]` (replace partial month with full + add new partial)
 - `MONTHLY_REVENUE` ← matching row update for the just-closed month
