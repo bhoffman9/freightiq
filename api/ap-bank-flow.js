@@ -40,6 +40,21 @@ function monthlyEst(amount, gap) {
 
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
+// Business days strictly after `fromISO` up to and including `toISO`.
+// Used for the staleness guard — calendar days would cry wolf every Monday.
+function bizDaysBetween(fromISO, toISO) {
+  if (!fromISO || !toISO) return null;
+  const d = new Date(fromISO + 'T00:00:00Z'), end = new Date(toISO + 'T00:00:00Z');
+  let n = 0;
+  d.setUTCDate(d.getUTCDate() + 1);
+  while (d <= end) {
+    const dow = d.getUTCDay();
+    if (dow !== 0 && dow !== 6) n++;
+    d.setUTCDate(d.getUTCDate() + 1);
+  }
+  return n;
+}
+
 // entity -> default Budget Calendar account label (best-effort; user edits in the calendar)
 const ACCT_BUDGET = { SF: 'AUTO SF', CE: 'AUTO CE', 'CE East': 'CE EAST', 'J&A': 'AUTO J&A', DockIt: 'CE', Payroll: 'SF', Other: 'SF' };
 
@@ -54,11 +69,15 @@ export default async function handler(req, res) {
 
   try {
     const sb = getSupabase();
-    const [wk, acc, rec, known] = await Promise.all([
+    const [wk, acc, rec, known, newest, item] = await Promise.all([
       sb.from('fdw_v_bank_weekly').select('*').order('week_start', { ascending: true }),
       sb.from('fdw_v_bank_account').select('*'),
       sb.from('fdw_v_bank_recurring').select('*'),
       sb.from('w_custom_recurring').select('id,name,amount,account,recur_type,recur_day'),
+      // newest row of ANY kind (incl. pending) + last cron run — together these
+      // separate "sync is dead" from "sync is fine, Chase just settles slowly".
+      sb.from('fdw_bank_feed_txn').select('posted_date').order('posted_date', { ascending: false }).limit(1),
+      sb.from('fdw_plaid_item').select('last_sync_at').order('last_sync_at', { ascending: false }).limit(1),
     ]);
     for (const r of [wk, acc, rec, known]) if (r.error) throw new Error(r.error.message);
 
@@ -135,8 +154,31 @@ export default async function handler(req, res) {
       })
       .sort((a, b) => b.monthlyEst - a.monthlyEst);
 
+    // ── Staleness guard ────────────────────────────────────────────────────
+    // itemErrors[] from plaid-sync only ever landed in an HTTP response nobody
+    // reads, so a dead feed showed up as quietly-wrong numbers. Surface it.
+    const todayISO = new Date().toISOString().slice(0, 10);
+    const lastSettled = accounts.reduce((m, a) => (a.lastTxn && a.lastTxn > m ? a.lastTxn : m), '');
+    const lastAny = (newest.data && newest.data[0] && newest.data[0].posted_date) || null;
+    const lastSyncAt = (item.data && item.data[0] && item.data[0].last_sync_at) || null;
+    const lagBusinessDays = bizDaysBetween(lastSettled, todayISO);
+    const syncAgeHours = lastSyncAt
+      ? Math.round(((Date.now() - new Date(lastSyncAt).getTime()) / 36e5) * 10) / 10
+      : null;
+    // 3 runs/day (06:00/14:00/21:00 UTC) => max healthy gap is 9h. 26h means
+    // runs are being missed, which is a different failure than a settlement lag.
+    const freshness = {
+      lastSettled: lastSettled || null,
+      lastAny,
+      lastSyncAt,
+      syncAgeHours,
+      lagBusinessDays,
+      stale: lagBusinessDays != null && lagBusinessDays > 2,
+      syncStale: syncAgeHours != null && syncAgeHours > 26,
+    };
+
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
-    return res.status(200).json({ weekly, accounts, totals, recurring, recurAccounts, generatedAt: new Date().toISOString() });
+    return res.status(200).json({ weekly, accounts, totals, recurring, recurAccounts, freshness, generatedAt: new Date().toISOString() });
   } catch (e) {
     return res.status(500).json({ error: String(e.message || e) });
   }

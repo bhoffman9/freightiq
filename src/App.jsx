@@ -9147,6 +9147,29 @@ function CashFlowDashboard() {
             <div className="psub" style={{ marginBottom:14 }}>
               Live from Plaid · Chase · {t.weeks} weeks
               <span style={{ color:"#4ade80", marginLeft:8, fontSize:10 }}>● {(bankFlow.accounts||[]).length} accounts</span>
+              {(() => {
+                // Staleness guard. Two DIFFERENT failures, don't conflate them:
+                // syncStale = the cron stopped. stale = the cron runs fine but
+                // Chase hasn't settled recent days yet. Only the first is a bug.
+                const f = bankFlow.freshness;
+                if (!f) return null;
+                if (f.syncStale) return (
+                  <span style={{ color:"#fb7185", marginLeft:10, fontSize:10 }}>
+                    ⚠ plaid-sync last ran {f.syncAgeHours}h ago — cron may be down
+                  </span>
+                );
+                if (f.stale) return (
+                  <span style={{ color:"#f5c542", marginLeft:10, fontSize:10 }}>
+                    ⚠ settled thru {f.lastSettled} · {f.lagBusinessDays} business days behind
+                    {f.lastAny && f.lastAny > f.lastSettled ? ` (pending thru ${f.lastAny})` : ""}
+                  </span>
+                );
+                return (
+                  <span style={{ color:"#5a6370", marginLeft:10, fontSize:10 }}>
+                    settled thru {f.lastSettled}
+                  </span>
+                );
+              })()}
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:14 }}>
               <div className="kpi"><div className="klbl">Money In · {t.weeks}w</div><div className="kval" style={{ color:"#4ade80" }}>{fd(t.inflow,0)}</div><div className="ksub">≈ {fd(t.inflow/t.weeks,0)}/wk avg</div></div>
