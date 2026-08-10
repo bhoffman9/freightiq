@@ -831,7 +831,35 @@ Everything stripped from ATL went **back to fleet** (it was fleet cost when incu
 
 **One deliberate, documented divergence:** `MILES` (893,763.4) now sits **94.4 mi above** the sum of the 50 non-ATL `TRUCK_MILES` rows (893,669.0). That gap is exactly the ATL trucks' pre-launch mileage, which was fleet mileage when driven. `TRUCK_MILES` stays **full-year per-truck** because the Trucks & Mileage tab is a YTD view. `FLEET_LOCAL + FLEET_REGIONAL == MILES` still ties exactly.
 
-**Still open (Ben):** the Samsara export has no driver dimension, so `ATL_MILES` still carves by **truck** while labor and fuel carve by **driver**. Options — (a) pull a driver-level Samsara report, (b) keep truck-based and document the mixed basis (current state), (c) derive driver→truck weekly from EFS unit numbers (approximation). This is a *basis* question, separate from the pre-launch contamination that is now fixed.
+### 🔴 OPEN AND MATERIAL — `ATL_TRUCKS` looks incomplete. ATL CPM may still be ~32% too high.
+
+`ATL_MILES` carves by **truck** (7 numbers) while `ATL_LABOR`/`ATL_FUEL` carve by **driver** (9 names/cards). That mixed basis was assumed harmless. **It is not.** Measured 2026-08-10 from EFS unit numbers (option (c) — the approximation is good enough to size the problem):
+
+**Only 57.9% of post-launch ATL-driver fuel went into the 7 designated ATL trucks.** $51,627 of $123,798 — 41.7% — went into nine other units:
+
+| unit | ATL-card fuel | post-launch miles | in `ATL_TRUCKS`? |
+|---|---|---|---|
+| **869** | **$20,860.26** | **27,297.2** | ❌ — more fuel than ANY designated ATL truck |
+| 674 | 19,367.28 | 27,448.0 | ✅ |
+| 685 | 18,055.65 | 24,916.4 | ✅ |
+| 675 | 15,123.97 | 17,832.2 | ✅ |
+| **114** | **13,544.65** | **4,868.0** | ❌ — and it's on the DEPARTED list in `gen_truck_miles.py` |
+| 673 | 11,850.90 | 22,624.8 | ✅ |
+| 074 · 968 · 951 · 971 · 316 | 15,975 combined | 26,059.5 | ❌ |
+| 791 · 699 | 1,247 combined | **0.0** | ❌ — fuel but no miles at all |
+
+Those nine units ran **59,224.6** post-launch miles that sit in fleet `MILES`, while the cost of driving them sits in `ATL_LABOR`/`ATL_FUEL`. So the ATL numerator is carrying cost whose denominator was booked to the fleet:
+
+```
+ATL CPM on the 7 designated trucks (128,327.0 mi)   $2.1530   <- what ships today
+ATL CPM if all 9 extra units are ATL (187,551.6 mi) $1.4731
+```
+
+**A $0.68/mi (32%) swing — larger than the pre-launch contamination that was just fixed.**
+
+**This is an operational question only Ben can answer, and it was NOT fixed on 2026-08-10:** are 869/114/074/968/951/971/316 actually running Atlanta (→ add them to `ATL_TRUCKS`), or are ATL drivers taking fleet trucks on fleet work (→ the miles are correctly fleet, and the *fuel* is what's miscarved)? **Do not change `ATL_TRUCKS` without asking.** Two side-findings worth raising with him at the same time: **truck 114 is flagged departed but ran 4,868 mi and burned $13,545**, and **791/699 took fuel while logging zero miles**.
+
+⚠️ **How this was measured, because the first attempt was wrong.** The EFS row is `<card> <date> <INVOICE> <UNIT> <driver> …` — the unit is the **second** token after the date. Taking the first token grabs the invoice number and yields a nonsense **0.9%**; the tell was a unit list full of random 3-digit values with near-identical dollar amounts, which is not what a 7-truck fleet looks like. Then normalize to the **last 3 digits** (`9513488` → `488`).
 
 **Also worth knowing:** ATL is *not* geographically Atlanta. Week of 7/20: only 20.6% of fuel bought in GA, 3.8% NV, rest OH/NJ/CT/PA/NM/AZ/OK/NC/IL/LA/MO/KS. Long-haul run out of Atlanta. ATL fuel since inception (May 4) = **$100,557.96 / 19,658.04 gal over 13 weeks**, avg $7,735/wk.
 
