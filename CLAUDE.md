@@ -37,6 +37,9 @@ The rules below have each shipped wrong numbers when missed. They live in full d
 - **Move a $ constant and its denominator together.** `LABOR`↔`TOTAL_HRS`, `ATL_LABOR`↔`ATL_HRS`, costs↔`MILES`. The 7/24 payroll commit moved `LABOR` but not `TOTAL_HRS`, so `HOURLY_RATE` (Per Load CPM quotes) ran 3.4% high for a week. → "Update App.jsx constants"
 - **EFS `Total Fuel` is ULSD only** — DEF (`DEFD`) and Fees are excluded. Re-deriving fuel from transaction lines without filtering DEFD overstates by ~4.7%. → "EFS fuel — per-week + parsing gotchas"
 - **ATL carve follows DRIVERS, not trucks** (Ben, 2026-07-30) — `ATL_LABOR`/`ATL_FUEL` do; `ATL_MILES` still carves by truck. Known open defect, see "ATL carve basis".
+- **Two guards are MANDATORY and must pass before commit:** `check_contractors.py` and
+  `check_atl_log.py`. Both exist because data went silently missing for months. Never widen
+  their tolerances to make them pass. → "check_atl_log.py"
 - **Every weekly drop, report ATL charges to Ben unprompted** (driverPay+fuelAmt+contractorPay, agents excluded) + cumulative. → checklist #9
 
 ## Tech Stack
@@ -575,6 +578,8 @@ python scripts/build_paycheck_grid.py # OFFICE_PAYCHECKS + DRIVER_WEEKLY
 python scripts/check_contractors.py   # ← MANDATORY GUARD. Must pass before commit.
 python scripts/gen_weekly_arrays.py   # writes _gen_payroll.txt + _gen_fuel.txt → splice into App.jsx
 python scripts/gen_truck_miles.py     # TRUCK_MILES (flags departed + 7 ATL trucks)
+python scripts/check_atl_log.py       # ← MANDATORY GUARD. Gapless weeks, no placeholder
+                                      #   zeros, every week's fuel ties to EFS. Must pass.
 ```
 
 **`check_contractors.py` is not optional.** It catches the two ways contractor
@@ -722,6 +727,11 @@ Tag any partial-month row with an inline `// partial — May 1-3 only` comment s
 6. **No stale partial-month rows.** `INCOME_2026.months[]` and `MONTHLY_REVENUE` last entries should either be a full closed month OR a partial flagged with an inline `// partial — May 1-3 only` comment. A closed prior month showing < 50% of the typical run is a stale row.
 7. **Cross-repo fixes are pushed, not just local.** If a fix touches a sibling repo (e.g. `ap-aging` for CORS), `git status` in that repo to confirm clean. The nightly stale-repos cron (`~/Desktop/_stale-repos.md`) catches drift but should never be the first time you discover an uncommitted fix.
 8. **Downstream consumers still work.** CFO Dashboard fetches `metrics.json` + `payroll-summary.json`; Per Load CPM fetches `metrics.json` + `/api/alvys-loads`. Visit each at least once after the deploy lands to confirm they hydrated with new numbers.
+8a. **`check_atl_log.py` passes.** Gapless weeks, no placeholder zeros, every week's
+    fuel ties to the EFS transactions for that week's own roster. A missing week and a
+    `fuelAmt: 0` placeholder each sat undetected for a month and Ben had to re-supply the
+    data — that is what this guard exists to prevent. Run it BEFORE step 9, because step 9
+    reports the number it validates.
 9. **Report ATL weekly charges to Ben (ALWAYS, every weekly drop).** After the update lands, give Ben the total ATL operating charges for the week just added to `ATL_WEEKLY_LOG`: **driverPay + fuelAmt + contractorPay** (agents excluded — separate bucket). Show the 3-line breakdown + the week total, plus the running cumulative from `atlSum()`. This is a standing request (Ben, Jun 15 2026) — don't wait to be asked. See `feedback_atl_weekly_charges` memory.
 10. **Office + contractor half is done too.** `OFFICE_W2` / `WAREHOUSE` refreshed from the SF + J&A payroll XLS, and `CONTRACTORS` updated from Ben's chat amounts. The weekly is NOT done after just drivers/fuel/income — skipping this leaves the Office Staff tab showing last week's numbers (Ben caught this Jun 20 2026; see `feedback_freightiq_weekly_completeness`).
 11. **Clear `incoming-freightiq/`** only AFTER all of the above pass — INCLUDING office/contractor. Clearing early DELETES the payroll XLS (untracked → unrecoverable) and forces a re-drop. Don't clear until the full weekly is built, pushed, and verified live.
@@ -809,9 +819,35 @@ Two defects, both **unfixed on purpose**:
 
 **Also worth knowing:** ATL is *not* geographically Atlanta. Week of 7/20: only 20.6% of fuel bought in GA, 3.8% NV, rest OH/NJ/CT/PA/NM/AZ/OK/NC/IL/LA/MO/KS. Long-haul run out of Atlanta. ATL fuel since inception (May 4) = **$100,557.96 / 19,658.04 gal over 13 weeks**, avg $7,735/wk.
 
-3. **⚠ NEW (2026-08-10) — the May 4 – Jun 21 `ATL_WEEKLY_LOG` entries overstate fuel by ≥$10,694.** Those seven entries are documented best-effort *allocations* (e.g. "7/13 of May 4-16 ATL fuel"), written before the transaction-date method existed. The log's fuel cumulative is **$134,491.87**, but all nine ATL cards *combined* only transacted **$123,797.94** since May 4 — and those early weeks had 3–7 ATL drivers, not 9, so the roster-correct figure is **lower still**. The allocations are therefore too high, not too low. **Fixable now:** for each week, map that week's own `drivers[]` → their EFS cards → sum ULSD by `Tran Date`. Not done unilaterally because it moves the cumulative ATL number Ben tracks weekly — ask first.
+3. **RESOLVED 2026-08-10 — the May 4 – Jun 21 entries were recomputed per-week.** They had been best-effort *allocations* (e.g. "7/13 of May 4-16 ATL fuel") written before the transaction-date method existed. Each week is now `that week's own drivers[]` → their EFS cards → ULSD summed by `Tran Date`.
 
-**Log integrity (fixed 2026-08-10, keep it this way):** the week of **Jul 6-12 was missing entirely** and the 7/13 entry carried `fuelAmt: 0` as a placeholder — together they understated every cumulative ATL figure reported for a month. Both are now filled and the log is **gapless, 14 consecutive Mondays from 2026-05-04**. **Each weekly drop, assert the log has no missing Monday before reporting `atlSum()` to Ben** — `grep -o 'weekStart: "[0-9-]*"' src/App.jsx` and check the dates step by exactly 7 days.
+   **⚠ Read this before quoting a variance number.** The first estimate of this error was **"≥$10,694 overstated" and it was WRONG** — it compared the log against *all nine current ATL cards*, but the three early-ATL drivers (Davis 27406, Denman 47405+37403, Alshamaa 87454) went back to the fleet and still carry **fleet** cards outside the 9-card carve set. Their fuel is legitimately in those early ATL weeks. The true effect:
+
+   | | |
+   |---|---|
+   | net change | **−$1,819.59** (134,491.87 → 132,672.28) |
+   | worst single week | **−$5,555.70** (6/22) |
+   | largest opposite swing | **+$3,062.15** (5/11) |
+   | weeks changed | 9 of 14 |
+
+   **The net is nearly meaningless — the per-week errors ran in BOTH directions and cancelled.** Any future check of this data must compare **per week**, never on the cumulative. That is exactly what `check_atl_log.py` now does.
+
+**`ATL_WEEKLY_LOG` and `ATL_FUEL` are on DIFFERENT BASES and will never tie — this is correct, not a bug.** `ATL_FUEL` is the 9 current cards × the whole year (Jan 1 →), the carve that keeps fleet CPM reconciling to the EFS report. The log is each week's *actual* roster from May 4 →. The gap is (a) $24,792.97 of Wainwright pre-launch fuel in `ATL_FUEL` but not the log, and (b) ~$8,874 of Davis/Denman/Alshamaa fleet-card fuel in the log but not `ATL_FUEL`. **Do not "fix" one to match the other.**
+
+### `check_atl_log.py` — MANDATORY weekly guard (added 2026-08-10)
+
+```bash
+python scripts/check_atl_log.py     # must pass before commit
+```
+
+Same standing as `check_contractors.py`. Exits non-zero on any finding. It exists because ATL data went silently missing for a month and Ben had to re-supply it. It checks four things:
+
+1. **Gapless weeks** — every Monday from the 2026-05-04 launch to the latest entry is present. The week of Jul 6-12 was absent for a month; nothing caught it.
+2. **No placeholder zeros** — a `driverPay: 0` or `fuelAmt: 0` on a week that has drivers. The 7/13 entry sat at `fuelAmt: 0` for weeks. **A zero looks like data.**
+3. **Every driver maps to an EFS card** — an unmapped name means that week's fuel silently cannot be verified. **Add new ATL drivers to `CARD{}` in the script** or the guard goes blind to them.
+4. **Each week's `fuelAmt` ties to the EFS transactions** for that week's own roster, ±$1.00, **per week**.
+
+Verified against the real broken states before being trusted: it produces 12 findings on `abc3e20` (missing week + placeholder zero + 9 drifted weeks) and 9 on `55ff99e`. **Never widen `TOL` to make it pass.**
 
 ### EFS card → driver mapping
 Cards are mapped to drivers via inline comments in `FUEL{}` (e.g. `// card 27406`). Several cards split between active and *inactive (frozen) drivers — when a card's total is unchanged WoW but the card has frozen contributors, the entire card is dormant. New activity on a split card goes to the active driver(s); frozen drivers' historical values stay locked. EFS cards that don't map to a `PAYROLL[]` driver (warehouse / office / unknown) are excluded from per-driver `FUEL{}` but **still counted in `FUEL_TOT`** so the fleet CPM math reconciles to the EFS report total.

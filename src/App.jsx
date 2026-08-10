@@ -7935,7 +7935,7 @@ const CONTRACTORS = [
   { name:"Debra Adamson",        dba:"", weekly:1750, payments:21, weeklyTotal:28714.73, car:0, carPayments:0, carTotal:0, commission:0, healthIns:53.79, healthInsTotal:1506.12, other:984.97, total:31205.82, note:"$985/wk (Chase) → $1,750/wk new normal May 2026 + $985 (QuickBooks) + health ins $53.79/wk (28wk) · excl $2K loan", dual:true },
   { name:"Erika Valencio",      dba:"", weekly:1730, payments:5, weeklyTotal:8650, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:8650, note:"$1,730/wk · J&A · started week of Jul 6 2026" },
   { name:"Kacy Richardson",     dba:"", weekly:500, payments:4, weeklyTotal:2000, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:2000, note:"$500/wk · J&A · started Jul 2026" },
-  { name:"Mairena Tapias",      dba:"", weekly:478, payments:14, weeklyTotal:8056.04, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:8056.04, note:"Jon Marcus's assistant · 100% CE · paid as expense, wired via Chase. Row covers BOTH assistants: thru 6/30 is Nelly (predecessor), 7/2 forward is Mairena at $478/wk. Label kept merged per Ben. Aug-9 wire date inferred (08/06) — not yet in a Chase export." },
+  { name:"Mairena Tapias",      dba:"", weekly:478, payments:14, weeklyTotal:8056.04, car:0, carPayments:0, carTotal:0, commission:0, healthIns:0, healthInsTotal:0, other:0, total:8056.04, note:"Jon Marcus's assistant · 100% CE · paid as expense, wired via Chase. Row covers BOTH assistants: thru 6/30 is Nelly (predecessor), 7/2 forward is Mairena at $478/wk. Label kept merged per Ben. Aug-9 wire 08/06, confirmed by Ben." },
 ];
 
 
@@ -7978,8 +7978,8 @@ const ATL_WEEKLY_LOG = [
     // Manar/Tucker started May 11 → not in this week.
     driverPay: 6966.01,        // best-effort: 7/13 of May 4-16 ATL labor (Davis+Denman+Wainwright)
     driverHours: 188.81,
-    fuelAmt: 3928.05,          // 7/13 of May 4-16 ATL fuel (same 3 drivers)
-    fuelGallons: 699.00,
+    fuelAmt: 3588.42,          // RECOMPUTED 2026-08-10 from this week's OWN roster (3 drivers) -> their EFS cards, ULSD only, bucketed by Tran Date. Was 3,928.05 (best-effort allocation).
+    fuelGallons: 653.23,       // $5.493/gal
     contractors: [
       { name: "Mellody Abrego",   entity: "Neon Vibes Enterprise (pre-rate-change at $2,150/wk)", base: 2150, commission: 0, car: 0, health: 368.34, total: 2518.34 },
       { name: "Biniyam Fissehaye",entity: "J&A W2 (last week before 1099 transition)", total: 1902.31 },
@@ -7996,8 +7996,8 @@ const ATL_WEEKLY_LOG = [
     // Denman + Mellody ATL only this week (per Ben).
     driverPay: 9499.30,        // best-effort: May 11-16 driver totals + 1/8 of May 18-24 delta (for May 17) — incl Denman
     driverHours: 268.84,
-    fuelAmt: 5424.06,          // best-effort similar allocation incl Denman
-    fuelGallons: 933.69,
+    fuelAmt: 8486.21,          // RECOMPUTED 2026-08-10 from this week's OWN roster (6 drivers) -> their EFS cards, ULSD only, bucketed by Tran Date. Was 5,424.06 (best-effort allocation).
+    fuelGallons: 1496.49,      // $5.671/gal
     contractors: [
       { name: "Mellody Abrego",   entity: "Neon Vibes Enterprise (1 paycheck for May 11-17 work, paid May 22)", base: 2250, commission: 300, car: 0, health: 368.34, total: 2918.34 },
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC (Biniyam Fissehaye 1099 phase)", total: 1850 },
@@ -8011,8 +8011,8 @@ const ATL_WEEKLY_LOG = [
     drivers: ["Davis Anthoni D", "Wainwright Michael W", "Alshamaa Manar", "Tucker Robert", "Johnson Christopher"],
     driverPay: 11168.86,       // exact: sum of weekly delta in PAYROLL YTD for these 5 drivers
     driverHours: 350.00,
-    fuelAmt: 8591.14,          // exact: sum of weekly delta in FUEL YTD for these 5 drivers
-    fuelGallons: 1548.71,
+    fuelAmt: 6992.84,          // RECOMPUTED 2026-08-10 from this week's OWN roster (5 drivers) -> their EFS cards, ULSD only, bucketed by Tran Date. Was 8,591.14 (best-effort allocation).
+    fuelGallons: 1252.21,      // $5.584/gal
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
     ],
@@ -8025,8 +8025,8 @@ const ATL_WEEKLY_LOG = [
     drivers: ["Davis Anthoni D", "Wainwright Michael W", "Alshamaa Manar", "Tucker Robert", "Johnson Christopher"],
     driverPay: 11019.19,       // exact: 5-driver delta May 29 vs May 24 PAYROLL YTD (partial week — payroll closes Fri May 29)
     driverHours: 356.33,
-    fuelAmt: 5167.53,          // exact: 5-driver delta May 29 vs May 24 FUEL YTD (partial — EFS closes May 29; Sat/Sun fuel not yet captured)
-    fuelGallons: 919.80,
+    fuelAmt: 7024.23,          // RECOMPUTED 2026-08-10 from this week's OWN roster (5 drivers) -> their EFS cards, ULSD only, bucketed by Tran Date. Was 5,167.53 (best-effort allocation).
+    fuelGallons: 1252.82,      // $5.607/gal
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
     ],
@@ -8040,8 +8040,8 @@ const ATL_WEEKLY_LOG = [
     // Davis Anthoni D transferred OFF ATL — back to CE/SF. Logan LaDyle joined.
     driverPay: 9107.42,        // exact: 5-driver delta Jun 5 vs May 29 PAYROLL YTD (LaDyle is brand-new — all $1,293 of his YTD lands this week)
     driverHours: 304.72,
-    fuelAmt: 7100.53,          // exact: 5-driver delta Jun 5 vs May 29 FUEL YTD (LaDyle contribution = card 57457 delta of $630.49)
-    fuelGallons: 1333.86,
+    fuelAmt: 5817.38,          // RECOMPUTED 2026-08-10 from this week's OWN roster (5 drivers) -> their EFS cards, ULSD only, bucketed by Tran Date. Was 7,100.53 (best-effort allocation).
+    fuelGallons: 1100.78,      // $5.285/gal
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
     ],
@@ -8055,8 +8055,8 @@ const ATL_WEEKLY_LOG = [
     // Same 5 as last week (Ben confirmed). Davis stays OFF ATL.
     driverPay: 11056.32,       // exact: 5-driver delta Jun 12 vs Jun 5 PAYROLL YTD
     driverHours: 362.18,
-    fuelAmt: 5370.50,          // exact: 5-driver delta Jun 12 vs Jun 5 FUEL YTD
-    fuelGallons: 1033.77,
+    fuelAmt: 8161.66,          // RECOMPUTED 2026-08-10 from this week's OWN roster (5 drivers) -> their EFS cards, ULSD only, bucketed by Tran Date. Was 5,370.50 (best-effort allocation).
+    fuelGallons: 1585.45,      // $5.148/gal
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
     ],
@@ -8070,8 +8070,8 @@ const ATL_WEEKLY_LOG = [
     // Same 5 as last week (Ben confirmed Jun 20). No joins/leaves/transfers.
     driverPay: 10464.34,       // exact: 5-driver delta Jun 19 vs Jun 12 PAYROLL YTD
     driverHours: 328.99,
-    fuelAmt: 7834.55,          // exact: 5-driver delta Jun 19 vs Jun 12 FUEL YTD (Manar card 87454 unchanged this week)
-    fuelGallons: 1608.18,
+    fuelAmt: 6126.63,          // RECOMPUTED 2026-08-10 from this week's OWN roster (5 drivers) -> their EFS cards, ULSD only, bucketed by Tran Date. Was 7,834.55 (best-effort allocation).
+    fuelGallons: 1287.26,      // $4.759/gal
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
     ],
@@ -8085,8 +8085,8 @@ const ATL_WEEKLY_LOG = [
     // 5 ATL + ex-OTR Baker/Dawson/Pacitti folded in (OTR dropped 2026-07-16). Manar $0 this week.
     driverPay: 16758.60,       // ATL 5-driver $9,323.37 + ex-OTR Baker/Dawson/Pacitti $7,435.23
     driverHours: 384.41,       // ATL 309.32 + OTR 75.09
-    fuelAmt: 15359.96,         // ATL $5,883.41 + ex-OTR $9,476.55 (cards 27450/17451/87455)
-    fuelGallons: 3249.83,      // ATL 1,276.01 + OTR 1,973.82
+    fuelAmt: 9804.26,          // RECOMPUTED 2026-08-10 from this week's OWN roster (8 drivers) -> their EFS cards, ULSD only, bucketed by Tran Date. Was 15,359.96 (best-effort allocation).
+    fuelGallons: 2075.59,      // $4.724/gal
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
     ],
@@ -8101,8 +8101,8 @@ const ATL_WEEKLY_LOG = [
     // ex-OTR folded in (OTR dropped 2026-07-16 — their labor/fuel now ATL).
     driverPay: 14630.59,       // ATL $9,393.50 (fleet4 $7,279.97 + Pacitti $2,113.53) + ex-OTR Baker/Dawson $5,237.09
     driverHours: 282.25,       // ATL 282.25 + OTR 0 (Baker/Dawson not logging hours)
-    fuelAmt: 9290.26,          // ATL $6,210.17 + ex-OTR Baker/Dawson $3,080.09 (cards 27450/17451)
-    fuelGallons: 1994.78,      // ATL 1,347.45 + OTR 647.33
+    fuelAmt: 10245.36,         // RECOMPUTED 2026-08-10 from this week's OWN roster (7 drivers) -> their EFS cards, ULSD only, bucketed by Tran Date. Was 9,290.26 (best-effort allocation).
+    fuelGallons: 2205.82,      // $4.645/gal
     contractors: [
       { name: "ENM Trucking LLC", entity: "ENM Trucking LLC", total: 1850 },
     ],

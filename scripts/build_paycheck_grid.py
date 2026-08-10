@@ -199,11 +199,8 @@ for w in weeks[1:]:
 r = getrow('CE', ('con','MAI'), 'Mairena Tapias · 1099', False)
 for ds, amt in [('04/20/2026',193.04),('05/05/2026',900.0),('05/20/2026',882.0),('05/28/2026',695.0),('06/02/2026',140.0),('06/12/2026',950.0),('06/18/2026',475.0),('06/22/2026',475.0),('06/30/2026',475.0),
                 ('07/02/2026',481.0),('07/09/2026',478.0),('07/16/2026',478.0),('07/24/2026',478.0),('07/30/2026',478.0),
-                # Amount from Ben's Aug-9 chat list. The exact wire date is NOT in any
-                # export yet (the Chase VendorEmployeePayments file is frozen at 8/3), so
-                # 08/06 is inferred from her Wed/Thu cadence. Only the week bucket matters
-                # here — any date in Aug 3-9 lands in the same 8/7 column. Correct it if
-                # a later Chase export shows a different day.
+                # 08/06 CONFIRMED by Ben 2026-08-10 (was inferred from her Wed/Thu
+                # cadence before he checked). Not yet in a Chase export.
                 ('08/06/2026',478.0)]:
     wl = wk_of(mdate(ds)); r['camts'][wl] = round(r['camts'].get(wl,0) + amt, 2)
 
