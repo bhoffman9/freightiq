@@ -808,14 +808,30 @@ DEF continuation lines have no card/date prefix — carry the previous card+date
 
 **Ben's rule: the ATL carve follows the DRIVERS on ATL payroll.** `ATL_LABOR` (by `SF_ATL` name) and `ATL_FUEL` (by EFS card) obey it. **`ATL_MILES` does not — it carves by truck (`ATL_TRUCKS`).**
 
-Two defects, both **unfixed on purpose**:
+### ✅ RESOLVED 2026-08-10 — the pre-launch contamination is fixed. Read why the old warning was WRONG.
 
-1. **Whole-year roster on a part-year operation.** ATL launched **2026-05-04**; the carve applies today's roster to all of 2026. Wainwright was a fleet driver Jan–May 3, so **$30,489.12 labor + $24,792.97 fuel = $55,282.09 of pre-launch cost is booked to ATL**. He's the only one of the nine with pre-launch activity (other 8 are exactly $0.00).
-2. **`ATL_MILES` has the same contamination and can't be split** — the Samsara export is a YTD per-truck-per-state total with **no date column**.
+This section used to say: *"Do NOT fix the numerator alone — ATL CPM would fall $2.5053 → $2.0036, a ~20% 'improvement' that is pure artifact,"* on the assumption that `ATL_MILES` carried the same pre-launch contamination as labor and fuel. **Ben's date-bounded Samsara export (May 4 → Aug 8) disproved that.**
 
-**⚠ Do NOT fix the numerator alone** — ATL CPM would fall $2.5053 → $2.0036, a ~20% "improvement" that is pure artifact. **Unblocker:** a Samsara Vehicle Mileage export for **2026-05-04 → 2026-07-26**, then it ships as one commit.
+**The 7 ATL trucks ran 94.4 miles before May 4.** Ninety-four, out of 128,421.4 — 0.07%. Wainwright was driving a *fleet* truck pre-launch, so his pre-launch miles were already in fleet `MILES`. The contamination was **numerator-only**, which means ATL CPM was **overstated**, and the "artifact" the old note warned about was actually the correct number all along.
 
-**Undecided (Ben):** the Samsara export has no driver dimension, so strict driver-following for miles isn't possible with the current file. Options — (a) pull a driver-level Samsara report, (b) keep truck-based and document the mixed basis, (c) derive driver→truck weekly from EFS unit numbers (approximation).
+| | current | restated |
+|---|---|---|
+| `ATL_LABOR` | 184,677.28 | **152,229.28** |
+| `ATL_HRS` | 5,343.02 | **4,404.25** |
+| `ATL_FUEL` | 148,905.56 | **124,060.09** |
+| `ATL_GALLONS` | 29,171.28 | **23,947.57** |
+| `ATL_MILES` | 128,421.40 | **128,327.00** |
+| **ATL CPM** | 2.5976 | **2.1530** |
+| Fleet Basic CPM | 3.1363 | **3.2001** |
+| Fleet All-In CPM | 3.5491 | **3.6128** |
+
+Everything stripped from ATL went **back to fleet** (it was fleet cost when incurred), so all four reconciliations still hold exactly: fleet+ATL fuel 813,942.75 == EFS · gallons 150,385.44 == EFS · labor 1,515,890.66 == payroll · miles 1,022,090.4 == Samsara.
+
+**The labor boundary is WORK WEEK, not check date (Ben, 2026-08-10).** Paydays are Fridays covering the prior Mon–Sun. The **5/08** check covers Apr 27 – May 3 (pre-launch) and is **fleet**; **5/15** is the first ATL check, covering the May 4–10 launch week. `ATL_LABOR` = the YTD loaded total × **0.824299**, the share of ATL-9 gross on checks dated ≥ 2026-05-15. Wainwright is the only one of the nine with any pre-5/15 checks. Fuel and miles carry their own dates and use the literal **2026-05-04** launch.
+
+**One deliberate, documented divergence:** `MILES` (893,763.4) now sits **94.4 mi above** the sum of the 50 non-ATL `TRUCK_MILES` rows (893,669.0). That gap is exactly the ATL trucks' pre-launch mileage, which was fleet mileage when driven. `TRUCK_MILES` stays **full-year per-truck** because the Trucks & Mileage tab is a YTD view. `FLEET_LOCAL + FLEET_REGIONAL == MILES` still ties exactly.
+
+**Still open (Ben):** the Samsara export has no driver dimension, so `ATL_MILES` still carves by **truck** while labor and fuel carve by **driver**. Options — (a) pull a driver-level Samsara report, (b) keep truck-based and document the mixed basis (current state), (c) derive driver→truck weekly from EFS unit numbers (approximation). This is a *basis* question, separate from the pre-launch contamination that is now fixed.
 
 **Also worth knowing:** ATL is *not* geographically Atlanta. Week of 7/20: only 20.6% of fuel bought in GA, 3.8% NV, rest OH/NJ/CT/PA/NM/AZ/OK/NC/IL/LA/MO/KS. Long-haul run out of Atlanta. ATL fuel since inception (May 4) = **$100,557.96 / 19,658.04 gal over 13 weeks**, avg $7,735/wk.
 

@@ -173,13 +173,13 @@ let FUEL = {
 // All other costs come from QuickBooks P&L.
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
-let LABOR     = 1331213.38; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru Aug 9. 27 drivers active (frozen + terminated keep YTD so LABOR reconciles; this digit MUST equal ACTIVE_DRIVERS_COUNT — extract-metrics.js publishes it as metrics.json drivers:N. 28 -> 27 on the Aug-9 drop: +Dalton Aaron, a new hire (first paycheck $426.92 / 14.76 hrs, fleet not ATL per Ben), −Morris Roderick F and −Thomas John, both terminated per Ben. Paid-but-frozen audit was clean — zero this week). EXCLUDES all 9 ATL drivers (Baker/Dawson/Pacitti/Griffin*/Johnson/Logan/Phillips/Tucker/Wainwright — *Griffin terminated, YTD retained) $184,677.28 / 5,343.02 hrs → ATL_WEEKLY_LOG + ATL CPM, NOT fleet. + Wilson Antionette (ATL office → OFFICE_W2). Reconciles to PAYROLL[] sum per scripts/gen_weekly_arrays.py.
-let FUEL_TOT  = 665037.19;  // EFS fleet only — EFS report total $813,942.75 minus the 9 ATL cards (27450/17451/87455/37459/57457/47458/67463/07454/87457) $148,905.56; ATL carved out of fleet CPM
-let GALLONS   = 121214.16;  // EFS 150,385.44 minus ATL 29,171.28
+let LABOR     = 1363661.38; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru Aug 9. 27 drivers active (frozen + terminated keep YTD so LABOR reconciles; this digit MUST equal ACTIVE_DRIVERS_COUNT — extract-metrics.js publishes it as metrics.json drivers:N. 28 -> 27 on the Aug-9 drop: +Dalton Aaron, a new hire (first paycheck $426.92 / 14.76 hrs, fleet not ATL per Ben), −Morris Roderick F and −Thomas John, both terminated per Ben. Paid-but-frozen audit was clean — zero this week). EXCLUDES all 9 ATL drivers (Baker/Dawson/Pacitti/Griffin*/Johnson/Logan/Phillips/Tucker/Wainwright — *Griffin terminated, YTD retained) $152,229.28 / 4,404.25 hrs → ATL_WEEKLY_LOG + ATL CPM, NOT fleet. + Wilson Antionette (ATL office → OFFICE_W2). Reconciles to PAYROLL[] sum per scripts/gen_weekly_arrays.py.
+let FUEL_TOT  = 689882.66;  // EFS fleet only — EFS report total $813,942.75 minus the 9 ATL cards (27450/17451/87455/37459/57457/47458/67463/07454/87457) $148,905.56; ATL carved out of fleet CPM
+let GALLONS   = 126437.87;  // EFS 150,385.44 minus ATL 29,171.28
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
-let MILES     = 893669.0;     // Samsara Vehicle Mileage (Jan 1 – Aug 8, 2026 — export runs 1 day short of PERIOD end, as usual): sum of the 50 non-ATL TRUCK_MILES rows. All four mileage constants are derived from those same rows so FLEET_LOCAL+FLEET_REGIONAL == MILES exactly; MILES+ATL_MILES lands 0.4 mi over the report total 1,022,090.0 purely from per-truck rounding (0.00004%). ATL trucks 685/674/669/686/673/675/488 = 128,421.4. Regenerate via scripts/parse_samsara_mileage.py (accepts .csv or .xlsx) then scripts/gen_truck_miles.py — never paste the parser's raw TRUCK_COUNT (it reports all 54 trucks in the file, not the 30 active) and never paste TRUCK_MILES without re-applying active:false.
+let MILES     = 893763.4;     // Samsara: fleet = report total 1,022,090.4 minus the 7 ATL trucks POST-LAUNCH (128,327.0, May 4 - Aug 8). NOTE: this sits 94.4 mi ABOVE the sum of the 50 non-ATL TRUCK_MILES rows (893,669.0) — that is the ATL trucks\' PRE-launch mileage, which was fleet mileage when it was driven. TRUCK_MILES stays full-year per-truck for the Trucks & Mileage tab.
 let TRUCK_COUNT = 30;       // ACTIVE fleet trucks per Ben's truck-count sheet (ATL trucks tracked separately). Confirm active count with Ben.
-let TOTAL_HRS  = 42309.04;  // Payroll hours — fleet drivers only (office + 9 ATL drivers + Wilson excluded), thru Aug 9 (matches LABOR's basis)
+let TOTAL_HRS  = 43247.81;  // Payroll hours — fleet drivers only (office + 9 ATL drivers + Wilson excluded), thru Aug 9 (matches LABOR's basis)
 let INS_WEEK  = 6375;
 let INS_TOT    = 220590.00;  // QB: SF Truck Insurance only (CPM insurance = truck insurance) thru Aug 9. +$19,054.42 WoW = the Aug 1-10 posting after two flat weeks (~3 weeks at $6,375/wk), not a rate change.
 let TRUCK_TOT  = 585955.24;  // QuickBooks: Truck Rentals (Penske + TEC/Transco + TCI + Ryder) thru Aug 9. ⚠ UNCHANGED WoW and Aug 1-10 posts $0 while every other category has August activity — consistent with the known late-month posting pattern (Jun $125,945 → Jul $96,044, and July's own close landed late last week), so this is a TIMING gap, not a missing file. It understates truck cost by roughly $30K, worth ~$0.04/mi in the opposite direction from the stale MILES above.
@@ -191,11 +191,11 @@ let STORAGE      = 70222.74;  // Storage/Parking per P&L thru Aug 9
 let MAINT_TOT    = TRUCK_MAINT + TRAIL_MAINT + STORAGE;
 let UNIFORMS     = 14958.19;  // Unifirst + Safety Guard Shoe thru Aug 9
 // ── ATL operation (carved out of fleet CPM) — its own CPM tab ───
-let ATL_LABOR   = 184677.28;  // 9 ATL drivers YTD (gross+taxes+401k) thru Aug 9
-let ATL_HRS     = 5343.02;    // 9 ATL drivers YTD hours thru Aug 9 (matches ATL_LABOR's basis)
-let ATL_FUEL    = 148905.56;  // 9 ATL EFS cards YTD thru Aug 9
-let ATL_GALLONS = 29171.28;
-let ATL_MILES   = 128421.4;  // Samsara: trucks 685/674/669/686/673/675/488, thru Aug 8
+let ATL_LABOR   = 152229.28;  // 9 ATL drivers, POST-LAUNCH only: YTD loaded 184,677.28 x 0.824299 (share of ATL-9 gross on checks dated >= 2026-05-15). Paydays are Fridays, so 5/15 is the first check covering the May 4-10 launch week; the 5/08 check covers Apr 27 - May 3 and is FLEET per Ben 2026-08-10.
+let ATL_HRS     = 4404.25;    // 9 ATL drivers YTD hours thru Aug 9 (matches ATL_LABOR's basis)
+let ATL_FUEL    = 124060.09;  // 9 ATL cards, transactions dated >= 2026-05-04 only. Pre-launch 24,845.47 returned to FUEL_TOT.
+let ATL_GALLONS = 23947.57;
+let ATL_MILES   = 128327.0;   // Samsara trucks 685/674/669/686/673/675/488, MAY 4 - AUG 8 (date-bounded export). Full-year for those trucks is 128,421.4; only 94.4 mi predate the launch.
 let ATL_TRUCKS  = ["685","674","669","686","673","675","488"];
 // Basic CPM = Labor + Fuel + Truck Rentals + Insurance only
 let BASIC_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT;
@@ -537,7 +537,7 @@ let TRUCK_MILES = [
   { truck:"589", local:985.5, regional:0.0, miles:985.5, states:{"NV":985.5} , active:false },
 ];
 let FLEET_LOCAL    = 178858.8;   // NV miles (fleet only, ATL trucks excluded)
-let FLEET_REGIONAL = 714810.2;   // non-NV miles (fleet only, ATL trucks excluded)
+let FLEET_REGIONAL = 714904.6;   // non-NV miles (fleet only, ATL trucks excluded)
 
 // ── TRANSACTION DETAIL DATA ──────────────────────────────────
 const DETAIL = {

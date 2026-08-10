@@ -1,9 +1,9 @@
 {
   "period": "Jan 1 - Aug 9, 2026",
   "drivers": 27,
-  "miles": 893669,
-  "labor": 1331213.38,
-  "fuel_tot": 665037.19,
+  "miles": 893763.4,
+  "labor": 1363661.38,
+  "fuel_tot": 689882.66,
   "ins_tot": 220590,
   "truck_tot": 585955.24,
   "trailer_tot": 260395.28,
@@ -288,5 +288,5 @@
     "driver_payroll_wk": 57847
   },
   "driver_payroll_latest": 56078,
-  "extracted_at": "2026-08-10T16:19:49.982Z"
+  "extracted_at": "2026-08-10T16:35:59.667Z"
 }
