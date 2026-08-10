@@ -82,7 +82,7 @@ let PAYROLL = [
   { name: "McNamara John", hours: 1838.48, totalCost: 61377.75 },
   { name: "Mcclam Michael A", hours: 1312.60, totalCost: 40154.19 },
   { name: "Memolo Dominick", hours: 0.00, totalCost: 0.00, active: false },
-  { name: "Morris Roderick F", hours: 140.14, totalCost: 4053.55 },
+  { name: "Morris Roderick F", hours: 140.14, totalCost: 4053.55, active: false },
   { name: "Negrete Arturo", hours: 371.01, totalCost: 11053.06, active: false },
   { name: "Ponce Carlos", hours: 1263.58, totalCost: 39019.43 },
   { name: "Restrepo Julian E", hours: 1280.05, totalCost: 40096.99 },
@@ -93,7 +93,7 @@ let PAYROLL = [
   { name: "Stevenson Timothy", hours: 568.20, totalCost: 16393.97 },
   { name: "Stringer Adam E", hours: 203.46, totalCost: 5885.08, active: false },
   { name: "Striplin Lamareh", hours: 653.62, totalCost: 20028.99, active: false },
-  { name: "Thomas John", hours: 194.71, totalCost: 6024.83 },
+  { name: "Thomas John", hours: 194.71, totalCost: 6024.83, active: false },
   { name: "Thorne Richard", hours: 254.53, totalCost: 7387.28, active: false },
   { name: "Vue CJ Z", hours: 3.00, totalCost: 86.78, active: false },
   { name: "Watkins Shawn", hours: 862.89, totalCost: 25591.49, active: false },
@@ -173,7 +173,7 @@ let FUEL = {
 // All other costs come from QuickBooks P&L.
 // Individual vendor invoices (TCI, Penske, TEC, McKinney, etc.) are
 // shown in the Trucks/Trailers tabs but do NOT affect these totals.
-let LABOR     = 1331213.38; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru Aug 9. 29 drivers active (frozen + terminated keep YTD so LABOR reconciles; this digit MUST equal ACTIVE_DRIVERS_COUNT — extract-metrics.js publishes it as metrics.json drivers:N. 28 -> 29 on the Aug-9 drop: Dalton Aaron is a new hire, first paycheck $426.92 / 14.76 hrs. Active-flag audit was clean this week — zero paid-but-frozen drivers). EXCLUDES all 9 ATL drivers (Baker/Dawson/Pacitti/Griffin*/Johnson/Logan/Phillips/Tucker/Wainwright — *Griffin terminated, YTD retained) $184,677.28 / 5,343.02 hrs → ATL_WEEKLY_LOG + ATL CPM, NOT fleet. + Wilson Antionette (ATL office → OFFICE_W2). Reconciles to PAYROLL[] sum per scripts/gen_weekly_arrays.py.
+let LABOR     = 1331213.38; // QuickBooks: SF FLEET driver payroll (gross+taxes+401k) thru Aug 9. 27 drivers active (frozen + terminated keep YTD so LABOR reconciles; this digit MUST equal ACTIVE_DRIVERS_COUNT — extract-metrics.js publishes it as metrics.json drivers:N. 28 -> 27 on the Aug-9 drop: +Dalton Aaron, a new hire (first paycheck $426.92 / 14.76 hrs, fleet not ATL per Ben), −Morris Roderick F and −Thomas John, both terminated per Ben. Paid-but-frozen audit was clean — zero this week). EXCLUDES all 9 ATL drivers (Baker/Dawson/Pacitti/Griffin*/Johnson/Logan/Phillips/Tucker/Wainwright — *Griffin terminated, YTD retained) $184,677.28 / 5,343.02 hrs → ATL_WEEKLY_LOG + ATL CPM, NOT fleet. + Wilson Antionette (ATL office → OFFICE_W2). Reconciles to PAYROLL[] sum per scripts/gen_weekly_arrays.py.
 let FUEL_TOT  = 665037.19;  // EFS fleet only — EFS report total $813,942.75 minus the 9 ATL cards (27450/17451/87455/37459/57457/47458/67463/07454/87457) $148,905.56; ATL carved out of fleet CPM
 let GALLONS   = 121214.16;  // EFS 150,385.44 minus ATL 29,171.28
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
@@ -8110,16 +8110,28 @@ const ATL_WEEKLY_LOG = [
     note: "Mon Jun 29 – Fri Jul 3. ATL (CJ/LaDyle/Tucker/Wainwright + Pacitti) + ex-OTR Baker/Dawson folded in (OTR dropped; labor/fuel now ATL). All exact. Agent Kevin $500 separate (not in ATL total).",
   },
   {
+    weekStart: "2026-07-06",
+    weekEnd: "2026-07-12",
+    drivers: ["Baker Anthony", "Dawson Brian", "Pacitti Michael R", "Griffin Corey", "Johnson Christopher M", "Logan LaDyle", "Phillips Anthony P", "Tucker Robert", "Wainwright Michael W"],
+    driverPay: 14701.11,       // 7/10 pay week: ATL-9 gross $13,314.36 × loaded factor 1.104154 (ATL_LABOR ÷ ATL-9 gross YTD). Method reproduces the 6/29 entry to $0.32 and 7/13 to $18.24.
+    driverHours: 0,            // not derivable — the paycheck history carries no hours column and the payroll summary is YTD-only. Same treatment as the 7/13 entry.
+    fuelAmt: 8843.79,          // exact Mon-Sun, summed from EFS transaction dates on the ATL cards (ULSD only, DEFD excluded). Same parse ties the 7/27 and 8/3 weeks to the penny.
+    fuelGallons: 1758.98,      // $5.028/gal
+    contractors: [],
+    contractorPay: 0,          // ⚠ ENM was paid $1,850 this week (MANUAL_CONTRACTORS '7/6'), but Ben gave only the DRIVER roster for this week — the ATL contractor designation was not confirmed, and per feedback_atl_no_generalize it is not inferred from adjacent weeks. Add $1,850 here if he confirms.
+    note: "Week of Jul 6-12 — BACKFILLED 2026-08-10. This week was missing entirely from the log (13 of 14 weeks since the May 4 launch were recorded), so every cumulative ATL figure reported before today understated by it. Roster of 9 confirmed by Ben. Griffin and Phillips were on the roster but had NO paycheck on 7/10 and NO EFS transactions this week (cards 07454/87457 silent) — that is why only 7 drivers and 7 cards carry amounts. Agents separate.",
+  },
+  {
     weekStart: "2026-07-13",
     weekEnd: "2026-07-19",
     drivers: ["Baker Anthony", "Dawson Brian", "Pacitti Michael R", "Griffin Corey", "Johnson Christopher M", "Logan LaDyle", "Phillips Anthony P", "Tucker Robert", "Wainwright Michael W"],
     driverPay: 15653.21,       // exact 9-driver loaded cost, DRIVER_WEEKLY 7/17 pay week
     driverHours: 0,            // hours dropped per Ben
-    fuelAmt: 0,                // per-week fuel not delta-computed (roster expanded 7→9). ATL fuel tracked at YTD on the ATL CPM tab ($102,240 / 20,608 gal).
-    fuelGallons: 0,
+    fuelAmt: 12302.35,         // FIXED 2026-08-10 (was 0). Summed from EFS transaction dates on the ATL cards, ULSD only — the same parse that ties the 7/27 and 8/3 weeks to the penny. The original 0 was a placeholder because the roster expanded 7→9 mid-stream, and it silently understated every cumulative ATL total.
+    fuelGallons: 2356.77,      // $5.220/gal
     contractors: [],
     contractorPay: 0,
-    note: "Week of Jul 13-19. ATL roster expanded to 9 (Griffin/Johnson/Logan/Phillips added). All 9 carved out of fleet CPM. YTD ATL labor $135,928 + fuel $102,240 = $238,168 on the ATL CPM tab. Agent Kevin separate.",
+    note: "Week of Jul 13-19. ATL roster 9 (Griffin/Johnson/Logan/Phillips added the week prior). All 9 carved out of fleet CPM. Agent Kevin separate.",
   },
   {
     weekStart: "2026-07-20",

@@ -86,11 +86,6 @@
       "totalCost": 40154.19
     },
     {
-      "name": "Morris Roderick F",
-      "hours": 140.14,
-      "totalCost": 4053.55
-    },
-    {
       "name": "Ponce Carlos",
       "hours": 1263.58,
       "totalCost": 39019.43
@@ -119,11 +114,6 @@
       "name": "Stevenson Timothy",
       "hours": 568.2,
       "totalCost": 16393.97
-    },
-    {
-      "name": "Thomas John",
-      "hours": 194.71,
-      "totalCost": 6024.83
     },
     {
       "name": "Whipple Wallace",
@@ -324,11 +314,11 @@
   ],
   "period": "Jan 1 - Aug 9, 2026",
   "totals": {
-    "driverLabor": 1069374.5699999998,
-    "driverCount": 29,
+    "driverLabor": 1059296.19,
+    "driverCount": 27,
     "officeTotal": 516365.28,
     "warehouseTotal": 84859.17,
     "contractorTotal": 417807.84,
-    "grandTotal": 2088406.8599999999
+    "grandTotal": 2078328.48
   }
 }

@@ -1,6 +1,6 @@
 {
   "period": "Jan 1 - Aug 9, 2026",
-  "drivers": 29,
+  "drivers": 27,
   "miles": 849772.9,
   "labor": 1331213.38,
   "fuel_tot": 665037.19,
@@ -33,7 +33,7 @@
       "loads_per_truck": 2.43,
       "rev_per_pay": 1.396,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-03-29",
@@ -47,7 +47,7 @@
       "loads_per_truck": 3.33,
       "rev_per_pay": 3.551,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-04-05",
@@ -61,7 +61,7 @@
       "loads_per_truck": 3.2,
       "rev_per_pay": 3.872,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-04-12",
@@ -75,7 +75,7 @@
       "loads_per_truck": 4.7,
       "rev_per_pay": 3.343,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-04-19",
@@ -89,7 +89,7 @@
       "loads_per_truck": 4.43,
       "rev_per_pay": 4.24,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-04-26",
@@ -103,7 +103,7 @@
       "loads_per_truck": 4.1,
       "rev_per_pay": 3.479,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-05-03",
@@ -117,7 +117,7 @@
       "loads_per_truck": 3.73,
       "rev_per_pay": 3.412,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-05-10",
@@ -131,7 +131,7 @@
       "loads_per_truck": 4.87,
       "rev_per_pay": 3.957,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-05-17",
@@ -145,7 +145,7 @@
       "loads_per_truck": 3.93,
       "rev_per_pay": 3.094,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-05-24",
@@ -159,7 +159,7 @@
       "loads_per_truck": 4.9,
       "rev_per_pay": 3.489,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-05-31",
@@ -173,7 +173,7 @@
       "loads_per_truck": 7.17,
       "rev_per_pay": 4.614,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-06-07",
@@ -187,7 +187,7 @@
       "loads_per_truck": 7.13,
       "rev_per_pay": 3.78,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-06-14",
@@ -201,7 +201,7 @@
       "loads_per_truck": 3.63,
       "rev_per_pay": 3.727,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-06-21",
@@ -215,7 +215,7 @@
       "loads_per_truck": 3.03,
       "rev_per_pay": 2.999,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-06-28",
@@ -229,7 +229,7 @@
       "loads_per_truck": 2.43,
       "rev_per_pay": 2.26,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-07-05",
@@ -243,7 +243,7 @@
       "loads_per_truck": 4.27,
       "rev_per_pay": 4.513,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-07-12",
@@ -257,7 +257,7 @@
       "loads_per_truck": 3.5,
       "rev_per_pay": 3.575,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     },
     {
       "week": "2026-07-19",
@@ -271,13 +271,13 @@
       "loads_per_truck": 2.03,
       "rev_per_pay": 2.077,
       "trucks": 30,
-      "drivers": 29
+      "drivers": 27
     }
   ],
   "utilization": {
     "weeks": 12,
     "trucks": 30,
-    "drivers": 29,
+    "drivers": 27,
     "avg_rev": 199693,
     "avg_loads": 127,
     "avg_miles": 28135,
@@ -288,5 +288,5 @@
     "driver_payroll_wk": 57847
   },
   "driver_payroll_latest": 56078,
-  "extracted_at": "2026-08-10T14:50:54.712Z"
+  "extracted_at": "2026-08-10T15:44:36.168Z"
 }
