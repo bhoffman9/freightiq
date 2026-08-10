@@ -773,6 +773,23 @@ Total Fuel       477.56     91.86      <-- what we use
 `<5-digit card> <YYYY-MM-DD> <invoice> <unit> <driver> <location> <CITY> <ST> <fee> <ITEM> <price> <qty> <amt> N USD/Gallons`
 DEF continuation lines have no card/date prefix — carry the previous card+date forward.
 
+- **⚠ The per-card `Group:` summary block ALSO contains a `ULSD` line, and it will
+  silently corrupt any transaction-level re-derivation.** Its shape is
+  `ULSD <amount> <quantity> <avgPPU>` — three numbers, same as a transaction's
+  `<price> <qty> <amt>` — so a naive item regex matches both. Counting both
+  **doubles gallons** (measured 58,342.56 vs the true 29,171.28 on the Aug-9 ATL
+  cards) and adds each card's avg PPU to the dollar total (+$46.76 across 9
+  cards) — small enough in dollars to look plausible, which is what makes it
+  dangerous. **Fix: only parse lines that match the transaction prefix
+  `^\d{5}\s+\d{4}-\d{2}-\d{2}`.** Caught 2026-08-10 by tie-out, not by inspection.
+- **Always tie a weekly re-derivation to a week you already booked exactly**
+  before trusting a new one. The Jul 6-12 backfill was only trustworthy because
+  the same parse reproduced the 7/27 and 8/3 weeks to the penny.
+- Transaction rows whose item line wraps leave a small residual: summing
+  transaction rows gives $148,590.91 vs the per-card `Total Fuel` sum of
+  $148,905.56 (0.2%). **`Total Fuel` stays authoritative for the constants**;
+  transaction sums are for per-week splits only.
+
 - **Unit numbers are not clean truck numbers.** EFS writes truck 685 as `9512685`, 673 as `9512673`, 488 as `9513488`, sometimes `95128685`. **Normalize to the last 3 digits** before matching `ATL_TRUCKS` — un-normalized matching understated ATL-truck share as 40.4% vs the real 57.7%.
 - **EFS closes after the P&L** (Jul-30 drop: EFS thru Jul 29, P&L thru Jul 26). So `FUEL_TOT(new) − FUEL_TOT(old)` is NOT a clean week — use transaction dates for a true Mon–Sun figure.
 - DEF is a real cost (~$5,910 YTD ATL) that sits in **no** CPM bucket — it's inside the QBO fuel line, not EFS-only `FUEL_TOT`.
@@ -791,6 +808,10 @@ Two defects, both **unfixed on purpose**:
 **Undecided (Ben):** the Samsara export has no driver dimension, so strict driver-following for miles isn't possible with the current file. Options — (a) pull a driver-level Samsara report, (b) keep truck-based and document the mixed basis, (c) derive driver→truck weekly from EFS unit numbers (approximation).
 
 **Also worth knowing:** ATL is *not* geographically Atlanta. Week of 7/20: only 20.6% of fuel bought in GA, 3.8% NV, rest OH/NJ/CT/PA/NM/AZ/OK/NC/IL/LA/MO/KS. Long-haul run out of Atlanta. ATL fuel since inception (May 4) = **$100,557.96 / 19,658.04 gal over 13 weeks**, avg $7,735/wk.
+
+3. **⚠ NEW (2026-08-10) — the May 4 – Jun 21 `ATL_WEEKLY_LOG` entries overstate fuel by ≥$10,694.** Those seven entries are documented best-effort *allocations* (e.g. "7/13 of May 4-16 ATL fuel"), written before the transaction-date method existed. The log's fuel cumulative is **$134,491.87**, but all nine ATL cards *combined* only transacted **$123,797.94** since May 4 — and those early weeks had 3–7 ATL drivers, not 9, so the roster-correct figure is **lower still**. The allocations are therefore too high, not too low. **Fixable now:** for each week, map that week's own `drivers[]` → their EFS cards → sum ULSD by `Tran Date`. Not done unilaterally because it moves the cumulative ATL number Ben tracks weekly — ask first.
+
+**Log integrity (fixed 2026-08-10, keep it this way):** the week of **Jul 6-12 was missing entirely** and the 7/13 entry carried `fuelAmt: 0` as a placeholder — together they understated every cumulative ATL figure reported for a month. Both are now filled and the log is **gapless, 14 consecutive Mondays from 2026-05-04**. **Each weekly drop, assert the log has no missing Monday before reporting `atlSum()` to Ben** — `grep -o 'weekStart: "[0-9-]*"' src/App.jsx` and check the dates step by exactly 7 days.
 
 ### EFS card → driver mapping
 Cards are mapped to drivers via inline comments in `FUEL{}` (e.g. `// card 27406`). Several cards split between active and *inactive (frozen) drivers — when a card's total is unchanged WoW but the card has frozen contributors, the entire card is dormant. New activity on a split card goes to the active driver(s); frozen drivers' historical values stay locked. EFS cards that don't map to a `PAYROLL[]` driver (warehouse / office / unknown) are excluded from per-driver `FUEL{}` but **still counted in `FUEL_TOT`** so the fleet CPM math reconciles to the EFS report total.
