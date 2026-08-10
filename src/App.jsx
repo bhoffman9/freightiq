@@ -177,7 +177,7 @@ let LABOR     = 1331213.38; // QuickBooks: SF FLEET driver payroll (gross+taxes+
 let FUEL_TOT  = 665037.19;  // EFS fleet only — EFS report total $813,942.75 minus the 9 ATL cards (27450/17451/87455/37459/57457/47458/67463/07454/87457) $148,905.56; ATL carved out of fleet CPM
 let GALLONS   = 121214.16;  // EFS 150,385.44 minus ATL 29,171.28
 let MILES_EST = GALLONS * 6.5;  // kept for fuel avg price calc
-let MILES     = 849772.9;     // ⚠ STALE — still Jan 1 – Aug 1. No Samsara Vehicle Mileage export arrived in the Aug-9 drop, so this denominator is 8 days behind every cost numerator above. CPM therefore reads HIGH: Basic +$0.109/mi, All-In +$0.124/mi vs. a ~26,000-mi week. Fleet total 965,151.7 minus the 7 ATL trucks (685/674/669/686/673/675/488) 115,378.8. FIX: drop the Jan 1 → Aug 9 export and run scripts/parse_samsara_mileage.py (accepts .csv or .xlsx).
+let MILES     = 893669.0;     // Samsara Vehicle Mileage (Jan 1 – Aug 8, 2026 — export runs 1 day short of PERIOD end, as usual): sum of the 50 non-ATL TRUCK_MILES rows. All four mileage constants are derived from those same rows so FLEET_LOCAL+FLEET_REGIONAL == MILES exactly; MILES+ATL_MILES lands 0.4 mi over the report total 1,022,090.0 purely from per-truck rounding (0.00004%). ATL trucks 685/674/669/686/673/675/488 = 128,421.4. Regenerate via scripts/parse_samsara_mileage.py (accepts .csv or .xlsx) then scripts/gen_truck_miles.py — never paste the parser's raw TRUCK_COUNT (it reports all 54 trucks in the file, not the 30 active) and never paste TRUCK_MILES without re-applying active:false.
 let TRUCK_COUNT = 30;       // ACTIVE fleet trucks per Ben's truck-count sheet (ATL trucks tracked separately). Confirm active count with Ben.
 let TOTAL_HRS  = 42309.04;  // Payroll hours — fleet drivers only (office + 9 ATL drivers + Wilson excluded), thru Aug 9 (matches LABOR's basis)
 let INS_WEEK  = 6375;
@@ -195,7 +195,7 @@ let ATL_LABOR   = 184677.28;  // 9 ATL drivers YTD (gross+taxes+401k) thru Aug 9
 let ATL_HRS     = 5343.02;    // 9 ATL drivers YTD hours thru Aug 9 (matches ATL_LABOR's basis)
 let ATL_FUEL    = 148905.56;  // 9 ATL EFS cards YTD thru Aug 9
 let ATL_GALLONS = 29171.28;
-let ATL_MILES   = 115378.8;   // ⚠ STALE with MILES above — still thru Aug 1. Samsara: trucks 685/674/669/686/673/675/488
+let ATL_MILES   = 128421.4;  // Samsara: trucks 685/674/669/686/673/675/488, thru Aug 8
 let ATL_TRUCKS  = ["685","674","669","686","673","675","488"];
 // Basic CPM = Labor + Fuel + Truck Rentals + Insurance only
 let BASIC_COST  = LABOR + FUEL_TOT + TRUCK_TOT + INS_TOT;
@@ -482,62 +482,62 @@ const TRUCK_TYPE = {
 // Local = NV; Regional = everything else.
 let TRUCK_MILES = [
 { truck:"120", local:6135.3, regional:43282.5, miles:49417.8, states:{"CA":28401.6,"NV":6135.3,"AZ":2692.8,"TX":1638.4,"NM":1494.8,"OR":1322.8,"OK":1259.1,"UT":1044.6,"GA":1032.1,"AR":1017.5,"AL":991.4,"MS":663.7,"CO":552.6,"TN":407.8,"LA":399.3,"ID":227.5,"SC":136.6} },
-  { truck:"496", local:4053.4, regional:38210.7, miles:42264.1, states:{"CA":24926.4,"NV":4053.4,"AZ":3417.7,"UT":2078.6,"TX":1701.9,"NM":1404.5,"CO":1111.8,"TN":1091.0,"VA":652.6,"AR":558.6,"PA":376.6,"OK":333.5,"NJ":266.9,"CT":112.3,"NY":102.2,"WV":52.0,"MD":24.0} },
-  { truck:"418", local:5076.2, regional:36301.3, miles:41377.5, states:{"CA":29550.6,"NV":5076.2,"TX":1008.2,"AZ":949.4,"OR":755.2,"TN":739.2,"UT":712.6,"GA":576.2,"NM":538.9,"AL":509.3,"OK":331.2,"AR":286.2,"LA":188.9,"MS":155.4} },
-  { truck:"419", local:5761.0, regional:35405.1, miles:41166.1, states:{"CA":25839.2,"NV":5761.0,"AZ":2357.7,"UT":1416.1,"NM":750.0,"OK":705.4,"OR":630.6,"CO":612.2,"TN":577.4,"TX":354.8,"PA":342.8,"VA":333.3,"MO":293.2,"AR":286.6,"OH":228.0,"NJ":161.8,"IL":161.2,"IN":156.3,"MD":136.8,"WV":39.4,"DE":16.1,"GA":6.2} },
-  { truck:"869", local:556.3, regional:35799.9, miles:36356.2, states:{"TN":5467.2,"VA":3140.5,"GA":2599.5,"AZ":2302.7,"PA":2204.3,"NM":2050.2,"TX":1986.0,"IL":1810.8,"NY":1760.3,"FL":1348.7,"NJ":1264.5,"WI":1230.3,"OK":1198.1,"CA":1066.2,"AR":861.5,"NC":824.1,"IN":728.1,"KY":715.5,"NV":556.3,"MS":491.9,"AL":475.3,"MO":398.0,"LA":386.2,"MD":321.3,"MN":278.8,"WV":234.9,"VT":175.5,"CT":167.2,"SC":115.6,"MA":109.8,"OH":63.0,"DE":23.9} },
+  { truck:"496", local:4053.4, regional:40297.2, miles:44350.6, states:{"CA":24926.4,"NV":4053.4,"AZ":3417.7,"TX":2875.2,"UT":2078.6,"NM":1571.5,"TN":1340.7,"CO":1111.8,"AR":835.6,"VA":652.6,"PA":376.6,"OK":333.5,"NJ":266.9,"KY":219.6,"CT":112.3,"NY":102.2,"WV":52.0,"MD":24.0} },
+  { truck:"419", local:6135.9, regional:37283.5, miles:43419.4, states:{"CA":27717.6,"NV":6135.9,"AZ":2357.7,"UT":1416.1,"NM":750.0,"OK":705.4,"OR":630.6,"CO":612.2,"TN":577.4,"TX":354.8,"PA":342.8,"VA":333.3,"MO":293.2,"AR":286.6,"OH":228.0,"NJ":161.8,"IL":161.2,"IN":156.3,"MD":136.8,"WV":39.4,"DE":16.1,"GA":6.2} },
+  { truck:"418", local:5305.1, regional:37693.6, miles:42998.7, states:{"CA":30942.9,"NV":5305.1,"TX":1008.2,"AZ":949.4,"OR":755.2,"TN":739.2,"UT":712.6,"GA":576.2,"NM":538.9,"AL":509.3,"OK":331.2,"AR":286.2,"LA":188.9,"MS":155.4} },
+  { truck:"869", local:862.1, regional:37215.1, miles:38077.2, states:{"TN":5467.2,"VA":3140.5,"GA":2599.5,"CA":2481.3,"AZ":2302.7,"PA":2204.3,"NM":2050.2,"TX":1986.0,"IL":1810.8,"NY":1760.3,"FL":1348.7,"NJ":1264.5,"WI":1230.3,"OK":1198.1,"NV":862.1,"AR":861.5,"NC":824.1,"IN":728.1,"KY":715.5,"MS":491.9,"AL":475.3,"MO":398.0,"LA":386.2,"MD":321.3,"MN":278.8,"WV":234.9,"VT":175.5,"CT":167.2,"SC":115.6,"MA":109.8,"OH":63.0,"DE":23.9} },
+  { truck:"402", local:4370.8, regional:31602.2, miles:35973.0, states:{"CA":26256.6,"NV":4370.8,"UT":2191.2,"CO":1919.4,"AZ":1235.0} },
   { truck:"568", local:6927.4, regional:28358.7, miles:35286.1, states:{"CA":22259.8,"NV":6927.4,"AZ":4680.3,"UT":753.2,"OR":665.3} },
-  { truck:"402", local:4082.7, regional:29880.0, miles:33962.7, states:{"CA":24534.4,"NV":4082.7,"UT":2191.2,"CO":1919.4,"AZ":1235.0} },
-  { truck:"502", local:4024.9, regional:29487.0, miles:33511.8, states:{"CA":26973.6,"NV":4024.9,"AZ":1147.8,"UT":729.3,"CO":636.3} },
-  { truck:"417", local:4217.7, regional:28757.1, miles:32974.9, states:{"CA":27634.7,"NV":4217.7,"AZ":1122.4} },
-  { truck:"508", local:3933.5, regional:26322.1, miles:30255.7, states:{"CA":23898.9,"NV":3933.5,"AZ":1149.7,"UT":656.8,"OR":616.8} },
-  { truck:"510", local:2916.1, regional:26947.7, miles:29863.8, states:{"CA":15969.4,"NV":2916.1,"AZ":1514.5,"NM":1489.4,"OK":1376.0,"TN":1022.2,"PA":847.7,"TX":705.4,"MO":582.6,"AR":565.3,"VA":513.7,"OH":452.6,"NJ":342.6,"IL":319.0,"IN":313.4,"NC":279.1,"SC":238.8,"CT":111.3,"MD":111.2,"GA":65.3,"NY":59.5,"WV":52.2,"DE":16.5} },
-  { truck:"441", local:8575.0, regional:20921.1, miles:29496.1, states:{"CA":20908.7,"NV":8575.0,"AZ":12.4} },
-  { truck:"951", local:8634.0, regional:19394.2, miles:28028.1, states:{"CA":18310.4,"NV":8634.0,"AZ":1083.7} },
-  { truck:"498", local:3367.3, regional:24548.7, miles:27916.0, states:{"CA":21337.0,"NV":3367.3,"AZ":1640.2,"OR":1342.8,"ID":228.7} },
-  { truck:"870", local:2917.3, regional:24037.0, miles:26954.3, states:{"CA":19418.2,"NV":2917.3,"UT":1612.9,"AZ":1041.3,"TX":979.3,"CO":509.9,"NM":475.3} },
+  { truck:"417", local:4388.4, regional:30151.8, miles:34540.2, states:{"CA":29029.4,"NV":4388.4,"AZ":1122.4} },
+  { truck:"502", local:4066.8, regional:29814.1, miles:33880.8, states:{"CA":27300.7,"NV":4066.8,"AZ":1147.8,"UT":729.3,"CO":636.3} },
+  { truck:"508", local:4076.7, regional:29337.7, miles:33414.3, states:{"CA":24222.8,"NV":4076.7,"AZ":1908.8,"TX":1172.0,"NM":760.5,"UT":656.8,"OR":616.8} },
+  { truck:"510", local:3201.4, regional:28846.3, miles:32047.8, states:{"CA":17868.0,"NV":3201.4,"AZ":1514.5,"NM":1489.4,"OK":1376.0,"TN":1022.2,"PA":847.7,"TX":705.4,"MO":582.6,"AR":565.3,"VA":513.7,"OH":452.6,"NJ":342.6,"IL":319.0,"IN":313.4,"NC":279.1,"SC":238.8,"CT":111.3,"MD":111.2,"GA":65.3,"NY":59.5,"WV":52.2,"DE":16.5} },
+  { truck:"441", local:9321.8, regional:21837.1, miles:31158.9, states:{"CA":21824.7,"NV":9321.8,"AZ":12.4} },
+  { truck:"498", local:3769.4, regional:26478.8, miles:30248.2, states:{"CA":23267.1,"NV":3769.4,"AZ":1640.2,"OR":1342.8,"ID":228.7} },
+  { truck:"951", local:9166.1, regional:20081.9, miles:29248.1, states:{"CA":18998.2,"NV":9166.1,"AZ":1083.7} },
+  { truck:"870", local:2964.7, regional:24673.7, miles:27638.4, states:{"CA":20054.9,"NV":2964.7,"UT":1612.9,"AZ":1041.3,"TX":979.3,"CO":509.9,"NM":475.3} },
+  { truck:"674", local:170.7, regional:27277.5, miles:27448.2, states:{"GA":6305.7,"FL":4069.9,"TN":3207.1,"KY":1610.4,"VA":1589.9,"PA":1261.6,"IN":954.4,"NC":768.1,"AZ":765.6,"NM":753.4,"MD":677.2,"OK":668.2,"SC":634.3,"NJ":613.6,"AR":577.6,"OH":469.2,"CA":455.8,"AL":365.2,"TX":356.4,"LA":343.6,"MS":281.3,"NV":170.7,"MI":168.7,"IL":149.7,"DE":112.8,"NY":44.9,"WV":39.5,"DC":33.2} , active:false },
   { truck:"127", local:3582.4, regional:23286.4, miles:26868.8, states:{"CA":22091.5,"NV":3582.4,"UT":623.5,"AZ":571.4} },
-  { truck:"674", local:170.7, regional:25571.7, miles:25742.4, states:{"GA":5772.1,"FL":4069.9,"TN":2755.8,"VA":1589.9,"KY":1408.3,"PA":1261.6,"IN":954.4,"NC":768.1,"AZ":765.6,"NM":753.4,"MD":677.2,"SC":634.3,"NJ":613.6,"OH":469.2,"CA":455.8,"OK":437.6,"AL":365.2,"TX":356.4,"LA":343.6,"AR":289.5,"MS":281.3,"NV":170.7,"MI":168.7,"IL":149.7,"DE":112.8,"NY":44.9,"WV":39.5,"DC":33.2} , active:false },
-  { truck:"685", local:0.0, regional:22665.4, miles:22665.4, states:{"GA":7519.4,"TN":4396.4,"FL":2527.2,"AL":1456.1,"KY":1044.7,"NC":865.1,"MS":674.0,"SC":668.3,"MD":491.1,"WV":484.2,"NJ":460.1,"VA":410.3,"CT":385.2,"LA":358.3,"OH":242.7,"PA":227.0,"MA":202.5,"NY":160.2,"DE":49.4,"RI":43.4} , active:false },
-  { truck:"573", local:10769.4, regional:11546.4, miles:22315.8, states:{"CA":11546.4,"NV":10769.4} },
+  { truck:"685", local:0.0, regional:24916.4, miles:24916.4, states:{"GA":7519.4,"TN":4408.4,"FL":2527.2,"AL":1456.1,"KY":1210.2,"NC":865.1,"MS":720.1,"OH":711.3,"SC":668.3,"MD":491.1,"WV":484.2,"NJ":460.1,"VA":410.3,"CT":385.2,"MO":372.5,"LA":358.3,"MN":321.0,"IA":240.0,"PA":227.0,"IN":222.2,"WI":221.6,"MA":202.5,"NY":160.2,"IL":108.5,"AR":72.9,"DE":49.4,"RI":43.4} , active:false },
+  { truck:"573", local:11580.7, regional:12643.9, miles:24224.6, states:{"CA":12643.9,"NV":11580.7} },
+  { truck:"673", local:164.0, regional:22497.4, miles:22661.4, states:{"GA":4979.8,"TN":2444.1,"SC":1749.9,"PA":1420.8,"NC":1103.8,"VA":1070.3,"KY":1013.0,"WV":975.6,"IL":899.5,"CA":735.3,"AL":727.5,"IN":713.1,"NJ":520.7,"CO":456.6,"MD":448.3,"AZ":390.3,"NM":374.7,"UT":366.1,"OK":360.7,"NE":358.2,"IA":315.0,"MO":293.4,"OH":230.4,"TX":177.8,"NV":164.0,"MS":156.5,"LA":121.9,"DE":51.8,"NY":42.4} , active:false },
+  { truck:"440", local:9584.6, regional:11317.0, miles:20901.5, states:{"CA":10785.0,"NV":9584.6,"AZ":531.9} },
   { truck:"574", local:4236.6, regional:16352.2, miles:20588.8, states:{"CA":15339.6,"NV":4236.6,"AZ":1012.6} },
-  { truck:"673", local:52.1, regional:19774.4, miles:19826.5, states:{"GA":4686.3,"TN":2261.3,"SC":1749.9,"PA":1420.8,"NC":1103.8,"VA":1070.3,"WV":975.6,"KY":919.0,"CA":735.3,"AL":727.5,"IN":713.1,"NJ":520.7,"MD":448.3,"NM":374.7,"AZ":361.1,"OK":360.7,"MO":293.4,"IL":272.1,"OH":230.4,"TX":177.8,"MS":156.5,"LA":121.9,"NV":52.1,"DE":51.8,"NY":42.4} , active:false },
+  { truck:"569", local:10157.4, regional:10394.5, miles:20551.9, states:{"CA":10394.5,"NV":10157.4} },
   { truck:"577", local:4296.6, regional:15391.6, miles:19688.2, states:{"CA":13093.8,"NV":4296.6,"AZ":2297.8} },
-  { truck:"669", local:0.0, regional:18550.9, miles:18550.9, states:{"GA":3325.2,"TN":3081.9,"PA":1775.3,"FL":1500.1,"KY":1334.6,"WV":1096.6,"VA":1041.7,"IL":907.2,"NC":792.7,"MD":721.1,"SC":681.6,"NJ":513.7,"AL":299.1,"IN":282.6,"MS":256.7,"CT":250.4,"NY":189.2,"LA":173.8,"OH":130.8,"WI":68.4,"MO":53.4,"MA":41.9,"DE":32.9} , active:false },
-  { truck:"440", local:8991.1, regional:9393.2, miles:18384.3, states:{"NV":8991.1,"CA":8861.2,"AZ":531.9} },
-  { truck:"569", local:9463.2, regional:8479.6, miles:17942.8, states:{"NV":9463.2,"CA":8479.6} },
-  { truck:"020", local:13936.8, regional:3920.8, miles:17857.6, states:{"NV":13936.8,"CA":3920.8} },
+  { truck:"020", local:14431.0, regional:4606.9, miles:19037.9, states:{"NV":14431.0,"CA":4606.9} },
+  { truck:"669", local:0.0, regional:18827.0, miles:18827.0, states:{"GA":3481.9,"TN":3201.3,"PA":1775.3,"FL":1500.1,"KY":1334.6,"WV":1096.6,"VA":1041.7,"IL":907.2,"NC":792.7,"MD":721.1,"SC":681.6,"NJ":513.7,"AL":299.1,"IN":282.6,"MS":256.7,"CT":250.4,"NY":189.2,"LA":173.8,"OH":130.8,"WI":68.4,"MO":53.4,"MA":41.9,"DE":32.9} , active:false },
+  { truck:"675", local:687.8, regional:17144.4, miles:17832.2, states:{"CA":1973.1,"PA":1619.1,"VA":1199.5,"OH":921.3,"CO":907.5,"AZ":880.8,"KS":848.4,"MO":792.7,"NM":754.2,"UT":730.8,"IN":715.2,"OK":688.0,"NV":687.8,"IL":673.7,"TN":662.9,"NJ":598.7,"GA":562.3,"NC":364.6,"TX":354.3,"AR":285.9,"MD":253.2,"CT":232.6,"SC":214.1,"AL":189.6,"DE":152.0,"MS":131.8,"MI":121.2,"WV":92.2,"RI":87.0,"MA":75.9,"NY":53.0,"DC":8.8} , active:false },
   { truck:"728", local:2922.7, regional:14438.8, miles:17361.5, states:{"CA":11505.6,"AZ":2933.2,"NV":2922.7} , active:false },
   { truck:"738", local:2516.6, regional:14476.5, miles:16993.1, states:{"CA":13218.9,"NV":2516.6,"AZ":638.1,"UT":619.4} , active:false },
+  { truck:"570", local:10920.5, regional:5298.6, miles:16219.2, states:{"NV":10920.5,"CA":5298.6} },
   { truck:"731", local:2991.3, regional:12734.9, miles:15726.2, states:{"CA":11120.1,"NV":2991.3,"AZ":1614.8} , active:false },
-  { truck:"570", local:10316.5, regional:4745.5, miles:15062.0, states:{"NV":10316.5,"CA":4745.5} },
-  { truck:"675", local:687.8, regional:13562.4, miles:14250.2, states:{"CA":1973.1,"VA":1199.5,"PA":979.7,"AZ":880.8,"NM":754.2,"OK":688.0,"NV":687.8,"TN":662.9,"GA":562.3,"MO":541.7,"CO":454.1,"OH":454.0,"UT":443.5,"NJ":430.9,"KS":424.8,"NC":364.6,"TX":354.3,"IL":316.7,"IN":314.5,"AR":285.9,"MD":253.2,"CT":232.6,"SC":214.1,"AL":189.6,"DE":152.0,"MS":131.8,"RI":87.0,"WV":79.0,"MA":75.9,"NY":53.0,"DC":8.8} , active:false },
   { truck:"353", local:4952.5, regional:9124.9, miles:14077.4, states:{"CA":9124.9,"NV":4952.5} },
   { truck:"730", local:1946.8, regional:10041.7, miles:11988.5, states:{"CA":10041.7,"NV":1946.8} , active:false },
   { truck:"463", local:1111.7, regional:10683.1, miles:11794.8, states:{"CA":7323.7,"TX":1311.0,"AZ":1297.9,"NV":1111.7,"NM":750.6} , active:false },
   { truck:"149", local:2047.3, regional:8712.3, miles:10759.6, states:{"CA":8712.3,"NV":2047.3} , active:false },
-  { truck:"686", local:0.0, regional:9772.2, miles:9772.2, states:{"GA":3509.2,"TN":1896.2,"FL":1811.7,"VA":1319.0,"MD":403.5,"NJ":244.6,"NC":236.9,"PA":166.4,"SC":107.0,"WV":26.1,"NY":19.9,"DE":19.5,"DC":12.2} , active:false },
+  { truck:"686", local:0.0, regional:10383.1, miles:10383.1, states:{"GA":3856.1,"TN":2160.3,"FL":1811.7,"VA":1319.0,"MD":403.5,"NJ":244.6,"NC":236.9,"PA":166.4,"SC":107.0,"WV":26.1,"NY":19.9,"DE":19.5,"DC":12.2} , active:false },
   { truck:"476", local:2831.8, regional:6843.0, miles:9674.8, states:{"CA":6270.1,"NV":2831.8,"AZ":572.9} , active:false },
   { truck:"937", local:168.4, regional:8775.7, miles:8944.0, states:{"TX":1691.9,"CA":1176.2,"AZ":959.1,"AL":649.9,"LA":584.1,"NM":542.5,"MS":472.8,"OK":455.8,"GA":451.8,"MO":297.6,"MD":294.4,"VA":276.9,"OH":227.5,"NV":168.4,"IL":160.9,"IN":159.9,"NC":127.5,"SC":107.9,"WV":83.9,"PA":55.2} , active:false },
   { truck:"539", local:1031.8, regional:7565.5, miles:8597.4, states:{"CA":2853.6,"NV":1031.8,"AZ":934.4,"GA":700.1,"OK":669.3,"NM":635.8,"AR":575.8,"AL":384.9,"TX":355.3,"MS":264.8,"SC":165.3,"TN":26.2} , active:false },
+  { truck:"292", local:581.1, regional:7865.5, miles:8446.6, states:{"CA":1365.0,"UT":1089.6,"CO":1058.6,"PA":768.0,"NV":581.1,"AZ":465.7,"OH":463.6,"NM":374.8,"OK":356.7,"NE":355.0,"IL":331.2,"IN":309.1,"IA":298.7,"MO":292.2,"TX":176.5,"NY":147.6,"WV":13.3} },
   { truck:"968", local:97.3, regional:6459.2, miles:6556.5, states:{"CA":1297.4,"PA":884.4,"OH":715.6,"IN":493.4,"MD":429.6,"NM":377.4,"AZ":361.1,"IL":360.5,"OK":360.3,"MO":294.7,"WV":255.8,"TX":177.9,"CT":150.9,"NY":126.6,"NV":97.3,"NJ":93.8,"KY":79.9} , active:false },
+  { truck:"293", local:1667.6, regional:4851.1, miles:6518.7, states:{"CA":2909.7,"NV":1667.6,"UT":733.8,"AZ":634.7,"CO":572.9} },
+  { truck:"488", local:93.9, regional:6259.1, miles:6353.1, states:{"GA":1163.8,"TX":1005.4,"TN":816.6,"AZ":785.2,"NM":541.2,"CA":456.5,"AL":404.4,"OK":332.0,"AR":286.2,"MS":274.4,"LA":193.4,"NV":93.9} , active:false },
   { truck:"676", local:4109.6, regional:1566.8, miles:5676.4, states:{"NV":4109.6,"CA":1566.8} , active:false },
   { truck:"971", local:1359.5, regional:3928.6, miles:5288.1, states:{"CA":1827.1,"NV":1359.5,"UT":794.2,"MT":667.9,"ID":533.2,"AZ":57.7,"WA":48.6} , active:false },
   { truck:"114", local:76.7, regional:4791.3, miles:4868.0, states:{"TX":1077.6,"AZ":758.1,"NM":543.6,"CA":474.3,"AL":404.8,"OK":334.9,"AR":288.9,"LA":252.9,"GA":248.5,"MS":198.0,"FL":191.2,"NV":76.7,"TN":18.3} , active:false },
-  { truck:"293", local:1474.7, regional:3180.7, miles:4655.4, states:{"NV":1474.7,"CA":1239.3,"UT":733.8,"AZ":634.7,"CO":572.9} },
-  { truck:"488", local:93.9, regional:4477.3, miles:4571.2, states:{"GA":1059.9,"TX":827.1,"TN":793.9,"AZ":610.1,"CA":456.5,"AL":214.3,"LA":193.4,"NM":165.8,"MS":156.3,"NV":93.9} , active:false },
-  { truck:"292", local:550.4, regional:3608.1, miles:4158.5, states:{"CA":1365.0,"UT":1089.6,"CO":1058.6,"NV":550.4,"AZ":87.2,"NE":7.7} },
-  { truck:"074", local:97.9, regional:3249.8, miles:3347.8, states:{"CA":717.3,"KS":432.8,"NM":391.9,"AZ":362.5,"PA":351.6,"MO":251.3,"OH":231.8,"IN":158.2,"IL":156.7,"NV":97.9,"TX":93.0,"OK":56.5,"NJ":33.0,"WV":13.2} },
+  { truck:"316", local:397.2, regional:4168.9, miles:4566.1, states:{"CA":1428.6,"NV":397.2,"AZ":377.5,"NM":370.0,"OK":355.4,"PA":330.6,"MO":291.3,"NJ":282.8,"OH":227.9,"TX":176.3,"IL":158.9,"IN":156.6,"WV":13.1} },
+  { truck:"074", local:236.3, regional:3986.3, miles:4222.6, states:{"CA":1453.7,"KS":432.8,"NM":391.9,"AZ":362.5,"PA":351.6,"MO":251.3,"NV":236.3,"OH":231.8,"IN":158.2,"IL":156.7,"TX":93.0,"OK":56.5,"NJ":33.0,"WV":13.2} },
   { truck:"503", local:350.4, regional:2509.3, miles:2859.7, states:{"AZ":1325.1,"CA":1184.2,"NV":350.4} , active:false },
+  { truck:"315", local:286.3, regional:2075.4, miles:2361.7, states:{"CA":2075.4,"NV":286.3} },
   { truck:"351", local:1567.2, regional:730.1, miles:2297.3, states:{"NV":1567.2,"CA":730.1} , active:false },
-  { truck:"189", local:801.6, regional:1154.9, miles:1956.5, states:{"CA":1154.9,"NV":801.6} },
-  { truck:"316", local:354.1, regional:1428.6, miles:1782.8, states:{"CA":1428.6,"NV":354.1} },
+  { truck:"189", local:988.3, regional:1154.9, miles:2143.2, states:{"CA":1154.9,"NV":988.3} },
   { truck:"462", local:99.8, regional:1081.1, miles:1180.9, states:{"CA":1081.1,"NV":99.8} , active:false },
   { truck:"589", local:985.5, regional:0.0, miles:985.5, states:{"NV":985.5} , active:false },
-  { truck:"315", local:104.8, regional:598.3, miles:703.1, states:{"CA":598.3,"NV":104.8} },
 ];
-let FLEET_LOCAL    = 171321.1;   // NV miles (fleet only, ATL trucks excluded)
-let FLEET_REGIONAL = 678451.8;   // non-NV miles (fleet only, ATL trucks excluded)
+let FLEET_LOCAL    = 178858.8;   // NV miles (fleet only, ATL trucks excluded)
+let FLEET_REGIONAL = 714810.2;   // non-NV miles (fleet only, ATL trucks excluded)
 
 // ── TRANSACTION DETAIL DATA ──────────────────────────────────
 const DETAIL = {
@@ -8117,8 +8117,10 @@ const ATL_WEEKLY_LOG = [
     driverHours: 0,            // not derivable — the paycheck history carries no hours column and the payroll summary is YTD-only. Same treatment as the 7/13 entry.
     fuelAmt: 8843.79,          // exact Mon-Sun, summed from EFS transaction dates on the ATL cards (ULSD only, DEFD excluded). Same parse ties the 7/27 and 8/3 weeks to the penny.
     fuelGallons: 1758.98,      // $5.028/gal
-    contractors: [],
-    contractorPay: 0,          // ⚠ ENM was paid $1,850 this week (MANUAL_CONTRACTORS '7/6'), but Ben gave only the DRIVER roster for this week — the ATL contractor designation was not confirmed, and per feedback_atl_no_generalize it is not inferred from adjacent weeks. Add $1,850 here if he confirms.
+    contractors: [
+      { name: "ENM Trucking LLC", entity: "ENM Trucking LLC (Biniyam Fissehaye 1099)", total: 1850 },
+    ],
+    contractorPay: 1850,       // Ben confirmed 2026-08-10 that ENM was ATL this week (paid $1,850, MANUAL_CONTRACTORS '7/6').
     note: "Week of Jul 6-12 — BACKFILLED 2026-08-10. This week was missing entirely from the log (13 of 14 weeks since the May 4 launch were recorded), so every cumulative ATL figure reported before today understated by it. Roster of 9 confirmed by Ben. Griffin and Phillips were on the roster but had NO paycheck on 7/10 and NO EFS transactions this week (cards 07454/87457 silent) — that is why only 7 drivers and 7 cards carry amounts. Agents separate.",
   },
   {
