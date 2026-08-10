@@ -2,83 +2,88 @@
   "drivers": [
     {
       "name": "Alexander Christopher",
-      "hours": 1738.76,
-      "totalCost": 54078.08
+      "hours": 1826.41,
+      "totalCost": 56945.02
     },
     {
       "name": "Brown Willie M",
-      "hours": 50.3,
-      "totalCost": 1454.92
+      "hours": 60.02,
+      "totalCost": 1736.08
     },
     {
       "name": "Camacho Stephen B",
-      "hours": 332.22,
-      "totalCost": 9599.64
+      "hours": 384.28,
+      "totalCost": 11097.35
     },
     {
       "name": "Cowsky Andrew",
-      "hours": 930.16,
-      "totalCost": 28059.82
+      "hours": 1008.74,
+      "totalCost": 30407.45
+    },
+    {
+      "name": "Dalton Aaron",
+      "hours": 14.76,
+      "totalCost": 426.92
     },
     {
       "name": "Daniels Gerald W",
-      "hours": 1047.22,
-      "totalCost": 30654.82
+      "hours": 1113.24,
+      "totalCost": 32952.21
     },
     {
       "name": "Davis Anthoni D",
-      "hours": 2174.71,
-      "totalCost": 76298.15
+      "hours": 2262.49,
+      "totalCost": 79195.5
     },
     {
       "name": "Denman Samuel E",
-      "hours": 1736.44,
-      "totalCost": 57573.68
+      "hours": 1787.28,
+      "totalCost": 59256.1
     },
     {
       "name": "Dixon Deon A",
-      "hours": 138.8,
-      "totalCost": 4114.8
+      "hours": 179.91,
+      "totalCost": 5303.9
     },
     {
       "name": "Gray Stephen D",
-      "hours": 499.33,
-      "totalCost": 15164.23
+      "hours": 545.53,
+      "totalCost": 16493.35
     },
     {
       "name": "Gutierrez Danny",
-      "hours": 1604.24,
-      "totalCost": 50910.22
+      "hours": 1608.66,
+      "totalCost": 51048.21
     },
     {
       "name": "Guzman Jose",
-      "hours": 1971.8,
-      "totalCost": 71622.07
+      "hours": 2031.86,
+      "totalCost": 73800.79
     },
     {
       "name": "Ibarra Jose Pablo",
-      "hours": 1927.49,
-      "totalCost": 69053.61
+      "hours": 1990.97,
+      "totalCost": 71342.08
     },
     {
       "name": "Lewis Steve",
-      "hours": 281.19,
-      "totalCost": 8131.56
+      "hours": 336.27,
+      "totalCost": 9716.15
     },
     {
       "name": "McDaniels James",
-      "hours": 488.69,
-      "totalCost": 14326.12
+      "hours": 535.14,
+      "totalCost": 15662.45
     },
     {
       "name": "McNamara John",
-      "hours": 1774.92,
-      "totalCost": 59390.74
+      "hours": 1838.48,
+      "totalCost": 61377.75
     },
     {
       "name": "Mcclam Michael A",
-      "hours": 1262.25,
-      "totalCost": 38480.68
+      "hours": 1312.6,
+      "totalCost": 40154.19
     },
     {
       "name": "Morris Roderick F",
@@ -87,33 +92,33 @@
     },
     {
       "name": "Ponce Carlos",
-      "hours": 1200.35,
-      "totalCost": 37170.37
+      "hours": 1263.58,
+      "totalCost": 39019.43
     },
     {
       "name": "Restrepo Julian E",
-      "hours": 1216.96,
-      "totalCost": 38262.46
+      "hours": 1280.05,
+      "totalCost": 40096.99
     },
     {
       "name": "Reyes Corey",
-      "hours": 957.24,
-      "totalCost": 27580.83
+      "hours": 998.57,
+      "totalCost": 28769.85
     },
     {
       "name": "Robinson Animashaun",
-      "hours": 1119.52,
-      "totalCost": 32749.48
+      "hours": 1170.43,
+      "totalCost": 34214.1
     },
     {
       "name": "Ronkov Martin P",
-      "hours": 1738.45,
-      "totalCost": 50386.44
+      "hours": 1786.7,
+      "totalCost": 51814.82
     },
     {
       "name": "Stevenson Timothy",
-      "hours": 495,
-      "totalCost": 14288.08
+      "hours": 568.2,
+      "totalCost": 16393.97
     },
     {
       "name": "Thomas John",
@@ -122,35 +127,35 @@
     },
     {
       "name": "Whipple Wallace",
-      "hours": 1866.29,
-      "totalCost": 60391.84
+      "hours": 1939.65,
+      "totalCost": 62889.67
     },
     {
       "name": "Williams Tadaryl C",
-      "hours": 1727.29,
-      "totalCost": 51314.73
+      "hours": 1773.59,
+      "totalCost": 52685.38
     },
     {
       "name": "Williams Will",
-      "hours": 1393.12,
-      "totalCost": 41620.68
+      "hours": 1467.99,
+      "totalCost": 43774.61
     },
     {
       "name": "Willis Wali A",
-      "hours": 2033.44,
-      "totalCost": 70804.35
+      "hours": 2087.11,
+      "totalCost": 72721.87
     }
   ],
   "office": [
     {
       "name": "Adrian Arias",
       "entity": "SF",
-      "totalCost": 58804.5
+      "totalCost": 61561.14
     },
     {
       "name": "Gabriel Gonzalez",
       "entity": "SF",
-      "totalCost": 39081.36
+      "totalCost": 40409.16
     },
     {
       "name": "Scot Grosser",
@@ -165,32 +170,32 @@
     {
       "name": "Cecilia Rivera",
       "entity": "SF",
-      "totalCost": 47282.67
+      "totalCost": 49002.42
     },
     {
       "name": "Nathan Youngblood",
       "entity": "SF",
-      "totalCost": 39986.65
+      "totalCost": 41425.1
     },
     {
       "name": "Tasha Mahan",
       "entity": "SF",
-      "totalCost": 12988.05
+      "totalCost": 14426.5
     },
     {
       "name": "Antionette Wilson",
       "entity": "SF",
-      "totalCost": 7794.14
+      "totalCost": 9044.48
     },
     {
       "name": "Valeria Abrego",
       "entity": "J&A",
-      "totalCost": 27355.72
+      "totalCost": 28273.71
     },
     {
       "name": "Christopher Adamson",
       "entity": "J&A",
-      "totalCost": 59389.15
+      "totalCost": 61622.15
     },
     {
       "name": "Debra Adamson",
@@ -215,12 +220,12 @@
     {
       "name": "Harold Galvis",
       "entity": "J&A",
-      "totalCost": 11380.03
+      "totalCost": 12629.8
     },
     {
       "name": "Kidist Gelaw",
       "entity": "J&A",
-      "totalCost": 10040.25
+      "totalCost": 11290.03
     },
     {
       "name": "Kirsten Hall",
@@ -230,12 +235,12 @@
     {
       "name": "Ben Hoffman",
       "entity": "J&A",
-      "totalCost": 45494.54
+      "totalCost": 46983.39
     },
     {
       "name": "Joshua Law",
       "entity": "J&A",
-      "totalCost": 13402
+      "totalCost": 16072.6
     },
     {
       "name": "Branden Parnell",
@@ -256,74 +261,74 @@
   "warehouse": [
     {
       "name": "Gentry Eagleton",
-      "totalCost": 29848.84
+      "totalCost": 30866.82
     },
     {
       "name": "Andres Figueroa",
-      "totalCost": 51987.37
+      "totalCost": 53992.35
     }
   ],
   "contractors": [
     {
       "name": "Jon Marcus Zengotita",
-      "total": 78050
+      "total": 80850
     },
     {
       "name": "Mellody Abrego",
-      "total": 76722.41
+      "total": 79675.61
     },
     {
       "name": "Gabriel Colon",
-      "total": 58495.88
+      "total": 61495.88
     },
     {
       "name": "Hilda Salman",
-      "total": 49918.14
+      "total": 51766.96
     },
     {
       "name": "Maria Con",
-      "total": 15900
+      "total": 16550
     },
     {
       "name": "Logic Consultants",
-      "total": 13000
+      "total": 13500
     },
     {
       "name": "ENM Trucking",
-      "total": 16650
+      "total": 18500
     },
     {
       "name": "Elizabeth Delgado",
-      "total": 21729.61
+      "total": 22978.19
     },
     {
       "name": "Christopher Simpson",
-      "total": 21398.08
+      "total": 22579.34
     },
     {
       "name": "Debra Adamson",
-      "total": 29402.03
+      "total": 31205.82
     },
     {
       "name": "Erika Valencio",
-      "total": 6920
+      "total": 8650
     },
     {
       "name": "Kacy Richardson",
-      "total": 1500
+      "total": 2000
     },
     {
       "name": "Mairena Tapias",
-      "total": 7578.04
+      "total": 8056.04
     }
   ],
-  "period": "Jan 1 - Aug 2, 2026",
+  "period": "Jan 1 - Aug 9, 2026",
   "totals": {
-    "driverLabor": 1023560.7799999999,
-    "driverCount": 28,
-    "officeTotal": 496623.86,
-    "warehouseTotal": 81836.21,
-    "contractorTotal": 397264.19,
-    "grandTotal": 1999285.0399999998
+    "driverLabor": 1069374.5699999998,
+    "driverCount": 29,
+    "officeTotal": 516365.28,
+    "warehouseTotal": 84859.17,
+    "contractorTotal": 417807.84,
+    "grandTotal": 2088406.8599999999
   }
 }

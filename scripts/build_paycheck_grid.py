@@ -198,7 +198,13 @@ for w in weeks[1:]:
 # why Nelly's June wires appear absent there. Don't "fix" them.)
 r = getrow('CE', ('con','MAI'), 'Mairena Tapias · 1099', False)
 for ds, amt in [('04/20/2026',193.04),('05/05/2026',900.0),('05/20/2026',882.0),('05/28/2026',695.0),('06/02/2026',140.0),('06/12/2026',950.0),('06/18/2026',475.0),('06/22/2026',475.0),('06/30/2026',475.0),
-                ('07/02/2026',481.0),('07/09/2026',478.0),('07/16/2026',478.0),('07/24/2026',478.0),('07/30/2026',478.0)]:
+                ('07/02/2026',481.0),('07/09/2026',478.0),('07/16/2026',478.0),('07/24/2026',478.0),('07/30/2026',478.0),
+                # Amount from Ben's Aug-9 chat list. The exact wire date is NOT in any
+                # export yet (the Chase VendorEmployeePayments file is frozen at 8/3), so
+                # 08/06 is inferred from her Wed/Thu cadence. Only the week bucket matters
+                # here — any date in Aug 3-9 lands in the same 8/7 column. Correct it if
+                # a later Chase export shows a different day.
+                ('08/06/2026',478.0)]:
     wl = wk_of(mdate(ds)); r['camts'][wl] = round(r['camts'].get(wl,0) + amt, 2)
 
 # Logic Consultants: $500/wk entire year
@@ -277,10 +283,28 @@ MANUAL_CONTRACTORS = {
         # the rule/dated-list blocks above — do NOT duplicate them here.
         # Kevin (1099) + Ethan Smith (W-2) are AGENTS — separate bucket, excluded.
     ],
+    '8/3': [  # pay week ending Aug 9 (W-2 checks dated Aug 7). Ben's chat amounts.
+        ('CE',  ('con','JON'),      2800.0,  'Jon Marcus - 1099'),
+        ('CE',  ('con','GAB'),      1500.0,  'Gabriel Colon - 1099 (50%)'),  # $3,000 split 50/50
+        ('SF',  ('con','GAB'),      1500.0,  'Gabriel Colon - 1099 (50%)'),
+        ('J&A', ('con','MEL'),      2250.0,  'Mellody Abrego - 1099'),   # base; Aug car $334.86 is in CAR below
+        ('J&A', ('con','HIL'),      1730.0,  'Hilda Salman - 1099'),
+        ('J&A', ('fissehaye','b'),  1850.0,  'Biniyam Fissehaye'),        # ENM — the week's ATL contractor
+        ('J&A', ('delgado','e'),    900.0,   'Elizabeth Delgado'),
+        ('J&A', ('simpson','c'),    834.97,  'Christopher Simpson'),
+        ('J&A', ('simpson','c'),    292.50,  'Christopher Simpson (additional)'),  # 2nd payment — Ben: NOT commission
+        ('J&A', ('adamson','d'),    1750.0,  'Debra Adamson'),
+        ('J&A', ('con','ERI'),      1730.0,  'Erika Valencio - 1099'),
+        ('J&A', ('con','KAC'),      500.0,   'Kacy Richardson - 1099'),
+        # Maria ($650/wk), Logic ($500/wk), Mairena ($478) come from the
+        # rule/dated-list blocks above — do NOT duplicate them here.
+        # Kevin (1099) + Ethan Smith (W-2) are AGENTS — separate bucket, excluded.
+    ],
 }
 # MANUAL reimbursements (included in the all-in per Ben 2026-07-23), keyed by Monday.
 MANUAL_REIMB = {
     '7/20': [ ('J&A', ('delgado','e'), 253.25) ],   # Elizabeth Delgado reimbursement
+    '8/3':  [ ('J&A', ('delgado','e'), 348.58) ],   # Elizabeth Delgado reimbursement
 }
 # MANUAL_CONTRACTORS is hand-keyed by Monday week ("6/22", "6/29"); map each
 # to its payday label so contractor payments land in the same column as that
@@ -341,7 +365,7 @@ def _carlbl(spec):
     return PD[weeks[-1]]
 CAR = [
     ('CE',  ('con','JON'), [(1,350.0),(2,350.0),(3,350.0),(4,350.0),(5,350.0),('7/2',350.0),('7/30',350.0)]),  # Jan-May monthly + June (7/2) + July (7/30) = $2,450
-    ('J&A', ('con','MEL'), [(1,334.86),(2,334.86),(3,334.86),(4,334.86),(5,334.86),(6,684.86),('7/2',334.86)]),  # +June bump + July paid 7/2 = $2,694.02
+    ('J&A', ('con','MEL'), [(1,334.86),(2,334.86),(3,334.86),(4,334.86),(5,334.86),(6,684.86),('7/2',334.86),('8/7',334.86)]),  # +June bump + July paid 7/2 + Aug paid 8/7 = $3,028.88
 ]
 for comp, rk, plan in CAR:
     for spec, amt in plan:
