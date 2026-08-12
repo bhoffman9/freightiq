@@ -18,10 +18,24 @@ export default async function handler(req, res) {
     }
 
     const asOf = req.query.as_of || new Date().toISOString().split('T')[0];
-    const report = await qboFetch(tokenData, `/reports/BalanceSheet?date_macro=&as_of=${asOf}&minorversion=73`);
+    // ⚠ `as_of` is NOT a QBO BalanceSheet parameter. Passing it (which this
+    // endpoint did until 2026-08-12) is silently ignored: QBO falls back to
+    // DateMacro "this calendar year-to-date" and returns TODAY's balance sheet
+    // no matter what date you ask for. Every historical query returned
+    // byte-identical numbers. The as-of date for a balance sheet is `end_date`.
+    // Verify with Header.StartPeriod/EndPeriod/DateMacro in the response —
+    // same class of silent-filter-drop as the `class` vs `classid` bug.
+    const report = await qboFetch(tokenData, `/reports/BalanceSheet?end_date=${asOf}&minorversion=73`);
     const parsed = parseBsReport(report);
 
-    res.json({ company, as_of: asOf, bs: parsed, raw: report });
+    // Echo what QBO actually honoured so a caller can never again assume a
+    // requested date was applied.
+    const h = report?.Header || {};
+    res.json({
+      company, as_of: asOf,
+      applied: { startPeriod: h.StartPeriod, endPeriod: h.EndPeriod, dateMacro: h.DateMacro },
+      bs: parsed, raw: report,
+    });
   } catch (e) {
     console.error('qbo-bs error:', e);
     res.status(500).json({ error: e.message });
