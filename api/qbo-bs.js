@@ -18,14 +18,18 @@ export default async function handler(req, res) {
     }
 
     const asOf = req.query.as_of || new Date().toISOString().split('T')[0];
-    // ⚠ `as_of` is NOT a QBO BalanceSheet parameter. Passing it (which this
-    // endpoint did until 2026-08-12) is silently ignored: QBO falls back to
-    // DateMacro "this calendar year-to-date" and returns TODAY's balance sheet
-    // no matter what date you ask for. Every historical query returned
-    // byte-identical numbers. The as-of date for a balance sheet is `end_date`.
-    // Verify with Header.StartPeriod/EndPeriod/DateMacro in the response —
-    // same class of silent-filter-drop as the `class` vs `classid` bug.
-    const report = await qboFetch(tokenData, `/reports/BalanceSheet?end_date=${asOf}&minorversion=73`);
+    // ⚠ `as_of` is NOT a QBO BalanceSheet parameter, and `end_date` ALONE is not
+    // enough either — both were silently ignored and QBO fell back to DateMacro
+    // "this calendar year-to-date", returning TODAY's balance sheet for every
+    // date asked (identical numbers for 2024-01-31, 2025-06-30 and 2026-07-31).
+    // QBO only honours the window when start_date AND end_date are BOTH present
+    // — the same pairing qbo-pnl.js has always used, which is why P&L date
+    // filtering worked and this never did. A balance sheet is cumulative, so
+    // start_date only scopes the equity Net Income row; Jan 1 of the as-of year
+    // reproduces QBO's own calendar-YTD convention.
+    // ALWAYS check `applied` below before trusting a historical figure.
+    const startDate = `${asOf.slice(0, 4)}-01-01`;
+    const report = await qboFetch(tokenData, `/reports/BalanceSheet?start_date=${startDate}&end_date=${asOf}&minorversion=73`);
     const parsed = parseBsReport(report);
 
     // Echo what QBO actually honoured so a caller can never again assume a
