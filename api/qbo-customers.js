@@ -28,10 +28,19 @@ export default async function handler(req, res) {
     const startDate = req.query.start_date || `${today.slice(0, 4)}-01-01`;
     const endDate = req.query.end_date || today;
 
+    // ?report= lets us try CustomerSales / CustomerIncome without a redeploy;
+    // ?debug=1 returns the raw payload so an empty result can be diagnosed
+    // instead of guessed at.
+    const reportName = (req.query.report || 'CustomerSales').replace(/[^A-Za-z]/g, '');
+    const summarize = req.query.summarize === '0' ? ''
+      : `&summarize_column_by=${req.query.summarize || 'Total'}`;
     const report = await qboFetch(
       tokenData,
-      `/reports/CustomerSales?start_date=${startDate}&end_date=${endDate}&summarize_column_by=Total&minorversion=73`
+      `/reports/${reportName}?start_date=${startDate}&end_date=${endDate}${summarize}&minorversion=73`
     );
+    if (req.query.debug) {
+      return res.json({ company, reportName, header: report?.Header, columns: report?.Columns, raw: report });
+    }
 
     // CustomerSales rows are {ColData:[{value:name,id},{value:amount}]}, with
     // sub-customers nested under Rows and a Summary row per parent. Walk it and
