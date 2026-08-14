@@ -10,7 +10,11 @@
   "crons": [
     {
       "path": "/api/plaid-sync",
-      "schedule": "0 6,14,21 * * *"
+      "schedule": "0 6,14,15,21 * * *"
+    },
+    {
+      "path": "/api/bank-morning?capture=1",
+      "schedule": "10 14,15 * * *"
     },
     {
       "path": "/api/fdw-qbo-sync",
