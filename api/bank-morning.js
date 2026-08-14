@@ -39,6 +39,12 @@ const SUPA = () => {
 
 // The nine real Chase accounts — MUST mirror ACCT in api/ap-balances.js.
 // Anything not in here is not ours, so a transfer touching it is EXTERNAL.
+// ⚠ Plaid also returns two CHASE AUTO ACCOUNT items (last4 4502 and 5000,
+// ~$128,022 combined on 2026-08-14). Those are car LOANS reported with a
+// positive `current` balance — debt, not cash. They are deliberately absent
+// here; summing fdw_cash_snapshot.accounts raw overstates bank cash by that
+// amount ($515,838 raw vs $387,816 real on 2026-08-14). Anything not in this
+// map is excluded from the total AND treated as external for transfers.
 const ACCT = {
   '3028': 'Show Freight Inc', '0870': 'Show Freight TN', '7173': 'SF Savings',
   '1927': 'Capacity Express', '7165': 'CE Savings', '6053': 'CE East',
@@ -115,10 +121,16 @@ export default async function handler(req, res) {
     const total = +accounts.reduce((s, a) => s + a.balance, 0).toFixed(2);
     const prevTotal = prev ? Number(prev.total) : null;
 
-    // Flows since the previous morning (inclusive of that date forward).
+    // Flows for the COMPLETED days between the previous morning and this one:
+    // posted_date in [prev_snapshot_date, today). The upper bound matters —
+    // without it today's partial postings are counted now AND again tomorrow.
+    // posted_date has day granularity while the snapshot is a 7 AM instant, so
+    // this is an attribution by banking day, not an exact between-snapshot cut;
+    // `unexplained` below makes any divergence visible instead of hiding it.
     const since = prev ? prev.snapshot_date : today;
     const txns = await sb(
-      `fdw_bank_feed_txn?select=posted_date,account_last4,amount,raw_desc,pending&posted_date=gte.${since}&order=posted_date.asc&limit=5000`
+      `fdw_bank_feed_txn?select=posted_date,account_last4,amount,raw_desc,pending`
+      + `&posted_date=gte.${since}&posted_date=lt.${today}&order=posted_date.asc&limit=5000`
     );
     let inn = 0, out = 0, internal = 0, pendingCount = 0;
     const byAccount = {}, ins = [], outs = [];
@@ -149,7 +161,13 @@ export default async function handler(req, res) {
       money_in: r2(inn), money_out: r2(out), internal_transfers: r2(internal),
       txn_count: txns.length, pending_count: pendingCount,
       balance_age_min: null,
-      accounts, flows,
+      accounts,
+      // `unexplained` = balance movement the posted flows do not account for.
+      // It will rarely be zero: posted_date is a whole day while the snapshot is
+      // a 7 AM instant, and pending items move balances before they post. Shown
+      // rather than suppressed — a large or growing value means the feed is
+      // missing something, which is worth seeing.
+      flows: { ...flows, unexplained: prevTotal === null ? null : r2((total - prevTotal) - (inn - out)) },
     };
 
     await sb('fdw_bank_morning?on_conflict=snapshot_date', {
